@@ -23,10 +23,6 @@ strategy:
       imageName: 'ubuntu-20.04'
       the_name: 'Azure Pipelines'
 
-    ubuntu_18_04_gcc_8:
-      imageName: 'ubuntu-18.04'
-      the_name: 'Azure Pipelines'
-
     mac_12:
       imageName: 'macos-12'
       the_name: 'Azure Pipelines'
