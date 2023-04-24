@@ -1,6 +1,6 @@
 variables:
  - name: project_name
-   value: Tobor
+   value: ___template___project___name___
 
 trigger:
   branches:
@@ -26,11 +26,9 @@ strategy:
     mac_12:
       imageName: 'macos-12'
       the_name: 'Azure Pipelines'
+
     mac_11:
       imageName: 'macos-11'
-      the_name: 'Azure Pipelines'
-    mac_10_15:
-      imageName: 'macos-10.15'
       the_name: 'Azure Pipelines'
 
     windows_2022:
@@ -40,7 +38,7 @@ strategy:
     windows_2019:
       imageName: 'windows-2019'
       the_name: 'Azure Pipelines'
-    
+
 #    raspberry_pi:
 #      the_name: 'Default'
 
