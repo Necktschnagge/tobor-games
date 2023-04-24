@@ -1,3 +1,3 @@
 #!/bin/bash
-chmod +x ../build/test/TEST-___template___project___name___
-../build/test/TEST-___template___project___name___
+chmod +x ../build/test/TEST-Tobor
+../build/test/TEST-Tobor

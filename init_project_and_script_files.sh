@@ -4,10 +4,10 @@
 
 
 # Give your project a good name!
-project_name="My_Project_Name"
+project_name="Tobor"
 
 # Tell where your remote is, be aware of escaping `/`!:
-sources_url="https:\/\/github.com\/github_user\/repo_id"
+sources_url="https:\/\/github.com\/Necktschnagge\/cmake-qt-prototype"
 
 
 # HERE YOU ARE DONE!

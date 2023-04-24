@@ -1,1 +1,1 @@
-..\build\test\Debug\TEST-___template___project___name___.exe
+..\build\test\Debug\TEST-Tobor.exe
