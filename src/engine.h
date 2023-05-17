@@ -1,5 +1,8 @@
+
+
 #include <map>
-//#include <algorithm>
+#include <array>
+#include <algorithm>
 
 
 namespace tobor {
@@ -118,6 +121,11 @@ namespace tobor {
 				return x_size * y_size;
 			}
 
+			tobor_world(): x_size(0), y_size(0) {}
+			tobor_world(const std::size_t x_size, const std::size_t y_size): tobor_world() {
+				resize(x_size, y_size);
+			}
+
 			/*
 				@brief Sets the size of the world, also creates an empty rectangle with walls only on the outer borders
 			*/
@@ -215,9 +223,27 @@ namespace tobor {
 				transposed_id = world.transposed_field_id_of(x_coord, y_coord);
 			}
 
+			inline static universal_field_id create_by_coord(std::size_t p_x_coord, std::size_t p_y_coord, const tobor_world& world) noexcept {
+				universal_field_id id;
+				id.set_coord(p_x_coord, p_y_coord, world);
+				return id;
+			}
+
+			inline static universal_field_id create_by_id(std::size_t p_id, const tobor_world& world) noexcept {
+				universal_field_id id;
+				id.set_id(p_id, world);
+				return id;
+			}
+
+			inline static universal_field_id create_by_transposed_id(std::size_t p_transposed_id, const tobor_world& world) noexcept {
+				universal_field_id id;
+				id.set_transposed_id(p_transposed_id, world);
+				return id;
+			}
+
 		};
 
-		template <class Field_Id_Type, std::size_t COUNT_NON_TARGET_ROBOTS>
+		template <class Field_Id_Type, std::size_t COUNT_NON_TARGET_ROBOTS> // ## alternative implementation using std::vector instead of array, as non-template variant
 		class robots_position_state {
 
 			inline void sort_robots() {
@@ -286,10 +312,10 @@ namespace tobor {
 				sort_robots();
 			}
 #endif
-			template<class Iterator>
+			//template<class Iterator>
 			robots_position_state(const Field_Id_Type& p_target_robot, std::array<Field_Id_Type, COUNT_NON_TARGET_ROBOTS>&& p_other_robots) :
 				target_robot(p_target_robot),
-				other_robots(std::move(p_other_robots))
+				other_robots_sorted(std::move(p_other_robots))
 			{
 				sort_robots();
 			}
@@ -545,7 +571,9 @@ namespace tobor {
 			static constexpr robot_direction_type WEST{ 1 << 3 };
 
 			robot_id_type robot_id;
-			uint8_t direction;
+			robot_direction_type direction;
+
+			robot_move(const robot_id_type& _robot_id, const robot_direction_type& _direction) : robot_id(_robot_id), direction(_direction) {}
 		};
 
 		/*template <class Field_Id_Type, std::size_t COUNT_NON_TARGET_ROBOTS>
@@ -569,6 +597,13 @@ namespace tobor {
 			bool is_leaf{ true }; // means never used by any successor state
 		};
 
+		class move_candidate {
+		public:
+			robot_move move;
+			std::pair<universal_field_id, bool> next_field_paired_enable;
+
+			move_candidate(const robot_move& m, const std::pair<universal_field_id, bool>& n) : move(m), next_field_paired_enable(n) {}
+		};
 
 		template<std::size_t COUNT_NON_TARGET_ROBOTS = 3, class World_Analyzer_Type = tobor_world_analyzer<COUNT_NON_TARGET_ROBOTS>>
 		inline void get_all_optimal_solutions(const World_Analyzer_Type& world_analyzer, const typename World_Analyzer_Type::field_id_type& p_target_field, const typename World_Analyzer_Type::field_id_type& p_target_robot, std::array<typename World_Analyzer_Type::field_id_type, COUNT_NON_TARGET_ROBOTS>&& p_other_robots) {
@@ -587,24 +622,39 @@ namespace tobor {
 			std::size_t optimal_solution_size{ std::numeric_limits<std::size_t>::max() };
 
 			solutions_map[initial_state].steps = 0; //insert initial_state
+			// predecessors are empty
+			// is_leaf ist always true until explored
+
+
 			to_be_explored.push_back(solutions_map.begin());
 			
 			world_analyzer.create_quick_move_table()
 
 			while (index_next_exploration < to_be_explored.size()) {
 				const auto& current_iterator{ to_be_explored[index_next_exploration] };
+
+				//### if currrent to explore has optimal step number....
+						// do not explore sub cases... since they bread sub-optimal solutions... (we can immediately stop exploring at all due to order in fifo chain)
 				
+				std::vector<move_candidate> candidates_for_successor_states;
+
+				// get next fields in our world with respect to current state
+				candidates_for_successor_states.emplace_back(
+					robot_move(COUNT_NON_TARGET_ROBOTS, robot_move::WEST),
+					world_analyzer.get_next_field_on_west_move(current_iterator->first.target_robot, current_iterator->first)
+				);
 				auto [next_field_w, has_next_w] = world_analyzer.get_next_field_on_west_move(current_iterator->first.target_robot, current_iterator->first);
 				auto [next_field_e, has_next_e] = world_analyzer.get_next_field_on_east_move(current_iterator->first.target_robot, current_iterator->first);
 				auto [next_field_s, has_next_s] = world_analyzer.get_next_field_on_south_move(current_iterator->first.target_robot, current_iterator->first);
 				auto [next_field_n, has_next_n] = world_analyzer.get_next_field_on_north_move(current_iterator->first.target_robot, current_iterator->first);
 				
+				// loop the following over all next states... using parameters.... WEST/EAST/...    robot id to be moved
 				if (has_next_w) {
 					state_type next_state;
 					next_state.other_robots_sorted = current_iterator->first.other_robots_sorted;
 					next_state.target_robot = nex_field_w;
 
-					if (solutions_map[next_state].steps > current_iterator->second.steps + 1) {
+					if (solutions_map[next_state].steps > current_iterator->second.steps + 1) { // check if found a new state
 						current_iterator->second.is_leaf = false;
 						solutions_map[next_state].steps = current_iterator->second.steps + 1;
 						robot_move move;
@@ -612,8 +662,9 @@ namespace tobor {
 						move.direction = robot_move::WEST;
 						solutions_map[next_state].predecessors.emplace_back(current_iterator, move);
 						to_be_explored.push_back(); // iterator to new state....
+						//### check for "reached goal state".
 					}
-					if (solutions_map[next_state].steps == current_iterator->second.steps + 1) {
+					if (solutions_map[next_state].steps == current_iterator->second.steps + 1) { // check if found again a state with another optimal predecessor
 						current_iterator->second.is_leaf = false;
 						robot_move move;
 						move.robot_id = COUNT_NON_TARGET_ROBOTS;
