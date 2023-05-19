@@ -121,8 +121,9 @@ namespace tobor {
 				return x_size * y_size;
 			}
 
-			tobor_world(): x_size(0), y_size(0) {}
-			tobor_world(const std::size_t x_size, const std::size_t y_size): tobor_world() {
+			tobor_world() : x_size(0), y_size(0) {}
+
+			tobor_world(const std::size_t x_size, const std::size_t y_size) : tobor_world() {
 				resize(x_size, y_size);
 			}
 
@@ -243,8 +244,9 @@ namespace tobor {
 
 		};
 
-		template <class Field_Id_Type, std::size_t COUNT_NON_TARGET_ROBOTS> // ## alternative implementation using std::vector instead of array, as non-template variant
+		template <std::size_t COUNT_NON_TARGET_ROBOTS> // ## alternative implementation using std::vector instead of array, as non-template variant
 		class robots_position_state {
+			using Field_Id_Type = universal_field_id;
 
 			inline void sort_robots() {
 				std::sort(other_robots_sorted.begin(), other_robots_sorted.end());
@@ -341,8 +343,9 @@ namespace tobor {
 			const Field_Id_Type next_west;
 
 			quick_move_entry(const Field_Id_Type& start_field, const World_Type& world) {
+				// ### inefficient: try to use some recursive call on next east of left neighbour cell, if next_east is not equal to start field
 				// east, west - vwalls - id
-				std::size_t next_west_id = start_field.id;
+				std::size_t next_west_id = start_field.get_id();
 				while (!world.west_wall_by_id(next_west_id)) {
 					--next_west_id;
 				}
@@ -370,9 +373,10 @@ namespace tobor {
 			}
 		};
 
-		template <class Field_Id_Type, class World_Type>
+		template <class World_Type>
 		class quick_move_table {
 		public:
+			using Field_Id_Type = universal_field_id;
 
 			// maps:   id |-> quick_move_entry of field with given id
 			std::vector<quick_move_entry<Field_Id_Type, World_Type>> cells;
@@ -383,7 +387,7 @@ namespace tobor {
 				cells.reserve(world.count_fields());
 				for (std::size_t id = 0; id < world.count_fields(); ++id) {
 					Field_Id_Type field;
-					field.set_id(id);
+					field.set_id(id, world);
 
 					cells.emplace_back(quick_move_entry<Field_Id_Type, World_Type>(field, world));
 				}
@@ -398,16 +402,16 @@ namespace tobor {
 		private:
 			const world_type& my_world;
 
-			quick_move_table<universal_field_id, world_type> table;
+			quick_move_table<world_type> table;
 
 		public:
 			tobor_world_analyzer(const world_type& my_world) : my_world(my_world) {}
 
 			inline void create_quick_move_table() {
-				table = quick_move_table<universal_field_id, world_type>(my_world);
+				table = quick_move_table<world_type>(my_world);
 			}
 
-			inline std::pair<universal_field_id, bool> get_next_field_on_west_move(const universal_field_id& start_field, const robots_position_state< universal_field_id, COUNT_NON_TARGET_ROBOTS>& state) {
+			inline std::pair<universal_field_id, bool> get_next_field_on_west_move(const universal_field_id& start_field, const robots_position_state<COUNT_NON_TARGET_ROBOTS>& state) {
 				const std::size_t& x_coord_start{ start_field.get_x_coord() }; // ## use id instead, transposed_id respectively for other directions: less comparison operations in code, maybe not at runtime...
 				const std::size_t& y_coord{ start_field.get_y_coord() };
 				const field_id_type& next_without_obstacle{ table.cells[start_field.get_id()].next_west };
@@ -438,7 +442,7 @@ namespace tobor {
 				return std::make_pair(next_west, true);
 			}
 
-			inline std::pair<universal_field_id, bool> get_next_field_on_east_move(const universal_field_id& start_field, const robots_position_state< universal_field_id, COUNT_NON_TARGET_ROBOTS>& state) {
+			inline std::pair<universal_field_id, bool> get_next_field_on_east_move(const universal_field_id& start_field, const robots_position_state< COUNT_NON_TARGET_ROBOTS>& state) {
 				const std::size_t& x_coord_start{ start_field.get_x_coord() };
 				const std::size_t& y_coord{ start_field.get_y_coord() };
 				const field_id_type& next_without_obstacle{ table.cells[start_field.get_id()].next_east };
@@ -469,7 +473,7 @@ namespace tobor {
 				return std::make_pair(next_east, true);
 			}
 
-			inline std::pair<universal_field_id, bool> get_next_field_on_south_move(const universal_field_id& start_field, const robots_position_state< universal_field_id, COUNT_NON_TARGET_ROBOTS>& state) {
+			inline std::pair<universal_field_id, bool> get_next_field_on_south_move(const universal_field_id& start_field, const robots_position_state< COUNT_NON_TARGET_ROBOTS>& state) {
 				const std::size_t& x_coord{ start_field.get_x_coord() };
 				const std::size_t& y_coord_start{ start_field.get_y_coord() };
 				const field_id_type& next_without_obstacle{ table.cells[start_field.get_id()].next_south };
@@ -500,7 +504,7 @@ namespace tobor {
 				return std::make_pair(next_south, true);
 			}
 
-			inline std::pair<universal_field_id, bool> get_next_field_on_north_move(const universal_field_id& start_field, const robots_position_state< universal_field_id, COUNT_NON_TARGET_ROBOTS>& state) {
+			inline std::pair<universal_field_id, bool> get_next_field_on_north_move(const universal_field_id& start_field, const robots_position_state<  COUNT_NON_TARGET_ROBOTS>& state) {
 				const std::size_t& x_coord{ start_field.get_x_coord() };
 				const std::size_t& y_coord_start{ start_field.get_y_coord() };
 				const field_id_type& next_without_obstacle{ table.cells[start_field.get_id()].next_north };
@@ -544,7 +548,7 @@ namespace tobor {
 		template <class Field_Id_Type, std::size_t COUNT_NON_TARGET_ROBOTS>
 		class partial_solution_record {
 		public:
-			robots_position_state<Field_Id_Type, COUNT_NON_TARGET_ROBOTS> state;
+			robots_position_state<COUNT_NON_TARGET_ROBOTS> state;
 			std::vector<std::shared_ptr<partial_solution_record>> predecessors;
 			std::size_t steps;
 		};
@@ -605,11 +609,16 @@ namespace tobor {
 			move_candidate(const robot_move& m, const std::pair<universal_field_id, bool>& n) : move(m), next_field_paired_enable(n) {}
 		};
 
-		template<std::size_t COUNT_NON_TARGET_ROBOTS = 3, class World_Analyzer_Type = tobor_world_analyzer<COUNT_NON_TARGET_ROBOTS>>
-		inline void get_all_optimal_solutions(const World_Analyzer_Type& world_analyzer, const typename World_Analyzer_Type::field_id_type& p_target_field, const typename World_Analyzer_Type::field_id_type& p_target_robot, std::array<typename World_Analyzer_Type::field_id_type, COUNT_NON_TARGET_ROBOTS>&& p_other_robots) {
+		template<std::size_t COUNT_NON_TARGET_ROBOTS = 3>
+		inline void get_all_optimal_solutions(
+			tobor_world_analyzer<COUNT_NON_TARGET_ROBOTS>& world_analyzer,
+			const universal_field_id& p_target_field,
+			const universal_field_id& p_target_robot,
+			std::array<universal_field_id, COUNT_NON_TARGET_ROBOTS>&& p_other_robots
+		) {
 
-			using state_type = robots_position_state<World_Analyzer_Type::field_id_type>;
-			using connect_type = partial_solution_connections<World_Analyzer_Type::field_id_type, state_type, COUNT_NON_TARGET_ROBOTS>;
+			using state_type = robots_position_state<COUNT_NON_TARGET_ROBOTS>;
+			using connect_type = partial_solution_connections<universal_field_id, state_type, COUNT_NON_TARGET_ROBOTS>;
 			using partial_solutions_map_type = connect_type::partial_solutions_map_type;
 			using map_iterator = connect_type::map_iterator_type;
 
@@ -627,15 +636,16 @@ namespace tobor {
 
 
 			to_be_explored.push_back(solutions_map.begin());
-			
-			world_analyzer.create_quick_move_table()
+
+			world_analyzer.create_quick_move_table();
 
 			while (index_next_exploration < to_be_explored.size()) {
+			/*
 				const auto& current_iterator{ to_be_explored[index_next_exploration] };
 
 				//### if currrent to explore has optimal step number....
 						// do not explore sub cases... since they bread sub-optimal solutions... (we can immediately stop exploring at all due to order in fifo chain)
-				
+
 				std::vector<move_candidate> candidates_for_successor_states;
 
 				// get next fields in our world with respect to current state
@@ -643,11 +653,32 @@ namespace tobor {
 					robot_move(COUNT_NON_TARGET_ROBOTS, robot_move::WEST),
 					world_analyzer.get_next_field_on_west_move(current_iterator->first.target_robot, current_iterator->first)
 				);
+				candidates_for_successor_states.emplace_back(
+					robot_move(COUNT_NON_TARGET_ROBOTS, robot_move::EAST),
+					world_analyzer.get_next_field_on_east_move(current_iterator->first.target_robot, current_iterator->first)
+				);
+				candidates_for_successor_states.emplace_back(
+					robot_move(COUNT_NON_TARGET_ROBOTS, robot_move::NORTH),
+					world_analyzer.get_next_field_on_north_move(current_iterator->first.target_robot, current_iterator->first)
+				);
+				candidates_for_successor_states.emplace_back(
+					robot_move(COUNT_NON_TARGET_ROBOTS, robot_move::SOUTH),
+					world_analyzer.get_next_field_on_south_move(current_iterator->first.target_robot, current_iterator->first)
+				);
+
+				for (std::size_t rob_id{ 0 } rob_id < COUNT_NON_TARGET_ROBOTS; ++rob_id) {
+					candidates_for_successor_states.emplace_back(
+						robot_move(rob_id, robot_move::WEST),
+						world_analyzer.get_next_field_on_west_move(current_iterator->first.other_robots_sorted[rob_id], current_iterator->first)
+					);
+					// ...
+				}
+
 				auto [next_field_w, has_next_w] = world_analyzer.get_next_field_on_west_move(current_iterator->first.target_robot, current_iterator->first);
 				auto [next_field_e, has_next_e] = world_analyzer.get_next_field_on_east_move(current_iterator->first.target_robot, current_iterator->first);
 				auto [next_field_s, has_next_s] = world_analyzer.get_next_field_on_south_move(current_iterator->first.target_robot, current_iterator->first);
 				auto [next_field_n, has_next_n] = world_analyzer.get_next_field_on_north_move(current_iterator->first.target_robot, current_iterator->first);
-				
+
 				// loop the following over all next states... using parameters.... WEST/EAST/...    robot id to be moved
 				if (has_next_w) {
 					state_type next_state;
@@ -726,8 +757,8 @@ namespace tobor {
 						// get next field
 						// create next state
 						// put next state into map, if not already reached within less steps.
+			*/
 			}
-
 
 		}
 
