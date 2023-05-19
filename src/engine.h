@@ -428,9 +428,9 @@ namespace tobor {
 			inline std::pair<universal_field_id, bool> get_next_field_on_west_move(const universal_field_id& start_field, const robots_position_state<COUNT_NON_TARGET_ROBOTS>& state) {
 				const std::size_t& x_coord_start{ start_field.get_x_coord() }; // ## use id instead, transposed_id respectively for other directions: less comparison operations in code, maybe not at runtime...
 				const std::size_t& y_coord{ start_field.get_y_coord() };
-				const field_id_type& next_without_obstacle{ table.cells[start_field.get_id()].next_west };
+				const universal_field_id& next_without_obstacle{ table.cells[start_field.get_id()].next_west };
 				std::size_t x_coord_last{ next_without_obstacle.get_x_coord() };
-				field_id_type next_west;
+				universal_field_id next_west;
 				if (x_coord_start == x_coord_last) {
 					/* no move possible */
 					return std::make_pair(next_west, false);
@@ -459,9 +459,9 @@ namespace tobor {
 			inline std::pair<universal_field_id, bool> get_next_field_on_east_move(const universal_field_id& start_field, const robots_position_state< COUNT_NON_TARGET_ROBOTS>& state) {
 				const std::size_t& x_coord_start{ start_field.get_x_coord() };
 				const std::size_t& y_coord{ start_field.get_y_coord() };
-				const field_id_type& next_without_obstacle{ table.cells[start_field.get_id()].next_east };
-				const std::size_t& x_coord_last{ next_without_obstacle.get_x_coord() };
-				field_id_type next_east;
+				const universal_field_id& next_without_obstacle{ table.cells[start_field.get_id()].next_east };
+				std::size_t x_coord_last{ next_without_obstacle.get_x_coord() };
+				universal_field_id next_east;
 				if (x_coord_start == x_coord_last) {
 					/* no move possible */
 					return std::make_pair(next_east, false);
@@ -483,16 +483,16 @@ namespace tobor {
 					/* no move possible */
 					return std::make_pair(next_east, false);
 				}
-				next_west.set_coord(x_coord_last, y_coord, my_world);
+				next_east.set_coord(x_coord_last, y_coord, my_world);
 				return std::make_pair(next_east, true);
 			}
 
 			inline std::pair<universal_field_id, bool> get_next_field_on_south_move(const universal_field_id& start_field, const robots_position_state< COUNT_NON_TARGET_ROBOTS>& state) {
 				const std::size_t& x_coord{ start_field.get_x_coord() };
 				const std::size_t& y_coord_start{ start_field.get_y_coord() };
-				const field_id_type& next_without_obstacle{ table.cells[start_field.get_id()].next_south };
-				const std::size_t& y_coord_last{ next_without_obstacle.get_y_coord() };
-				field_id_type next_south;
+				const universal_field_id& next_without_obstacle{ table.cells[start_field.get_id()].next_south };
+				std::size_t y_coord_last{ next_without_obstacle.get_y_coord() };
+				universal_field_id next_south;
 				if (y_coord_start == y_coord_last) {
 					/* no move possible */
 					return std::make_pair(next_south, false);
@@ -514,16 +514,16 @@ namespace tobor {
 					/* no move possible */
 					return std::make_pair(next_south, false);
 				}
-				next_west.set_coord(x_coord, y_coord_last, my_world);
+				next_south.set_coord(x_coord, y_coord_last, my_world);
 				return std::make_pair(next_south, true);
 			}
 
 			inline std::pair<universal_field_id, bool> get_next_field_on_north_move(const universal_field_id& start_field, const robots_position_state<  COUNT_NON_TARGET_ROBOTS>& state) {
 				const std::size_t& x_coord{ start_field.get_x_coord() };
 				const std::size_t& y_coord_start{ start_field.get_y_coord() };
-				const field_id_type& next_without_obstacle{ table.cells[start_field.get_id()].next_north };
-				const std::size_t& y_coord_last{ next_without_obstacle.get_y_coord() };
-				field_id_type next_north;
+				const universal_field_id& next_without_obstacle{ table.cells[start_field.get_id()].next_north };
+				std::size_t y_coord_last{ next_without_obstacle.get_y_coord() };
+				universal_field_id next_north;
 				if (y_coord_start == y_coord_last) {
 					/* no move possible */
 					return std::make_pair(next_north, false);
@@ -545,18 +545,11 @@ namespace tobor {
 					/* no move possible */
 					return std::make_pair(next_north, false);
 				}
-				next_west.set_coord(x_coord, y_coord_last, my_world);
+				next_north.set_coord(x_coord, y_coord_last, my_world);
 				return std::make_pair(next_north, true);
 			}
 
 		};
-
-
-
-
-		//// ++++++++++++++++++++++++++++++++++++++++++++++
-
-		// set inner walls
 
 // 
 		template <std::size_t COUNT_NON_TARGET_ROBOTS>
@@ -593,14 +586,6 @@ namespace tobor {
 
 			robot_move(const robot_id_type& _robot_id, const robot_direction_type& _direction) : robot_id(_robot_id), direction(_direction) {}
 		};
-
-		/*template <class Field_Id_Type, std::size_t COUNT_NON_TARGET_ROBOTS>
-		using all_partial_solutions = std::map<
-			robots_position_state<Field_Id_Type, COUNT_NON_TARGET_ROBOTS>,
-			std::tuple<partial_solution_connections<Field_Id_Type, COUNT_NON_TARGET_ROBOTS>>
-		>;
-		*/
-
 
 		template <std::size_t COUNT_NON_TARGET_ROBOTS>
 		class partial_solution_connections {
@@ -658,7 +643,6 @@ namespace tobor {
 			world_analyzer.create_quick_move_table();
 
 			while (index_next_exploration < to_be_explored.size()) {
-				/*
 					const auto& current_iterator{ to_be_explored[index_next_exploration] };
 
 					//### if currrent to explore has optimal step number....
@@ -684,6 +668,7 @@ namespace tobor {
 						world_analyzer.get_next_field_on_south_move(current_iterator->first.target_robot, current_iterator->first)
 					);
 
+				/*
 					for (std::size_t rob_id{ 0 } rob_id < COUNT_NON_TARGET_ROBOTS; ++rob_id) {
 						candidates_for_successor_states.emplace_back(
 							robot_move(rob_id, robot_move::WEST),
