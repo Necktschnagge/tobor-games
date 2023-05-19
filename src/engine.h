@@ -387,10 +387,10 @@ namespace tobor {
 			}
 		};
 
-		template <class World_Type>
 		class quick_move_table {
 		public:
 			using Field_Id_Type = universal_field_id;
+			using World_Type = tobor_world;
 
 			// maps:   id |-> quick_move_entry of field with given id
 			std::vector<quick_move_entry> cells;
@@ -416,13 +416,13 @@ namespace tobor {
 		private:
 			const world_type& my_world;
 
-			quick_move_table<world_type> table;
+			quick_move_table table;
 
 		public:
 			tobor_world_analyzer(const world_type& my_world) : my_world(my_world) {}
 
 			inline void create_quick_move_table() {
-				table = quick_move_table<world_type>(my_world);
+				table = quick_move_table(my_world);
 			}
 
 			inline std::pair<universal_field_id, bool> get_next_field_on_west_move(const universal_field_id& start_field, const robots_position_state<COUNT_NON_TARGET_ROBOTS>& state) {
@@ -559,7 +559,7 @@ namespace tobor {
 		// set inner walls
 
 // 
-		template <class Field_Id_Type, std::size_t COUNT_NON_TARGET_ROBOTS>
+		template <std::size_t COUNT_NON_TARGET_ROBOTS>
 		class partial_solution_record {
 		public:
 			robots_position_state<COUNT_NON_TARGET_ROBOTS> state;
