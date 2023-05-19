@@ -602,9 +602,13 @@ namespace tobor {
 		*/
 
 
-		template <class Field_Id_Type, class State_Type, std::size_t COUNT_NON_TARGET_ROBOTS>
+		template <std::size_t COUNT_NON_TARGET_ROBOTS>
 		class partial_solution_connections {
 		public:
+			using Field_Id_Type = universal_field_id;
+			using State_Type = robots_position_state<COUNT_NON_TARGET_ROBOTS>;
+
+
 			using partial_solutions_map_type = std::map<State_Type, partial_solution_connections>;
 			using map_iterator_type = typename partial_solutions_map_type::iterator;
 
@@ -632,7 +636,7 @@ namespace tobor {
 		) {
 
 			using state_type = robots_position_state<COUNT_NON_TARGET_ROBOTS>;
-			using connect_type = partial_solution_connections<universal_field_id, state_type, COUNT_NON_TARGET_ROBOTS>;
+			using connect_type = partial_solution_connections<COUNT_NON_TARGET_ROBOTS>;
 			using partial_solutions_map_type = connect_type::partial_solutions_map_type;
 			using map_iterator = connect_type::map_iterator_type;
 
