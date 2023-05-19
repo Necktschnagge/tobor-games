@@ -146,10 +146,10 @@ namespace tobor {
 					fixed_vwalls = std::vector<wall_type>(x_size * y_size + 1, false);
 				} // ### check for exception
 
-				for (auto i = 0; i <= x_size; ++i) { // set north and south walls
+				for (std::size_t i = 0; i <= x_size; ++i) { // set north and south walls
 					fixed_hwalls[y_size * i] = true;
 				}
-				for (auto i = 0; i <= y_size; ++i) { // set east and west walls
+				for (std::size_t i = 0; i <= y_size; ++i) { // set east and west walls
 					fixed_vwalls[x_size * i] = true;
 				}
 			}
