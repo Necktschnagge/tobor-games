@@ -719,7 +719,7 @@ namespace tobor {
 						if (c.next_field_paired_enable.second) { // there is a real move
 
 							// create next state
-							c.next_field_paired_enable.first; // new cell id
+							// c.next_field_paired_enable.first; // new cell id
 							auto new_state = robots_position_state<COUNT_NON_TARGET_ROBOTS>(current_iterator->first);
 
 							if (c.move.robot_id < COUNT_NON_TARGET_ROBOTS) {
