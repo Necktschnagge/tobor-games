@@ -646,7 +646,7 @@ namespace tobor {
 			const auto initial_state = robots_position_state<COUNT_NON_TARGET_ROBOTS>(p_target_robot, std::move(p_other_robots));
 
 
-			partial_solutions_map_type solutions_map;
+			partial_solution_connections<COUNT_NON_TARGET_ROBOTS>::partial_solutions_map_type solutions_map;
 			std::vector<map_iterator> to_be_explored;
 			std::size_t index_next_exploration{ 0 };
 			std::size_t optimal_solution_size{ std::numeric_limits<std::size_t>::max() };
@@ -738,9 +738,10 @@ namespace tobor {
 									--(std::get<0>(tuple)->second.count_successors);
 								}
 								solutions_map[new_state].predecessors.clear();
+								
 
 
-								++current_iterator->second.count_successors;
+								++(current_iterator->second.count_successors);
 							}
 
 							/*
