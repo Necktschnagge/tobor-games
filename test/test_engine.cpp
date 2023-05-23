@@ -119,8 +119,9 @@ TEST(engine, example_integration) {
 
 	auto w_analyzer = tobor::v1_0::tobor_world_analyzer<3>(w);
 
-	tobor::v1_0::get_all_optimal_solutions<3>(w_analyzer , target, target_robot, std::move(other_robots));
+	auto optimal_solution_length = tobor::v1_0::get_all_optimal_solutions<3>(w_analyzer , target, target_robot, std::move(other_robots));
 
+	ASSERT_EQ(9, optimal_solution_length);
 
 }
 

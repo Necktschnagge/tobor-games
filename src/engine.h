@@ -444,8 +444,8 @@ namespace tobor {
 			}
 
 			inline std::pair<universal_field_id, bool> get_next_field_on_west_move(const universal_field_id& start_field, const robots_position_state<COUNT_NON_TARGET_ROBOTS>& state) {
-				const std::size_t& x_coord_start{ start_field.get_x_coord() }; // ## use id instead, transposed_id respectively for other directions: less comparison operations in code, maybe not at runtime...
-				const std::size_t& y_coord{ start_field.get_y_coord() };
+				const std::size_t x_coord_start{ start_field.get_x_coord() }; // ## use id instead, transposed_id respectively for other directions: less comparison operations in code, maybe not at runtime...
+				const std::size_t y_coord{ start_field.get_y_coord() };
 				const universal_field_id& next_without_obstacle{ table.cells[start_field.get_id()].next_west };
 				std::size_t x_coord_last{ next_without_obstacle.get_x_coord() };
 				universal_field_id next_west;
@@ -475,8 +475,8 @@ namespace tobor {
 			}
 
 			inline std::pair<universal_field_id, bool> get_next_field_on_east_move(const universal_field_id& start_field, const robots_position_state< COUNT_NON_TARGET_ROBOTS>& state) {
-				const std::size_t& x_coord_start{ start_field.get_x_coord() };
-				const std::size_t& y_coord{ start_field.get_y_coord() };
+				const std::size_t x_coord_start{ start_field.get_x_coord() };
+				const std::size_t y_coord{ start_field.get_y_coord() };
 				const universal_field_id& next_without_obstacle{ table.cells[start_field.get_id()].next_east };
 				std::size_t x_coord_last{ next_without_obstacle.get_x_coord() };
 				universal_field_id next_east;
@@ -506,8 +506,8 @@ namespace tobor {
 			}
 
 			inline std::pair<universal_field_id, bool> get_next_field_on_south_move(const universal_field_id& start_field, const robots_position_state< COUNT_NON_TARGET_ROBOTS>& state) {
-				const std::size_t& x_coord{ start_field.get_x_coord() };
-				const std::size_t& y_coord_start{ start_field.get_y_coord() };
+				const std::size_t x_coord{ start_field.get_x_coord() };
+				const std::size_t y_coord_start{ start_field.get_y_coord() };
 				const universal_field_id& next_without_obstacle{ table.cells[start_field.get_id()].next_south };
 				std::size_t y_coord_last{ next_without_obstacle.get_y_coord() };
 				universal_field_id next_south;
@@ -537,8 +537,8 @@ namespace tobor {
 			}
 
 			inline std::pair<universal_field_id, bool> get_next_field_on_north_move(const universal_field_id& start_field, const robots_position_state<  COUNT_NON_TARGET_ROBOTS>& state) {
-				const std::size_t& x_coord{ start_field.get_x_coord() };
-				const std::size_t& y_coord_start{ start_field.get_y_coord() };
+				const std::size_t x_coord{ start_field.get_x_coord() };
+				const std::size_t y_coord_start{ start_field.get_y_coord() };
 				const universal_field_id& next_without_obstacle{ table.cells[start_field.get_id()].next_north };
 				std::size_t y_coord_last{ next_without_obstacle.get_y_coord() };
 				universal_field_id next_north;
@@ -612,7 +612,7 @@ namespace tobor {
 			using State_Type = robots_position_state<COUNT_NON_TARGET_ROBOTS>;
 
 
-			using partial_solutions_map_type = std::map<State_Type, partial_solution_connections>;
+			using partial_solutions_map_type = std::map<robots_position_state<COUNT_NON_TARGET_ROBOTS>, partial_solution_connections>;
 			using map_iterator_type = typename partial_solutions_map_type::iterator;
 
 			static constexpr std::size_t MAX{ std::numeric_limits<std::size_t>::max() };
@@ -631,7 +631,7 @@ namespace tobor {
 		};
 
 		template<std::size_t COUNT_NON_TARGET_ROBOTS = 3>
-		inline void get_all_optimal_solutions(
+		inline std::size_t get_all_optimal_solutions(
 			tobor_world_analyzer<COUNT_NON_TARGET_ROBOTS>& world_analyzer,
 			const universal_field_id& p_target_field,
 			const universal_field_id& p_target_robot,
@@ -646,15 +646,15 @@ namespace tobor {
 			const auto initial_state = robots_position_state<COUNT_NON_TARGET_ROBOTS>(p_target_robot, std::move(p_other_robots));
 
 
-			partial_solution_connections<COUNT_NON_TARGET_ROBOTS>::partial_solutions_map_type solutions_map;
+			typename partial_solution_connections<COUNT_NON_TARGET_ROBOTS>::partial_solutions_map_type solutions_map;
+			//type_helper::partial_solutions_map_type<COUNT_NON_TARGET_ROBOTS> solutions_map;
 			std::vector<map_iterator> to_be_explored;
 			std::size_t index_next_exploration{ 0 };
 			std::size_t optimal_solution_size{ std::numeric_limits<std::size_t>::max() };
 
 			solutions_map[initial_state].steps = 0; //insert initial_state
 			// predecessors are empty
-			// is_leaf ist always true until explored
-
+			// is_leaf ist always true until 
 
 			to_be_explored.push_back(solutions_map.begin());
 
@@ -731,41 +731,28 @@ namespace tobor {
 							}
 
 							if (solutions_map[new_state].steps > current_iterator->second.steps + 1) { // check if path to successor state is an optimal one (as far as we have seen)
+								// to make it more efficient: use an .insert(...) get the iterator to newly inserted element.
+
 								// hint: on map entry creation by if condition, steps defaults to MAX value of std::size_t
 
 								// delete all predecessors!
-								for (const auto& tuple : solutions_map[new_state].predecessors) { // it is always empty because of fifo order of to_be_explored
-									--(std::get<0>(tuple)->second.count_successors);
-								}
-								solutions_map[new_state].predecessors.clear();
-								
+								//for (const auto& tuple : solutions_map[new_state].predecessors) { // it is always empty because of fifo order of to_be_explored
+								//	--(std::get<0>(tuple)->second.count_successors);
+								//}
+								//solutions_map[new_state].predecessors.clear();
 
-
+								solutions_map[new_state].steps = current_iterator->second.steps + 1;
+								solutions_map[new_state].predecessors.emplace_back(current_iterator, c.move);
 								++(current_iterator->second.count_successors);
+								to_be_explored.push_back(solutions_map.find(new_state));
 							}
-
-							/*
-							if (solutions_map[next_state].steps > current_iterator->second.steps + 1) { // check if found a new state
-							current_iterator->second.is_leaf = false;
-							solutions_map[next_state].steps = current_iterator->second.steps + 1;
-							robot_move move;
-							move.robot_id = COUNT_NON_TARGET_ROBOTS;
-							move.direction = robot_move::WEST;
-							solutions_map[next_state].predecessors.emplace_back(current_iterator, move);
-							to_be_explored.push_back(); // iterator to new state....
-							//### check for "reached goal state".
-						}
-						if (solutions_map[next_state].steps == current_iterator->second.steps + 1) { // check if found again a state with another optimal predecessor
-							current_iterator->second.is_leaf = false;
-							robot_move move;
-							move.robot_id = COUNT_NON_TARGET_ROBOTS;
-							move.direction = robot_move::WEST;
-							solutions_map[next_state].predecessors.emplace_back(current_iterator, move);
-						}
-							*/
-							//current_iterator->first
-							// add state to map
-							// make leaf false
+							else {
+								if (solutions_map[new_state].steps == current_iterator->second.steps + 1) {
+									solutions_map[new_state].predecessors.emplace_back(current_iterator, c.move);
+									++(current_iterator->second.count_successors);
+									// to_be_explored.push_back(solutions_map.find(new_state)); don't add, already added on first path reaching new_state
+								}
+							}
 						}
 					}
 				}
@@ -859,6 +846,8 @@ namespace tobor {
 
 				++index_next_exploration;
 			}
+
+			return optimal_solution_size;
 
 		}
 
