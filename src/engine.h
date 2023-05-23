@@ -190,6 +190,30 @@ namespace tobor {
 
 		class universal_field_id { // OK, add some memory-efficient variant!
 
+		public:
+
+			/* static factory member functions */
+
+			inline static universal_field_id create_by_coord(std::size_t p_x_coord, std::size_t p_y_coord, const tobor_world& world) noexcept {
+				universal_field_id result;
+				result.set_coord(p_x_coord, p_y_coord, world);
+				return result;
+			}
+
+			inline static universal_field_id create_by_id(std::size_t p_id, const tobor_world& world) noexcept {
+				universal_field_id result;
+				result.set_id(p_id, world);
+				return result;
+			}
+
+			inline static universal_field_id create_by_transposed_id(std::size_t p_transposed_id, const tobor_world& world) noexcept {
+				universal_field_id result;
+				result.set_transposed_id(p_transposed_id, world);
+				return result;
+			}
+
+		private:
+
 			std::size_t id;
 			std::size_t transposed_id;
 			std::size_t x_coord;
@@ -197,9 +221,21 @@ namespace tobor {
 
 		public:
 
+			/* ctors */
+
 			universal_field_id() : id(0), transposed_id(0), x_coord(0), y_coord(0) {}
 
+			universal_field_id(const universal_field_id&) = default;
+
+			universal_field_id(universal_field_id&&) = default; // needed for static factory member function
+
+			/* operator = */
+
 			inline universal_field_id& operator = (const universal_field_id&) = default;
+
+			inline universal_field_id& operator = (universal_field_id&&) = default;
+
+			/* comparison operators */
 
 			inline bool operator < (const universal_field_id& other) const noexcept {
 				return this->id < other.id;
@@ -209,6 +245,8 @@ namespace tobor {
 				return this->id == other.id;
 			}
 
+			/* getter */
+
 			inline std::size_t get_id() const noexcept { return id; }
 
 			inline std::size_t get_transposed_id() const noexcept { return transposed_id; }
@@ -216,6 +254,8 @@ namespace tobor {
 			inline std::size_t get_x_coord() const noexcept { return x_coord; }
 
 			inline std::size_t get_y_coord() const noexcept { return y_coord; }
+
+			/* modifiers */
 
 			inline void set_id(std::size_t p_id, const tobor_world& world) noexcept {
 				id = p_id;
@@ -236,33 +276,11 @@ namespace tobor {
 				transposed_id = world.transposed_field_id_of(x_coord, y_coord);
 			}
 
-			inline static universal_field_id create_by_coord(std::size_t p_x_coord, std::size_t p_y_coord, const tobor_world& world) noexcept {
-				universal_field_id id;
-				id.set_coord(p_x_coord, p_y_coord, world);
-				return id;
-			}
-
-			inline static universal_field_id create_by_id(std::size_t p_id, const tobor_world& world) noexcept {
-				universal_field_id id;
-				id.set_id(p_id, world);
-				return id;
-			}
-
-			inline static universal_field_id create_by_transposed_id(std::size_t p_transposed_id, const tobor_world& world) noexcept {
-				universal_field_id id;
-				id.set_transposed_id(p_transposed_id, world);
-				return id;
-			}
-
 		};
 
 		template <std::size_t COUNT_NON_TARGET_ROBOTS> // ## alternative implementation using std::vector instead of array, as non-template variant
 		class robots_position_state {
 			using Field_Id_Type = universal_field_id;
-
-			inline void sort_robots() {
-				std::sort(other_robots_sorted.begin(), other_robots_sorted.end());
-			}
 
 			// just for fun
 			[[deprecated]]
@@ -342,6 +360,10 @@ namespace tobor {
 
 			bool operator== (const robots_position_state& another) const noexcept {
 				return target_robot == another.target_robot && other_robots_sorted == another.other_robots_sorted;
+			}
+
+			inline void sort_robots() {
+				std::sort(other_robots_sorted.begin(), other_robots_sorted.end());
 			}
 		};
 
@@ -620,10 +642,10 @@ namespace tobor {
 			std::array<universal_field_id, COUNT_NON_TARGET_ROBOTS>&& p_other_robots
 		) {
 
-			using state_type = robots_position_state<COUNT_NON_TARGET_ROBOTS>;
-			using connect_type = partial_solution_connections<COUNT_NON_TARGET_ROBOTS>;
-			using partial_solutions_map_type = typename connect_type::partial_solutions_map_type;
-			using map_iterator = typename connect_type::map_iterator_type;
+			using state_type = robots_position_state<COUNT_NON_TARGET_ROBOTS>; // remove this!
+			using connect_type = partial_solution_connections<COUNT_NON_TARGET_ROBOTS>; // remove this!
+			using partial_solutions_map_type = typename partial_solution_connections<COUNT_NON_TARGET_ROBOTS>::partial_solutions_map_type;
+			using map_iterator = typename partial_solution_connections<COUNT_NON_TARGET_ROBOTS>::map_iterator_type;
 
 			const auto initial_state = state_type(p_target_robot, std::move(p_other_robots));
 
@@ -645,62 +667,109 @@ namespace tobor {
 			while (index_next_exploration < to_be_explored.size()) {
 				const auto& current_iterator{ to_be_explored[index_next_exploration] };
 
+				if (current_iterator->second.steps < optimal_solution_size) { // if this exploration finds solutions within optimum steps
+
 				//### if currrent to explore has optimal step number....
 						// do not explore sub cases... since they bread sub-optimal solutions... (we can immediately stop exploring at all due to order in fifo chain)
 
-				std::vector<move_candidate> candidates_for_successor_states;
+					std::vector<move_candidate> candidates_for_successor_states;
 
-				// get next fields in our world with respect to current state
-				candidates_for_successor_states.emplace_back(
-					robot_move(COUNT_NON_TARGET_ROBOTS, robot_move::WEST),
-					world_analyzer.get_next_field_on_west_move(current_iterator->first.target_robot, current_iterator->first)
-				);
-				candidates_for_successor_states.emplace_back(
-					robot_move(COUNT_NON_TARGET_ROBOTS, robot_move::EAST),
-					world_analyzer.get_next_field_on_east_move(current_iterator->first.target_robot, current_iterator->first)
-				);
-				candidates_for_successor_states.emplace_back(
-					robot_move(COUNT_NON_TARGET_ROBOTS, robot_move::NORTH),
-					world_analyzer.get_next_field_on_north_move(current_iterator->first.target_robot, current_iterator->first)
-				);
-				candidates_for_successor_states.emplace_back(
-					robot_move(COUNT_NON_TARGET_ROBOTS, robot_move::SOUTH),
-					world_analyzer.get_next_field_on_south_move(current_iterator->first.target_robot, current_iterator->first)
-				);
+					// get next fields in our world with respect to current state
+					candidates_for_successor_states.emplace_back(
+						robot_move(COUNT_NON_TARGET_ROBOTS, robot_move::WEST),
+						world_analyzer.get_next_field_on_west_move(current_iterator->first.target_robot, current_iterator->first)
+					);
+					candidates_for_successor_states.emplace_back(
+						robot_move(COUNT_NON_TARGET_ROBOTS, robot_move::EAST),
+						world_analyzer.get_next_field_on_east_move(current_iterator->first.target_robot, current_iterator->first)
+					);
+					candidates_for_successor_states.emplace_back(
+						robot_move(COUNT_NON_TARGET_ROBOTS, robot_move::NORTH),
+						world_analyzer.get_next_field_on_north_move(current_iterator->first.target_robot, current_iterator->first)
+					);
+					candidates_for_successor_states.emplace_back(
+						robot_move(COUNT_NON_TARGET_ROBOTS, robot_move::SOUTH),
+						world_analyzer.get_next_field_on_south_move(current_iterator->first.target_robot, current_iterator->first)
+					);
 
-				for (std::size_t rob_id{ 0 }; rob_id < COUNT_NON_TARGET_ROBOTS; ++rob_id) {
-					candidates_for_successor_states.emplace_back(
-						robot_move(rob_id, robot_move::WEST),
-						world_analyzer.get_next_field_on_west_move(current_iterator->first.other_robots_sorted[rob_id], current_iterator->first)
-					);
-					candidates_for_successor_states.emplace_back(
-						robot_move(rob_id, robot_move::EAST),
-						world_analyzer.get_next_field_on_east_move(current_iterator->first.other_robots_sorted[rob_id], current_iterator->first)
-					);
-					candidates_for_successor_states.emplace_back(
-						robot_move(rob_id, robot_move::NORTH),
-						world_analyzer.get_next_field_on_north_move(current_iterator->first.other_robots_sorted[rob_id], current_iterator->first)
-					);
-					candidates_for_successor_states.emplace_back(
-						robot_move(rob_id, robot_move::SOUTH),
-						world_analyzer.get_next_field_on_south_move(current_iterator->first.other_robots_sorted[rob_id], current_iterator->first)
-					);
-				}
-
-				// check if reached goal
-				for (std::size_t candidate{ 0 }; candidate < 4; ++candidate) {
-					if (candidates_for_successor_states[candidate].next_field_paired_enable.first == p_target_field) {
-						optimal_solution_size = current_iterator->second.steps + 1;
+					for (std::size_t rob_id{ 0 }; rob_id < COUNT_NON_TARGET_ROBOTS; ++rob_id) {
+						candidates_for_successor_states.emplace_back(
+							robot_move(rob_id, robot_move::WEST),
+							world_analyzer.get_next_field_on_west_move(current_iterator->first.other_robots_sorted[rob_id], current_iterator->first)
+						);
+						candidates_for_successor_states.emplace_back(
+							robot_move(rob_id, robot_move::EAST),
+							world_analyzer.get_next_field_on_east_move(current_iterator->first.other_robots_sorted[rob_id], current_iterator->first)
+						);
+						candidates_for_successor_states.emplace_back(
+							robot_move(rob_id, robot_move::NORTH),
+							world_analyzer.get_next_field_on_north_move(current_iterator->first.other_robots_sorted[rob_id], current_iterator->first)
+						);
+						candidates_for_successor_states.emplace_back(
+							robot_move(rob_id, robot_move::SOUTH),
+							world_analyzer.get_next_field_on_south_move(current_iterator->first.other_robots_sorted[rob_id], current_iterator->first)
+						);
 					}
-				}
 
-				// add candidates to map if they are valid:
-				for (auto& c : candidates_for_successor_states) {
-					if (c.next_field_paired_enable.second) { // there is a real move
-						// create next state
-						//current_iterator->first
-						// add state to map
-						// make leaf false
+					// check if reached goal
+					for (std::size_t candidate{ 0 }; candidate < 4; ++candidate) {
+						if (candidates_for_successor_states[candidate].next_field_paired_enable.first == p_target_field) {
+							optimal_solution_size = current_iterator->second.steps + 1;
+						}
+					}
+
+					// add candidates to map if they are valid:
+					for (auto& c : candidates_for_successor_states) {
+						if (c.next_field_paired_enable.second) { // there is a real move
+
+							// create next state
+							c.next_field_paired_enable.first; // new cell id
+							state_type new_state{ current_iterator->first };
+
+							if (c.move.robot_id < COUNT_NON_TARGET_ROBOTS) {
+								new_state.other_robots_sorted[c.move.robot_id] = c.next_field_paired_enable.first;
+								new_state.sort_robots();
+							}
+							else {
+								new_state.target_robot = c.next_field_paired_enable.first;
+							}
+
+							if (solutions_map[new_state].steps > current_iterator->second.steps + 1) { // check if path to successor state is an optimal one (as far as we have seen)
+								// hint: on map entry creation by if condition, steps defaults to MAX value of std::size_t
+
+								// delete all predecessors!
+								for (const auto& tuple : solutions_map[new_state].predecessors) { // it is always empty because of fifo order of to_be_explored
+									--(std::get<0>(tuple)->second.count_successors);
+								}
+								solutions_map[new_state].predecessors.clear();
+
+
+								++current_iterator->second.count_successors;
+							}
+
+							/*
+							if (solutions_map[next_state].steps > current_iterator->second.steps + 1) { // check if found a new state
+							current_iterator->second.is_leaf = false;
+							solutions_map[next_state].steps = current_iterator->second.steps + 1;
+							robot_move move;
+							move.robot_id = COUNT_NON_TARGET_ROBOTS;
+							move.direction = robot_move::WEST;
+							solutions_map[next_state].predecessors.emplace_back(current_iterator, move);
+							to_be_explored.push_back(); // iterator to new state....
+							//### check for "reached goal state".
+						}
+						if (solutions_map[next_state].steps == current_iterator->second.steps + 1) { // check if found again a state with another optimal predecessor
+							current_iterator->second.is_leaf = false;
+							robot_move move;
+							move.robot_id = COUNT_NON_TARGET_ROBOTS;
+							move.direction = robot_move::WEST;
+							solutions_map[next_state].predecessors.emplace_back(current_iterator, move);
+						}
+							*/
+							//current_iterator->first
+							// add state to map
+							// make leaf false
+						}
 					}
 				}
 
