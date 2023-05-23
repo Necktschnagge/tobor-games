@@ -655,7 +655,7 @@ namespace tobor {
 
 			//using state_type = robots_position_state<COUNT_NON_TARGET_ROBOTS>; // remove this!
 			//using connect_type = partial_solution_connections<COUNT_NON_TARGET_ROBOTS>; // remove this!
-			using partial_solutions_map_type = typename partial_solution_connections<COUNT_NON_TARGET_ROBOTS>::partial_solutions_map_type;
+			//using partial_solutions_map_type = typename partial_solution_connections<COUNT_NON_TARGET_ROBOTS>::partial_solutions_map_type;
 			using map_iterator = typename partial_solution_connections<COUNT_NON_TARGET_ROBOTS>::map_iterator_type;
 
 			const auto initial_state = robots_position_state<COUNT_NON_TARGET_ROBOTS>(p_target_robot, std::move(p_other_robots));
