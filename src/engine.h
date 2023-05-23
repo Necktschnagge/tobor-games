@@ -280,9 +280,11 @@ namespace tobor {
 			}
 
 
+			/*
 			bool ill() const {
 				return get_x_coord() < 0 || get_x_coord() > 15 || get_y_coord() < 0 || get_y_coord() > 15 || get_id() < 0 || get_id() > 255 || get_transposed_id() < 0 || get_transposed_id() > 255;
 			}
+			*/
 		};
 
 		template <std::size_t COUNT_NON_TARGET_ROBOTS> // ## alternative implementation using std::vector instead of array, as non-template variant
@@ -369,9 +371,11 @@ namespace tobor {
 				std::sort(other_robots_sorted.begin(), other_robots_sorted.end());
 			}
 
+			/*
 			bool ill() const {
 				return target_robot.ill() || other_robots_sorted[0].ill() || other_robots_sorted[1].ill() || other_robots_sorted[2].ill();
 			}
+			*/
 		};
 
 
@@ -738,29 +742,8 @@ namespace tobor {
 								new_state.sort_robots();
 							}
 							else {
-								/*
-								if (c.next_field_paired_enable.first.get_transposed_id() > 255) {
-									standard_logger()->warn("bla");
-								}
-								 */
 								new_state.target_robot = c.next_field_paired_enable.first;
-
-								/*
-								if (new_state.target_robot.get_transposed_id() > 255) {
-									standard_logger()->warn("bla");
-								}
-								 */
 							}
-							
-							if (std::accumulate(solutions_map.cbegin(), solutions_map.cend(), false, [](bool ill, const auto& elem) {
-								return ill || elem.first.ill();
-								})) {
-								standard_logger()->warn("bla");
-							}
-							if (new_state.target_robot.get_transposed_id() == 14757395258967641088) {
-								standard_logger()->warn("bla");
-							}
-							
 
 							if (solutions_map[new_state].steps > current_iterator->second.steps + 1) { // check if path to successor state is an optimal one (as far as we have seen)
 								// to make it more efficient: use an .insert(...) get the iterator to newly inserted element.
@@ -784,14 +767,6 @@ namespace tobor {
 									++(current_iterator->second.count_successors);
 									// to_be_explored.push_back(solutions_map.find(new_state)); don't add, already added on first path reaching new_state
 								}
-							}
-							if (std::accumulate(solutions_map.cbegin(), solutions_map.cend(), false, [](bool ill, const auto& elem) {
-								if (elem.first.ill()) {
-									std::string("bla");
-								}
-								return ill || elem.first.ill();
-								})) {
-								standard_logger()->warn("bla");
 							}
 						}
 					}
