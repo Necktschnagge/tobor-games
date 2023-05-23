@@ -859,6 +859,8 @@ namespace tobor {
 						// create next state
 						// put next state into map, if not already reached within less steps.
 				*/
+
+				++index_next_exploration;
 			}
 
 		}
