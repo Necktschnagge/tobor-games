@@ -601,7 +601,7 @@ namespace tobor {
 
 			std::vector<std::tuple<map_iterator_type, robot_move>> predecessors;
 			std::size_t steps{ MAX };
-			bool is_leaf{ true }; // means never used by any successor state
+			std::size_t count_successors{ 0 }; // is leaf iff == 0
 		};
 
 		class move_candidate {
@@ -623,7 +623,7 @@ namespace tobor {
 			using state_type = robots_position_state<COUNT_NON_TARGET_ROBOTS>;
 			using connect_type = partial_solution_connections<COUNT_NON_TARGET_ROBOTS>;
 			using partial_solutions_map_type = typename connect_type::partial_solutions_map_type;
-			using map_iterator = connect_type::map_iterator_type;
+			using map_iterator = typename connect_type::map_iterator_type;
 
 			const auto initial_state = state_type(p_target_robot, std::move(p_other_robots));
 
@@ -668,7 +668,6 @@ namespace tobor {
 					world_analyzer.get_next_field_on_south_move(current_iterator->first.target_robot, current_iterator->first)
 				);
 
-
 				for (std::size_t rob_id{ 0 }; rob_id < COUNT_NON_TARGET_ROBOTS; ++rob_id) {
 					candidates_for_successor_states.emplace_back(
 						robot_move(rob_id, robot_move::WEST),
@@ -687,6 +686,24 @@ namespace tobor {
 						world_analyzer.get_next_field_on_south_move(current_iterator->first.other_robots_sorted[rob_id], current_iterator->first)
 					);
 				}
+
+				// check if reached goal
+				for (std::size_t candidate{ 0 }; candidate < 4; ++candidate) {
+					if (candidates_for_successor_states[candidate].next_field_paired_enable.first == p_target_field) {
+						optimal_solution_size = current_iterator->second.steps + 1;
+					}
+				}
+
+				// add candidates to map if they are valid:
+				for (auto& c : candidates_for_successor_states) {
+					if (c.next_field_paired_enable.second) { // there is a real move
+						// create next state
+						//current_iterator->first
+						// add state to map
+						// make leaf false
+					}
+				}
+
 
 				/*
 				auto [next_field_w, has_next_w] = world_analyzer.get_next_field_on_west_move(current_iterator->first.target_robot, current_iterator->first);
