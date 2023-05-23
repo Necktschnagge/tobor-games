@@ -1,8 +1,11 @@
 
+#include "logger.h"
+
 
 #include <map>
 #include <array>
 #include <algorithm>
+#include <numeric>
 
 
 namespace tobor {
@@ -77,12 +80,12 @@ namespace tobor {
 			}
 
 			inline constexpr std::pair<std::size_t, std::size_t> coordinates_of_transposed_field_id(std::size_t transposed_id) const noexcept {
-				return std::make_pair(transposed_id % y_size, transposed_id / y_size);
+				return std::make_pair(transposed_id / y_size, transposed_id % y_size);
 			}
 
 			inline constexpr void coordinates_of_transposed_field_id(std::size_t transposed_id, std::size_t& x_coord, std::size_t& y_coord) const noexcept {
-				x_coord = transposed_id % y_size;
-				y_coord = transposed_id / y_size;
+				x_coord = transposed_id / y_size;
+				y_coord = transposed_id % y_size;
 			}
 
 			inline constexpr std::size_t transpose_id(std::size_t id) const noexcept {
@@ -276,6 +279,10 @@ namespace tobor {
 				transposed_id = world.transposed_field_id_of(x_coord, y_coord);
 			}
 
+
+			bool ill() const {
+				return get_x_coord() < 0 || get_x_coord() > 15 || get_y_coord() < 0 || get_y_coord() > 15 || get_id() < 0 || get_id() > 255 || get_transposed_id() < 0 || get_transposed_id() > 255;
+			}
 		};
 
 		template <std::size_t COUNT_NON_TARGET_ROBOTS> // ## alternative implementation using std::vector instead of array, as non-template variant
@@ -360,6 +367,10 @@ namespace tobor {
 
 			inline void sort_robots() {
 				std::sort(other_robots_sorted.begin(), other_robots_sorted.end());
+			}
+
+			bool ill() const {
+				return target_robot.ill() || other_robots_sorted[0].ill() || other_robots_sorted[1].ill() || other_robots_sorted[2].ill();
 			}
 		};
 
@@ -446,7 +457,7 @@ namespace tobor {
 			inline std::pair<universal_field_id, bool> get_next_field_on_west_move(const universal_field_id& start_field, const robots_position_state<COUNT_NON_TARGET_ROBOTS>& state) {
 				const std::size_t x_coord_start{ start_field.get_x_coord() }; // ## use id instead, transposed_id respectively for other directions: less comparison operations in code, maybe not at runtime...
 				const std::size_t y_coord{ start_field.get_y_coord() };
-				const universal_field_id& next_without_obstacle{ table.cells[start_field.get_id()].next_west };
+				const universal_field_id next_without_obstacle{ table.cells[start_field.get_id()].next_west };
 				std::size_t x_coord_last{ next_without_obstacle.get_x_coord() };
 				universal_field_id next_west;
 				if (x_coord_start == x_coord_last) {
@@ -477,7 +488,7 @@ namespace tobor {
 			inline std::pair<universal_field_id, bool> get_next_field_on_east_move(const universal_field_id& start_field, const robots_position_state< COUNT_NON_TARGET_ROBOTS>& state) {
 				const std::size_t x_coord_start{ start_field.get_x_coord() };
 				const std::size_t y_coord{ start_field.get_y_coord() };
-				const universal_field_id& next_without_obstacle{ table.cells[start_field.get_id()].next_east };
+				const universal_field_id next_without_obstacle{ table.cells[start_field.get_id()].next_east };
 				std::size_t x_coord_last{ next_without_obstacle.get_x_coord() };
 				universal_field_id next_east;
 				if (x_coord_start == x_coord_last) {
@@ -508,7 +519,7 @@ namespace tobor {
 			inline std::pair<universal_field_id, bool> get_next_field_on_south_move(const universal_field_id& start_field, const robots_position_state< COUNT_NON_TARGET_ROBOTS>& state) {
 				const std::size_t x_coord{ start_field.get_x_coord() };
 				const std::size_t y_coord_start{ start_field.get_y_coord() };
-				const universal_field_id& next_without_obstacle{ table.cells[start_field.get_id()].next_south };
+				const universal_field_id next_without_obstacle{ table.cells[start_field.get_id()].next_south };
 				std::size_t y_coord_last{ next_without_obstacle.get_y_coord() };
 				universal_field_id next_south;
 				if (y_coord_start == y_coord_last) {
@@ -539,7 +550,7 @@ namespace tobor {
 			inline std::pair<universal_field_id, bool> get_next_field_on_north_move(const universal_field_id& start_field, const robots_position_state<  COUNT_NON_TARGET_ROBOTS>& state) {
 				const std::size_t x_coord{ start_field.get_x_coord() };
 				const std::size_t y_coord_start{ start_field.get_y_coord() };
-				const universal_field_id& next_without_obstacle{ table.cells[start_field.get_id()].next_north };
+				const universal_field_id next_without_obstacle{ table.cells[start_field.get_id()].next_north };
 				std::size_t y_coord_last{ next_without_obstacle.get_y_coord() };
 				universal_field_id next_north;
 				if (y_coord_start == y_coord_last) {
@@ -549,13 +560,13 @@ namespace tobor {
 				// looking for an obstacle...
 				if (state.target_robot.get_x_coord() == x_coord) {
 					if (state.target_robot.get_y_coord() > y_coord_start && state.target_robot.get_y_coord() <= y_coord_last) {
-						y_coord_last = state.target_robot.get_y_coord() + 1;
+						y_coord_last = state.target_robot.get_y_coord() - 1;
 					}
 				}
 				for (auto& robot : state.other_robots_sorted) {
 					if (robot.get_x_coord() == x_coord) {
 						if (robot.get_y_coord() > y_coord_start && robot.get_y_coord() <= y_coord_last) {
-							y_coord_last = robot.get_y_coord() + 1;
+							y_coord_last = robot.get_y_coord() - 1;
 						}
 					}
 				}
@@ -661,7 +672,7 @@ namespace tobor {
 			world_analyzer.create_quick_move_table();
 
 			while (index_next_exploration < to_be_explored.size()) {
-				const auto& current_iterator{ to_be_explored[index_next_exploration] };
+				const auto current_iterator{ to_be_explored[index_next_exploration] };
 
 				if (current_iterator->second.steps < optimal_solution_size) { // if this exploration finds solutions within optimum steps
 
@@ -727,8 +738,29 @@ namespace tobor {
 								new_state.sort_robots();
 							}
 							else {
+								/*
+								if (c.next_field_paired_enable.first.get_transposed_id() > 255) {
+									standard_logger()->warn("bla");
+								}
+								 */
 								new_state.target_robot = c.next_field_paired_enable.first;
+
+								/*
+								if (new_state.target_robot.get_transposed_id() > 255) {
+									standard_logger()->warn("bla");
+								}
+								 */
 							}
+							
+							if (std::accumulate(solutions_map.cbegin(), solutions_map.cend(), false, [](bool ill, const auto& elem) {
+								return ill || elem.first.ill();
+								})) {
+								standard_logger()->warn("bla");
+							}
+							if (new_state.target_robot.get_transposed_id() == 14757395258967641088) {
+								standard_logger()->warn("bla");
+							}
+							
 
 							if (solutions_map[new_state].steps > current_iterator->second.steps + 1) { // check if path to successor state is an optimal one (as far as we have seen)
 								// to make it more efficient: use an .insert(...) get the iterator to newly inserted element.
@@ -752,6 +784,14 @@ namespace tobor {
 									++(current_iterator->second.count_successors);
 									// to_be_explored.push_back(solutions_map.find(new_state)); don't add, already added on first path reaching new_state
 								}
+							}
+							if (std::accumulate(solutions_map.cbegin(), solutions_map.cend(), false, [](bool ill, const auto& elem) {
+								if (elem.first.ill()) {
+									std::string("bla");
+								}
+								return ill || elem.first.ill();
+								})) {
+								standard_logger()->warn("bla");
 							}
 						}
 					}
