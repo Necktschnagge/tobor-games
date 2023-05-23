@@ -336,21 +336,17 @@ namespace tobor {
 		public:
 			Field_Id_Type target_robot;
 			std::array<Field_Id_Type, COUNT_NON_TARGET_ROBOTS> other_robots_sorted;
-#if false
-			robots_position_state(const Field_Id_Type& p_target_robot, const Field_Id_Type& p_other_robot_0, const Field_Id_Type& p_other_robot_1, const Field_Id_Type& p_other_robot_2) :
-				target_robot(p_target_robot),
-				other_robots_sorted(p_other_robot_0, p_other_robot_1, p_other_robot_2)
-			{
-				sort_robots();
-			}
-#endif
-			//template<class Iterator>
+
 			robots_position_state(const Field_Id_Type& p_target_robot, std::array<Field_Id_Type, COUNT_NON_TARGET_ROBOTS>&& p_other_robots) :
 				target_robot(p_target_robot),
 				other_robots_sorted(std::move(p_other_robots))
 			{
 				sort_robots();
 			}
+
+			robots_position_state(const robots_position_state&) = default;
+
+			robots_position_state(robots_position_state&&) = default;
 
 			bool operator< (const robots_position_state& another) const noexcept {
 				return (target_robot < another.target_robot) || (
@@ -642,12 +638,12 @@ namespace tobor {
 			std::array<universal_field_id, COUNT_NON_TARGET_ROBOTS>&& p_other_robots
 		) {
 
-			using state_type = robots_position_state<COUNT_NON_TARGET_ROBOTS>; // remove this!
-			using connect_type = partial_solution_connections<COUNT_NON_TARGET_ROBOTS>; // remove this!
+			//using state_type = robots_position_state<COUNT_NON_TARGET_ROBOTS>; // remove this!
+			//using connect_type = partial_solution_connections<COUNT_NON_TARGET_ROBOTS>; // remove this!
 			using partial_solutions_map_type = typename partial_solution_connections<COUNT_NON_TARGET_ROBOTS>::partial_solutions_map_type;
 			using map_iterator = typename partial_solution_connections<COUNT_NON_TARGET_ROBOTS>::map_iterator_type;
 
-			const auto initial_state = state_type(p_target_robot, std::move(p_other_robots));
+			const auto initial_state = robots_position_state<COUNT_NON_TARGET_ROBOTS>(p_target_robot, std::move(p_other_robots));
 
 
 			partial_solutions_map_type solutions_map;
@@ -724,7 +720,7 @@ namespace tobor {
 
 							// create next state
 							c.next_field_paired_enable.first; // new cell id
-							state_type new_state{ current_iterator->first };
+							auto new_state = robots_position_state<COUNT_NON_TARGET_ROBOTS>(current_iterator->first);
 
 							if (c.move.robot_id < COUNT_NON_TARGET_ROBOTS) {
 								new_state.other_robots_sorted[c.move.robot_id] = c.next_field_paired_enable.first;
