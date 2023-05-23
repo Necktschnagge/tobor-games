@@ -690,19 +690,19 @@ namespace tobor {
 
 					for (std::size_t rob_id{ 0 }; rob_id < COUNT_NON_TARGET_ROBOTS; ++rob_id) {
 						candidates_for_successor_states.emplace_back(
-							robot_move(rob_id, robot_move::WEST),
+							robot_move(static_cast<robot_move::robot_id_type>(rob_id), robot_move::WEST),
 							world_analyzer.get_next_field_on_west_move(current_iterator->first.other_robots_sorted[rob_id], current_iterator->first)
 						);
 						candidates_for_successor_states.emplace_back(
-							robot_move(rob_id, robot_move::EAST),
+							robot_move(static_cast<robot_move::robot_id_type>(rob_id), robot_move::EAST),
 							world_analyzer.get_next_field_on_east_move(current_iterator->first.other_robots_sorted[rob_id], current_iterator->first)
 						);
 						candidates_for_successor_states.emplace_back(
-							robot_move(rob_id, robot_move::NORTH),
+							robot_move(static_cast<robot_move::robot_id_type>(rob_id), robot_move::NORTH),
 							world_analyzer.get_next_field_on_north_move(current_iterator->first.other_robots_sorted[rob_id], current_iterator->first)
 						);
 						candidates_for_successor_states.emplace_back(
-							robot_move(rob_id, robot_move::SOUTH),
+							robot_move(static_cast<robot_move::robot_id_type>(rob_id), robot_move::SOUTH),
 							world_analyzer.get_next_field_on_south_move(current_iterator->first.other_robots_sorted[rob_id], current_iterator->first)
 						);
 					}
