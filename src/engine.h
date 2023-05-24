@@ -662,10 +662,6 @@ namespace tobor {
 
 			world_analyzer.create_quick_move_table();
 
-			// make to be explored two dimensional!
-			// #steps |-> ( vector { all states to be explored } )
-			// then current_iterator can also be reference! (but does not need to be!)
-
 			for (std::size_t expand_size{ 0 }; expand_size < optimal_solution_size; ++expand_size) {
 				to_be_explored.emplace_back(); // possibly invalidates iterators on sub-vectors, but on most compilers it will work anyway. But please do not rely on this behaviour.
 
@@ -759,92 +755,6 @@ namespace tobor {
 							}
 						}
 					}
-
-					/*
-					auto [next_field_w, has_next_w] = world_analyzer.get_next_field_on_west_move(current_iterator->first.target_robot, current_iterator->first);
-					auto [next_field_e, has_next_e] = world_analyzer.get_next_field_on_east_move(current_iterator->first.target_robot, current_iterator->first);
-					auto [next_field_s, has_next_s] = world_analyzer.get_next_field_on_south_move(current_iterator->first.target_robot, current_iterator->first);
-					auto [next_field_n, has_next_n] = world_analyzer.get_next_field_on_north_move(current_iterator->first.target_robot, current_iterator->first);
-
-					// loop the following over all next states... using parameters.... WEST/EAST/...    robot id to be moved
-					if (has_next_w) {
-						state_type next_state;
-						next_state.other_robots_sorted = current_iterator->first.other_robots_sorted;
-						next_state.target_robot = nex_field_w;
-
-						if (solutions_map[next_state].steps > current_iterator->second.steps + 1) { // check if found a new state
-							current_iterator->second.is_leaf = false;
-							solutions_map[next_state].steps = current_iterator->second.steps + 1;
-							robot_move move;
-							move.robot_id = COUNT_NON_TARGET_ROBOTS;
-							move.direction = robot_move::WEST;
-							solutions_map[next_state].predecessors.emplace_back(current_iterator, move);
-							to_be_explored.push_back(); // iterator to new state....
-							//### check for "reached goal state".
-						}
-						if (solutions_map[next_state].steps == current_iterator->second.steps + 1) { // check if found again a state with another optimal predecessor
-							current_iterator->second.is_leaf = false;
-							robot_move move;
-							move.robot_id = COUNT_NON_TARGET_ROBOTS;
-							move.direction = robot_move::WEST;
-							solutions_map[next_state].predecessors.emplace_back(current_iterator, move);
-						}
-					}
-
-					const auto& connections = std::get<0>(current_iter->second);
-					std::size_t steps = connections.steps;
-
-					// for all movable robots
-						// for all directions
-							// get next field
-							// create next state
-
-					++index_next_exploration;
-				}
-
-
-
-
-
-				auto initial_partial_solution = std::make_shared<partial_solution_record< universal_field_id, COUNT_NON_TARGET_ROBOTS>>();
-				initial_partial_solution->state = initial_state;
-				initial_partial_solution->steps = 0;
-
-
-				//std::vector<std::shared_ptr<partial_solution_record< universal_field_id, COUNT_NON_TARGET_ROBOTS>>> to_be_explored;
-
-				to_be_explored.push_back(std::move(initial_partial_solution));
-
-
-
-				//std::size_t COUNT_THREADS{ 16 };
-
-				auto all_partial_solutions = std::vector<std::forward_list<partial_solution_record>>(COUNT_THREADS);
-
-				// single thread version:
-
-
-				std::vector<all_partial_solutions::iterator> to_be_explored;
-				std::vector<all_partial_solutions::iterator> to_be_explored_next;
-
-				auto partial_solutions_map = all_partial_solutions();
-
-
-
-
-				while (const auto & current_iter : to_be_explored) {
-					//
-					//current_iter->
-					const auto& state = current_iter->first;
-					const auto& connections = std::get<0>(current_iter->second);
-					std::size_t steps = connections.steps;
-
-					// for all movable robots
-						// for all directions
-							// get next field
-							// create next state
-							// put next state into map, if not already reached within less steps.
-					*/
 				}
 
 			}
