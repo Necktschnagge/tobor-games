@@ -1,11 +1,8 @@
 
-#include "logger.h"
-
 
 #include <map>
 #include <array>
 #include <algorithm>
-#include <numeric>
 
 
 namespace tobor {
@@ -279,12 +276,6 @@ namespace tobor {
 				transposed_id = world.transposed_field_id_of(x_coord, y_coord);
 			}
 
-
-			/*
-			bool ill() const {
-				return get_x_coord() < 0 || get_x_coord() > 15 || get_y_coord() < 0 || get_y_coord() > 15 || get_id() < 0 || get_id() > 255 || get_transposed_id() < 0 || get_transposed_id() > 255;
-			}
-			*/
 		};
 
 		template <std::size_t COUNT_NON_TARGET_ROBOTS> // ## alternative implementation using std::vector instead of array, as non-template variant
@@ -371,11 +362,6 @@ namespace tobor {
 				std::sort(other_robots_sorted.begin(), other_robots_sorted.end());
 			}
 
-			/*
-			bool ill() const {
-				return target_robot.ill() || other_robots_sorted[0].ill() || other_robots_sorted[1].ill() || other_robots_sorted[2].ill();
-			}
-			*/
 		};
 
 
@@ -461,7 +447,7 @@ namespace tobor {
 			inline std::pair<universal_field_id, bool> get_next_field_on_west_move(const universal_field_id& start_field, const robots_position_state<COUNT_NON_TARGET_ROBOTS>& state) {
 				const std::size_t x_coord_start{ start_field.get_x_coord() }; // ## use id instead, transposed_id respectively for other directions: less comparison operations in code, maybe not at runtime...
 				const std::size_t y_coord{ start_field.get_y_coord() };
-				const universal_field_id next_without_obstacle{ table.cells[start_field.get_id()].next_west };
+				const universal_field_id& next_without_obstacle{ table.cells[start_field.get_id()].next_west };
 				std::size_t x_coord_last{ next_without_obstacle.get_x_coord() };
 				universal_field_id next_west;
 				if (x_coord_start == x_coord_last) {
@@ -492,7 +478,7 @@ namespace tobor {
 			inline std::pair<universal_field_id, bool> get_next_field_on_east_move(const universal_field_id& start_field, const robots_position_state< COUNT_NON_TARGET_ROBOTS>& state) {
 				const std::size_t x_coord_start{ start_field.get_x_coord() };
 				const std::size_t y_coord{ start_field.get_y_coord() };
-				const universal_field_id next_without_obstacle{ table.cells[start_field.get_id()].next_east };
+				const universal_field_id& next_without_obstacle{ table.cells[start_field.get_id()].next_east };
 				std::size_t x_coord_last{ next_without_obstacle.get_x_coord() };
 				universal_field_id next_east;
 				if (x_coord_start == x_coord_last) {
@@ -523,7 +509,7 @@ namespace tobor {
 			inline std::pair<universal_field_id, bool> get_next_field_on_south_move(const universal_field_id& start_field, const robots_position_state< COUNT_NON_TARGET_ROBOTS>& state) {
 				const std::size_t x_coord{ start_field.get_x_coord() };
 				const std::size_t y_coord_start{ start_field.get_y_coord() };
-				const universal_field_id next_without_obstacle{ table.cells[start_field.get_id()].next_south };
+				const universal_field_id& next_without_obstacle{ table.cells[start_field.get_id()].next_south };
 				std::size_t y_coord_last{ next_without_obstacle.get_y_coord() };
 				universal_field_id next_south;
 				if (y_coord_start == y_coord_last) {
@@ -554,7 +540,7 @@ namespace tobor {
 			inline std::pair<universal_field_id, bool> get_next_field_on_north_move(const universal_field_id& start_field, const robots_position_state<  COUNT_NON_TARGET_ROBOTS>& state) {
 				const std::size_t x_coord{ start_field.get_x_coord() };
 				const std::size_t y_coord_start{ start_field.get_y_coord() };
-				const universal_field_id next_without_obstacle{ table.cells[start_field.get_id()].next_north };
+				const universal_field_id& next_without_obstacle{ table.cells[start_field.get_id()].next_north };
 				std::size_t y_coord_last{ next_without_obstacle.get_y_coord() };
 				universal_field_id next_north;
 				if (y_coord_start == y_coord_last) {
@@ -675,7 +661,10 @@ namespace tobor {
 
 			world_analyzer.create_quick_move_table();
 
-			while (index_next_exploration < to_be_explored.size()) {
+			// make to be explored two dimensional!
+			// #steps |-> ( vector { all states to be explored } )
+			// then current_iterator can also be reference! (but does not need to be!)
+			while (index_next_exploration < to_be_explored.size()) { 
 				const auto current_iterator{ to_be_explored[index_next_exploration] };
 
 				if (current_iterator->second.steps < optimal_solution_size) { // if this exploration finds solutions within optimum steps
