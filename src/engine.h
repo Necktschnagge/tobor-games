@@ -77,12 +77,12 @@ namespace tobor {
 			}
 
 			inline constexpr std::pair<std::size_t, std::size_t> coordinates_of_transposed_field_id(std::size_t transposed_id) const noexcept {
-				return std::make_pair(transposed_id % y_size, transposed_id / y_size);
+				return std::make_pair(transposed_id / y_size, transposed_id % y_size);
 			}
 
 			inline constexpr void coordinates_of_transposed_field_id(std::size_t transposed_id, std::size_t& x_coord, std::size_t& y_coord) const noexcept {
-				x_coord = transposed_id % y_size;
-				y_coord = transposed_id / y_size;
+				x_coord = transposed_id / y_size;
+				y_coord = transposed_id % y_size;
 			}
 
 			inline constexpr std::size_t transpose_id(std::size_t id) const noexcept {
@@ -361,6 +361,7 @@ namespace tobor {
 			inline void sort_robots() {
 				std::sort(other_robots_sorted.begin(), other_robots_sorted.end());
 			}
+
 		};
 
 
@@ -549,13 +550,13 @@ namespace tobor {
 				// looking for an obstacle...
 				if (state.target_robot.get_x_coord() == x_coord) {
 					if (state.target_robot.get_y_coord() > y_coord_start && state.target_robot.get_y_coord() <= y_coord_last) {
-						y_coord_last = state.target_robot.get_y_coord() + 1;
+						y_coord_last = state.target_robot.get_y_coord() - 1;
 					}
 				}
 				for (auto& robot : state.other_robots_sorted) {
 					if (robot.get_x_coord() == x_coord) {
 						if (robot.get_y_coord() > y_coord_start && robot.get_y_coord() <= y_coord_last) {
-							y_coord_last = robot.get_y_coord() + 1;
+							y_coord_last = robot.get_y_coord() - 1;
 						}
 					}
 				}
@@ -640,7 +641,7 @@ namespace tobor {
 
 			//using state_type = robots_position_state<COUNT_NON_TARGET_ROBOTS>; // remove this!
 			//using connect_type = partial_solution_connections<COUNT_NON_TARGET_ROBOTS>; // remove this!
-			using partial_solutions_map_type = typename partial_solution_connections<COUNT_NON_TARGET_ROBOTS>::partial_solutions_map_type;
+			//using partial_solutions_map_type = typename partial_solution_connections<COUNT_NON_TARGET_ROBOTS>::partial_solutions_map_type;
 			using map_iterator = typename partial_solution_connections<COUNT_NON_TARGET_ROBOTS>::map_iterator_type;
 
 			const auto initial_state = robots_position_state<COUNT_NON_TARGET_ROBOTS>(p_target_robot, std::move(p_other_robots));
@@ -660,8 +661,11 @@ namespace tobor {
 
 			world_analyzer.create_quick_move_table();
 
-			while (index_next_exploration < to_be_explored.size()) {
-				const auto& current_iterator{ to_be_explored[index_next_exploration] };
+			// make to be explored two dimensional!
+			// #steps |-> ( vector { all states to be explored } )
+			// then current_iterator can also be reference! (but does not need to be!)
+			while (index_next_exploration < to_be_explored.size()) { 
+				const auto current_iterator{ to_be_explored[index_next_exploration] };
 
 				if (current_iterator->second.steps < optimal_solution_size) { // if this exploration finds solutions within optimum steps
 
