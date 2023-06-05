@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.13.4)
+cmake_minimum_required(VERSION 3.5)
 
 
 ############### Names ###############
@@ -10,7 +10,7 @@ add_compile_definitions(GIT_REPOSITORY_URL="https://github.com/Necktschnagge/cma
 
 
 ############### Project Decklaration ###############
-project(${PROJECT_NAME} VERSION 1.0)
+project(${PROJECT_NAME} VERSION 1.0 LANGUAGES CXX)
 
 
 ############### Check Platform ###############
@@ -36,6 +36,12 @@ if (LINUX)
 endif()
 if (APPLE)
 	message("Running on APPLE.")
+	set_target_properties(${PROJECT_NAME} PROPERTIES
+    MACOSX_BUNDLE_GUI_IDENTIFIER my.example.com
+    MACOSX_BUNDLE_BUNDLE_VERSION ${PROJECT_VERSION}
+    MACOSX_BUNDLE_SHORT_VERSION_STRING ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
+    MACOSX_BUNDLE TRUE
+    WIN32_EXECUTABLE TRUE)
 endif()
 if (UNIX)
 	message("Running on UNIX.")
@@ -43,31 +49,86 @@ endif()
 
 
 ############### Language and Flags ###############
+set(CMAKE_AUTOUIC ON)
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
+
 set(CMAKE_CXX_EXTENSIONS False)
 set(CMAKE_CXX_FLAGS_RELEASE "/MT /O2 /Ob2 /DNDEBUG")
 set(CMAKE_CXX_FLAGS_DEBUG "/MT /Zi /Ob0 /Od /RTC1")
 
 
 ############### Libraries ###############
-include_directories(SYSTEM extern/spdlog/include)
-add_subdirectory(extern/googletest)
+#include_directories(SYSTEM extern/spdlog/include)
+#add_subdirectory(extern/googletest)
+
+#set(CMAKE_PREFIX_PATH $ENV{HOME}/Qt/6.5.0/msvc2019_64)
+#set(QT_DIR "C:/Qt/5.15.2/msvc2019_64/lib/cmake/Qt5")
+#set(Qt5_DIR "C:/Qt/5.15.2/msvc2019_64/lib/cmake/Qt5")
+
+find_package(QT NAMES Qt5 REQUIRED COMPONENTS Widgets)
+find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets)
+#find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS SvgWidgets)
+find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Svg)
+find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Core)
+#find_package(Qt6 REQUIRED COMPONENTS SvgWidgets)
+#find_package(Qt6 REQUIRED COMPONENTS Svg)
+#find_package(Qt6 REQUIRED COMPONENTS Core)
 
 
 ############### Sources ###############
-add_subdirectory(src)
+#add_subdirectory(src)
+
+set(PROJECT_SOURCES
+        main.cpp
+        mainwindow.cpp
+        mainwindow.h
+        mainwindow.ui
+        svg_handler.h
+        svg_handler.cpp
+        resources.qrc
+)
+
+if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
+    qt_add_executable(${PROJECT_NAME}
+        MANUAL_FINALIZATION
+        ${PROJECT_SOURCES}
+    )
+    else()
+        add_executable(${PROJECT_NAME}
+            ${PROJECT_SOURCES}
+        )
+endif()
+
+target_link_libraries(${PROJECT_NAME} PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
+##target_link_libraries(${PROJECT_NAME} PRIVATE Qt${QT_VERSION_MAJOR}::SvgWidgets)
+target_link_libraries(${PROJECT_NAME} PRIVATE Qt${QT_VERSION_MAJOR}::Svg)
+target_link_libraries(${PROJECT_NAME} PRIVATE Qt${QT_VERSION_MAJOR}::Core)
+##target_link_libraries(${PROJECT_NAME} PRIVATE Qt6::SvgWidgets)
+##target_link_libraries(${PROJECT_NAME} PRIVATE Qt6::Svg)
+##target_link_libraries(${PROJECT_NAME} PRIVATE Qt6::Core)
+
+install(TARGETS ${PROJECT_NAME}
+    BUNDLE DESTINATION .
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
+
+if(QT_VERSION_MAJOR EQUAL 6)
+    qt_finalize_executable(${PROJECT_NAME})
+endif()
 
 
 ############### Testing ###############
-add_subdirectory(test)
-enable_testing()
+#add_subdirectory(test)
+#enable_testing()
 
-if(MSVC)
-  target_compile_options(${PROJECT_NAME} PRIVATE /W4 /WX)
-else()
-  target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra -pedantic -Werror)
-endif()
+#if(MSVC)
+#  target_compile_options(${PROJECT_NAME} PRIVATE /W4 /WX)
+#else()
+#  target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra -pedantic -Werror)
+#endif()
 
 
 ############### Visual Studio ###############
