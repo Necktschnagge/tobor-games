@@ -120,11 +120,11 @@ void MainWindow::refreshView()
         xml.addData(data);
 
         QSvgRenderer *svgRenderer = new QSvgRenderer(&xml);
-        QGraphicsSvgItem *item = new QGraphicsSvgItem();
+        //QGraphicsSvgItem *item = new QGraphicsSvgItem();
         QGraphicsScene *scene = new QGraphicsScene();
 
-        item->setSharedRenderer(svgRenderer);
-        scene->addItem(item);
+        //item->setSharedRenderer(svgRenderer);
+        //scene->addItem(item);
         ui->graphicsView->setScene(scene);
         ui->graphicsView->fitInView(scene->sceneRect(), Qt::KeepAspectRatio);
         ui->graphicsView->show();

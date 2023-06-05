@@ -4,6 +4,8 @@ cmake_minimum_required(VERSION 3.5)
 ############### Names ###############
 set(PROJECT_NAME Tobor)
 
+set(QT_VERSION_MAJOR 6)
+
 
 ############### Preprocessor Macros ###############
 add_compile_definitions(GIT_REPOSITORY_URL="https://github.com/Necktschnagge/cmake-qt-prototype")
@@ -16,6 +18,7 @@ project(${PROJECT_NAME} VERSION 1.0 LANGUAGES CXX)
 ############### Check Platform ###############
 message("CMake is checking for CMAKE_SYSTEM_PROCESSOR containing arm to detect if running on Raspberry Pi:")
 message("CMAKE_SYSTEM_PROCESSOR is: " ${CMAKE_SYSTEM_PROCESSOR})
+message("QT_VERSION_MAJOR is: " ${QT_VERSION_MAJOR})
 if(${CMAKE_SYSTEM_PROCESSOR} MATCHES "arm")
 	message("Running on Raspberry Pi.")
 	set(on_target_platform true)
@@ -69,14 +72,14 @@ set(CMAKE_CXX_FLAGS_DEBUG "/MT /Zi /Ob0 /Od /RTC1")
 #set(QT_DIR "C:/Qt/5.15.2/msvc2019_64/lib/cmake/Qt5")
 #set(Qt5_DIR "C:/Qt/5.15.2/msvc2019_64/lib/cmake/Qt5")
 
-find_package(QT NAMES Qt5 REQUIRED COMPONENTS Widgets)
-find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets)
+#find_package(QT NAMES Qt5 REQUIRED COMPONENTS Widgets)
+#find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets)
 #find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS SvgWidgets)
-find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Svg)
-find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Core)
-#find_package(Qt6 REQUIRED COMPONENTS SvgWidgets)
-#find_package(Qt6 REQUIRED COMPONENTS Svg)
-#find_package(Qt6 REQUIRED COMPONENTS Core)
+#find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Svg)
+#find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Core)
+find_package(Qt6 REQUIRED COMPONENTS SvgWidgets)
+find_package(Qt6 REQUIRED COMPONENTS Svg)
+find_package(Qt6 REQUIRED COMPONENTS Core)
 
 
 ############### Sources ###############

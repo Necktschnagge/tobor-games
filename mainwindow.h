@@ -8,7 +8,7 @@
 #include <QMessageBox>
 #include <QtDebug>
 #include <QXmlStreamReader>
-#include <QGraphicsSvgItem>
+//#include <QGraphicsSvgItem>
 #include <QGraphicsView>
 #include <QSvgRenderer>
 
