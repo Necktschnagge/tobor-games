@@ -100,7 +100,7 @@ string SvgHandler::undo()
 
 string SvgHandler::redo()
 {
-    index = index + 1 >= svg_texts.size() ? index : index + 1;
+    index = index + 1 >= static_cast<int>(svg_texts.size()) ? index : index + 1;
     cout << "SVG text: " << index << "/" << (svg_texts.size() - 1) << endl;
     return svg_texts[index];
 }

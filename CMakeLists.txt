@@ -62,8 +62,8 @@ set(CMAKE_CXX_FLAGS_DEBUG "/MT /Zi /Ob0 /Od /RTC1")
 
 
 ############### Libraries ###############
-#include_directories(SYSTEM extern/spdlog/include)
-#add_subdirectory(extern/googletest)
+include_directories(SYSTEM extern/spdlog/include)
+add_subdirectory(extern/googletest)
 
 #set(CMAKE_PREFIX_PATH $ENV{HOME}/Qt/6.5.0/msvc2019_64)
 #set(QT_DIR "C:/Qt/5.15.2/msvc2019_64/lib/cmake/Qt5")
@@ -80,33 +80,33 @@ find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Core)
 
 
 ############### Sources ###############
-#add_subdirectory(src)
+add_subdirectory(src)
 
-set(PROJECT_SOURCES
-        main.cpp
-        mainwindow.cpp
-        mainwindow.h
-        mainwindow.ui
-        svg_handler.h
-        svg_handler.cpp
-        resources.qrc
-)
+#set(PROJECT_SOURCES
+#        src/main.cpp
+#        src/mainwindow.cpp
+#        src/mainwindow.h
+#        src/mainwindow.ui
+#        src/svg_handler.h
+#        src/svg_handler.cpp
+#        src/resources.qrc
+#)
 
-if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
-    qt_add_executable(${PROJECT_NAME}
-        MANUAL_FINALIZATION
-        ${PROJECT_SOURCES}
-    )
-    else()
-        add_executable(${PROJECT_NAME}
-            ${PROJECT_SOURCES}
-        )
-endif()
+#if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
+#    qt_add_executable(${PROJECT_NAME}
+#        MANUAL_FINALIZATION
+#        ${PROJECT_SOURCES}
+#    )
+#    else()
+#        add_executable(${PROJECT_NAME}
+#            ${PROJECT_SOURCES}
+#        )
+#endif()
 
-target_link_libraries(${PROJECT_NAME} PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
+#target_link_libraries(${PROJECT_NAME} PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
 ##target_link_libraries(${PROJECT_NAME} PRIVATE Qt${QT_VERSION_MAJOR}::SvgWidgets)
-target_link_libraries(${PROJECT_NAME} PRIVATE Qt${QT_VERSION_MAJOR}::Svg)
-target_link_libraries(${PROJECT_NAME} PRIVATE Qt${QT_VERSION_MAJOR}::Core)
+#target_link_libraries(${PROJECT_NAME} PRIVATE Qt${QT_VERSION_MAJOR}::Svg)
+#target_link_libraries(${PROJECT_NAME} PRIVATE Qt${QT_VERSION_MAJOR}::Core)
 ##target_link_libraries(${PROJECT_NAME} PRIVATE Qt6::SvgWidgets)
 ##target_link_libraries(${PROJECT_NAME} PRIVATE Qt6::Svg)
 ##target_link_libraries(${PROJECT_NAME} PRIVATE Qt6::Core)
@@ -121,14 +121,14 @@ endif()
 
 
 ############### Testing ###############
-#add_subdirectory(test)
-#enable_testing()
+add_subdirectory(test)
+enable_testing()
 
-#if(MSVC)
-#  target_compile_options(${PROJECT_NAME} PRIVATE /W4 /WX)
-#else()
-#  target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra -pedantic -Werror)
-#endif()
+if(MSVC)
+  target_compile_options(${PROJECT_NAME} PRIVATE /W4 /WX)
+else()
+  target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra -pedantic -Werror)
+endif()
 
 
 ############### Visual Studio ###############

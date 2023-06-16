@@ -2,8 +2,10 @@
 
 #rm -r build/
 #mkdir build/
-cd build/
+#cd build/
 
-cmake ..
-cmake --build .
+#cmake ..
+#cmake --build .
 
+cd script/
+./uccpb-cmd-clean-create-project-build.sh
