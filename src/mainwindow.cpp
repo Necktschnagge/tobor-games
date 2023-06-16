@@ -49,11 +49,11 @@ void MainWindow::on_btn_open_clicked()
     }
 
     if (progress) {
-        QString path = QFileDialog::getOpenFileName(this, tr("Open"), QDir::homePath(), tr("Files (*.svg)"));
-        if (svg.load(path.toStdString())) {
+        QString loc_path = QFileDialog::getOpenFileName(this, tr("Open"), QDir::homePath(), tr("Files (*.svg)"));
+        if (svg.load(loc_path.toStdString())) {
             // SVG Text
             ui->svgText->setText(QString::fromStdString(svg.last()));
-            this->path = path.toStdString();
+            this->path = loc_path.toStdString();
             // SVG Image
             refreshView();
         } else {
@@ -72,8 +72,8 @@ void MainWindow::on_btn_save_clicked()
         return;
     }
 
-    QString path = QFileDialog::getSaveFileName(this, tr("Save"), QDir::homePath(), tr("Files (*.svg)"));
-    if (svg.save(path.toStdString(), text)) {
+    QString loc_path = QFileDialog::getSaveFileName(this, tr("Save"), QDir::homePath(), tr("Files (*.svg)"));
+    if (svg.save(loc_path.toStdString(), text)) {
         ui->statusbar->showMessage(tr(MSG_SAVED), WAIT_LONG);
     }
 }
@@ -109,15 +109,15 @@ void MainWindow::on_btn_refresh_clicked()
 
 void MainWindow::refreshView()
 {
-    const QString data = ui->svgText->toPlainText();
+    const QString loc_data = ui->svgText->toPlainText();
 
-    if (data.isEmpty()) {
+    if (loc_data.isEmpty()) {
         ui->statusbar->showMessage(tr(MSG_IGNORE), WAIT_NORMAL);
     }
 
     try {
         QXmlStreamReader xml;
-        xml.addData(data);
+        xml.addData(loc_data);
 
         QSvgRenderer *svgRenderer = new QSvgRenderer(&xml);
         QGraphicsSvgItem *item = new QGraphicsSvgItem();

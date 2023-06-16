@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.5)
 
+set(QT_VERSION_MAJOR 6)
 
 ############### Names ###############
 set(PROJECT_NAME Tobor)
@@ -69,15 +70,7 @@ add_subdirectory(extern/googletest)
 #set(QT_DIR "C:/Qt/5.15.2/msvc2019_64/lib/cmake/Qt5")
 #set(Qt5_DIR "C:/Qt/5.15.2/msvc2019_64/lib/cmake/Qt5")
 
-find_package(QT NAMES Qt5 REQUIRED COMPONENTS Widgets)
-find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets)
-#find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS SvgWidgets)
-find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Svg)
-find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Core)
-#find_package(Qt6 REQUIRED COMPONENTS SvgWidgets)
-#find_package(Qt6 REQUIRED COMPONENTS Svg)
-#find_package(Qt6 REQUIRED COMPONENTS Core)
-
+find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Core Widgets Svg SvgWidgets)
 
 ############### Sources ###############
 add_subdirectory(src)
