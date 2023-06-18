@@ -6,6 +6,12 @@
 
 #include <fstream>
 
+// tobor colors: 
+// red		#f4191c
+// yellow	#ffbd02
+// green	#00a340
+// blue		#4285f4
+
 class svg_generator {
 
 	static std::string get_xml_header() {
