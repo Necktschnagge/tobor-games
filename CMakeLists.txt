@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.5)
 
-set(QT_VERSION_MAJOR 6)
+set(QT_VERSION_MAJOR 5)
 
 ############### Names ###############
 set(PROJECT_NAME Tobor)
