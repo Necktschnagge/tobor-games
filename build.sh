@@ -8,4 +8,4 @@
 #cmake --build .
 
 cd script/
-./uccpb-cmd-clean-create-project-build.sh
+./uccpb-unix-clean-create-project-build.sh
