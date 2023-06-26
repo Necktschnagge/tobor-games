@@ -30,6 +30,56 @@ else()
 endif()
 if (WIN32)
 	message("Running on WIN32.")
+
+SET(QT_MISSING True)
+
+IF(MSVC)
+    GET_FILENAME_COMPONENT(QT_BIN [HKEY_CURRENT_USER\\Software\\Classes\\Applications\\QtProject.QtCreator.cpp\\shell\\Open\\Command] PATH)
+
+    STRING(REPLACE "/Tools" ";" QT_BIN "${QT_BIN}")
+    LIST(GET QT_BIN 0 QT_BIN)
+    FILE(GLOB QT_VERSIONS "${QT_BIN}/5.*")
+    LIST(SORT QT_VERSIONS)
+
+    LIST(REVERSE QT_VERSIONS)
+
+    LIST(GET QT_VERSIONS 0 QT_VERSION)
+
+    STRING(REPLACE "//" "/"  QT_VERSION "${QT_VERSION}")
+
+if     ((MSVC_VERSION GREATER_EQUAL "1920") AND (IS_DIRECTORY "${QT_VERSION}/msvc2019"))
+    set(QT_MSVC "2019")
+elseif ((MSVC_VERSION GREATER_EQUAL "1920") AND (IS_DIRECTORY "${QT_VERSION}/msvc2019_64"))
+    set(QT_MSVC "2019")
+elseif ((MSVC_VERSION GREATER_EQUAL "1910") AND (IS_DIRECTORY "${QT_VERSION}/msvc2017"))
+    set(QT_MSVC "2017")
+elseif ((MSVC_VERSION GREATER_EQUAL "1910") AND (IS_DIRECTORY "${QT_VERSION}/msvc2017_64"))
+    set(QT_MSVC "2017")
+elseif (MSVC_VERSION GREATER_EQUAL "1900")
+    set(QT_MSVC "2015")
+else()
+    MATH(EXPR QT_MSVC "2000 + (${MSVC_VERSION} - 500) / 100")
+endif()
+
+MESSAGE("---hahn--- MSVC_VERSION: ${MSVC_VERSION}")
+MESSAGE("---hahn--- QT_MSVC: ${QT_MSVC}")
+MESSAGE("---hahn--- QT_VERSION: ${QT_VERSION}")
+
+    IF(CMAKE_SYSTEM_PROCESSOR MATCHES 64)
+        SET(QT_MSVC "${QT_MSVC}_64")
+    ENDIF()
+    SET(QT_PATH "${QT_VERSION}/msvc${QT_MSVC}")
+    SET(QT_MISSING False)
+ENDIF()
+
+IF(NOT QT_MISSING)
+    MESSAGE("-- Qt found: ${QT_PATH}")
+    SET(Qt5_DIR "${QT_PATH}/lib/cmake/Qt5/")
+    SET(QT_DIR "${QT_PATH}/lib/cmake/Qt5/")
+    MESSAGE("---hahn--- Qt5_DIR: ${Qt5_DIR}")
+    MESSAGE("---hahn--- QT_DIR: ${Qt5_DIR}")
+ENDIF()
+
 endif()
 if (LINUX)
 	message("Running on LINUX.")
