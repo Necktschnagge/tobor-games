@@ -52,9 +52,9 @@ pool:
 #   condition: and(succeeded(), ne( variables['Agent.OSArchitecture'], 'ARM'), ne( variables['Agent.OS'], 'Windows_NT'))
 
 steps:
-  - task: UsePythonVersion@0
-    inputs:
-    versionSpec: "3.x"
+#  - task: UsePythonVersion@0
+#    inputs:
+#    versionSpec: "3.x"
   - script: sudo apt-get -y install qtbase5-dev libqt5svg5-dev
     displayName: "Install Qt5"
     condition: and(succeeded(), eq( variables['Agent.OS'], 'Linux'))
