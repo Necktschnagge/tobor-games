@@ -65,7 +65,7 @@ endif()
 MESSAGE("---hahn--- QT_MSVC: ${QT_MSVC}")
 MESSAGE("---hahn--- QT_VERSION: ${QT_VERSION}")
 set(QT_MSVC "2019")
-set(QT_VERSION D:\a\1\b\Qt\5.15.2)
+set(QT_VERSION D:/a/1/b/Qt/5.15.2)
 
 MESSAGE("---hahn--- MSVC_VERSION: ${MSVC_VERSION}")
 MESSAGE("---hahn--- QT_MSVC: ${QT_MSVC}")
