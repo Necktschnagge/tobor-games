@@ -37,6 +37,10 @@ IF(MSVC)
     GET_FILENAME_COMPONENT(QT_BIN [HKEY_CURRENT_USER\\Software\\Classes\\Applications\\QtProject.QtCreator.cpp\\shell\\Open\\Command] PATH)
 
     STRING(REPLACE "/Tools" ";" QT_BIN "${QT_BIN}")
+    
+    # Azure Hack
+    set(QT_BIN D:/a/1/b/Qt)
+
     LIST(GET QT_BIN 0 QT_BIN)
     FILE(GLOB QT_VERSIONS "${QT_BIN}/5.*")
     LIST(SORT QT_VERSIONS)
