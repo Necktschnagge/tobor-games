@@ -52,9 +52,9 @@ pool:
 #   condition: and(succeeded(), ne( variables['Agent.OSArchitecture'], 'ARM'), ne( variables['Agent.OS'], 'Windows_NT'))
 
 steps:
-  - task: UsePythonVersion@0
-    inputs:
-    versionSpec: "3.x"
+#  - task: UsePythonVersion@0
+#    inputs:
+#    versionSpec: "3.x"
   - script: sudo apt-get -y install qtbase5-dev libqt5svg5-dev
     displayName: "Install Qt5"
     condition: and(succeeded(), eq( variables['Agent.OS'], 'Linux'))
@@ -65,7 +65,7 @@ steps:
     condition: and(succeeded(), eq( variables['Agent.OS'], 'Windows_NT' ))
   - script: |
       cd $(Build.SourcesDirectory)
-      python -m aqt install --outputdir $(Build.BinariesDirectory)\\Qt 5.15.2 windows desktop win_msvc2019 -m qtcore qtwidgets
+      python -m aqt install-qt --outputdir $(Build.BinariesDirectory)\\Qt windows desktop 5.15.2 win64_msvc2019_64
     displayName: "Install Qt 5.15.2"
     condition: and(succeeded(), eq( variables['Agent.OS'], 'Windows_NT' ))
   - script: git submodule update --init --recursive
