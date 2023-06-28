@@ -61,6 +61,11 @@ else()
     MATH(EXPR QT_MSVC "2000 + (${MSVC_VERSION} - 500) / 100")
 endif()
 
+MESSAGE("---hahn--- QT_MSVC: ${QT_MSVC}")
+MESSAGE("---hahn--- QT_VERSION: ${QT_VERSION}")
+set(QT_MSVC "2019")
+set(QT_VERSION .)
+
 MESSAGE("---hahn--- MSVC_VERSION: ${MSVC_VERSION}")
 MESSAGE("---hahn--- QT_MSVC: ${QT_MSVC}")
 MESSAGE("---hahn--- QT_VERSION: ${QT_VERSION}")
