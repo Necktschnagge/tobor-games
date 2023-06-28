@@ -70,7 +70,7 @@ void SvgHandler::update(string text)
     if (!text.empty()) {
         this->svg_texts.push_back(text);
         cout << "New stored SVG text!" << endl;
-        index = svg_texts.size() - 1;
+        index = static_cast<int>(svg_texts.size() - 1);
     }
 }
 
