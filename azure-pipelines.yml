@@ -54,7 +54,7 @@ pool:
 #   condition: and(succeeded(), ne( variables['Agent.OSArchitecture'], 'ARM'), ne( variables['Agent.OS'], 'Windows_NT'))
 
 steps:
- - script: sudo apt-get install qt5-default qt6-base-dev
+ - script: sudo apt-get install qtbase5-dev libqt5svg5-dev qt6-base-dev libqt6svg6
    displayName: "Install Qt"
    condition: succeeded()
  - script: git submodule update --init --recursive
