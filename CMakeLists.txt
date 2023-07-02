@@ -18,6 +18,7 @@ else()
 
 endif()
 
+set(QT_DIR "C:\Qt")
 
 if(USE_QT6)
     find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets Svg SvgWidgets)
