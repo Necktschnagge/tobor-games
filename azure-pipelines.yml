@@ -69,12 +69,15 @@ steps:
  - script: git submodule update --init --recursive
    displayName: "Init Git Submodules"
    condition: succeeded()
+ - script: cmake -S . -B ./build/ -DCMAKE_PREFIX_PATH="$(Agent.ToolsDirectory)\Qt"
+   displayName: "CMake: Create Project"
+   condition: and(succeeded(), eq( variables['Agent.OS'], 'Windows_NT'))
  - script: cmake -S . -B ./build/
    displayName: "CMake: Create Project"
-   condition: and(succeeded(), ne( variables['imageName'], 'ubuntu-20.04'))
+   condition: and(succeeded(), ne( variables['Agent.OS'], 'Windows_NT'), ne( variables['imageName'], 'ubuntu-20.04'))
  - script: cmake -S . -B ./build/ -DUSE_QT5=FOO
    displayName: "CMake: Create Project"
-   condition: and(succeeded(), eq( variables['imageName'], 'ubuntu-20.04'))
+   condition: and(succeeded(), ne( variables['Agent.OS'], 'Windows_NT'), eq( variables['imageName'], 'ubuntu-20.04'))
  - script: cmake --build ./build
    displayName: "CMake: Compile and Link"
    condition: succeeded()
