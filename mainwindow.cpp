@@ -1,7 +1,7 @@
 
 #include "mainwindow.h"
 #include "./ui_mainwindow.h"
-
+#include <QMessageBox>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -46,5 +46,13 @@ void MainWindow::on_actionshowSVG_triggered()
 
     //auto foo = ui->centralwidget->children().size();
     //this->ui->graphicsView.
+}
+
+
+void MainWindow::on_actionAbout_triggered()
+{
+    QMessageBox msgBox;
+    msgBox.setText(QString("Qt Version used:   ") + qVersion());
+    msgBox.exec();
 }
 
