@@ -9,12 +9,11 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-#if (DEFINED ENV{THING})
-#  # do stuff
-#endif()
-
-set(USE_QT6 TRUE)
-#set(USE_QT6 FALSE)
+if (DEFINED ENV{USE_QT5})
+	set(USE_QT6 FALSE)
+else()
+	set(USE_QT6 TRUE)
+endif()
 
 
 if(USE_QT6)

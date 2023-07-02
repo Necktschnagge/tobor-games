@@ -71,7 +71,10 @@ steps:
    condition: succeeded()
  - script: cmake -S . -B ./build/
    displayName: "CMake: Create Project"
-   condition: succeeded()
+   condition: and(succeeded(), ne( variables['imageName'], 'ubuntu-20.04'))
+ - script: cmake -S . -B ./build/ -DUSE_QT5=FOO
+   displayName: "CMake: Create Project"
+   condition: and(succeeded(), eq( variables['imageName'], 'ubuntu-20.04'))
  - script: cmake --build ./build
    displayName: "CMake: Compile and Link"
    condition: succeeded()
