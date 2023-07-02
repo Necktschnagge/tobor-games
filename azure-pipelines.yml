@@ -72,6 +72,9 @@ steps:
 # - script: tree "C:\Qt\"
 #   displayName: "check files"
 #   condition: and(succeeded(), eq( variables['Agent.OS'], 'Windows_NT'))
+ - script: pip install aqtinstall
+   displayName: "install aqt"
+   condition: and(succeeded(), eq( variables['Agent.OS'], 'Windows_NT'))
  - script: aqt list-qt windows desktop
    displayName: "check aqt"
    condition: and(succeeded(), eq( variables['Agent.OS'], 'Windows_NT'))
