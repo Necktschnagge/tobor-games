@@ -9,8 +9,24 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets Svg SvgWidgets)
-find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets Svg SvgWidgets)
+#if (DEFINED ENV{THING})
+#  # do stuff
+#endif()
+
+set(USE_QT6 TRUE)
+#set(USE_QT6 FALSE)
+
+
+if(USE_QT6)
+    find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets Svg SvgWidgets)
+    find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets Svg SvgWidgets)
+
+else()
+    find_package(QT NAMES Qt5 REQUIRED COMPONENTS Widgets Svg)
+    find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets Svg)
+
+endif()
+
 
 set(PROJECT_SOURCES
         main.cpp
@@ -42,7 +58,11 @@ else()
     endif()
 endif()
 
-target_link_libraries(Tobor_try_46757298346582354 PRIVATE Qt${QT_VERSION_MAJOR}::Widgets Qt${QT_VERSION_MAJOR}::Svg Qt${QT_VERSION_MAJOR}::SvgWidgets)
+if(USE_QT6)
+    target_link_libraries(Tobor_try_46757298346582354 PRIVATE Qt${QT_VERSION_MAJOR}::Widgets Qt${QT_VERSION_MAJOR}::Svg Qt${QT_VERSION_MAJOR}::SvgWidgets)
+else()
+    target_link_libraries(Tobor_try_46757298346582354 PRIVATE Qt${QT_VERSION_MAJOR}::Widgets Qt${QT_VERSION_MAJOR}::Svg)
+endif()
 
 set_target_properties(Tobor_try_46757298346582354 PROPERTIES
     MACOSX_BUNDLE_GUI_IDENTIFIER my.example.com
