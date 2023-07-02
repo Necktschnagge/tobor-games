@@ -72,7 +72,9 @@ steps:
  - script: pip install aqtinstall
    displayName: "install aqt"
    condition: and(succeeded(), eq( variables['Agent.OS'], 'Windows_NT'))
- - script: aqt install-qt windows desktop 6.5.1 win64_msvc2019_64
+ - script: |
+    mkdir C:\Qt
+    aqt install-qt --outputdir C:\Qt windows desktop 6.5.1 win64_msvc2019_64
    displayName: "aqt install qt 6.5.1"
    condition: and(succeeded(), eq( variables['Agent.OS'], 'Windows_NT'))
  - script: aqt list-qt windows desktop
