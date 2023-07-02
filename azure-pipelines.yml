@@ -69,9 +69,6 @@ steps:
  - script: git submodule update --init --recursive
    displayName: "Init Git Submodules"
    condition: succeeded()
-# - script: tree "C:\Qt\"
-#   displayName: "check files"
-#   condition: and(succeeded(), eq( variables['Agent.OS'], 'Windows_NT'))
  - script: pip install aqtinstall
    displayName: "install aqt"
    condition: and(succeeded(), eq( variables['Agent.OS'], 'Windows_NT'))
@@ -80,6 +77,9 @@ steps:
    condition: and(succeeded(), eq( variables['Agent.OS'], 'Windows_NT'))
  - script: aqt list-qt windows desktop
    displayName: "check aqt"
+   condition: and(succeeded(), eq( variables['Agent.OS'], 'Windows_NT'))
+ - script: tree "C:\Qt\"
+   displayName: "check files"
    condition: and(succeeded(), eq( variables['Agent.OS'], 'Windows_NT'))
  - script: cmake -S . -B ./build/ -DCMAKE_PREFIX_PATH="C:\Qt\"
    displayName: "CMake: Create Project"
