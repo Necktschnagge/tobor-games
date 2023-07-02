@@ -56,7 +56,7 @@ pool:
 steps:
  - script: sudo apt-get install qtbase5-dev libqt5svg5-dev qt6-base-dev libqt6svg6 libqt6svg6-dev
    displayName: "Install Qt (Linux)"
-   condition: and(succeeded(), eq( variables['Agent.OS'], 'Linux'))
+   condition: and(succeeded(), eq( variables['Agent.OS'], 'Linux'), eq( variables['Agent.OS'], 'Darwin'))
  - script: brew install qt@5 qt@6
    displayName: "Install Qt (Darwin)"
    condition: and(succeeded(), eq( variables['Agent.OS'], 'Darwin'))
