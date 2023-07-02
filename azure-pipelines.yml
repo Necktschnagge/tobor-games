@@ -83,7 +83,7 @@ steps:
  - script: tree "C:\Qt\"
    displayName: "check files"
    condition: and(succeeded(), eq( variables['Agent.OS'], 'Windows_NT'))
- - script: cmake -S . -B ./build/ -DQT_DIR="C:\Qt\"
+ - script: cmake -S . -B ./build/ -DCMAKE_PREFIX_PATH ="C:\Qt\6.5.1\msvc2019_64\"
    displayName: "CMake: Create Project"
    condition: and(succeeded(), eq( variables['Agent.OS'], 'Windows_NT'))
  - script: cmake -S . -B ./build/
