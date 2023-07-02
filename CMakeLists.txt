@@ -11,8 +11,11 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 if (DEFINED ENV{USE_QT5})
 	set(USE_QT6 FALSE)
+	message("USE QT 5")
 else()
 	set(USE_QT6 TRUE)
+	message("USE QT 6")
+
 endif()
 
 
