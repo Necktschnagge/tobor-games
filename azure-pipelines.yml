@@ -69,7 +69,7 @@ steps:
  - script: git submodule update --init --recursive
    displayName: "Init Git Submodules"
    condition: succeeded()
- - script: gci "$(Agent.ToolsDirectory)\Qt"
+ - script: dir "$(Agent.ToolsDirectory)\Qt"
    displayName: "check files"
    condition: and(succeeded(), eq( variables['Agent.OS'], 'Windows_NT'))
  - script: cmake -S . -B ./build/ -DCMAKE_PREFIX_PATH="$(Agent.ToolsDirectory)\Qt"
