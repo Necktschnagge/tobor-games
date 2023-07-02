@@ -63,14 +63,17 @@ steps:
  - script: brew install qt@5 qt@6
    displayName: "Install Qt (Darwin)"
    condition: and(succeeded(), eq( variables['Agent.OS'], 'Darwin'))
- - script: choco install -y qt6-base-dev
-   displayName: "Install Qt (Windows)"
-   condition: and(succeeded(), eq( variables['Agent.OS'], 'Windows_NT'))
+# - script: choco install -y qt6-base-dev
+#   displayName: "Install Qt (Windows)"
+#   condition: and(succeeded(), eq( variables['Agent.OS'], 'Windows_NT'))
  - script: git submodule update --init --recursive
    displayName: "Init Git Submodules"
    condition: succeeded()
- - script: tree "C:\Qt\"
-   displayName: "check files"
+# - script: tree "C:\Qt\"
+#   displayName: "check files"
+#   condition: and(succeeded(), eq( variables['Agent.OS'], 'Windows_NT'))
+ - script: aqt list-qt windows desktop
+   displayName: "check aqt"
    condition: and(succeeded(), eq( variables['Agent.OS'], 'Windows_NT'))
  - script: cmake -S . -B ./build/ -DCMAKE_PREFIX_PATH="C:\Qt\"
    displayName: "CMake: Create Project"
