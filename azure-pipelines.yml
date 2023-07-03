@@ -15,7 +15,7 @@ stages:
    dependsOn: []
    
    jobs:
-    - All
+    - job: All
       strategy:
         matrix:
           ubuntu_22_04:
