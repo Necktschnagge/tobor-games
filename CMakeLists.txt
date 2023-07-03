@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.5)
 
+add_subdirectory(extern/googletest)
 
 
 ############### Names and Constants ###############
@@ -46,7 +47,6 @@ set(CMAKE_CXX_EXTENSIONS False)
 
 ############### Libraries ###############
 include_directories(SYSTEM extern/spdlog/include)
-add_subdirectory(extern/googletest)
 if(USE_QT6)
     find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets Svg SvgWidgets)
     find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets Svg SvgWidgets)
@@ -69,6 +69,14 @@ set(PROJECT_SOURCES
 		src/logger.cpp
 		src/internal_error.h
 )
+
+
+
+############### Testing ###############
+#add_subdirectory(test)
+#enable_testing()
+
+
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
     qt_add_executable(${PROJECT_NAME}
