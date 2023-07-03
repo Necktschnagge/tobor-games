@@ -74,3 +74,7 @@ add_subdirectory(src)
 #add_subdirectory(test)
 #enable_testing()
 
+
+
+############### Visual Studio ###############
+set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT ${PROJECT_NAME})#Set Visualo Studio start-up project, so that one can directly run the debugger.
