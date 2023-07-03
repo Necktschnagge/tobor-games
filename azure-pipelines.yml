@@ -15,7 +15,7 @@ stages:
    dependsOn: []
    
    jobs:
-    - job: All
+    - job: Selected_Qt_Versions
       strategy:
         matrix:
           ubuntu_22_04:
@@ -56,9 +56,6 @@ stages:
        - script: brew install qt@5 qt@6
          displayName: "Install Qt (Darwin)"
          condition: and(succeeded(), eq( variables['Agent.OS'], 'Darwin'))
-      # - script: choco install -y qt6-base-dev
-      #   displayName: "Install Qt (Windows)"
-      #   condition: and(succeeded(), eq( variables['Agent.OS'], 'Windows_NT'))
        - script: git submodule update --init --recursive
          displayName: "Init Git Submodules"
          condition: succeeded()
