@@ -26,7 +26,7 @@ add_compile_definitions(GIT_REPOSITORY_URL="https://github.com/Necktschnagge/cma
 
 
 
-############### Project Decklaration ###############
+############### Project Declaration ###############
 project(${PROJECT_NAME} VERSION 0.1 LANGUAGES CXX)
 
 
@@ -45,6 +45,8 @@ set(CMAKE_CXX_EXTENSIONS False)
 
 
 ############### Libraries ###############
+include_directories(SYSTEM extern/spdlog/include)
+add_subdirectory(extern/googletest)
 if(USE_QT6)
     find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets Svg SvgWidgets)
     find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets Svg SvgWidgets)
@@ -56,6 +58,8 @@ else()
 endif()
 
 
+
+############### Sources ###############
 set(PROJECT_SOURCES
         src/main.cpp
         src/mainwindow.cpp
