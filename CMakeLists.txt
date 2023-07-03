@@ -1,6 +1,10 @@
 cmake_minimum_required(VERSION 3.5)
 
+
+
+############### Subdirectories for dependencies ###############
 add_subdirectory(extern/googletest)
+
 
 
 ############### Names and Constants ###############
@@ -45,16 +49,18 @@ set(CMAKE_CXX_EXTENSIONS False)
 
 
 
-############### Libraries ###############
+############### Libraries via include_directories ###############
 include_directories(SYSTEM extern/spdlog/include)
+
+
+
+############### Libraries via find_package ###############
 if(USE_QT6)
     find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets Svg SvgWidgets)
     find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets Svg SvgWidgets)
-
 else()
     find_package(QT NAMES Qt5 REQUIRED COMPONENTS Widgets Svg)
     find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets Svg)
-
 endif()
 
 
