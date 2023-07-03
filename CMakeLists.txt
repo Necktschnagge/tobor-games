@@ -1,7 +1,10 @@
 cmake_minimum_required(VERSION 3.5)
 
+
+
 ############### Names ###############
 set(PROJECT_NAME Tobor)
+
 
 
 ############### Preprocessor Macros ###############
@@ -9,15 +12,22 @@ add_compile_definitions(GIT_REPOSITORY_URL="https://github.com/Necktschnagge/cma
 
 
 
-
+############### Project Decklaration ###############
 project(${PROJECT_NAME} VERSION 0.1 LANGUAGES CXX)
 
+
+
+############### Language and Flags ###############
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS False)
+#set(CMAKE_CXX_FLAGS_RELEASE "/MT /O2 /Ob2 /DNDEBUG")
+#set(CMAKE_CXX_FLAGS_DEBUG "/MT /Zi /Ob0 /Od /RTC1")
+
 
 if (DEFINED USE_QT5)
 	set(USE_QT6 FALSE)
