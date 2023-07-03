@@ -45,7 +45,7 @@ stages:
       pool:
         vmImage: $(imageName)
         name: $(the_name)
-            
+      
       steps:
        - script: sudo apt-get install qtbase5-dev libqt5svg5-dev qt6-base-dev libqt6svg6 libqt6svg6-dev
          displayName: "Install Qt (Linux)"
@@ -91,4 +91,3 @@ stages:
       # - script: .\build\test\Debug\TEST-$(project_name).exe
       #   displayName: "Run Tests on Windows"
       #   condition: and(succeeded(), eq( variables['Agent.OS'], 'Windows_NT' ))
-      
