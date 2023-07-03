@@ -1,5 +1,15 @@
 cmake_minimum_required(VERSION 3.5)
 
+############### Names ###############
+set(PROJECT_NAME Tobor)
+
+
+############### Preprocessor Macros ###############
+add_compile_definitions(GIT_REPOSITORY_URL="https://github.com/Necktschnagge/cmake-qt-prototype")
+
+
+
+
 project(Tobor_try_46757298346582354 VERSION 0.1 LANGUAGES CXX)
 
 set(CMAKE_AUTOUIC ON)
