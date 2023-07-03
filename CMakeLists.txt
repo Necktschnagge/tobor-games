@@ -2,8 +2,22 @@ cmake_minimum_required(VERSION 3.5)
 
 
 
-############### Names ###############
+############### Names and Constants ###############
 set(PROJECT_NAME Tobor)
+
+if (DEFINED USE_QT6)
+	message("Tobor:  Parameters:  USE_QT6 is defined:  ${USE_QT6}")
+	if(USE_QT6)
+		set(USE_QT6 TRUE)
+	else()
+		set(USE_QT6 FALSE)
+	endif()
+else()
+	message("Tobor:  Parameters:  USE_QT6 not set")
+	message("Tobor:  Parameters:  assuming USE_QT6 = TRUE")
+	set(USE_QT6 TRUE)
+endif()
+message("Tobor:  Parameters:  USE_QT6 set to:  ${USE_QT6}")	
 
 
 
@@ -17,7 +31,7 @@ project(${PROJECT_NAME} VERSION 0.1 LANGUAGES CXX)
 
 
 
-############### Language and Flags ###############
+############### Programming Language and Compiler Flags ###############
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
@@ -29,16 +43,8 @@ set(CMAKE_CXX_EXTENSIONS False)
 #set(CMAKE_CXX_FLAGS_DEBUG "/MT /Zi /Ob0 /Od /RTC1")
 
 
-if (DEFINED USE_QT5)
-	set(USE_QT6 FALSE)
-	message("USE QT 5")
-else()
-	set(USE_QT6 TRUE)
-	message("USE QT 6")
 
-endif()
-
-
+############### Libraries ###############
 if(USE_QT6)
     find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets Svg SvgWidgets)
     find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets Svg SvgWidgets)

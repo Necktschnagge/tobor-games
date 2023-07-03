@@ -82,7 +82,7 @@ stages:
        - script: cmake -S . -B ./build/
          displayName: "CMake: Create Project"
          condition: and(succeeded(), ne( variables['Agent.OS'], 'Windows_NT'), ne( variables['imageName'], 'ubuntu-20.04'))
-       - script: cmake -S . -B ./build/ -DUSE_QT5=FOO
+       - script: cmake -S . -B ./build/ -DUSE_QT6:BOOL=FALSE
          displayName: "CMake: Create Project"
          condition: and(succeeded(), ne( variables['Agent.OS'], 'Windows_NT'), eq( variables['imageName'], 'ubuntu-20.04'))
        - script: cmake --build ./build
