@@ -1,10 +1,9 @@
+############### Find Source Files ###############
 file(GLOB_RECURSE SOURCES LIST_DIRECTORIES true *.h *.cpp *.ui)
 
-#set(PROJECT_SOURCES
-#	src/mainwindow.ui
-#)
 
-#add_executable(${PROJECT_NAME} ${SOURCES})
+
+############### Target via add_executable ###############
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
     qt_add_executable(${PROJECT_NAME}
@@ -73,4 +72,6 @@ if(LINUX)
 	)
 endif()
 
+
+############### Target via add_library ###############
 #add_library(${PROJECT_NAME}_lib STATIC ${SOURCES}) #for using in tests
