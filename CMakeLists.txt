@@ -10,6 +10,8 @@ add_subdirectory(extern/googletest)
 ############### Names and Constants ###############
 set(PROJECT_NAME Tobor)
 set(PROJECT_NAME_LIB ${PROJECT_NAME}_static_lib)
+set(TEST_PROJECT_NAME TEST-${CMAKE_PROJECT_NAME})
+
 
 if (DEFINED USE_QT6)
 	message("Tobor:  Parameters:  USE_QT6 is defined:  ${USE_QT6}")
