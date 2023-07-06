@@ -15,7 +15,7 @@ stages:
    dependsOn: []
    
    jobs:
-    - job: QT_5
+    - job: Qt_5
       strategy:
         matrix:
           ubuntu_22_04:
@@ -86,15 +86,11 @@ stages:
        - script: .\build\test\Debug\TEST-$(project_name).exe
          displayName: "Run Tests on Windows"
          condition: and(succeeded(), eq( variables['Agent.OS'], 'Windows_NT' ))
-    - job: QT_MIXED_VERSIONS
+    - job: Qt_6
       strategy:
         matrix:
           ubuntu_22_04:
             imageName: "ubuntu-22.04"
-            the_name: "Azure Pipelines"
-      
-          ubuntu_20_04:
-            imageName: "ubuntu-20.04"
             the_name: "Azure Pipelines"
       
           mac_12:
@@ -120,10 +116,7 @@ stages:
       steps:
        - script: sudo apt-get update && sudo apt-get install build-essential libgl1-mesa-dev qt6-base-dev libqt6svg6 libqt6svg6-dev
          displayName: "Install Qt (Linux)"
-         condition: and(succeeded(), eq( variables['Agent.OS'], 'Linux'), eq( variables['imageName'], 'ubuntu-22.04'))
-       - script: sudo apt-get install qtbase5-dev libqt5svg5-dev
-         displayName: "Install Qt (Linux)"
-         condition: and(succeeded(), eq( variables['Agent.OS'], 'Linux'), eq( variables['imageName'], 'ubuntu-20.04'))
+         condition: and(succeeded(), eq( variables['Agent.OS'], 'Linux'))
        - script: brew install qt@5 qt@6
          displayName: "Install Qt (Darwin)"
          condition: and(succeeded(), eq( variables['Agent.OS'], 'Darwin'))
