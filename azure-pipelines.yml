@@ -5,7 +5,7 @@ variables:
 trigger:
   branches:
     include:
-    - '*'
+    - '*' # ' or " ? https://stackoverflow.com/questions/19109912/yaml-do-i-need-quotes-for-strings-in-yaml
     exclude:
     - artifacts
 
