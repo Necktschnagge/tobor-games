@@ -47,7 +47,7 @@ stages:
         name: $(the_name)
       
       steps:
-       - script: sudo apt-get install qtbase5-dev libqt5svg5-dev qt6-base-dev libqt6svg6 libqt6svg6-dev
+       - script: sudo apt-get update && sudo apt-get install qtbase5-dev libqt5svg5-dev qt6-base-dev libqt6svg6 libqt6svg6-dev
          displayName: "Install Qt (Linux)"
          condition: and(succeeded(), eq( variables['Agent.OS'], 'Linux'), eq( variables['imageName'], 'ubuntu-22.04'))
        - script: sudo apt-get install qtbase5-dev libqt5svg5-dev
