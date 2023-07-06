@@ -68,7 +68,7 @@ stages:
        - script: git submodule update --init --recursive
          displayName: "Init Git Submodules"
          condition: succeeded()
-       - script: cmake -S . -B ./build/ -DCMAKE_PREFIX_PATH="C:\Qt\5.15.2\msvc2019_64"
+       - script: cmake -S . -B ./build/ -DCMAKE_PREFIX_PATH="C:\Qt\5.15.2\msvc2019_64" -DUSE_QT6:BOOL=FALSE
          displayName: "CMake: Create Project (Windows)"
          condition: and(succeeded(), eq( variables['Agent.OS'], 'Windows_NT'))
        - script: PATH="/usr/local/opt/qt@5/bin:$PATH" && cmake -S . -B ./build/ -DUSE_QT6:BOOL=FALSE
