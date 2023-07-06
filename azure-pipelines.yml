@@ -22,7 +22,7 @@ stages:
             imageName: "ubuntu-22.04"
             the_name: "Azure Pipelines"
       
-          ubuntu_20_04_gcc_9:
+          ubuntu_20_04:
             imageName: "ubuntu-20.04"
             the_name: "Azure Pipelines"
       
@@ -50,7 +50,7 @@ stages:
        - script: sudo apt-get install qtbase5-dev libqt5svg5-dev
          displayName: "Install Qt (Linux)"
          condition: and(succeeded(), eq( variables['Agent.OS'], 'Linux'))
-       - script: brew install qt@5
+       - script: brew install qt@5 && echo 'export PATH="/usr/local/opt/qt@5/bin:$PATH"' >> /Users/runner/.bash_profile
          displayName: "Install Qt (Darwin)"
          condition: and(succeeded(), eq( variables['Agent.OS'], 'Darwin'))
        - script: |
@@ -83,14 +83,14 @@ stages:
        - script: .\build\test\Debug\TEST-$(project_name).exe
          displayName: "Run Tests on Windows"
          condition: and(succeeded(), eq( variables['Agent.OS'], 'Windows_NT' ))
-    - job: QT_6_5_MIXED
+    - job: QT_MIXED_VERSIONS
       strategy:
         matrix:
           ubuntu_22_04:
             imageName: "ubuntu-22.04"
             the_name: "Azure Pipelines"
       
-          ubuntu_20_04_gcc_9:
+          ubuntu_20_04:
             imageName: "ubuntu-20.04"
             the_name: "Azure Pipelines"
       
