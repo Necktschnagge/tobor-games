@@ -5,7 +5,7 @@ cmake_minimum_required(VERSION 3.20)
 ############### Subdirectories for dependencies ###############
 if (WIN32)
 	set(CMAKE_CXX_FLAGS_RELEASE "/MT /O2 /Ob2 /DNDEBUG") #what do all these flags mean?
-	set(CMAKE_CXX_FLAGS_DEBUG "/MTd /Zi /Ob0 /Od /RTC1")
+	set(CMAKE_CXX_FLAGS_DEBUG "/MDd /Zi /Ob0 /Od /RTC1")
 endif()
 add_subdirectory(extern/googletest)
 
