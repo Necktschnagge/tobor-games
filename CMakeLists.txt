@@ -79,8 +79,8 @@ add_subdirectory(src)
 
 
 ############### Testing ###############
-#add_subdirectory(test)
-#enable_testing()
+add_subdirectory(test)
+enable_testing()
 
 
 
