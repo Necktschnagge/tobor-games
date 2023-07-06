@@ -153,7 +153,7 @@ stages:
        - script: cmake -S . -B ./build/ -DUSE_QT6:BOOL=FALSE
          displayName: "CMake: Create Project"
          condition: and(succeeded(), ne( variables['Agent.OS'], 'Windows_NT'), eq( variables['imageName'], 'ubuntu-20.04'))
-       - script: cmake --build ./build -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
+       - script: cmake --build ./build --verbose
          displayName: "CMake: Compile and Link"
          condition: succeeded()
        - script: ./build/test/TEST-$(project_name)
