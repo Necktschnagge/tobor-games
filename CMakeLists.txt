@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.20)
 
 
 ############### Subdirectories for dependencies ###############
-set( gtest_force_shared_crt ON CACHE BOOL "Always use msvcrt.dll" )
+set(gtest_force_shared_crt ON CACHE BOOL "Always use msvcrt.dll" FORCE)
 add_subdirectory(extern/googletest)
 
 
@@ -51,7 +51,7 @@ set(CMAKE_CXX_EXTENSIONS False)
 if (WIN32)
 	set(CMAKE_CXX_FLAGS_RELEASE "/MT /O2 /Ob2 /DNDEBUG") #what do all these flags mean?
 	set(CMAKE_CXX_FLAGS_DEBUG "/MTd /Zi /Ob0 /Od /RTC1")
-	messsage("WIN32 Flags recognized")
+	message("WIN32 Flags recognized")
 endif()
 
 if(MSVC)
