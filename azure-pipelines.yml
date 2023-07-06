@@ -127,23 +127,21 @@ stages:
        - script: brew install qt@5 qt@6
          displayName: "Install Qt (Darwin)"
          condition: and(succeeded(), eq( variables['Agent.OS'], 'Darwin'))
+       - script: |
+          echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+          pip install aqtinstall
+          echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+          aqt list-qt windows desktop
+          echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+          mkdir C:\Qt
+          echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+          aqt install-qt --outputdir C:\Qt windows desktop 6.5.1 win64_msvc2019_64
+          echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+         displayName: "Install Qt (Windows)"
+         condition: and(succeeded(), eq( variables['Agent.OS'], 'Windows_NT'))
        - script: git submodule update --init --recursive
          displayName: "Init Git Submodules"
          condition: succeeded()
-       - script: pip install aqtinstall
-         displayName: "install aqt"
-         condition: and(succeeded(), eq( variables['Agent.OS'], 'Windows_NT'))
-       - script: |
-          mkdir C:\Qt
-          aqt install-qt --outputdir C:\Qt windows desktop 6.5.1 win64_msvc2019_64
-         displayName: "aqt install qt 6.5.1"
-         condition: and(succeeded(), eq( variables['Agent.OS'], 'Windows_NT'))
-       - script: aqt list-qt windows desktop
-         displayName: "check aqt"
-         condition: and(succeeded(), eq( variables['Agent.OS'], 'Windows_NT'))
-       - script: tree "C:\Qt\"
-         displayName: "check files"
-         condition: and(succeeded(), eq( variables['Agent.OS'], 'Windows_NT'))
        - script: cmake -S . -B ./build/ -DCMAKE_PREFIX_PATH="C:\Qt\6.5.1\msvc2019_64"
          displayName: "CMake: Create Project"
          condition: and(succeeded(), eq( variables['Agent.OS'], 'Windows_NT'))
