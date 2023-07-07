@@ -77,7 +77,7 @@ stages:
        - script: cmake -S . -B ./build/ -DUSE_QT6:BOOL=FALSE
          displayName: "CMake: Create Project (Linux)"
          condition: and(succeeded(), eq( variables['Agent.OS'], 'Linux'))
-       - script: cmake --build ./build
+       - script: cmake --build ./build --verbose
          displayName: "CMake: Compile and Link"
          condition: succeeded()
        - script: ./build/test/TEST-$(project_name)
@@ -136,14 +136,11 @@ stages:
          displayName: "Init Git Submodules"
          condition: succeeded()
        - script: cmake -S . -B ./build/ -DCMAKE_PREFIX_PATH="C:\Qt\6.5.1\msvc2019_64"
-         displayName: "CMake: Create Project"
+         displayName: "CMake: Create Project (Windows)"
          condition: and(succeeded(), eq( variables['Agent.OS'], 'Windows_NT'))
        - script: cmake -S . -B ./build/
-         displayName: "CMake: Create Project"
-         condition: and(succeeded(), ne( variables['Agent.OS'], 'Windows_NT'), ne( variables['imageName'], 'ubuntu-20.04'))
-       - script: cmake -S . -B ./build/ -DUSE_QT6:BOOL=FALSE
-         displayName: "CMake: Create Project"
-         condition: and(succeeded(), ne( variables['Agent.OS'], 'Windows_NT'), eq( variables['imageName'], 'ubuntu-20.04'))
+         displayName: "CMake: Create Project (Darwin / Linux)"
+         condition: and(succeeded(), ne( variables['Agent.OS'], 'Windows_NT'))
        - script: cmake --build ./build --verbose
          displayName: "CMake: Compile and Link"
          condition: succeeded()
