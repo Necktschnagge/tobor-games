@@ -7,6 +7,9 @@
       * Install the latest C++ compiler with **Visual Studio**.
       * Install **Qt6** or Qt5 (Qt6 is recommended). We recommend to [download the official Installer of **Qt Creator**](https://www.qt.io/product/development-tools). Alternatively, to install Qt from command line using **aqt**, see our [Azure Pipeline configuration](https://github.com/Necktschnagge/cmake-qt-prototype/blob/main/azure-pipelines.yml) (not recommended for Desktop Development).
       * Remark: You may use the MinGW toolchain shipped with the Qt Creator IDE. However we do not recommend this.
+      * Check that system environment variables are set to enable cmake to find Qt when running `*--create-project.[ps1|sh|bat]` script at later steps, e.g.:
+         * `QT_DIR = C:\Qt`
+         * `PATH = C:\Qt\6.5.0\msvc2019_64\bin;...`
    * Linux:
       * Install cmake, gcc/g++, Qt (Qt6 is recommended, Qt5 is supported)
       * Installing Qt [using the official Installer of **Qt Creator**](https://www.qt.io/product/development-tools) is recommended. Alternatively, you may use `apt-get install build-essential libgl1-mesa-dev qt6-base-dev libqt6svg6 libqt6svg6-dev` instead. See our [Azure Pipeline configuration](https://github.com/Necktschnagge/cmake-qt-prototype/blob/main/azure-pipelines.yml) for details.
