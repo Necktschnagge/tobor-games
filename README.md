@@ -12,7 +12,11 @@
          * `PATH = C:\Qt\6.5.0\msvc2019_64\bin;...`
    * Linux:
       * Install cmake, gcc/g++, Qt (Qt6 is recommended, Qt5 is supported)
-      * Installing Qt [using the official Installer of **Qt Creator**](https://www.qt.io/product/development-tools) is recommended. Alternatively, you may use `apt-get install build-essential libgl1-mesa-dev qt6-base-dev libqt6svg6 libqt6svg6-dev` instead. See our [Azure Pipeline configuration](https://github.com/Necktschnagge/cmake-qt-prototype/blob/main/azure-pipelines.yml) for details.
+      * Installing Qt [using the official Installer of **Qt Creator**](https://www.qt.io/product/development-tools) is recommended.
+      * Alternatively, you may use the system's package manager:
+          * to install Qt5 (e.g. *Ubuntu 20.04*) run `apt-get install build-essential cmake qt6-base-dev libqt6svg6-dev`
+          * to install Qt6 (e.g. *Ubuntu 22.04*) run `apt-get install build-essential cmake qtbase5-dev libqt5svg5-dev`
+      * See our [Azure Pipeline configuration](https://github.com/Necktschnagge/cmake-qt-prototype/blob/main/azure-pipelines.yml) for details.
    * MacOS:
       * *See instructions for Linux. You may use clang instead of g++.*
 ### Setup Local Repository
