@@ -14,8 +14,12 @@
       * Install cmake, gcc/g++, Qt (Qt6 is recommended, Qt5 is supported)
       * Installing Qt [using the official Installer of **Qt Creator**](https://www.qt.io/product/development-tools) is recommended.
       * Alternatively, you may use the system's package manager:
-          * to install Qt5 (e.g. *Ubuntu 20.04*) run `apt-get install build-essential cmake qtbase5-dev libqt5svg5-dev`
-          * to install Qt6 (e.g. *Ubuntu 22.04*) run `apt-get install build-essential cmake qt6-base-dev libqt6svg6-dev`
+          * for Qt5 (e.g. *Ubuntu 20.04*) run
+            
+            `apt-get install build-essential cmake qtbase5-dev libqt5svg5-dev`
+          * for Qt6 (e.g. *Ubuntu 22.04*) run
+          
+            `apt-get install build-essential cmake qt6-base-dev libqt6svg6-dev`
       * See our [Azure Pipeline configuration](https://github.com/Necktschnagge/cmake-qt-prototype/blob/main/azure-pipelines.yml) for details.
    * MacOS:
       * *See instructions for Linux. You may use clang instead of g++.*
