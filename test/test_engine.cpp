@@ -38,7 +38,7 @@ TEST(engine, create_world) {
 
 TEST(engine, create_universal_field_id) {
 	ASSERT_NO_THROW(
-		auto field_id = tobor::v1_0::universal_field_id();
+		auto field_id = tobor::v1_0::universal_cell_id();
 	);
 }
 
@@ -46,6 +46,7 @@ TEST(engine, universal_field_id_consistency) {
 	// ### check that id conversion has no inconsistencies...
 	ASSERT_NO_THROW(
 		auto field_id = 0;
+		(void)field_id;
 	);
 }
 
@@ -62,64 +63,63 @@ TEST(engine, example_integration) {
 	w.block_center_fields(2, 2);
 
 	// add vertical walls row by row, starting left
-	w.west_wall_by_id(w.field_id_of(6, 0)).is_wall = true;
-	w.west_wall_by_id(w.field_id_of(12, 0)).is_wall = true;
-	w.west_wall_by_id(w.field_id_of(2, 1)).is_wall = true;
-	w.west_wall_by_id(w.field_id_of(10, 1)).is_wall = true;
-	w.west_wall_by_id(w.field_id_of(7, 3)).is_wall = true;
-	w.west_wall_by_id(w.field_id_of(14, 3)).is_wall = true;
-	w.west_wall_by_id(w.field_id_of(1, 4)).is_wall = true;
-	w.west_wall_by_id(w.field_id_of(11, 4)).is_wall = true;
-	w.west_wall_by_id(w.field_id_of(13, 5)).is_wall = true;
-	w.west_wall_by_id(w.field_id_of(4, 6)).is_wall = true;
-	w.west_wall_by_id(w.field_id_of(12, 9)).is_wall = true;
-	w.west_wall_by_id(w.field_id_of(7, 10)).is_wall = true;
-	w.west_wall_by_id(w.field_id_of(14, 10)).is_wall = true;
-	w.west_wall_by_id(w.field_id_of(3, 11)).is_wall = true;
-	w.west_wall_by_id(w.field_id_of(7, 13)).is_wall = true;
-	w.west_wall_by_id(w.field_id_of(10, 13)).is_wall = true;
-	w.west_wall_by_id(w.field_id_of(1, 14)).is_wall = true;
-	w.west_wall_by_id(w.field_id_of(13, 14)).is_wall = true;
-	w.west_wall_by_id(w.field_id_of(4, 15)).is_wall = true;
-	w.west_wall_by_id(w.field_id_of(12, 15)).is_wall = true;
+	w.west_wall_by_id(w.coordinates_to_cell_id(6, 0)) = true;
+	w.west_wall_by_id(w.coordinates_to_cell_id(12, 0)) = true;
+	w.west_wall_by_id(w.coordinates_to_cell_id(2, 1)) = true;
+	w.west_wall_by_id(w.coordinates_to_cell_id(10, 1)) = true;
+	w.west_wall_by_id(w.coordinates_to_cell_id(14, 3)) = true;
+	w.west_wall_by_id(w.coordinates_to_cell_id(1, 4)) = true;
+	w.west_wall_by_id(w.coordinates_to_cell_id(11, 4)) = true;
+	w.west_wall_by_id(w.coordinates_to_cell_id(13, 5)) = true;
+	w.west_wall_by_id(w.coordinates_to_cell_id(4, 6)) = true;
+	w.west_wall_by_id(w.coordinates_to_cell_id(12, 9)) = true;
+	w.west_wall_by_id(w.coordinates_to_cell_id(7, 10)) = true;
+	w.west_wall_by_id(w.coordinates_to_cell_id(14, 10)) = true;
+	w.west_wall_by_id(w.coordinates_to_cell_id(3, 11)) = true;
+	w.west_wall_by_id(w.coordinates_to_cell_id(7, 13)) = true;
+	w.west_wall_by_id(w.coordinates_to_cell_id(10, 13)) = true;
+	w.west_wall_by_id(w.coordinates_to_cell_id(1, 14)) = true;
+	w.west_wall_by_id(w.coordinates_to_cell_id(13, 14)) = true;
+	w.west_wall_by_id(w.coordinates_to_cell_id(4, 15)) = true;
+	w.west_wall_by_id(w.coordinates_to_cell_id(12, 15)) = true;
 
-	w.south_wall_by_transposed_id(w.transposed_field_id_of(0, 2)).is_wall = true;
-	w.south_wall_by_transposed_id(w.transposed_field_id_of(0, 10)).is_wall = true;
-	w.south_wall_by_transposed_id(w.transposed_field_id_of(1, 4)).is_wall = true;
-	w.south_wall_by_transposed_id(w.transposed_field_id_of(1, 14)).is_wall = true;
-	w.south_wall_by_transposed_id(w.transposed_field_id_of(2, 2)).is_wall = true;
-	w.south_wall_by_transposed_id(w.transposed_field_id_of(2, 11)).is_wall = true;
-	w.south_wall_by_transposed_id(w.transposed_field_id_of(3, 7)).is_wall = true;
-	w.south_wall_by_transposed_id(w.transposed_field_id_of(6, 3)).is_wall = true;
-	w.south_wall_by_transposed_id(w.transposed_field_id_of(6, 14)).is_wall = true;
-	w.south_wall_by_transposed_id(w.transposed_field_id_of(7, 11)).is_wall = true;
-	w.south_wall_by_transposed_id(w.transposed_field_id_of(9, 2)).is_wall = true;
-	w.south_wall_by_transposed_id(w.transposed_field_id_of(9, 13)).is_wall = true;
-	w.south_wall_by_transposed_id(w.transposed_field_id_of(10, 4)).is_wall = true;
-	w.south_wall_by_transposed_id(w.transposed_field_id_of(11, 10)).is_wall = true;
-	w.south_wall_by_transposed_id(w.transposed_field_id_of(13, 6)).is_wall = true;
-	w.south_wall_by_transposed_id(w.transposed_field_id_of(13, 15)).is_wall = true;
-	w.south_wall_by_transposed_id(w.transposed_field_id_of(14, 3)).is_wall = true;
-	w.south_wall_by_transposed_id(w.transposed_field_id_of(14, 10)).is_wall = true;
-	w.south_wall_by_transposed_id(w.transposed_field_id_of(15, 7)).is_wall = true;
-	w.south_wall_by_transposed_id(w.transposed_field_id_of(15, 12)).is_wall = true;
+	w.south_wall_by_transposed_id(w.coordinates_to_transposed_cell_id(0, 2)) = true;
+	w.south_wall_by_transposed_id(w.coordinates_to_transposed_cell_id(0, 10)) = true;
+	w.south_wall_by_transposed_id(w.coordinates_to_transposed_cell_id(1, 4)) = true;
+	w.south_wall_by_transposed_id(w.coordinates_to_transposed_cell_id(1, 14)) = true;
+	w.south_wall_by_transposed_id(w.coordinates_to_transposed_cell_id(2, 2)) = true;
+	w.south_wall_by_transposed_id(w.coordinates_to_transposed_cell_id(2, 11)) = true;
+	w.south_wall_by_transposed_id(w.coordinates_to_transposed_cell_id(3, 7)) = true;
+	w.south_wall_by_transposed_id(w.coordinates_to_transposed_cell_id(6, 3)) = true;
+	w.south_wall_by_transposed_id(w.coordinates_to_transposed_cell_id(6, 14)) = true;
+	w.south_wall_by_transposed_id(w.coordinates_to_transposed_cell_id(7, 11)) = true;
+	w.south_wall_by_transposed_id(w.coordinates_to_transposed_cell_id(9, 2)) = true;
+	w.south_wall_by_transposed_id(w.coordinates_to_transposed_cell_id(9, 13)) = true;
+	w.south_wall_by_transposed_id(w.coordinates_to_transposed_cell_id(10, 4)) = true;
+	w.south_wall_by_transposed_id(w.coordinates_to_transposed_cell_id(11, 10)) = true;
+	w.south_wall_by_transposed_id(w.coordinates_to_transposed_cell_id(13, 6)) = true;
+	w.south_wall_by_transposed_id(w.coordinates_to_transposed_cell_id(13, 15)) = true;
+	w.south_wall_by_transposed_id(w.coordinates_to_transposed_cell_id(14, 3)) = true;
+	w.south_wall_by_transposed_id(w.coordinates_to_transposed_cell_id(14, 10)) = true;
+	w.south_wall_by_transposed_id(w.coordinates_to_transposed_cell_id(15, 7)) = true;
+	w.south_wall_by_transposed_id(w.coordinates_to_transposed_cell_id(15, 12)) = true;
 
 	// specify initial state
-	auto target_robot = tobor::v1_0::universal_field_id::create_by_coord(6, 9, w);
-	auto green_robot = tobor::v1_0::universal_field_id::create_by_coord(12, 7, w);
-	auto red_robot = tobor::v1_0::universal_field_id::create_by_coord(12, 12, w);
-	auto yellow_robot = tobor::v1_0::universal_field_id::create_by_coord(6, 14, w);
+	auto target_robot = tobor::v1_0::universal_cell_id::create_by_coordinates(6, 9, w);
+	auto green_robot = tobor::v1_0::universal_cell_id::create_by_coordinates(12, 7, w);
+	auto red_robot = tobor::v1_0::universal_cell_id::create_by_coordinates(12, 12, w);
+	auto yellow_robot = tobor::v1_0::universal_cell_id::create_by_coordinates(6, 14, w);
 
-	std::array<tobor::v1_0::universal_field_id, 3> other_robots{ green_robot, red_robot, yellow_robot };
+	std::array<tobor::v1_0::universal_cell_id, 3> other_robots{ green_robot, red_robot, yellow_robot };
 
 	//auto initial_state = tobor::v1_0::robots_position_state<3>(target_robot, std::move(other_robots));
 
 	// specify target field
-	auto target = tobor::v1_0::universal_field_id::create_by_coord(9, 1, w);
+	auto target = tobor::v1_0::universal_cell_id::create_by_coordinates(9, 1, w);
 
 	auto w_analyzer = tobor::v1_0::tobor_world_analyzer<3>(w);
 
-	auto optimal_solution_length = tobor::v1_0::get_all_optimal_solutions<3>(w_analyzer , target, target_robot, std::move(other_robots));
+	auto optimal_solution_length = tobor::v1_0::get_all_optimal_solutions<3>(w_analyzer, target, target_robot, std::move(other_robots));
 
 	ASSERT_EQ(9, optimal_solution_length);
 

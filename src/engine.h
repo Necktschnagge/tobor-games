@@ -1,4 +1,4 @@
-
+#pragma once
 
 #include <map>
 #include <array>
@@ -21,9 +21,15 @@ namespace tobor {
 			blocked_center_error() : std::logic_error(MESSAGE) {}
 		};
 
+
+		/**
+		*	@brief One single boolean wall
+		*/
 		class wall_type { // OK
-		public:
+			
 			bool is_wall;
+		
+		public:
 
 			wall_type(bool p_is_wall) : is_wall(p_is_wall) {}
 
@@ -34,13 +40,22 @@ namespace tobor {
 			operator bool& () {
 				return is_wall;
 			}
+
 		};
+
 
 		using wall_vector = std::vector<wall_type>; // OK
 
 
+		/**
+		* 
+		*	@brief Represents the game's entire board, stating which fields are separated by walls.
+		*	@details Does NOT contain any information about where pieces are located.
+		* 
+		*/
 		class tobor_world {
 		public:
+
 			using world_type = tobor_world;
 
 		private:
@@ -49,85 +64,22 @@ namespace tobor {
 			std::size_t y_size;
 
 			/*
-			* order: start at (0,0) -> (0, y_max) , go line by line x=0 .. x_size - 1
+			* Contains all horizontal walls existing on the board.
+			* order: start at (0,0) -> (0, y_size - 1), go line by line x=0 .. x_size - 1
+			* At index i of this vector h_walls[i] you find the horizontal wall below the cell with transposed_id i.
 			*/
-			wall_vector fixed_hwalls;
+			wall_vector h_walls;
 
 			/*
-			* order: start at (0,0) -> (x_size - 1, 0) , go line by line y=0 .. y_size - 1
+			* Contains all vertical walls existing on the board.
+			* order: start at (0,0) -> (x_size - 1, 0), go line by line y=0 .. y_size - 1
+			* At index i of this vector v_walls[i] you find the vertical wall on the left of the cell with id i.
 			*/
-			wall_vector fixed_vwalls;
+			wall_vector v_walls;
 
 		public:
-			inline constexpr std::size_t field_id_of(std::size_t x_coord, std::size_t y_coord) const noexcept {
-				return x_size * y_coord + x_coord;
-			}
 
-			inline constexpr std::size_t transposed_field_id_of(std::size_t x_coord, std::size_t y_coord) const noexcept {
-				return y_size * x_coord + y_coord;
-			}
-
-			inline constexpr std::pair<std::size_t, std::size_t> coordinates_of_field_id(std::size_t id) const noexcept {
-				return std::make_pair(id % x_size, id / x_size);
-			}
-
-			inline constexpr void coordinates_of_field_id(std::size_t id, std::size_t& x_coord, std::size_t& y_coord) const noexcept {
-				x_coord = id % x_size;
-				y_coord = id / x_size;
-			}
-
-			inline constexpr std::pair<std::size_t, std::size_t> coordinates_of_transposed_field_id(std::size_t transposed_id) const noexcept {
-				return std::make_pair(transposed_id / y_size, transposed_id % y_size);
-			}
-
-			inline constexpr void coordinates_of_transposed_field_id(std::size_t transposed_id, std::size_t& x_coord, std::size_t& y_coord) const noexcept {
-				x_coord = transposed_id / y_size;
-				y_coord = transposed_id % y_size;
-			}
-
-			inline constexpr std::size_t transpose_id(std::size_t id) const noexcept {
-				return y_size * (id % x_size) + id / x_size;
-			}
-
-			inline constexpr std::size_t detranspose_id(std::size_t transposed_id) const noexcept {
-				return x_size * (transposed_id % y_size) + transposed_id / y_size;
-			}
-
-			inline wall_type& south_wall_by_transposed_id(std::size_t transposed_id) noexcept {
-				return fixed_hwalls[transposed_id];
-			}
-
-			inline const wall_type& south_wall_by_transposed_id(std::size_t transposed_id) const noexcept {
-				return fixed_hwalls[transposed_id];
-			}
-
-			inline wall_type& north_wall_by_transposed_id(std::size_t transposed_id) noexcept {
-				return fixed_hwalls[transposed_id + 1];
-			}
-
-			inline const wall_type& north_wall_by_transposed_id(std::size_t transposed_id) const noexcept {
-				return fixed_hwalls[transposed_id + 1];
-			}
-
-			inline wall_type& west_wall_by_id(std::size_t id) noexcept {
-				return fixed_vwalls[id];
-			}
-
-			inline const wall_type& west_wall_by_id(std::size_t id) const noexcept {
-				return fixed_vwalls[id];
-			}
-
-			inline wall_type& east_wall_by_id(std::size_t id) noexcept {
-				return fixed_vwalls[id + 1];
-			}
-
-			inline const wall_type& east_wall_by_id(std::size_t id) const noexcept {
-				return fixed_vwalls[id + 1];
-			}
-
-			std::size_t count_fields() const noexcept {
-				return x_size * y_size;
-			}
+			/* ctors et. al. **************************************************************************************/
 
 			tobor_world() : x_size(0), y_size(0) {}
 
@@ -135,22 +87,22 @@ namespace tobor {
 				resize(x_size, y_size);
 			}
 
-			/*
-				@brief Sets the size of the world, also creates an empty rectangle with walls only on the outer borders
+			/**
+			*	@brief Sets the size of the world, also creates an empty rectangle with walls only on the outer borders
 			*/
 			void resize(std::size_t _x_size, std::size_t _y_size) noexcept {
 				this->x_size = _x_size;
 				this->y_size = _y_size;
 				{
-					fixed_hwalls = std::vector<wall_type>(x_size * y_size + 1, false);
-					fixed_vwalls = std::vector<wall_type>(x_size * y_size + 1, false);
-				} // ### check for exception
+					h_walls = std::vector<wall_type>(x_size * y_size + 1, false);
+					v_walls = std::vector<wall_type>(x_size * y_size + 1, false);
+				} // ### check for exception (? heap allocation, should anyway cause the app to terminate, ignore this?)
 
 				for (std::size_t i = 0; i <= x_size; ++i) { // set north and south walls
-					fixed_hwalls[y_size * i] = true;
+					h_walls[y_size * i] = true;
 				}
 				for (std::size_t i = 0; i <= y_size; ++i) { // set east and west walls
-					fixed_vwalls[x_size * i] = true;
+					v_walls[x_size * i] = true;
 				}
 			}
 
@@ -163,11 +115,13 @@ namespace tobor {
 					throw division_by_2_error();
 				if ((y_size - y_blocked_size) % 2)
 					throw division_by_2_error();
+
 				// check for non-blocked fields in every direction
-				if (x_blocked_size == x_size)
+				if (x_blocked_size >= x_size)
 					throw blocked_center_error();
-				if (y_blocked_size == y_size)
+				if (y_blocked_size >= y_size)
 					throw blocked_center_error();
+
 				const std::size_t x_begin{ (x_size - x_blocked_size) / 2 };
 				const std::size_t x_end{ x_begin + x_blocked_size };
 				const std::size_t y_begin{ (y_size - y_blocked_size) / 2 };
@@ -175,39 +129,122 @@ namespace tobor {
 
 				for (auto y = y_begin; y != y_end; ++y) {
 					for (auto x = x_begin; x != x_end; ++x) {
-						const std::size_t id = field_id_of(x, y);
-						const std::size_t transposed_id = transposed_field_id_of(x, y);
+						const std::size_t id = coordinates_to_cell_id(x, y);
+						const std::size_t transposed_id = coordinates_to_transposed_cell_id(x, y);
 
 						north_wall_by_transposed_id(transposed_id) = true;
 						east_wall_by_id(id) = true;
 						south_wall_by_transposed_id(transposed_id) = true;
 						west_wall_by_id(id) = true;
+						// remark: this is by the way inefficient, but readable
 					}
 				}
 			}
 
+			/* cell id conversion **************************************************************************************/
+
+			inline constexpr std::size_t coordinates_to_cell_id(std::size_t x_coord, std::size_t y_coord) const noexcept {
+				return x_size * y_coord + x_coord;
+			}
+
+			inline constexpr std::size_t coordinates_to_transposed_cell_id(std::size_t x_coord, std::size_t y_coord) const noexcept {
+				return y_size * x_coord + y_coord;
+			}
+
+			inline constexpr std::pair<std::size_t, std::size_t> cell_id_to_coordinates(std::size_t id) const noexcept {
+				return std::make_pair(id % x_size, id / x_size);
+			}
+
+			inline constexpr void cell_id_to_coordinates(std::size_t id, std::size_t& x_coord, std::size_t& y_coord) const noexcept {
+				x_coord = id % x_size;
+				y_coord = id / x_size;
+			}
+
+			inline constexpr std::pair<std::size_t, std::size_t> transposed_cell_id_to_coordinates(std::size_t transposed_id) const noexcept {
+				return std::make_pair(transposed_id / y_size, transposed_id % y_size);
+			}
+
+			inline constexpr void transposed_cell_id_to_coordinates(std::size_t transposed_id, std::size_t& x_coord, std::size_t& y_coord) const noexcept {
+				x_coord = transposed_id / y_size;
+				y_coord = transposed_id % y_size;
+			}
+
+			inline constexpr std::size_t id_to_transposed_id(std::size_t id) const noexcept {
+				return y_size * (id % x_size) + id / x_size;
+			}
+
+			inline constexpr std::size_t transposed_id_to_id(std::size_t transposed_id) const noexcept {
+				return x_size * (transposed_id % y_size) + transposed_id / y_size;
+			}
+
+			/* wall accessors **************************************************************************************/
+
+			inline wall_type& south_wall_by_transposed_id(std::size_t transposed_id) noexcept {
+				return h_walls[transposed_id];
+			}
+
+			inline const wall_type& south_wall_by_transposed_id(std::size_t transposed_id) const noexcept {
+				return h_walls[transposed_id];
+			}
+
+			inline wall_type& north_wall_by_transposed_id(std::size_t transposed_id) noexcept {
+				return h_walls[transposed_id + 1];
+			}
+
+			inline const wall_type& north_wall_by_transposed_id(std::size_t transposed_id) const noexcept {
+				return h_walls[transposed_id + 1];
+			}
+
+			inline wall_type& west_wall_by_id(std::size_t id) noexcept {
+				return v_walls[id];
+			}
+
+			inline const wall_type& west_wall_by_id(std::size_t id) const noexcept {
+				return v_walls[id];
+			}
+
+			inline wall_type& east_wall_by_id(std::size_t id) noexcept {
+				return v_walls[id + 1];
+			}
+
+			inline const wall_type& east_wall_by_id(std::size_t id) const noexcept {
+				return v_walls[id + 1];
+			}
+
+			/* getter **************************************************************************************/
+
+			std::size_t count_cells() const noexcept {
+				return x_size * y_size;
+			}
+
 		};
 
-		class universal_field_id { // OK, add some memory-efficient variant!
 
+		/**
+		*	@brief Kind of iterator to a cell of a board game. Does only store a cell id.
+		* 
+		*	@details This version calculates all three cell id types when set and stores all of them.
+					It is the least memory efficient way but may reduce computation time (not yet tested!).
+		*/
+		class universal_cell_id { // OK, add some memory-efficient variant!
 		public:
 
 			/* static factory member functions */
 
-			inline static universal_field_id create_by_coord(std::size_t p_x_coord, std::size_t p_y_coord, const tobor_world& world) noexcept {
-				universal_field_id result;
+			inline static universal_cell_id create_by_coordinates(std::size_t p_x_coord, std::size_t p_y_coord, const tobor_world& world) noexcept {
+				universal_cell_id result;
 				result.set_coord(p_x_coord, p_y_coord, world);
 				return result;
 			}
 
-			inline static universal_field_id create_by_id(std::size_t p_id, const tobor_world& world) noexcept {
-				universal_field_id result;
+			inline static universal_cell_id create_by_id(std::size_t p_id, const tobor_world& world) noexcept {
+				universal_cell_id result;
 				result.set_id(p_id, world);
 				return result;
 			}
 
-			inline static universal_field_id create_by_transposed_id(std::size_t p_transposed_id, const tobor_world& world) noexcept {
-				universal_field_id result;
+			inline static universal_cell_id create_by_transposed_id(std::size_t p_transposed_id, const tobor_world& world) noexcept {
+				universal_cell_id result;
 				result.set_transposed_id(p_transposed_id, world);
 				return result;
 			}
@@ -223,25 +260,25 @@ namespace tobor {
 
 			/* ctors */
 
-			universal_field_id() : id(0), transposed_id(0), x_coord(0), y_coord(0) {}
+			universal_cell_id() : id(0), transposed_id(0), x_coord(0), y_coord(0) {}
 
-			universal_field_id(const universal_field_id&) = default;
+			universal_cell_id(const universal_cell_id&) = default;
 
-			universal_field_id(universal_field_id&&) = default; // needed for static factory member function
+			universal_cell_id(universal_cell_id&&) = default; // needed for static factory member function
 
 			/* operator = */
 
-			inline universal_field_id& operator = (const universal_field_id&) = default;
+			inline universal_cell_id& operator = (const universal_cell_id&) = default;
 
-			inline universal_field_id& operator = (universal_field_id&&) = default;
+			inline universal_cell_id& operator = (universal_cell_id&&) = default;
 
 			/* comparison operators */
 
-			inline bool operator < (const universal_field_id& other) const noexcept {
+			inline bool operator < (const universal_cell_id& other) const noexcept {
 				return this->id < other.id;
 			}
 
-			inline bool operator == (const universal_field_id& other) const noexcept {
+			inline bool operator == (const universal_cell_id& other) const noexcept {
 				return this->id == other.id;
 			}
 
@@ -259,28 +296,28 @@ namespace tobor {
 
 			inline void set_id(std::size_t p_id, const tobor_world& world) noexcept {
 				id = p_id;
-				world.coordinates_of_field_id(id, x_coord, y_coord);
-				transposed_id = world.transposed_field_id_of(x_coord, y_coord);
+				world.cell_id_to_coordinates(id, x_coord, y_coord);
+				transposed_id = world.coordinates_to_transposed_cell_id(x_coord, y_coord);
 			}
 
 			inline void set_transposed_id(std::size_t p_transposed_id, const tobor_world& world) noexcept {
 				transposed_id = p_transposed_id;
-				world.coordinates_of_transposed_field_id(transposed_id, x_coord, y_coord);
-				id = world.field_id_of(x_coord, y_coord);
+				world.transposed_cell_id_to_coordinates(transposed_id, x_coord, y_coord);
+				id = world.coordinates_to_cell_id(x_coord, y_coord);
 			}
 
 			inline void set_coord(std::size_t p_x_coord, std::size_t p_y_coord, const tobor_world& world) noexcept {
 				x_coord = p_x_coord;
 				y_coord = p_y_coord;
-				id = world.field_id_of(x_coord, y_coord);
-				transposed_id = world.transposed_field_id_of(x_coord, y_coord);
+				id = world.coordinates_to_cell_id(x_coord, y_coord);
+				transposed_id = world.coordinates_to_transposed_cell_id(x_coord, y_coord);
 			}
 
 		};
 
 		template <std::size_t COUNT_NON_TARGET_ROBOTS> // ## alternative implementation using std::vector instead of array, as non-template variant
 		class robots_position_state {
-			using Field_Id_Type = universal_field_id;
+			using Field_Id_Type = universal_cell_id;
 
 			// just for fun
 			[[deprecated]]
@@ -366,7 +403,7 @@ namespace tobor {
 
 
 		class quick_move_entry {
-			using Field_Id_Type = universal_field_id;
+			using Field_Id_Type = universal_cell_id;
 			using World_Type = tobor_world;
 
 		public:
@@ -408,7 +445,7 @@ namespace tobor {
 
 		class quick_move_table {
 		public:
-			using Field_Id_Type = universal_field_id;
+			using Field_Id_Type = universal_cell_id;
 			using World_Type = tobor_world;
 
 			// maps:   id |-> quick_move_entry of field with given id
@@ -417,8 +454,8 @@ namespace tobor {
 			quick_move_table() {}
 
 			quick_move_table(const World_Type& world) {
-				cells.reserve(world.count_fields());
-				for (std::size_t id = 0; id < world.count_fields(); ++id) {
+				cells.reserve(world.count_cells());
+				for (std::size_t id = 0; id < world.count_cells(); ++id) {
 					Field_Id_Type field;
 					field.set_id(id, world);
 
@@ -444,12 +481,12 @@ namespace tobor {
 				table = quick_move_table(my_world);
 			}
 
-			inline std::pair<universal_field_id, bool> get_next_field_on_west_move(const universal_field_id& start_field, const robots_position_state<COUNT_NON_TARGET_ROBOTS>& state) {
+			inline std::pair<universal_cell_id, bool> get_next_field_on_west_move(const universal_cell_id& start_field, const robots_position_state<COUNT_NON_TARGET_ROBOTS>& state) {
 				const std::size_t x_coord_start{ start_field.get_x_coord() }; // ## use id instead, transposed_id respectively for other directions: less comparison operations in code, maybe not at runtime...
 				const std::size_t y_coord{ start_field.get_y_coord() };
-				const universal_field_id& next_without_obstacle{ table.cells[start_field.get_id()].next_west };
+				const universal_cell_id& next_without_obstacle{ table.cells[start_field.get_id()].next_west };
 				std::size_t x_coord_last{ next_without_obstacle.get_x_coord() };
-				universal_field_id next_west;
+				universal_cell_id next_west;
 				if (x_coord_start == x_coord_last) {
 					/* no move possible */
 					return std::make_pair(next_west, false);
@@ -475,12 +512,12 @@ namespace tobor {
 				return std::make_pair(next_west, true);
 			}
 
-			inline std::pair<universal_field_id, bool> get_next_field_on_east_move(const universal_field_id& start_field, const robots_position_state< COUNT_NON_TARGET_ROBOTS>& state) {
+			inline std::pair<universal_cell_id, bool> get_next_field_on_east_move(const universal_cell_id& start_field, const robots_position_state< COUNT_NON_TARGET_ROBOTS>& state) {
 				const std::size_t x_coord_start{ start_field.get_x_coord() };
 				const std::size_t y_coord{ start_field.get_y_coord() };
-				const universal_field_id& next_without_obstacle{ table.cells[start_field.get_id()].next_east };
+				const universal_cell_id& next_without_obstacle{ table.cells[start_field.get_id()].next_east };
 				std::size_t x_coord_last{ next_without_obstacle.get_x_coord() };
-				universal_field_id next_east;
+				universal_cell_id next_east;
 				if (x_coord_start == x_coord_last) {
 					/* no move possible */
 					return std::make_pair(next_east, false);
@@ -506,12 +543,12 @@ namespace tobor {
 				return std::make_pair(next_east, true);
 			}
 
-			inline std::pair<universal_field_id, bool> get_next_field_on_south_move(const universal_field_id& start_field, const robots_position_state< COUNT_NON_TARGET_ROBOTS>& state) {
+			inline std::pair<universal_cell_id, bool> get_next_field_on_south_move(const universal_cell_id& start_field, const robots_position_state< COUNT_NON_TARGET_ROBOTS>& state) {
 				const std::size_t x_coord{ start_field.get_x_coord() };
 				const std::size_t y_coord_start{ start_field.get_y_coord() };
-				const universal_field_id& next_without_obstacle{ table.cells[start_field.get_id()].next_south };
+				const universal_cell_id& next_without_obstacle{ table.cells[start_field.get_id()].next_south };
 				std::size_t y_coord_last{ next_without_obstacle.get_y_coord() };
-				universal_field_id next_south;
+				universal_cell_id next_south;
 				if (y_coord_start == y_coord_last) {
 					/* no move possible */
 					return std::make_pair(next_south, false);
@@ -537,12 +574,12 @@ namespace tobor {
 				return std::make_pair(next_south, true);
 			}
 
-			inline std::pair<universal_field_id, bool> get_next_field_on_north_move(const universal_field_id& start_field, const robots_position_state<  COUNT_NON_TARGET_ROBOTS>& state) {
+			inline std::pair<universal_cell_id, bool> get_next_field_on_north_move(const universal_cell_id& start_field, const robots_position_state<  COUNT_NON_TARGET_ROBOTS>& state) {
 				const std::size_t x_coord{ start_field.get_x_coord() };
 				const std::size_t y_coord_start{ start_field.get_y_coord() };
-				const universal_field_id& next_without_obstacle{ table.cells[start_field.get_id()].next_north };
+				const universal_cell_id& next_without_obstacle{ table.cells[start_field.get_id()].next_north };
 				std::size_t y_coord_last{ next_without_obstacle.get_y_coord() };
-				universal_field_id next_north;
+				universal_cell_id next_north;
 				if (y_coord_start == y_coord_last) {
 					/* no move possible */
 					return std::make_pair(next_north, false);
@@ -609,7 +646,7 @@ namespace tobor {
 		template <std::size_t COUNT_NON_TARGET_ROBOTS>
 		class partial_solution_connections {
 		public:
-			using Field_Id_Type = universal_field_id;
+			using Field_Id_Type = universal_cell_id;
 			using State_Type = robots_position_state<COUNT_NON_TARGET_ROBOTS>;
 
 
@@ -626,17 +663,17 @@ namespace tobor {
 		class move_candidate {
 		public:
 			robot_move move;
-			std::pair<universal_field_id, bool> next_field_paired_enable;
+			std::pair<universal_cell_id, bool> next_field_paired_enable;
 
-			move_candidate(const robot_move& m, const std::pair<universal_field_id, bool>& n) : move(m), next_field_paired_enable(n) {}
+			move_candidate(const robot_move& m, const std::pair<universal_cell_id, bool>& n) : move(m), next_field_paired_enable(n) {}
 		};
 
 		template<std::size_t COUNT_NON_TARGET_ROBOTS = 3>
 		inline std::size_t get_all_optimal_solutions(
 			tobor_world_analyzer<COUNT_NON_TARGET_ROBOTS>& world_analyzer,
-			const universal_field_id& p_target_field,
-			const universal_field_id& p_target_robot,
-			std::array<universal_field_id, COUNT_NON_TARGET_ROBOTS>&& p_other_robots
+			const universal_cell_id& p_target_field,
+			const universal_cell_id& p_target_robot,
+			std::array<universal_cell_id, COUNT_NON_TARGET_ROBOTS>&& p_other_robots
 		) {
 
 			//using state_type = robots_position_state<COUNT_NON_TARGET_ROBOTS>; // remove this!
