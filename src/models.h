@@ -316,6 +316,13 @@ namespace tobor {
 
 		};
 
+
+		/**
+		*	@brief Contains the information where the pieces are located on the game board.
+		*
+		*	@details It only distinguishes the target piece from non target pieces.
+		*			Non target pieces cannot be distiguished. They are kept sorted by their cell ids.
+		*/
 		template <std::size_t COUNT_NON_TARGET_PIECES> // ## alternative implementation using std::vector instead of array, as non-template variant
 		class positions_of_pieces {
 
@@ -373,9 +380,16 @@ namespace tobor {
 			}
 
 		public:
+
+			/**
+			*	@brief Cell id of the target piece, i.e. the one which should be moved to the target cell.
+			*/
 			cell_id target_piece;
 			std::array<cell_id, COUNT_NON_TARGET_PIECES> non_target_pieces; // keep sorted all the time!
 
+			/**
+			*	@brief Creates an object when cell positions of the pieces are given.
+			*/
 			positions_of_pieces(const cell_id& p_target_piece, std::array<cell_id, COUNT_NON_TARGET_PIECES>&& p_non_target_pieces) :
 				target_piece(p_target_piece),
 				non_target_pieces(std::move(p_non_target_pieces))

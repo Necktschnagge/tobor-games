@@ -26,7 +26,9 @@ TEST(engine, create_wall_type_std_constructor) {
 TEST(engine, create_wall_type_bool_conversion) {
 	ASSERT_NO_THROW(
 		auto t_wall = tobor::v1_0::wall_type(true);
-	auto f_wall = tobor::v1_0::wall_type(false);
+	(void)t_wall;
+		auto f_wall = tobor::v1_0::wall_type(false);
+	(void)f_wall;
 	);
 }
 
@@ -38,7 +40,8 @@ TEST(engine, create_world) {
 
 TEST(engine, create_universal_field_id) {
 	ASSERT_NO_THROW(
-		auto field_id = tobor::v1_0::universal_cell_id();
+		auto cell_id = tobor::v1_0::universal_cell_id();
+	(void)cell_id;
 	);
 }
 
@@ -117,7 +120,7 @@ TEST(engine, example_integration) {
 	// specify target field
 	auto target = tobor::v1_0::universal_cell_id::create_by_coordinates(9, 1, w);
 
-	auto w_analyzer = tobor::v1_0::tobor_world_analyzer<3>(w);
+	auto w_analyzer = tobor::v1_0::move_one_piece_calculator<3>(w);
 
 	auto optimal_solution_length = tobor::v1_0::get_all_optimal_solutions<3>(w_analyzer, target, target_piece, std::move(other_robots));
 
