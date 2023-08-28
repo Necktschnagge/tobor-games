@@ -105,21 +105,21 @@ TEST(engine, example_integration) {
 	w.south_wall_by_transposed_id(w.coordinates_to_transposed_cell_id(15, 12)) = true;
 
 	// specify initial state
-	auto target_robot = tobor::v1_0::universal_cell_id::create_by_coordinates(6, 9, w);
+	auto target_piece = tobor::v1_0::universal_cell_id::create_by_coordinates(6, 9, w);
 	auto green_robot = tobor::v1_0::universal_cell_id::create_by_coordinates(12, 7, w);
 	auto red_robot = tobor::v1_0::universal_cell_id::create_by_coordinates(12, 12, w);
 	auto yellow_robot = tobor::v1_0::universal_cell_id::create_by_coordinates(6, 14, w);
 
 	std::array<tobor::v1_0::universal_cell_id, 3> other_robots{ green_robot, red_robot, yellow_robot };
 
-	//auto initial_state = tobor::v1_0::robots_position_state<3>(target_robot, std::move(other_robots));
+	//auto initial_state = tobor::v1_0::positions_of_pieces<3>(target_piece, std::move(other_robots));
 
 	// specify target field
 	auto target = tobor::v1_0::universal_cell_id::create_by_coordinates(9, 1, w);
 
 	auto w_analyzer = tobor::v1_0::tobor_world_analyzer<3>(w);
 
-	auto optimal_solution_length = tobor::v1_0::get_all_optimal_solutions<3>(w_analyzer, target, target_robot, std::move(other_robots));
+	auto optimal_solution_length = tobor::v1_0::get_all_optimal_solutions<3>(w_analyzer, target, target_piece, std::move(other_robots));
 
 	ASSERT_EQ(9, optimal_solution_length);
 

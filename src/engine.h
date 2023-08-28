@@ -1,5 +1,7 @@
 #pragma once
 
+#include "models.h"
+
 #include <map>
 #include <array>
 #include <algorithm>
@@ -315,54 +317,55 @@ namespace tobor {
 
 		};
 
-		template <std::size_t COUNT_NON_TARGET_ROBOTS> // ## alternative implementation using std::vector instead of array, as non-template variant
-		class robots_position_state {
-			using Field_Id_Type = universal_cell_id;
+		template <std::size_t COUNT_NON_TARGET_PIECES> // ## alternative implementation using std::vector instead of array, as non-template variant
+		class positions_of_pieces {
+
+			using cell_id = universal_cell_id;
 
 			// just for fun
 			[[deprecated]]
-			inline void sort_robots(std::size_t p_index_of_the_only_changed_robot) {
+			inline void sort_non_target_pieces(std::size_t p_index_of_the_only_changed_piece) {
 				constexpr std::size_t INDEX_BEGIN{ 0 };
-				constexpr std::size_t INDEX_END{ COUNT_NON_TARGET_ROBOTS };
+				constexpr std::size_t INDEX_END{ COUNT_NON_TARGET_PIECES };
 
-				if (p_index_of_the_only_changed_robot != INDEX_BEGIN) { // not first element
-					if (other_robots_sorted[p_index_of_the_only_changed_robot] < other_robots_sorted[p_index_of_the_only_changed_robot - 1]) { // look in range [INDEX_BEGIN, p_index_of_the_only_changed_robot) for need of swap
+				if (p_index_of_the_only_changed_piece != INDEX_BEGIN) { // not first element
+					if (non_target_pieces[p_index_of_the_only_changed_piece] < non_target_pieces[p_index_of_the_only_changed_piece - 1]) { // look in range [INDEX_BEGIN, p_index_of_the_only_changed_piece) for need of swap
 						std::size_t shift_begin{ INDEX_BEGIN };
-						//const std::size_t shift_end{ p_index_of_the_only_changed_robot + 1 };
+						//const std::size_t shift_end{ p_index_of_the_only_changed_piece + 1 };
 
-						while (other_robots_sorted[shift_begin] < other_robots_sorted[p_index_of_the_only_changed_robot]) {
+						while (non_target_pieces[shift_begin] < non_target_pieces[p_index_of_the_only_changed_piece]) {
 							++shift_begin;
 						}
 
 						//A B C D G J M E P R S T // move E to the left...
 						// shift in determined range
 						{
-							Field_Id_Type swap = other_robots_sorted[p_index_of_the_only_changed_robot];
-							for (std::size_t i = p_index_of_the_only_changed_robot; i != shift_begin; --i) {
-								other_robots_sorted[i] = other_robots_sorted[i - 1];
+							cell_id swap = non_target_pieces[p_index_of_the_only_changed_piece];
+							for (std::size_t i = p_index_of_the_only_changed_piece; i != shift_begin; --i) {
+								non_target_pieces[i] = non_target_pieces[i - 1];
 							}
-							other_robots_sorted[shift_begin] = swap;
+							non_target_pieces[shift_begin] = swap;
 						}
 
 						return;
 					}
 				}
-				if (p_index_of_the_only_changed_robot + 1 < INDEX_END) { // not last element
-					if (other_robots_sorted[p_index_of_the_only_changed_robot + 1] < other_robots_sorted[p_index_of_the_only_changed_robot]) {
-						//const std::size_t shift_begin{ p_index_of_the_only_changed_robot };
+				if (p_index_of_the_only_changed_piece + 1 < INDEX_END) { // not last element
+					if (non_target_pieces[p_index_of_the_only_changed_piece + 1] < non_target_pieces[p_index_of_the_only_changed_piece]) {
+						//const std::size_t shift_begin{ p_index_of_the_only_changed_piece };
 						std::size_t shift_rbegin{ INDEX_END - 1 };
 
-						while (other_robots_sorted[p_index_of_the_only_changed_robot] < other_robots_sorted[shift_rbegin]) {
+						while (non_target_pieces[p_index_of_the_only_changed_piece] < non_target_pieces[shift_rbegin]) {
 							--shift_rbegin;
 						}
 
 						// shift in determined range
 						{
-							Field_Id_Type swap = other_robots_sorted[p_index_of_the_only_changed_robot];
-							for (std::size_t i = p_index_of_the_only_changed_robot; i != shift_rbegin; ++i) {
-								other_robots_sorted[i] = other_robots_sorted[i + 1];
+							cell_id swap = non_target_pieces[p_index_of_the_only_changed_piece];
+							for (std::size_t i = p_index_of_the_only_changed_piece; i != shift_rbegin; ++i) {
+								non_target_pieces[i] = non_target_pieces[i + 1];
 							}
-							other_robots_sorted[shift_rbegin] = swap;
+							non_target_pieces[shift_rbegin] = swap;
 						}
 						return;
 					}
@@ -371,49 +374,51 @@ namespace tobor {
 			}
 
 		public:
-			Field_Id_Type target_robot;
-			std::array<Field_Id_Type, COUNT_NON_TARGET_ROBOTS> other_robots_sorted;
+			cell_id target_piece;
+			std::array<cell_id, COUNT_NON_TARGET_PIECES> non_target_pieces; // keep sorted all the time!
 
-			robots_position_state(const Field_Id_Type& p_target_robot, std::array<Field_Id_Type, COUNT_NON_TARGET_ROBOTS>&& p_other_robots) :
-				target_robot(p_target_robot),
-				other_robots_sorted(std::move(p_other_robots))
+			positions_of_pieces(const cell_id& p_target_piece, std::array<cell_id, COUNT_NON_TARGET_PIECES>&& p_non_target_pieces) :
+				target_piece(p_target_piece),
+				non_target_pieces(std::move(p_non_target_pieces))
 			{
-				sort_robots();
+				sort_non_target_pieces();
 			}
 
-			robots_position_state(const robots_position_state&) = default;
+			positions_of_pieces(const positions_of_pieces&) = default;
 
-			robots_position_state(robots_position_state&&) = default;
+			positions_of_pieces(positions_of_pieces&&) = default;
 
-			bool operator< (const robots_position_state& another) const noexcept {
-				return (target_robot < another.target_robot) || (
-					(target_robot == another.target_robot) && (other_robots_sorted < another.other_robots_sorted)
+			bool operator< (const positions_of_pieces& another) const noexcept {
+				return (target_piece < another.target_piece) || (
+					(target_piece == another.target_piece) && (non_target_pieces < another.non_target_pieces)
 					);
 			}
 
-			bool operator== (const robots_position_state& another) const noexcept {
-				return target_robot == another.target_robot && other_robots_sorted == another.other_robots_sorted;
+			bool operator== (const positions_of_pieces& another) const noexcept {
+				return target_piece == another.target_piece && non_target_pieces == another.non_target_pieces;
 			}
 
-			inline void sort_robots() {
-				std::sort(other_robots_sorted.begin(), other_robots_sorted.end());
+			inline void sort_non_target_pieces() {
+				std::sort(non_target_pieces.begin(), non_target_pieces.end());
 			}
 
 		};
 
 
-		class quick_move_entry {
-			using Field_Id_Type = universal_cell_id;
-			using World_Type = tobor_world;
+		class quick_moves_of_cell {
+
+			using cell_id = universal_cell_id;
+
+			using game_board = tobor_world;
 
 		public:
-			Field_Id_Type next_north; // ### cannot be const, because of ctor, should be only const-accessable!
-			Field_Id_Type next_east;
-			Field_Id_Type next_south;
-			Field_Id_Type next_west;
+			cell_id next_north; // ### cannot be const, because of ctor, should be only const-accessable!
+			cell_id next_east;
+			cell_id next_south;
+			cell_id next_west;
 
-			quick_move_entry(const Field_Id_Type& start_field, const World_Type& world) {
-				// ### inefficient: try to use some recursive call on next east of left neighbour cell, if next_east is not equal to start field
+			quick_moves_of_cell(const cell_id& start_field, const game_board& world) {
+				// ### inefficient: try to use some recursive call on next east of left neighbour cell, if next_east is not equal to start cell
 				// east, west - vwalls - id
 				std::size_t next_west_id = start_field.get_id();
 				while (!world.west_wall_by_id(next_west_id)) {
@@ -443,28 +448,28 @@ namespace tobor {
 			}
 		};
 
-		class quick_move_table {
+		class quick_move_board {
 		public:
-			using Field_Id_Type = universal_cell_id;
-			using World_Type = tobor_world;
+			using cell_id = universal_cell_id;
+			using game_board = tobor_world;
 
-			// maps:   id |-> quick_move_entry of field with given id
-			std::vector<quick_move_entry> cells;
+			// maps:   id |-> quick_moves_of_cell of cell with given id
+			std::vector<quick_moves_of_cell> cells;
 
-			quick_move_table() {}
+			quick_move_board() {}
 
-			quick_move_table(const World_Type& world) {
+			quick_move_board(const game_board& world) {
 				cells.reserve(world.count_cells());
 				for (std::size_t id = 0; id < world.count_cells(); ++id) {
-					Field_Id_Type field;
-					field.set_id(id, world);
+					cell_id cell;
+					cell.set_id(id, world);
 
-					cells.emplace_back(quick_move_entry(field, world));
+					cells.emplace_back(quick_moves_of_cell(cell, world));
 				}
 			}
 		};
 
-		template<std::size_t COUNT_NON_TARGET_ROBOTS>
+		template<std::size_t COUNT_NON_TARGET_PIECES>
 		class tobor_world_analyzer {
 		public:
 			using world_type = tobor_world;
@@ -472,16 +477,16 @@ namespace tobor {
 		private:
 			const world_type& my_world;
 
-			quick_move_table table;
+			quick_move_board table;
 
 		public:
 			tobor_world_analyzer(const world_type& my_world) : my_world(my_world) {}
 
 			inline void create_quick_move_table() {
-				table = quick_move_table(my_world);
+				table = quick_move_board(my_world);
 			}
 
-			inline std::pair<universal_cell_id, bool> get_next_field_on_west_move(const universal_cell_id& start_field, const robots_position_state<COUNT_NON_TARGET_ROBOTS>& state) {
+			inline std::pair<universal_cell_id, bool> get_next_field_on_west_move(const universal_cell_id& start_field, const positions_of_pieces<COUNT_NON_TARGET_PIECES>& state) {
 				const std::size_t x_coord_start{ start_field.get_x_coord() }; // ## use id instead, transposed_id respectively for other directions: less comparison operations in code, maybe not at runtime...
 				const std::size_t y_coord{ start_field.get_y_coord() };
 				const universal_cell_id& next_without_obstacle{ table.cells[start_field.get_id()].next_west };
@@ -492,12 +497,12 @@ namespace tobor {
 					return std::make_pair(next_west, false);
 				}
 				// looking for an obstacle...
-				if (state.target_robot.get_y_coord() == y_coord) { // if we compare ids we will not have to check if in correct line.
-					if (state.target_robot.get_x_coord() < x_coord_start && state.target_robot.get_x_coord() >= x_coord_last) {
-						x_coord_last = state.target_robot.get_x_coord() + 1;
+				if (state.target_piece.get_y_coord() == y_coord) { // if we compare ids we will not have to check if in correct line.
+					if (state.target_piece.get_x_coord() < x_coord_start && state.target_piece.get_x_coord() >= x_coord_last) {
+						x_coord_last = state.target_piece.get_x_coord() + 1;
 					}
 				}
-				for (auto& robot : state.other_robots_sorted) {
+				for (auto& robot : state.non_target_pieces) {
 					if (robot.get_y_coord() == y_coord) {
 						if (robot.get_x_coord() < x_coord_start && robot.get_x_coord() >= x_coord_last) {
 							x_coord_last = robot.get_x_coord() + 1;
@@ -512,7 +517,7 @@ namespace tobor {
 				return std::make_pair(next_west, true);
 			}
 
-			inline std::pair<universal_cell_id, bool> get_next_field_on_east_move(const universal_cell_id& start_field, const robots_position_state< COUNT_NON_TARGET_ROBOTS>& state) {
+			inline std::pair<universal_cell_id, bool> get_next_field_on_east_move(const universal_cell_id& start_field, const positions_of_pieces< COUNT_NON_TARGET_PIECES>& state) {
 				const std::size_t x_coord_start{ start_field.get_x_coord() };
 				const std::size_t y_coord{ start_field.get_y_coord() };
 				const universal_cell_id& next_without_obstacle{ table.cells[start_field.get_id()].next_east };
@@ -523,12 +528,12 @@ namespace tobor {
 					return std::make_pair(next_east, false);
 				}
 				// looking for an obstacle...
-				if (state.target_robot.get_y_coord() == y_coord) {
-					if (state.target_robot.get_x_coord() > x_coord_start && state.target_robot.get_x_coord() <= x_coord_last) {
-						x_coord_last = state.target_robot.get_x_coord() - 1;
+				if (state.target_piece.get_y_coord() == y_coord) {
+					if (state.target_piece.get_x_coord() > x_coord_start && state.target_piece.get_x_coord() <= x_coord_last) {
+						x_coord_last = state.target_piece.get_x_coord() - 1;
 					}
 				}
-				for (auto& robot : state.other_robots_sorted) {
+				for (auto& robot : state.non_target_pieces) {
 					if (robot.get_y_coord() == y_coord) {
 						if (robot.get_x_coord() > x_coord_start && robot.get_x_coord() <= x_coord_last) {
 							x_coord_last = robot.get_x_coord() - 1;
@@ -543,7 +548,7 @@ namespace tobor {
 				return std::make_pair(next_east, true);
 			}
 
-			inline std::pair<universal_cell_id, bool> get_next_field_on_south_move(const universal_cell_id& start_field, const robots_position_state< COUNT_NON_TARGET_ROBOTS>& state) {
+			inline std::pair<universal_cell_id, bool> get_next_field_on_south_move(const universal_cell_id& start_field, const positions_of_pieces< COUNT_NON_TARGET_PIECES>& state) {
 				const std::size_t x_coord{ start_field.get_x_coord() };
 				const std::size_t y_coord_start{ start_field.get_y_coord() };
 				const universal_cell_id& next_without_obstacle{ table.cells[start_field.get_id()].next_south };
@@ -554,12 +559,12 @@ namespace tobor {
 					return std::make_pair(next_south, false);
 				}
 				// looking for an obstacle...
-				if (state.target_robot.get_x_coord() == x_coord) {
-					if (state.target_robot.get_y_coord() < y_coord_start && state.target_robot.get_y_coord() >= y_coord_last) {
-						y_coord_last = state.target_robot.get_y_coord() + 1;
+				if (state.target_piece.get_x_coord() == x_coord) {
+					if (state.target_piece.get_y_coord() < y_coord_start && state.target_piece.get_y_coord() >= y_coord_last) {
+						y_coord_last = state.target_piece.get_y_coord() + 1;
 					}
 				}
-				for (auto& robot : state.other_robots_sorted) {
+				for (auto& robot : state.non_target_pieces) {
 					if (robot.get_x_coord() == x_coord) {
 						if (robot.get_y_coord() < y_coord_start && robot.get_y_coord() >= y_coord_last) {
 							y_coord_last = robot.get_y_coord() + 1;
@@ -574,7 +579,7 @@ namespace tobor {
 				return std::make_pair(next_south, true);
 			}
 
-			inline std::pair<universal_cell_id, bool> get_next_field_on_north_move(const universal_cell_id& start_field, const robots_position_state<  COUNT_NON_TARGET_ROBOTS>& state) {
+			inline std::pair<universal_cell_id, bool> get_next_field_on_north_move(const universal_cell_id& start_field, const positions_of_pieces<  COUNT_NON_TARGET_PIECES>& state) {
 				const std::size_t x_coord{ start_field.get_x_coord() };
 				const std::size_t y_coord_start{ start_field.get_y_coord() };
 				const universal_cell_id& next_without_obstacle{ table.cells[start_field.get_id()].next_north };
@@ -585,12 +590,12 @@ namespace tobor {
 					return std::make_pair(next_north, false);
 				}
 				// looking for an obstacle...
-				if (state.target_robot.get_x_coord() == x_coord) {
-					if (state.target_robot.get_y_coord() > y_coord_start && state.target_robot.get_y_coord() <= y_coord_last) {
-						y_coord_last = state.target_robot.get_y_coord() - 1;
+				if (state.target_piece.get_x_coord() == x_coord) {
+					if (state.target_piece.get_y_coord() > y_coord_start && state.target_piece.get_y_coord() <= y_coord_last) {
+						y_coord_last = state.target_piece.get_y_coord() - 1;
 					}
 				}
-				for (auto& robot : state.other_robots_sorted) {
+				for (auto& robot : state.non_target_pieces) {
 					if (robot.get_x_coord() == x_coord) {
 						if (robot.get_y_coord() > y_coord_start && robot.get_y_coord() <= y_coord_last) {
 							y_coord_last = robot.get_y_coord() - 1;
@@ -608,21 +613,21 @@ namespace tobor {
 		};
 
 		// 
-		template <std::size_t COUNT_NON_TARGET_ROBOTS>
+		template <std::size_t COUNT_NON_TARGET_PIECES>
 		class partial_solution_record {
 		public:
-			robots_position_state<COUNT_NON_TARGET_ROBOTS> state;
+			positions_of_pieces<COUNT_NON_TARGET_PIECES> state;
 			std::vector<std::shared_ptr<partial_solution_record>> predecessors;
 			std::size_t steps;
 		};
 
-		/*template<class Field_Id_Type, std::size_t COUNT_NON_TARGET_ROBOTS>
+		/*template<class cell_id, std::size_t COUNT_NON_TARGET_PIECES>
 		using partial_solutions_container =
 			std::vector< // partitioning by target robot position id
 			std::vector< // partitioning by additional robot x_coord
 			std::map<
-			robots_position_state<Field_Id_Type, COUNT_NON_TARGET_ROBOTS>,
-			std::tuple<partial_solution_record<Field_Id_Type, COUNT_NON_TARGET_ROBOTS>, std::mutex>
+			positions_of_pieces<cell_id, COUNT_NON_TARGET_PIECES>,
+			std::tuple<partial_solution_record<cell_id, COUNT_NON_TARGET_PIECES>, std::mutex>
 			>
 			>
 			>;*/ // for multi threaded
@@ -643,14 +648,14 @@ namespace tobor {
 			robot_move(const robot_id_type& _robot_id, const robot_direction_type& _direction) : robot_id(_robot_id), direction(_direction) {}
 		};
 
-		template <std::size_t COUNT_NON_TARGET_ROBOTS>
+		template <std::size_t COUNT_NON_TARGET_PIECES>
 		class partial_solution_connections {
 		public:
-			using Field_Id_Type = universal_cell_id;
-			using State_Type = robots_position_state<COUNT_NON_TARGET_ROBOTS>;
+			using cell_id = universal_cell_id;
+			using State_Type = positions_of_pieces<COUNT_NON_TARGET_PIECES>;
 
 
-			using partial_solutions_map_type = std::map<robots_position_state<COUNT_NON_TARGET_ROBOTS>, partial_solution_connections>;
+			using partial_solutions_map_type = std::map<positions_of_pieces<COUNT_NON_TARGET_PIECES>, partial_solution_connections>;
 			using map_iterator_type = typename partial_solutions_map_type::iterator;
 
 			static constexpr std::size_t MAX{ std::numeric_limits<std::size_t>::max() };
@@ -668,24 +673,24 @@ namespace tobor {
 			move_candidate(const robot_move& m, const std::pair<universal_cell_id, bool>& n) : move(m), next_field_paired_enable(n) {}
 		};
 
-		template<std::size_t COUNT_NON_TARGET_ROBOTS = 3>
+		template<std::size_t COUNT_NON_TARGET_PIECES = 3>
 		inline std::size_t get_all_optimal_solutions(
-			tobor_world_analyzer<COUNT_NON_TARGET_ROBOTS>& world_analyzer,
+			tobor_world_analyzer<COUNT_NON_TARGET_PIECES>& world_analyzer,
 			const universal_cell_id& p_target_field,
 			const universal_cell_id& p_target_robot,
-			std::array<universal_cell_id, COUNT_NON_TARGET_ROBOTS>&& p_other_robots
+			std::array<universal_cell_id, COUNT_NON_TARGET_PIECES>&& p_other_robots
 		) {
 
-			//using state_type = robots_position_state<COUNT_NON_TARGET_ROBOTS>; // remove this!
-			//using connect_type = partial_solution_connections<COUNT_NON_TARGET_ROBOTS>; // remove this!
-			//using partial_solutions_map_type = typename partial_solution_connections<COUNT_NON_TARGET_ROBOTS>::partial_solutions_map_type;
-			using map_iterator = typename partial_solution_connections<COUNT_NON_TARGET_ROBOTS>::map_iterator_type;
+			//using state_type = positions_of_pieces<COUNT_NON_TARGET_PIECES>; // remove this!
+			//using connect_type = partial_solution_connections<COUNT_NON_TARGET_PIECES>; // remove this!
+			//using partial_solutions_map_type = typename partial_solution_connections<COUNT_NON_TARGET_PIECES>::partial_solutions_map_type;
+			using map_iterator = typename partial_solution_connections<COUNT_NON_TARGET_PIECES>::map_iterator_type;
 
-			const auto initial_state = robots_position_state<COUNT_NON_TARGET_ROBOTS>(p_target_robot, std::move(p_other_robots));
+			const auto initial_state = positions_of_pieces<COUNT_NON_TARGET_PIECES>(p_target_robot, std::move(p_other_robots));
 
 
-			typename partial_solution_connections<COUNT_NON_TARGET_ROBOTS>::partial_solutions_map_type solutions_map;
-			//type_helper::partial_solutions_map_type<COUNT_NON_TARGET_ROBOTS> solutions_map;
+			typename partial_solution_connections<COUNT_NON_TARGET_PIECES>::partial_solutions_map_type solutions_map;
+			//type_helper::partial_solutions_map_type<COUNT_NON_TARGET_PIECES> solutions_map;
 			std::vector<std::vector<map_iterator>> to_be_explored;
 			std::size_t optimal_solution_size{ std::numeric_limits<std::size_t>::max() };
 
@@ -709,38 +714,38 @@ namespace tobor {
 
 					// get next fields in our world with respect to current state
 					candidates_for_successor_states.emplace_back(
-						robot_move(COUNT_NON_TARGET_ROBOTS, robot_move::WEST),
-						world_analyzer.get_next_field_on_west_move(current_iterator->first.target_robot, current_iterator->first)
+						robot_move(COUNT_NON_TARGET_PIECES, robot_move::WEST),
+						world_analyzer.get_next_field_on_west_move(current_iterator->first.target_piece, current_iterator->first)
 					);
 					candidates_for_successor_states.emplace_back(
-						robot_move(COUNT_NON_TARGET_ROBOTS, robot_move::EAST),
-						world_analyzer.get_next_field_on_east_move(current_iterator->first.target_robot, current_iterator->first)
+						robot_move(COUNT_NON_TARGET_PIECES, robot_move::EAST),
+						world_analyzer.get_next_field_on_east_move(current_iterator->first.target_piece, current_iterator->first)
 					);
 					candidates_for_successor_states.emplace_back(
-						robot_move(COUNT_NON_TARGET_ROBOTS, robot_move::NORTH),
-						world_analyzer.get_next_field_on_north_move(current_iterator->first.target_robot, current_iterator->first)
+						robot_move(COUNT_NON_TARGET_PIECES, robot_move::NORTH),
+						world_analyzer.get_next_field_on_north_move(current_iterator->first.target_piece, current_iterator->first)
 					);
 					candidates_for_successor_states.emplace_back(
-						robot_move(COUNT_NON_TARGET_ROBOTS, robot_move::SOUTH),
-						world_analyzer.get_next_field_on_south_move(current_iterator->first.target_robot, current_iterator->first)
+						robot_move(COUNT_NON_TARGET_PIECES, robot_move::SOUTH),
+						world_analyzer.get_next_field_on_south_move(current_iterator->first.target_piece, current_iterator->first)
 					);
 
-					for (std::size_t rob_id{ 0 }; rob_id < COUNT_NON_TARGET_ROBOTS; ++rob_id) {
+					for (std::size_t rob_id{ 0 }; rob_id < COUNT_NON_TARGET_PIECES; ++rob_id) {
 						candidates_for_successor_states.emplace_back(
 							robot_move(static_cast<robot_move::robot_id_type>(rob_id), robot_move::WEST),
-							world_analyzer.get_next_field_on_west_move(current_iterator->first.other_robots_sorted[rob_id], current_iterator->first)
+							world_analyzer.get_next_field_on_west_move(current_iterator->first.non_target_pieces[rob_id], current_iterator->first)
 						);
 						candidates_for_successor_states.emplace_back(
 							robot_move(static_cast<robot_move::robot_id_type>(rob_id), robot_move::EAST),
-							world_analyzer.get_next_field_on_east_move(current_iterator->first.other_robots_sorted[rob_id], current_iterator->first)
+							world_analyzer.get_next_field_on_east_move(current_iterator->first.non_target_pieces[rob_id], current_iterator->first)
 						);
 						candidates_for_successor_states.emplace_back(
 							robot_move(static_cast<robot_move::robot_id_type>(rob_id), robot_move::NORTH),
-							world_analyzer.get_next_field_on_north_move(current_iterator->first.other_robots_sorted[rob_id], current_iterator->first)
+							world_analyzer.get_next_field_on_north_move(current_iterator->first.non_target_pieces[rob_id], current_iterator->first)
 						);
 						candidates_for_successor_states.emplace_back(
 							robot_move(static_cast<robot_move::robot_id_type>(rob_id), robot_move::SOUTH),
-							world_analyzer.get_next_field_on_south_move(current_iterator->first.other_robots_sorted[rob_id], current_iterator->first)
+							world_analyzer.get_next_field_on_south_move(current_iterator->first.non_target_pieces[rob_id], current_iterator->first)
 						);
 					}
 
@@ -757,14 +762,14 @@ namespace tobor {
 
 							// create next state
 							// c.next_field_paired_enable.first; // new cell id
-							auto new_state = robots_position_state<COUNT_NON_TARGET_ROBOTS>(current_iterator->first);
+							auto new_state = positions_of_pieces<COUNT_NON_TARGET_PIECES>(current_iterator->first);
 
-							if (c.move.robot_id < COUNT_NON_TARGET_ROBOTS) {
-								new_state.other_robots_sorted[c.move.robot_id] = c.next_field_paired_enable.first;
-								new_state.sort_robots();
+							if (c.move.robot_id < COUNT_NON_TARGET_PIECES) {
+								new_state.non_target_pieces[c.move.robot_id] = c.next_field_paired_enable.first;
+								new_state.sort_non_target_pieces();
 							}
 							else {
-								new_state.target_robot = c.next_field_paired_enable.first;
+								new_state.target_piece = c.next_field_paired_enable.first;
 							}
 
 							if (solutions_map[new_state].steps > current_iterator->second.steps + 1) { // check if path to successor state is an optimal one (as far as we have seen)
