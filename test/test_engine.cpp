@@ -1,6 +1,6 @@
 #include "gtest/gtest.h"
 
-#include "../src/engine.h"
+#include "../src/solver.h"
 
 #include <type_traits>
 #include <array>

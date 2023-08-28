@@ -1,6 +1,6 @@
 
 #include "logger.h"
-#include "engine.h"
+#include "solver.h"
 
 
 #include "mainwindow.h"
