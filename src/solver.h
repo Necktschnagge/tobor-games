@@ -10,7 +10,7 @@
 namespace tobor {
 
 	namespace v1_0 {
-		
+
 		/**
 		*	@brief Stores the cell ids which can be reached by moving in one of the four directions,
 					assuming moving as far as possible until hitting a wall,
@@ -83,6 +83,73 @@ namespace tobor {
 					cells.emplace_back(quick_moves_of_cell(cell, world));
 				}
 			}
+		};
+
+		class quick_move_cache {
+
+			using game_board = tobor_world;
+
+		private:
+			const game_board& board;
+
+			std::vector<std::size_t> go_west; // using cell ids
+			std::vector<std::size_t> go_east; // using cell ids
+			std::vector<std::size_t> go_south; // using cell transposed ids
+			std::vector<std::size_t> go_north; // using cell transposed ids
+
+		public:
+
+			quick_move_cache(const game_board& world) : board(world) {
+				update();
+			}
+
+			void update() {
+				const std::size_t VECTOR_SIZE{ board.count_cells() };
+
+				go_west = std::vector<std::size_t>(VECTOR_SIZE, static_cast<std::size_t>(-1));
+				go_east = std::vector<std::size_t>(VECTOR_SIZE, static_cast<std::size_t>(-1));
+				go_south = std::vector<std::size_t>(VECTOR_SIZE, static_cast<std::size_t>(-1));
+				go_north = std::vector<std::size_t>(VECTOR_SIZE, static_cast<std::size_t>(-1));
+
+				go_west[0] = 0;
+				go_south[0] = 0;
+				for (std::size_t id = 1; id < go_west.size(); ++id) {
+					if (board.west_wall_by_id(id)) {
+						go_west[id] = id;
+					}
+					else {
+						go_west[id] = go_west[id - 1];
+					}
+					if (board.south_wall_by_transposed_id(id)) {
+						go_south[id] = id;
+					}
+					else {
+						go_south[id] = go_south[id - 1];
+					}
+				}
+
+				go_east[VECTOR_SIZE - 1] = VECTOR_SIZE - 1;
+				go_north[VECTOR_SIZE - 1] = VECTOR_SIZE - 1;
+				for (std::size_t id = VECTOR_SIZE - 2; id != static_cast<std::size_t>(-1); --id) {
+					if (board.east_wall_by_id(id)) {
+						go_east[id] = id;
+					}
+					else {
+						go_east[id] = go_east[id + 1];
+					}
+					if (board.north_wall_by_transposed_id(id)) {
+						go_north[id] = id;
+					}
+					else {
+						go_north[id] = go_north[id + 1];
+					}
+				}
+			}
+
+			std::size_t get_west(std::size_t id) const { return go_west[id]; }
+			std::size_t get_east(std::size_t id) const { return go_east[id]; }
+			std::size_t get_south(std::size_t transposed_id) const { return go_south[transposed_id]; }
+			std::size_t get_north(std::size_t transposed_id) const { return go_north[transposed_id]; }
 		};
 
 		/**
@@ -250,31 +317,6 @@ namespace tobor {
 		};
 
 
-
-
-
-		/*
-		template <std::size_t COUNT_NON_TARGET_PIECES>
-		class partial_solution_record {
-		public:
-			positions_of_pieces<COUNT_NON_TARGET_PIECES> state;
-			std::vector<std::shared_ptr<partial_solution_record>> predecessors;
-			std::size_t steps;
-		};
-		*/
-
-		/*template<class cell_id, std::size_t COUNT_NON_TARGET_PIECES>
-		using partial_solutions_container =
-			std::vector< // partitioning by target ntp position id
-			std::vector< // partitioning by additional ntp x_coord
-			std::map<
-			positions_of_pieces<cell_id, COUNT_NON_TARGET_PIECES>,
-			std::tuple<partial_solution_record<cell_id, COUNT_NON_TARGET_PIECES>, std::mutex>
-			>
-			>
-			>;*/ // for multi threaded
-
-
 		/*
 		*	@brief Equivalent to a pair of a piece_id and a direction where to move it.
 		*/
@@ -323,83 +365,94 @@ namespace tobor {
 
 		template<std::size_t COUNT_NON_TARGET_PIECES = 3>
 		inline std::size_t get_all_optimal_solutions(
-			move_one_piece_calculator<COUNT_NON_TARGET_PIECES>& world_analyzer,
-			const universal_cell_id& p_target_field,
-			const universal_cell_id& p_target_robot,
-			std::array<universal_cell_id, COUNT_NON_TARGET_PIECES>&& p_other_robots
+			move_one_piece_calculator<COUNT_NON_TARGET_PIECES>& move_one_piece_c,
+			const universal_cell_id& p_target_cell,
+			const universal_cell_id& p_target_piece,
+			std::array<universal_cell_id, COUNT_NON_TARGET_PIECES>&& p_non_target_pieces
 		) {
 
-			//using state_type = positions_of_pieces<COUNT_NON_TARGET_PIECES>; // remove this!
-			//using connect_type = partial_solution_connections<COUNT_NON_TARGET_PIECES>; // remove this!
-			//using partial_solutions_map_type = typename partial_solution_connections<COUNT_NON_TARGET_PIECES>::partial_solutions_map_type;
+			// to be used as a pointer to a game state
 			using map_iterator = typename partial_solution_connections<COUNT_NON_TARGET_PIECES>::map_iterator_type;
 
-			const auto initial_state = positions_of_pieces<COUNT_NON_TARGET_PIECES>(p_target_robot, std::move(p_other_robots));
+
+			const auto initial_state = positions_of_pieces<COUNT_NON_TARGET_PIECES>(p_target_piece, std::move(p_non_target_pieces));
 
 
+			// all game states that have been found yet,
+			// each one with pointers to their predecessors as well as a counter for successors.
 			typename partial_solution_connections<COUNT_NON_TARGET_PIECES>::partial_solutions_map_type solutions_map;
-			//type_helper::partial_solutions_map_type<COUNT_NON_TARGET_PIECES> solutions_map;
-			std::vector<std::vector<map_iterator>> to_be_explored;
+
+			// All game states that have been found yet, ordered by their shortest distance from initial state.
+			// .back() contains all game states to be explored if one deepening step just finished.
+			std::vector<std::vector<map_iterator>> visited_game_states;
+
+			// number of steps needed by any optimal solution
 			std::size_t optimal_solution_size{ std::numeric_limits<std::size_t>::max() };
 
-			solutions_map[initial_state].steps = 0; //insert initial_state
-			// predecessors are empty
-			// is_leaf ist always true until 
 
-			// what if initial state is already final? check this!
+			/*	insert the initial game state into map of all visited states : */
+			solutions_map[initial_state].steps = 0; // insert initial_state
+			// solutions_map[initial_state].predecessors.clear(); // already empty be default
+			// solutions_map[initial_state].count_successors = 0; // already empty be default
 
-			to_be_explored.push_back(std::vector<map_iterator>{solutions_map.begin()});
+			/*	insert the initial game state into vector of all visited states : */
+			visited_game_states.push_back(std::vector<map_iterator>{solutions_map.begin()});
 
-			world_analyzer.create_quick_move_table();
+
+			// what if initial state is already final? check this! ####
+
+
+			move_one_piece_c.create_quick_move_table(); //### replace by new quick move class object
 
 			for (std::size_t expand_size{ 0 }; expand_size < optimal_solution_size; ++expand_size) {
-				to_be_explored.emplace_back(); // possibly invalidates iterators on sub-vectors, but on most compilers it will work anyway. But please do not rely on this behaviour.
+				visited_game_states.emplace_back(); // possibly invalidates iterators on sub-vectors, but on most compilers it will work anyway.
+				// But please do not rely on this behaviour.
 
-				for (const auto& current_iterator : to_be_explored[expand_size]) {
-					//const auto current_iterator{ to_be_explored[index_next_exploration] };
+				for (const auto& current_iterator : visited_game_states[expand_size]) {
+					//const auto current_iterator{ visited_game_states[index_next_exploration] };
 
 					std::vector<move_candidate> candidates_for_successor_states;
 
 					// get next fields in our world with respect to current state
 					candidates_for_successor_states.emplace_back(
 						piece_move(COUNT_NON_TARGET_PIECES, piece_move::WEST),
-						world_analyzer.get_next_field_on_west_move(current_iterator->first.target_piece, current_iterator->first)
+						move_one_piece_c.get_next_field_on_west_move(current_iterator->first.target_piece, current_iterator->first)
 					);
 					candidates_for_successor_states.emplace_back(
 						piece_move(COUNT_NON_TARGET_PIECES, piece_move::EAST),
-						world_analyzer.get_next_field_on_east_move(current_iterator->first.target_piece, current_iterator->first)
+						move_one_piece_c.get_next_field_on_east_move(current_iterator->first.target_piece, current_iterator->first)
 					);
 					candidates_for_successor_states.emplace_back(
 						piece_move(COUNT_NON_TARGET_PIECES, piece_move::NORTH),
-						world_analyzer.get_next_field_on_north_move(current_iterator->first.target_piece, current_iterator->first)
+						move_one_piece_c.get_next_field_on_north_move(current_iterator->first.target_piece, current_iterator->first)
 					);
 					candidates_for_successor_states.emplace_back(
 						piece_move(COUNT_NON_TARGET_PIECES, piece_move::SOUTH),
-						world_analyzer.get_next_field_on_south_move(current_iterator->first.target_piece, current_iterator->first)
+						move_one_piece_c.get_next_field_on_south_move(current_iterator->first.target_piece, current_iterator->first)
 					);
 
 					for (std::size_t rob_id{ 0 }; rob_id < COUNT_NON_TARGET_PIECES; ++rob_id) {
 						candidates_for_successor_states.emplace_back(
 							piece_move(static_cast<piece_move::piece_id_type>(rob_id), piece_move::WEST),
-							world_analyzer.get_next_field_on_west_move(current_iterator->first.non_target_pieces[rob_id], current_iterator->first)
+							move_one_piece_c.get_next_field_on_west_move(current_iterator->first.non_target_pieces[rob_id], current_iterator->first)
 						);
 						candidates_for_successor_states.emplace_back(
 							piece_move(static_cast<piece_move::piece_id_type>(rob_id), piece_move::EAST),
-							world_analyzer.get_next_field_on_east_move(current_iterator->first.non_target_pieces[rob_id], current_iterator->first)
+							move_one_piece_c.get_next_field_on_east_move(current_iterator->first.non_target_pieces[rob_id], current_iterator->first)
 						);
 						candidates_for_successor_states.emplace_back(
 							piece_move(static_cast<piece_move::piece_id_type>(rob_id), piece_move::NORTH),
-							world_analyzer.get_next_field_on_north_move(current_iterator->first.non_target_pieces[rob_id], current_iterator->first)
+							move_one_piece_c.get_next_field_on_north_move(current_iterator->first.non_target_pieces[rob_id], current_iterator->first)
 						);
 						candidates_for_successor_states.emplace_back(
 							piece_move(static_cast<piece_move::piece_id_type>(rob_id), piece_move::SOUTH),
-							world_analyzer.get_next_field_on_south_move(current_iterator->first.non_target_pieces[rob_id], current_iterator->first)
+							move_one_piece_c.get_next_field_on_south_move(current_iterator->first.non_target_pieces[rob_id], current_iterator->first)
 						);
 					}
 
 					// check if reached goal
 					for (std::size_t candidate{ 0 }; candidate < 4; ++candidate) {
-						if (candidates_for_successor_states[candidate].next_field_paired_enable.first == p_target_field) {
+						if (candidates_for_successor_states[candidate].next_field_paired_enable.first == p_target_cell) {
 							optimal_solution_size = current_iterator->second.steps + 1;
 						}
 					}
@@ -426,7 +479,7 @@ namespace tobor {
 								// hint: on map entry creation by if condition, steps defaults to MAX value of std::size_t
 
 								// delete all predecessors!
-								//for (const auto& tuple : solutions_map[new_state].predecessors) { // it is always empty because of fifo order of to_be_explored
+								//for (const auto& tuple : solutions_map[new_state].predecessors) { // it is always empty because of fifo order of visited_game_states
 								//	--(std::get<0>(tuple)->second.count_successors);
 								//}
 								//solutions_map[new_state].predecessors.clear();
@@ -434,13 +487,13 @@ namespace tobor {
 								solutions_map[new_state].steps = current_iterator->second.steps + 1;
 								solutions_map[new_state].predecessors.emplace_back(current_iterator, c.move);
 								++(current_iterator->second.count_successors);
-								to_be_explored[expand_size + 1].push_back(solutions_map.find(new_state));
+								visited_game_states[expand_size + 1].push_back(solutions_map.find(new_state));
 							}
 							else {
 								if (solutions_map[new_state].steps == current_iterator->second.steps + 1) {
 									solutions_map[new_state].predecessors.emplace_back(current_iterator, c.move);
 									++(current_iterator->second.count_successors);
-									// to_be_explored.push_back(solutions_map.find(new_state)); don't add, already added on first path reaching new_state
+									// visited_game_states.push_back(solutions_map.find(new_state)); don't add, already added on first path reaching new_state
 								}
 							}
 						}
