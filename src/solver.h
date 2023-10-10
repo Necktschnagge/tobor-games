@@ -11,13 +11,14 @@ namespace tobor {
 
 	namespace v1_0 {
 
+#if false
 		/**
 		*	@brief Stores the cell ids which can be reached by moving in one of the four directions,
 					assuming moving as far as possible until hitting a wall,
 					also assuming there are no other obstacles than walls on the way.
 					Should be used as one object per cell.
 		*/
-		class quick_moves_of_cell {
+		class [[deprecated]] quick_moves_of_cell {
 
 			using cell_id = universal_cell_id;
 
@@ -64,7 +65,7 @@ namespace tobor {
 		/**
 		*	@brief Stores the quick move information for all cells of the game's board.
 		*/
-		class quick_move_board {
+		class [[deprecated]] quick_move_board {
 		public:
 			using cell_id = universal_cell_id;
 			using game_board = tobor_world;
@@ -84,7 +85,14 @@ namespace tobor {
 				}
 			}
 		};
+#endif
 
+		// ### alternative board representation is just two sorted vectors of indices where there are walls, additionally you can uniformly encode pieces like walls, in this case double walls left and right, or top and bottom.
+
+
+		/**
+		* @brief Class for keeping the information about quick jumps
+		*/
 		class quick_move_cache {
 
 			using game_board = tobor_world;
@@ -99,10 +107,18 @@ namespace tobor {
 
 		public:
 
-			quick_move_cache(const game_board& world) : board(world) {
+			/***
+				@brief Calculates quick moves for all cells of board. Make sure that reference to \p board stays valid until this is destroyed. Otherwise behavior is undefined.
+
+				@details Make sure that for this cache to be correct, update() needs to be called whenever board is changed.
+			*/
+			quick_move_cache(const game_board& board) : board(board) {
 				update();
 			}
 
+			/**
+			* @brief Updates the cache stored by this object. Needs to be called after any change of the board for the cache to be valid.
+			*/
 			void update() {
 				const std::size_t VECTOR_SIZE{ board.count_cells() };
 
@@ -113,7 +129,7 @@ namespace tobor {
 
 				go_west[0] = 0;
 				go_south[0] = 0;
-				for (std::size_t id = 1; id < go_west.size(); ++id) {
+				for (std::size_t id = 1; id < VECTOR_SIZE; ++id) {
 					if (board.west_wall_by_id(id)) {
 						go_west[id] = id;
 					}
@@ -163,17 +179,12 @@ namespace tobor {
 		private:
 			const world_type& my_world;
 
-			quick_move_board table;
+			quick_move_cache cache;
 
 		public:
 
-
-			move_one_piece_calculator(const world_type& my_world) : my_world(my_world) {}
-
-			inline void create_quick_move_table() {
-				table = quick_move_board(my_world);
+			move_one_piece_calculator(const world_type& my_world) : my_world(my_world), cache(my_world) {
 			}
-
 
 			// put the following four functions together using some if constexpr. Use the direction as template parameter. ####
 			// it may be better to not return a bool, just return the start cell itself if no move happens. (?)
@@ -182,136 +193,120 @@ namespace tobor {
 			*	@brief Calculates the successor cell to reach starting at \p start_cell moving west until obstacle.
 			*/
 			inline std::pair<universal_cell_id, bool> get_next_field_on_west_move(const universal_cell_id& start_cell, const positions_of_pieces<COUNT_NON_TARGET_PIECES>& state) {
-				const std::size_t x_coord_start{ start_cell.get_x_coord() }; // ## use id instead, transposed_id respectively for other directions: less comparison operations in code, maybe not at runtime...
-				const std::size_t y_coord{ start_cell.get_y_coord() };
-				const universal_cell_id& next_without_obstacle{ table.cells[start_cell.get_id()].next_west };
-				std::size_t x_coord_last{ next_without_obstacle.get_x_coord() };
-				universal_cell_id next_west;
-				if (x_coord_start == x_coord_last) {
-					/* no move possible */
-					return std::make_pair(next_west, false);
+				std::size_t next_cell{ cache.get_west(start_cell.get_id()) };
+
+				if (start_cell.get_id() == next_cell) { // no move possible by walls
+					return std::make_pair(universal_cell_id::create_by_id(next_cell, my_world), false);
 				}
-				// looking for an obstacle...
-				if (state.target_piece.get_y_coord() == y_coord) { // if we compare ids we will not have to check if in correct line.
-					if (state.target_piece.get_x_coord() < x_coord_start && state.target_piece.get_x_coord() >= x_coord_last) {
-						x_coord_last = state.target_piece.get_x_coord() + 1;
-					}
+
+				// iterate over all pieces since they may appear as obstacle
+
+				if (next_cell <= state.target_piece.get_id() && state.target_piece.get_id() < start_cell.get_id()) { // target piece
+					next_cell = state.target_piece.get_id() + 1;
 				}
-				for (auto& ntp : state.non_target_pieces) {
-					if (ntp.get_y_coord() == y_coord) {
-						if (ntp.get_x_coord() < x_coord_start && ntp.get_x_coord() >= x_coord_last) {
-							x_coord_last = ntp.get_x_coord() + 1;
+
+				for (std::size_t i = 0; i < COUNT_NON_TARGET_PIECES; ++i) { // non target pieces
+						if (next_cell <= state.non_target_pieces[i].get_id() && state.non_target_pieces[i].get_id() < start_cell.get_id()) { // target piece
+							next_cell = state.non_target_pieces[i].get_id() + 1;
 						}
-					}
 				}
-				if (x_coord_start == x_coord_last) {
-					/* no move possible */
-					return std::make_pair(next_west, false);
+
+				if (start_cell.get_id() == next_cell) { // no move possible by walls
+					return std::make_pair(universal_cell_id::create_by_id(next_cell, my_world), false);
 				}
-				next_west.set_coord(x_coord_last, y_coord, my_world);
-				return std::make_pair(next_west, true);
+
+				return std::make_pair(universal_cell_id::create_by_id(next_cell, my_world), true);
 			}
 
 			/**
 			*	@brief Calculates the successor cell to reach starting at \p start_cell moving east until obstacle.
 			*/
 			inline std::pair<universal_cell_id, bool> get_next_field_on_east_move(const universal_cell_id& start_cell, const positions_of_pieces< COUNT_NON_TARGET_PIECES>& state) {
-				const std::size_t x_coord_start{ start_cell.get_x_coord() };
-				const std::size_t y_coord{ start_cell.get_y_coord() };
-				const universal_cell_id& next_without_obstacle{ table.cells[start_cell.get_id()].next_east };
-				std::size_t x_coord_last{ next_without_obstacle.get_x_coord() };
-				universal_cell_id next_east;
-				if (x_coord_start == x_coord_last) {
-					/* no move possible */
-					return std::make_pair(next_east, false);
+				
+				//decltype(universal_cell_id::get_id) universal_cell_id::* get_id_type = &universal_cell_id::get_id;
+				//decltype(quick_move_cache::get_west) quick_move_cache::* next_cache_direction = &quick_move_cache::get_east;
+
+				std::size_t next_cell{ cache.get_east(start_cell.get_id()) };
+
+				if (start_cell.get_id() == next_cell) { // no move possible by walls
+					return std::make_pair(universal_cell_id::create_by_id(next_cell, my_world), false);
 				}
-				// looking for an obstacle...
-				if (state.target_piece.get_y_coord() == y_coord) {
-					if (state.target_piece.get_x_coord() > x_coord_start && state.target_piece.get_x_coord() <= x_coord_last) {
-						x_coord_last = state.target_piece.get_x_coord() - 1;
+
+				// iterate over all pieces since they may appear as obstacle
+
+				if (start_cell.get_id() < state.target_piece.get_id() && state.target_piece.get_id() <= next_cell) { // target piece
+					next_cell = state.target_piece.get_id() - 1;
+				}
+
+				for (std::size_t i = 0; i < COUNT_NON_TARGET_PIECES; ++i) { // non target pieces
+					if (start_cell.get_id() < state.non_target_pieces[i].get_id() && state.non_target_pieces[i].get_id() <= next_cell) { // target piece
+						next_cell = state.non_target_pieces[i].get_id() - 1;
 					}
 				}
-				for (auto& ntp : state.non_target_pieces) {
-					if (ntp.get_y_coord() == y_coord) {
-						if (ntp.get_x_coord() > x_coord_start && ntp.get_x_coord() <= x_coord_last) {
-							x_coord_last = ntp.get_x_coord() - 1;
-						}
-					}
+
+				if (start_cell.get_id() == next_cell) { // no move possible by walls
+					return std::make_pair(universal_cell_id::create_by_id(next_cell, my_world), false);
 				}
-				if (x_coord_start == x_coord_last) {
-					/* no move possible */
-					return std::make_pair(next_east, false);
-				}
-				next_east.set_coord(x_coord_last, y_coord, my_world);
-				return std::make_pair(next_east, true);
+
+				return std::make_pair(universal_cell_id::create_by_id(next_cell, my_world), true);
 			}
 
 			/**
 			*	@brief Calculates the successor cell to reach starting at \p start_cell moving south until obstacle.
 			*/
 			inline std::pair<universal_cell_id, bool> get_next_field_on_south_move(const universal_cell_id& start_cell, const positions_of_pieces< COUNT_NON_TARGET_PIECES>& state) {
-				const std::size_t x_coord{ start_cell.get_x_coord() };
-				const std::size_t y_coord_start{ start_cell.get_y_coord() };
-				const universal_cell_id& next_without_obstacle{ table.cells[start_cell.get_id()].next_south };
-				std::size_t y_coord_last{ next_without_obstacle.get_y_coord() };
-				universal_cell_id next_south;
-				if (y_coord_start == y_coord_last) {
-					/* no move possible */
-					return std::make_pair(next_south, false);
+				std::size_t next_cell{ cache.get_south(start_cell.get_transposed_id()) };
+
+				if (start_cell.get_transposed_id() == next_cell) { // no move possible by walls
+					return std::make_pair(universal_cell_id::create_by_transposed_id(next_cell, my_world), false);
 				}
-				// looking for an obstacle...
-				if (state.target_piece.get_x_coord() == x_coord) {
-					if (state.target_piece.get_y_coord() < y_coord_start && state.target_piece.get_y_coord() >= y_coord_last) {
-						y_coord_last = state.target_piece.get_y_coord() + 1;
+
+				// iterate over all pieces since they may appear as obstacle
+
+				if (next_cell <= state.target_piece.get_transposed_id() && state.target_piece.get_transposed_id() < start_cell.get_transposed_id()) { // target piece
+					next_cell = state.target_piece.get_transposed_id() + 1;
+				}
+
+				for (std::size_t i = 0; i < COUNT_NON_TARGET_PIECES; ++i) { // non target pieces
+					if (next_cell <= state.non_target_pieces[i].get_transposed_id() && state.non_target_pieces[i].get_transposed_id() < start_cell.get_transposed_id()) { // target piece
+						next_cell = state.non_target_pieces[i].get_transposed_id() + 1;
 					}
 				}
-				for (auto& ntp : state.non_target_pieces) {
-					if (ntp.get_x_coord() == x_coord) {
-						if (ntp.get_y_coord() < y_coord_start && ntp.get_y_coord() >= y_coord_last) {
-							y_coord_last = ntp.get_y_coord() + 1;
-						}
-					}
+
+				if (start_cell.get_transposed_id() == next_cell) { // no move possible by walls
+					return std::make_pair(universal_cell_id::create_by_transposed_id(next_cell, my_world), false);
 				}
-				if (y_coord_start == y_coord_last) {
-					/* no move possible */
-					return std::make_pair(next_south, false);
-				}
-				next_south.set_coord(x_coord, y_coord_last, my_world);
-				return std::make_pair(next_south, true);
+
+				return std::make_pair(universal_cell_id::create_by_transposed_id(next_cell, my_world), true);
 			}
 
 			/**
 			*	@brief Calculates the successor cell to reach starting at \p start_cell moving north until obstacle.
 			*/
 			inline std::pair<universal_cell_id, bool> get_next_field_on_north_move(const universal_cell_id& start_cell, const positions_of_pieces<  COUNT_NON_TARGET_PIECES>& state) {
-				const std::size_t x_coord{ start_cell.get_x_coord() };
-				const std::size_t y_coord_start{ start_cell.get_y_coord() };
-				const universal_cell_id& next_without_obstacle{ table.cells[start_cell.get_id()].next_north };
-				std::size_t y_coord_last{ next_without_obstacle.get_y_coord() };
-				universal_cell_id next_north;
-				if (y_coord_start == y_coord_last) {
-					/* no move possible */
-					return std::make_pair(next_north, false);
+				std::size_t next_cell{ cache.get_north(start_cell.get_transposed_id()) };
+
+				if (start_cell.get_transposed_id() == next_cell) { // no move possible by walls
+					return std::make_pair(universal_cell_id::create_by_transposed_id(next_cell, my_world), false);
 				}
-				// looking for an obstacle...
-				if (state.target_piece.get_x_coord() == x_coord) {
-					if (state.target_piece.get_y_coord() > y_coord_start && state.target_piece.get_y_coord() <= y_coord_last) {
-						y_coord_last = state.target_piece.get_y_coord() - 1;
+
+				// iterate over all pieces since they may appear as obstacle
+
+				if (start_cell.get_transposed_id() < state.target_piece.get_transposed_id() && state.target_piece.get_transposed_id() <= next_cell) { // target piece
+					next_cell = state.target_piece.get_transposed_id() - 1;
+				}
+
+				for (std::size_t i = 0; i < COUNT_NON_TARGET_PIECES; ++i) { // non target pieces
+					if (start_cell.get_transposed_id() < state.non_target_pieces[i].get_transposed_id() && state.non_target_pieces[i].get_transposed_id() <= next_cell) { // target piece
+						next_cell = state.non_target_pieces[i].get_transposed_id() - 1;
 					}
 				}
-				for (auto& ntp : state.non_target_pieces) {
-					if (ntp.get_x_coord() == x_coord) {
-						if (ntp.get_y_coord() > y_coord_start && ntp.get_y_coord() <= y_coord_last) {
-							y_coord_last = ntp.get_y_coord() - 1;
-						}
-					}
+
+				if (start_cell.get_transposed_id() == next_cell) { // no move possible by walls
+					return std::make_pair(universal_cell_id::create_by_transposed_id(next_cell, my_world), false);
 				}
-				if (y_coord_start == y_coord_last) {
-					/* no move possible */
-					return std::make_pair(next_north, false);
-				}
-				next_north.set_coord(x_coord, y_coord_last, my_world);
-				return std::make_pair(next_north, true);
+
+				return std::make_pair(universal_cell_id::create_by_transposed_id(next_cell, my_world), true);
 			}
 
 		};
@@ -400,9 +395,6 @@ namespace tobor {
 
 
 			// what if initial state is already final? check this! ####
-
-
-			move_one_piece_c.create_quick_move_table(); //### replace by new quick move class object
 
 			for (std::size_t expand_size{ 0 }; expand_size < optimal_solution_size; ++expand_size) {
 				visited_game_states.emplace_back(); // possibly invalidates iterators on sub-vectors, but on most compilers it will work anyway.
