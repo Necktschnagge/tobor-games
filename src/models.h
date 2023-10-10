@@ -54,7 +54,7 @@ namespace tobor {
 		*	@details Does NOT contain any information about where pieces are located.
 		* 
 		*/
-		class tobor_world {
+		class tobor_world { // OK
 		public:
 
 			using world_type = tobor_world;
@@ -214,6 +214,9 @@ namespace tobor {
 
 			/* getter **************************************************************************************/
 
+			/**
+			*	@brief Returns the board's number of cells, including totally blocked ones.
+			*/
 			std::size_t count_cells() const noexcept {
 				return x_size * y_size;
 			}
@@ -321,10 +324,11 @@ namespace tobor {
 		*	@brief Contains the information where the pieces are located on the game board.
 		*
 		*	@details It only distinguishes the target piece from non target pieces.
-		*			Non target pieces cannot be distiguished. They are kept sorted by their cell ids.
+		*			Non target pieces cannot be distiguished. They are kept sorted acending by their cell ids.
 		*/
-		template <std::size_t COUNT_NON_TARGET_PIECES> // ## alternative implementation using std::vector instead of array, as non-template variant
-		class positions_of_pieces {
+		template <std::size_t COUNT_NON_TARGET_PIECES>
+		class positions_of_pieces { // OK
+		// ## alternative implementation using std::vector instead of array, as non-template variant
 
 			using cell_id = universal_cell_id;
 
@@ -385,10 +389,15 @@ namespace tobor {
 			*	@brief Cell id of the target piece, i.e. the one which should be moved to the target cell.
 			*/
 			cell_id target_piece;
-			std::array<cell_id, COUNT_NON_TARGET_PIECES> non_target_pieces; // keep sorted all the time!
+
+			/**
+			*	@brief Cell id of the non-target piece, i.e. the ones which can be used to buld obstacles. Need to be ordered by < all the time.
+			*/
+			std::array<cell_id, COUNT_NON_TARGET_PIECES> non_target_pieces;
 
 			/**
 			*	@brief Creates an object when cell positions of the pieces are given.
+			*	@param p_non_target_pieces Does not need to be sorted when passed to this constructor.
 			*/
 			positions_of_pieces(const cell_id& p_target_piece, std::array<cell_id, COUNT_NON_TARGET_PIECES>&& p_non_target_pieces) :
 				target_piece(p_target_piece),
