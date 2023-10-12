@@ -122,9 +122,9 @@ TEST(engine, example_integration) {
 
 	auto w_analyzer = tobor::v1_0::move_one_piece_calculator<3>(w);
 
-	auto optimal_solution_length = tobor::v1_0::get_all_optimal_solutions<3>(w_analyzer, target, target_piece, std::move(other_robots));
+	auto the_partial_state_graph = tobor::v1_0::build_state_graph_for_all_optimal_solutions<3>(w_analyzer, target, target_piece, std::move(other_robots));
 
-	ASSERT_EQ(9, optimal_solution_length);
+	ASSERT_EQ(9, the_partial_state_graph.optimal_solution_size);
 
 }
 
