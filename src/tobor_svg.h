@@ -179,7 +179,7 @@ namespace svg_path_elements {
 			);
 		}
 
-		virtual std::shared_ptr<svg_path_element> clone() const {
+		virtual std::shared_ptr<svg_path_element> clone() const override {
 			return std::make_shared< M>(*this);
 		}
 	};
@@ -194,7 +194,7 @@ namespace svg_path_elements {
 			return "Z";
 		}
 
-		virtual std::shared_ptr<svg_path_element> clone() const {
+		virtual std::shared_ptr<svg_path_element> clone() const override {
 			return std::make_shared< Z>(*this);
 		}
 	};
@@ -235,7 +235,7 @@ namespace svg_path_elements {
 			);
 		}
 
-		virtual std::shared_ptr<svg_path_element> clone() const {
+		virtual std::shared_ptr<svg_path_element> clone() const override {
 			return std::make_shared<l>(*this);
 		}
 	};
