@@ -19,7 +19,7 @@
             `apt-get install build-essential cmake qtbase5-dev libqt5svg5-dev`
           * for Qt6 (e.g. *Ubuntu 22.04*) run
           
-            `apt-get install build-essential cmake qt6-base-dev libqt6svg6-dev`
+            `apt-get install build-essential cmake libgl1-mesa-dev qt6-base-dev libqt6svg6-dev`
       * See our [Azure Pipeline configuration](https://github.com/Necktschnagge/cmake-qt-prototype/blob/main/azure-pipelines.yml) for details.
    * MacOS:
       * *See instructions for Linux. You may use clang instead of g++.*
