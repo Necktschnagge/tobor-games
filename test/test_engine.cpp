@@ -63,7 +63,7 @@ TEST(engine, example_integration) {
 
 	auto w = tobor::v1_0::tobor_world(16, 16);
 
-	w.block_center_fields(2, 2);
+	w.block_center_cells(2, 2);
 
 	// add vertical walls row by row, starting left
 	w.west_wall_by_id(w.coordinates_to_cell_id(6, 0)) = true;

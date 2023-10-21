@@ -110,7 +110,7 @@ namespace tobor {
 			/*
 				@brief Fills center fields to make them unreachable.
 			*/
-			inline void block_center_fields(std::size_t x_blocked_size, std::size_t y_blocked_size) {
+			inline void block_center_cells(std::size_t x_blocked_size, std::size_t y_blocked_size) {
 				// check for symmetry of blocked area:
 				if ((x_size - x_blocked_size) % 2)
 					throw division_by_2_error();
@@ -217,8 +217,22 @@ namespace tobor {
 			/**
 			*	@brief Returns the board's number of cells, including totally blocked ones.
 			*/
-			std::size_t count_cells() const noexcept {
+			inline std::size_t count_cells() const noexcept {
 				return x_size * y_size;
+			}
+
+			/**
+			*	@brief Returns the board's number of cells in a row.
+			*/
+			inline std::size_t get_horizontal_size() const noexcept {
+				return x_size;
+			}
+			
+			/**
+			*	@brief Returns the board's number of cells in a column.
+			*/
+			inline std::size_t get_vertical_size() const noexcept {
+				return y_size;
 			}
 
 		};
