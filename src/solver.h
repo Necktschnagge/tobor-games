@@ -381,6 +381,7 @@ namespace tobor {
 
 
 			using partial_solutions_map_type = std::map<positions_of_pieces<COUNT_NON_TARGET_PIECES>, state_graph_node>;
+
 			using map_iterator_type = typename partial_solutions_map_type::iterator;
 
 			static constexpr std::size_t MAX{ std::numeric_limits<std::size_t>::max() };
@@ -406,15 +407,27 @@ namespace tobor {
 		template <std::size_t COUNT_NON_TARGET_PIECES>
 		class partial_state_graph {
 		public:
-			// number of steps needed by any optimal solution
-			std::size_t optimal_solution_size{ state_graph_node<COUNT_NON_TARGET_PIECES>::MAX };
 
 			// all game states that have been found so far,
 			// each one with pointers to their optimal predecessors as well as a counter for successors.
-			typename state_graph_node<COUNT_NON_TARGET_PIECES>::partial_solutions_map_type solutions_map;
+			using solutions_map_type = typename state_graph_node<COUNT_NON_TARGET_PIECES>::partial_solutions_map_type;
+
+			// to be used as a pointer to a game state
+			using map_iterator = typename state_graph_node<COUNT_NON_TARGET_PIECES>::map_iterator_type;
+
+			solutions_map_type solutions_map;
+
+			// number of steps needed by any optimal solution
+			std::size_t optimal_solution_size{ state_graph_node<COUNT_NON_TARGET_PIECES>::MAX };
 
 			// initial state
 			positions_of_pieces<COUNT_NON_TARGET_PIECES> initial_state;
+
+			// All game states that have been found yet, ordered by their shortest distance from initial state.
+			// .back() contains all game states to be explored if one deepening step just finished.
+			std::vector<std::vector<map_iterator>> visited_game_states;
+			// ### note in case of removing states with no optimal successors, the invalid iterator problem arises.
+
 
 			partial_state_graph(const positions_of_pieces<COUNT_NON_TARGET_PIECES>& p_initial_state): initial_state(p_initial_state) {}
 		};
@@ -428,23 +441,8 @@ namespace tobor {
 		) {
 			partial_state_graph<COUNT_NON_TARGET_PIECES> state_graph = partial_state_graph<COUNT_NON_TARGET_PIECES>(positions_of_pieces<COUNT_NON_TARGET_PIECES>(p_target_piece, std::move(p_non_target_pieces)));
 
-			// to be used as a pointer to a game state
-			using map_iterator = typename state_graph_node<COUNT_NON_TARGET_PIECES>::map_iterator_type;
 
-
-			//state_graph.initial_state = positions_of_pieces<COUNT_NON_TARGET_PIECES>(p_target_piece, std::move(p_non_target_pieces));
-
-
-			// all game states that have been found so far,
-			// each one with pointers to their optimal predecessors as well as a counter for successors.
-			//typename state_graph_node<COUNT_NON_TARGET_PIECES>::partial_solutions_map_type solutions_map;
-
-			// All game states that have been found yet, ordered by their shortest distance from initial state.
-			// .back() contains all game states to be explored if one deepening step just finished.
-			std::vector<std::vector<map_iterator>> visited_game_states;
-
-			// number of steps needed by any optimal solution
-			//std::size_t optimal_solution_size{ std::numeric_limits<std::size_t>::max() };
+			using map_iterator = typename partial_state_graph<COUNT_NON_TARGET_PIECES>::map_iterator;
 
 
 			/*	insert the initial game state into map of all visited states : */
@@ -453,16 +451,16 @@ namespace tobor {
 			// solutions_map[initial_state].count_successors = 0; // already empty be default
 
 			/*	insert the initial game state into vector of all visited states : */
-			visited_game_states.push_back(std::vector<map_iterator>{state_graph.solutions_map.begin()});
+			state_graph.visited_game_states.push_back(std::vector<map_iterator>{state_graph.solutions_map.begin()});
 
 
 			// what if initial state is already final? check this! ####
 
 			for (std::size_t expand_size{ 0 }; expand_size < state_graph.optimal_solution_size; ++expand_size) {
-				visited_game_states.emplace_back(); // possibly invalidates iterators on sub-vectors, but on most compilers it will work anyway.
+				state_graph.visited_game_states.emplace_back(); // possibly invalidates iterators on sub-vectors, but on most compilers it will work anyway.
 				// But please do not rely on this behaviour.
 
-				for (const auto& current_iterator : visited_game_states[expand_size]) {
+				for (const auto& current_iterator : state_graph.visited_game_states[expand_size]) {
 					//const auto current_iterator{ visited_game_states[index_next_exploration] };
 
 					std::vector<move_candidate> candidates_for_successor_states;
@@ -541,7 +539,7 @@ namespace tobor {
 								state_graph.solutions_map[new_state].smallest_seen_step_distance_from_initial_state = current_iterator->second.smallest_seen_step_distance_from_initial_state + 1;
 								state_graph.solutions_map[new_state].optimal_predecessors.emplace_back(current_iterator, c.move);
 								++(current_iterator->second.count_successors_where_this_is_one_optimal_predecessor);
-								visited_game_states[expand_size + 1].push_back(state_graph.solutions_map.find(new_state));
+								state_graph.visited_game_states[expand_size + 1].push_back(state_graph.solutions_map.find(new_state));
 							}
 							else {
 								if (state_graph.solutions_map[new_state].smallest_seen_step_distance_from_initial_state == current_iterator->second.smallest_seen_step_distance_from_initial_state + 1) {
