@@ -151,6 +151,8 @@ public:
 
 	virtual std::shared_ptr<svg_path_element> clone() const = 0;
 
+	virtual ~svg_path_element() {}
+
 };
 
 namespace svg_path_elements {
@@ -182,6 +184,8 @@ namespace svg_path_elements {
 		virtual std::shared_ptr<svg_path_element> clone() const override {
 			return std::make_shared< M>(*this);
 		}
+
+		virtual ~M() {}
 	};
 
 	class Z : public svg_path_element {
@@ -197,6 +201,8 @@ namespace svg_path_elements {
 		virtual std::shared_ptr<svg_path_element> clone() const override {
 			return std::make_shared< Z>(*this);
 		}
+
+		virtual ~Z() {}
 	};
 
 	template <class Number>
@@ -238,6 +244,8 @@ namespace svg_path_elements {
 		virtual std::shared_ptr<svg_path_element> clone() const override {
 			return std::make_shared<l>(*this);
 		}
+
+		virtual ~l() {}
 	};
 
 	template <class Number>
@@ -300,6 +308,8 @@ namespace svg_path_elements {
 		virtual std::shared_ptr<svg_path_element> clone() const override {
 			return std::make_shared<c>(*this);
 		}
+
+		virtual ~c() {}
 	};
 
 }
@@ -426,12 +436,12 @@ std::unique_ptr<svg_path> get_vertical_grid_element(const tobor::v1_0::tobor_wor
 	auto start_at_upper_left = std::make_shared<svg_path_elements::M<double>>(
 		dss.LEFT_PADDING - dss.HALF_GRID_LINE_WIDTH + dss.CELL_WIDTH * cell_count_offset,
 		dss.TOP_PADDING - dss.HALF_GRID_LINE_WIDTH
-	);
+		);
 	auto go_to_right_bottom_left = std::make_shared<svg_path_elements::l<double>>(
 		dss.HALF_GRID_LINE_WIDTH * 2, 0,
 		0, dss.CELL_HEIGHT * tobor_world.get_vertical_size() + dss.HALF_GRID_LINE_WIDTH * 2,
 		-dss.HALF_GRID_LINE_WIDTH * 2, 0
-	);
+		);
 	auto go_back = std::make_shared<svg_path_elements::Z>();
 
 	grid_element->path_elements = { start_at_upper_left, go_to_right_bottom_left, go_back };
@@ -449,12 +459,12 @@ std::unique_ptr<svg_path> get_horizontal_grid_element(const tobor::v1_0::tobor_w
 	auto start_at_upper_left = std::make_shared<svg_path_elements::M<double>>(
 		dss.LEFT_PADDING - dss.HALF_GRID_LINE_WIDTH,
 		dss.TOP_PADDING - dss.HALF_GRID_LINE_WIDTH + dss.CELL_HEIGHT * cell_count_offset
-	);
+		);
 	auto go_to_bottom_right_top = std::make_shared<svg_path_elements::l<double>>(
 		0, dss.HALF_GRID_LINE_WIDTH * 2,
 		dss.CELL_WIDTH * tobor_world.get_vertical_size() + dss.HALF_GRID_LINE_WIDTH * 2, 0,
 		0, -dss.HALF_GRID_LINE_WIDTH * 2
-	);
+		);
 	auto go_back = std::make_shared<svg_path_elements::Z>();
 
 	grid_element->path_elements = { start_at_upper_left, go_to_bottom_right_top, go_back };
@@ -486,23 +496,23 @@ std::unique_ptr<svg_path> get_horizontal_south_wall(const tobor::v1_0::tobor_wor
 	auto start_at_upper_left = std::make_shared<svg_path_elements::M<double>>(
 		dss.LEFT_PADDING + dss.CELL_WIDTH * x,
 		dss.TOP_PADDING - dss.HALF_WALL_LINE_WIDTH + dss.CELL_HEIGHT * (tobor_world.get_vertical_size() - y)
-	);
+		);
 
 	auto left_semicircle = std::make_shared<svg_path_elements::c<double>>(
 		-dss.HALF_WALL_LINE_WIDTH * 2 * dss.WALL_CORNER_STRETCH, 0,
 		-dss.HALF_WALL_LINE_WIDTH * 2 * dss.WALL_CORNER_STRETCH, 2 * dss.HALF_WALL_LINE_WIDTH,
 		0, 2 * dss.HALF_WALL_LINE_WIDTH
-	);
+		);
 
 	auto go_right = std::make_shared<svg_path_elements::l<double>>(
 		dss.CELL_WIDTH, 0
-	);
+		);
 
 	auto right_semicircle = std::make_shared<svg_path_elements::c<double>>(
 		dss.HALF_WALL_LINE_WIDTH * 2 * dss.WALL_CORNER_STRETCH, 0,
 		dss.HALF_WALL_LINE_WIDTH * 2 * dss.WALL_CORNER_STRETCH, -2 * dss.HALF_WALL_LINE_WIDTH,
 		0, -2 * dss.HALF_WALL_LINE_WIDTH
-	);
+		);
 
 	auto go_back = std::make_shared<svg_path_elements::Z>();
 
@@ -521,23 +531,23 @@ std::unique_ptr<svg_path> get_vertical_west_wall(const tobor::v1_0::tobor_world&
 	auto start_at_lower_left = std::make_shared<svg_path_elements::M<double>>(
 		dss.LEFT_PADDING - dss.HALF_WALL_LINE_WIDTH + dss.CELL_WIDTH * x,
 		dss.TOP_PADDING + dss.CELL_HEIGHT * (tobor_world.get_vertical_size() - y)
-	);
+		);
 
 	auto bottom_semicircle = std::make_shared<svg_path_elements::c<double>>(
-		 0, dss.HALF_WALL_LINE_WIDTH * 2 * dss.WALL_CORNER_STRETCH,
-		 2 * dss.HALF_WALL_LINE_WIDTH, dss.HALF_WALL_LINE_WIDTH * 2 * dss.WALL_CORNER_STRETCH,
+		0, dss.HALF_WALL_LINE_WIDTH * 2 * dss.WALL_CORNER_STRETCH,
+		2 * dss.HALF_WALL_LINE_WIDTH, dss.HALF_WALL_LINE_WIDTH * 2 * dss.WALL_CORNER_STRETCH,
 		2 * dss.HALF_WALL_LINE_WIDTH, 0
-	);
+		);
 
 	auto go_north = std::make_shared<svg_path_elements::l<double>>(
 		0, -dss.CELL_WIDTH
-	);
+		);
 
 	auto top_semicircle = std::make_shared<svg_path_elements::c<double>>(
-		 0, -dss.HALF_WALL_LINE_WIDTH * 2 * dss.WALL_CORNER_STRETCH,
+		0, -dss.HALF_WALL_LINE_WIDTH * 2 * dss.WALL_CORNER_STRETCH,
 		-2 * dss.HALF_WALL_LINE_WIDTH, -dss.HALF_WALL_LINE_WIDTH * 2 * dss.WALL_CORNER_STRETCH,
 		-2 * dss.HALF_WALL_LINE_WIDTH, 0
-	);
+		);
 
 	auto go_back = std::make_shared<svg_path_elements::Z>();
 
@@ -560,7 +570,7 @@ std::unique_ptr<svg_generator> draw_walls(const tobor::v1_0::tobor_world& tobor_
 			}
 		}
 	}
-	
+
 	// vertical walls:
 	for (std::size_t x = 0; x <= tobor_world.get_horizontal_size(); ++x) {
 		for (std::size_t y = 0; y < tobor_world.get_vertical_size(); ++y) {
@@ -591,7 +601,7 @@ void draw_tobor_world(const tobor::v1_0::tobor_world& tobor_world) {
 		draw_tobor_grid(tobor_world, dss),
 		draw_walls(tobor_world, dss),
 		std::move(svg_pieces)
-	);
+		);
 
 
 	const std::string svg_root_height = std::to_string(dss.CELL_HEIGHT * tobor_world.get_vertical_size() + dss.TOP_PADDING + dss.BOTTOM_PADDING);
