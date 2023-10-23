@@ -297,7 +297,7 @@ namespace svg_path_elements {
 			);
 		}
 
-		virtual std::shared_ptr<svg_path_element> clone() const {
+		virtual std::shared_ptr<svg_path_element> clone() const override {
 			return std::make_shared<c>(*this);
 		}
 	};
@@ -587,9 +587,9 @@ void draw_tobor_world(const tobor::v1_0::tobor_world& tobor_world) {
 
 
 	auto svg_body = std::make_unique<svg_compound>(
-		std::move(draw_tobor_background(tobor_world, dss)),
-		std::move(draw_tobor_grid(tobor_world, dss)),
-		std::move(draw_walls(tobor_world, dss)),
+		draw_tobor_background(tobor_world, dss),
+		draw_tobor_grid(tobor_world, dss),
+		draw_walls(tobor_world, dss),
 		std::move(svg_pieces)
 	);
 
