@@ -312,6 +312,86 @@ namespace svg_path_elements {
 		virtual ~c() {}
 	};
 
+	template <class Number>
+	class a : public svg_path_element {
+
+		friend class svg_path;
+
+	public:
+		struct step {
+			double rx;
+			double ry;
+			double x_axis_rotation;
+			bool large_arc_flag;
+			bool sweep_flag;
+			double x;
+			double y;
+
+			std::string str() const noexcept {
+				return std::to_string(rx) + " " +
+					std::to_string(ry) + " " +
+					std::to_string(x_axis_rotation) + " " +
+					std::to_string(static_cast<int>(large_arc_flag)) + " " +
+					std::to_string(static_cast<int>(sweep_flag)) + " " +
+					std::to_string(x) + " " +
+					std::to_string(y);
+			}
+
+		public:
+			step(double rx, double ry, double x_axis_rotation, bool large_arc_flag, bool sweep_flag, double x, double y) :
+				rx(rx),
+				ry(ry),
+				x_axis_rotation(x_axis_rotation),
+				large_arc_flag(large_arc_flag),
+				sweep_flag(sweep_flag),
+				x(x),
+				y(y)
+			{
+			}
+		};
+
+	private:
+
+		std::vector<step> coordinates;
+
+	public:
+
+		a(const step& s) :
+			coordinates({ s })
+		{
+		}
+
+		inline void add_coordinates() const noexcept {}
+
+		template<class... _Rest>
+		void add_coordinates(const step& step, _Rest&& ... others) {
+			coordinates.push_back(step);
+			add_coordinates(std::forward<_Rest>(others) ...);
+		}
+
+
+		template<class... _Rest>
+		a(const step& s, _Rest&& ... others) :
+			coordinates({ s })
+		{
+			add_coordinates(std::forward<_Rest>(others) ...);
+		}
+
+		virtual std::string str() const override {
+			return std::accumulate(coordinates.cbegin(), coordinates.cend(), std::string("a"),
+				[](const std::string& acc, const step& el) -> std::string {
+					return acc + " " + el.str();
+				}
+			);
+		}
+
+		virtual std::shared_ptr<svg_path_element> clone() const override {
+			return std::make_shared<a>(*this);
+		}
+
+		virtual ~a() {}
+	};
+
 }
 
 
@@ -395,6 +475,19 @@ struct drawing_style_sheet {
 	double HALF_WALL_LINE_WIDTH{ 5 };
 	double WALL_CORNER_STRETCH{ 0.6 };
 
+
+	double PIECE_LINE_WIDTH{ 0.3 * HALF_WALL_LINE_WIDTH };
+
+	double VERTICAL_PIECE_PADDING{ HALF_WALL_LINE_WIDTH * 3 };
+	double HORIZONTAL_PIECE_PADDING{ HALF_WALL_LINE_WIDTH * 3 };
+
+	double PIECE_FOOT_THICKNESS_FACTOR{ 0.15 };
+
+	double PIECE_HEAD_X_RADIUS_FACTOR{ 0.3 };
+	double PIECE_HEAD_Y_RADIUS_FACTOR{ 0.2 };
+
+	double PIECE_HEAD_AXIS_ROTATION{ -50 };
+
 	// each cell is 100 x 100
 	// on each side we define a padding of 50. -> canvas is 1700 ^2
 	double CELL_HEIGHT{ 100.0 };
@@ -436,12 +529,12 @@ std::unique_ptr<svg_path> get_vertical_grid_element(const tobor::v1_0::tobor_wor
 	auto start_at_upper_left = std::make_shared<svg_path_elements::M<double>>(
 		dss.LEFT_PADDING - dss.HALF_GRID_LINE_WIDTH + dss.CELL_WIDTH * cell_count_offset,
 		dss.TOP_PADDING - dss.HALF_GRID_LINE_WIDTH
-		);
+	);
 	auto go_to_right_bottom_left = std::make_shared<svg_path_elements::l<double>>(
 		dss.HALF_GRID_LINE_WIDTH * 2, 0,
 		0, dss.CELL_HEIGHT * tobor_world.get_vertical_size() + dss.HALF_GRID_LINE_WIDTH * 2,
 		-dss.HALF_GRID_LINE_WIDTH * 2, 0
-		);
+	);
 	auto go_back = std::make_shared<svg_path_elements::Z>();
 
 	grid_element->path_elements = { start_at_upper_left, go_to_right_bottom_left, go_back };
@@ -459,12 +552,12 @@ std::unique_ptr<svg_path> get_horizontal_grid_element(const tobor::v1_0::tobor_w
 	auto start_at_upper_left = std::make_shared<svg_path_elements::M<double>>(
 		dss.LEFT_PADDING - dss.HALF_GRID_LINE_WIDTH,
 		dss.TOP_PADDING - dss.HALF_GRID_LINE_WIDTH + dss.CELL_HEIGHT * cell_count_offset
-		);
+	);
 	auto go_to_bottom_right_top = std::make_shared<svg_path_elements::l<double>>(
 		0, dss.HALF_GRID_LINE_WIDTH * 2,
 		dss.CELL_WIDTH * tobor_world.get_vertical_size() + dss.HALF_GRID_LINE_WIDTH * 2, 0,
 		0, -dss.HALF_GRID_LINE_WIDTH * 2
-		);
+	);
 	auto go_back = std::make_shared<svg_path_elements::Z>();
 
 	grid_element->path_elements = { start_at_upper_left, go_to_bottom_right_top, go_back };
@@ -496,23 +589,23 @@ std::unique_ptr<svg_path> get_horizontal_south_wall(const tobor::v1_0::tobor_wor
 	auto start_at_upper_left = std::make_shared<svg_path_elements::M<double>>(
 		dss.LEFT_PADDING + dss.CELL_WIDTH * x,
 		dss.TOP_PADDING - dss.HALF_WALL_LINE_WIDTH + dss.CELL_HEIGHT * (tobor_world.get_vertical_size() - y)
-		);
+	);
 
 	auto left_semicircle = std::make_shared<svg_path_elements::c<double>>(
 		-dss.HALF_WALL_LINE_WIDTH * 2 * dss.WALL_CORNER_STRETCH, 0,
 		-dss.HALF_WALL_LINE_WIDTH * 2 * dss.WALL_CORNER_STRETCH, 2 * dss.HALF_WALL_LINE_WIDTH,
 		0, 2 * dss.HALF_WALL_LINE_WIDTH
-		);
+	);
 
 	auto go_right = std::make_shared<svg_path_elements::l<double>>(
 		dss.CELL_WIDTH, 0
-		);
+	);
 
 	auto right_semicircle = std::make_shared<svg_path_elements::c<double>>(
 		dss.HALF_WALL_LINE_WIDTH * 2 * dss.WALL_CORNER_STRETCH, 0,
 		dss.HALF_WALL_LINE_WIDTH * 2 * dss.WALL_CORNER_STRETCH, -2 * dss.HALF_WALL_LINE_WIDTH,
 		0, -2 * dss.HALF_WALL_LINE_WIDTH
-		);
+	);
 
 	auto go_back = std::make_shared<svg_path_elements::Z>();
 
@@ -531,29 +624,77 @@ std::unique_ptr<svg_path> get_vertical_west_wall(const tobor::v1_0::tobor_world&
 	auto start_at_lower_left = std::make_shared<svg_path_elements::M<double>>(
 		dss.LEFT_PADDING - dss.HALF_WALL_LINE_WIDTH + dss.CELL_WIDTH * x,
 		dss.TOP_PADDING + dss.CELL_HEIGHT * (tobor_world.get_vertical_size() - y)
-		);
+	);
 
 	auto bottom_semicircle = std::make_shared<svg_path_elements::c<double>>(
 		0, dss.HALF_WALL_LINE_WIDTH * 2 * dss.WALL_CORNER_STRETCH,
 		2 * dss.HALF_WALL_LINE_WIDTH, dss.HALF_WALL_LINE_WIDTH * 2 * dss.WALL_CORNER_STRETCH,
 		2 * dss.HALF_WALL_LINE_WIDTH, 0
-		);
+	);
 
 	auto go_north = std::make_shared<svg_path_elements::l<double>>(
 		0, -dss.CELL_WIDTH
-		);
+	);
 
 	auto top_semicircle = std::make_shared<svg_path_elements::c<double>>(
 		0, -dss.HALF_WALL_LINE_WIDTH * 2 * dss.WALL_CORNER_STRETCH,
 		-2 * dss.HALF_WALL_LINE_WIDTH, -dss.HALF_WALL_LINE_WIDTH * 2 * dss.WALL_CORNER_STRETCH,
 		-2 * dss.HALF_WALL_LINE_WIDTH, 0
-		);
+	);
 
 	auto go_back = std::make_shared<svg_path_elements::Z>();
 
 	vertical_wall_element->path_elements = { start_at_lower_left, bottom_semicircle, go_north, top_semicircle, go_back };
 
 	return vertical_wall_element;
+}
+
+std::unique_ptr<svg_generator> draw_blocked_cells(const tobor::v1_0::tobor_world& tobor_world, const drawing_style_sheet& dss) {
+	auto blocked_cells = std::make_unique<svg_compound>();
+
+	for (std::size_t cell_id{ 0 }; cell_id < tobor_world.count_cells(); ++cell_id) {
+		const auto universal_cell_id = tobor::v1_0::universal_cell_id::create_by_id(cell_id, tobor_world);
+		//const auto cell_transposed_id = tobor_world.id_to_transposed_id(cell_id);
+		if (
+			tobor_world.west_wall_by_id(cell_id) &&
+			tobor_world.east_wall_by_id(cell_id) &&
+			tobor_world.south_wall_by_transposed_id(universal_cell_id.get_transposed_id()) &&
+			tobor_world.north_wall_by_transposed_id(universal_cell_id.get_transposed_id())
+			) {
+
+			auto block = std::make_unique<svg_path>();
+
+			block->fill() = "black";
+			block->stroke() = block->fill();
+			block->stroke_width() = "0";
+
+			auto start_at_north_west = std::make_shared<svg_path_elements::M<double>>(
+				dss.LEFT_PADDING + dss.CELL_WIDTH * universal_cell_id.get_x_coord(),
+				dss.TOP_PADDING + dss.CELL_HEIGHT * (tobor_world.get_vertical_size() - universal_cell_id.get_y_coord() - 1)
+			);
+
+			auto go_east = std::make_shared<svg_path_elements::l<double>>(
+				dss.CELL_WIDTH, 0
+			);
+
+			auto go_south = std::make_shared<svg_path_elements::l<double>>(
+				0, dss.CELL_HEIGHT
+			);
+
+			auto go_west = std::make_shared<svg_path_elements::l<double>>(
+				-dss.CELL_WIDTH, 0
+			);
+
+			auto go_back = std::make_shared<svg_path_elements::Z>();
+
+			block->path_elements = { start_at_north_west, go_east, go_south, go_west, go_back };
+
+			blocked_cells->elements.push_back(std::move(block));
+
+		}
+	}
+
+	return blocked_cells;
 }
 
 std::unique_ptr<svg_generator> draw_walls(const tobor::v1_0::tobor_world& tobor_world, const drawing_style_sheet& dss) {
@@ -587,21 +728,139 @@ std::unique_ptr<svg_generator> draw_walls(const tobor::v1_0::tobor_world& tobor_
 	return svg_walls;
 }
 
+std::unique_ptr<svg_generator> draw_duck_piece(const tobor::v1_0::tobor_world& tobor_world, const drawing_style_sheet& dss, const tobor::v1_0::universal_cell_id& cell, bool look_right, const std::string& color) {
+
+	(void)look_right;
+
+	auto duck = std::make_unique<svg_path>();
+
+	duck->fill() = color;
+	duck->stroke() = "black";
+	duck->stroke_width() = std::to_string(dss.PIECE_LINE_WIDTH);
+
+	const auto CELL_CORNER_SOUTH_WEST_x = dss.LEFT_PADDING + dss.CELL_WIDTH * cell.get_x_coord();
+	const auto CELL_CORNER_SOUTH_WEST_y = dss.TOP_PADDING + dss.CELL_HEIGHT * (tobor_world.get_vertical_size() - cell.get_y_coord());
+
+	const auto CANVAS_X_SIZE = dss.CELL_WIDTH - 2 * dss.HORIZONTAL_PIECE_PADDING;
+	const auto CANVAS_Y_SIZE = dss.CELL_HEIGHT - 2 * dss.VERTICAL_PIECE_PADDING;
+
+	const auto MINIMUM_CANVAS_SIZE = std::min(CANVAS_X_SIZE, CANVAS_Y_SIZE);
+
+	const auto FOOT_THICKNESS_RIGHT = CANVAS_Y_SIZE * dss.PIECE_FOOT_THICKNESS_FACTOR;
+
+	auto start_at_south_west = std::make_shared<svg_path_elements::M<double>>(
+		CELL_CORNER_SOUTH_WEST_x + dss.HORIZONTAL_PIECE_PADDING,
+		CELL_CORNER_SOUTH_WEST_y - dss.VERTICAL_PIECE_PADDING
+	);
+
+	auto go_bottom_east = std::make_shared<svg_path_elements::l<double>>(
+		dss.CELL_WIDTH - 2 * dss.HORIZONTAL_PIECE_PADDING, 0
+	);
+
+	auto go_bottom_right_corner_north = std::make_shared<svg_path_elements::l<double>>(
+		0, -FOOT_THICKNESS_RIGHT
+	);
+
+	auto go_back_neck_bottom_up = std::make_shared<svg_path_elements::c<double>>(
+		-0.5 * CANVAS_X_SIZE, 0,
+		-0.5 * CANVAS_X_SIZE, 0,
+		-0.4 * CANVAS_X_SIZE, -(0.45 * CANVAS_Y_SIZE - FOOT_THICKNESS_RIGHT)
+	);
+
+	auto go_head = std::make_shared<svg_path_elements::a<double>>(
+		svg_path_elements::a<double>::step(dss.PIECE_HEAD_X_RADIUS_FACTOR * MINIMUM_CANVAS_SIZE, dss.PIECE_HEAD_Y_RADIUS_FACTOR * MINIMUM_CANVAS_SIZE, dss.PIECE_HEAD_AXIS_ROTATION, true, false, -0.2 * MINIMUM_CANVAS_SIZE, -0.25 * MINIMUM_CANVAS_SIZE)
+	);
+
+	auto go_nort_west_for_beak = std::make_shared<svg_path_elements::l<double>>(
+		-0.33 * MINIMUM_CANVAS_SIZE, -0.15 * MINIMUM_CANVAS_SIZE
+	);
+
+	auto go_south_east_for_beak_down = std::make_shared<svg_path_elements::l<double>>(
+		0.32 * MINIMUM_CANVAS_SIZE, 0.25 * MINIMUM_CANVAS_SIZE
+	);
+
+	auto go_back = std::make_shared<svg_path_elements::Z>();
+
+	duck->path_elements = { start_at_south_west, go_bottom_east, go_bottom_right_corner_north, go_back_neck_bottom_up, go_head , go_nort_west_for_beak, go_south_east_for_beak_down, go_back };
+
+	auto outer_eye = std::make_unique<svg_path>();
+
+	outer_eye->fill() = "white";
+	outer_eye->stroke() = "black";
+	outer_eye->stroke_width() = std::to_string(dss.PIECE_LINE_WIDTH);
+
+
+	auto start_eye = std::make_shared<svg_path_elements::M<double>>(
+		CELL_CORNER_SOUTH_WEST_x + dss.HORIZONTAL_PIECE_PADDING + 0.66 * MINIMUM_CANVAS_SIZE,
+		CELL_CORNER_SOUTH_WEST_y - (dss.VERTICAL_PIECE_PADDING + 0.77 * MINIMUM_CANVAS_SIZE)
+	);
+
+	outer_eye->path_elements.push_back(start_eye);
+
+	outer_eye->path_elements.push_back(
+		std::make_shared<svg_path_elements::a<double>>(
+			svg_path_elements::a<double>::step(
+				0.04 * MINIMUM_CANVAS_SIZE,
+				0.03 * MINIMUM_CANVAS_SIZE,
+				-10.0,
+				true,
+				false,
+				0.2,
+				0.2
+			)
+		)
+	);
+	outer_eye->path_elements.push_back(go_back);
+
+
+	auto comp = std::make_unique<svg_compound>(std::move(duck), std::move(outer_eye));
+	
+	return comp;
+
+}
+
+
 void draw_tobor_world(const tobor::v1_0::tobor_world& tobor_world) {
 
 	drawing_style_sheet dss;
 
-	//<rect width="100%" height="100%" fill="grey" />
+	auto svg_target = std::make_unique<svg_compound>();
+
 
 	auto svg_pieces = std::make_unique<svg_compound>();
+	svg_pieces->elements.push_back(draw_duck_piece(tobor_world, dss, tobor::v1_0::universal_cell_id::create_by_coordinates(3, 4, tobor_world), true, "green"));
 
 
+	// The following order is final:
 	auto svg_body = std::make_unique<svg_compound>(
 		draw_tobor_background(tobor_world, dss),
+		draw_blocked_cells(tobor_world, dss),
+		std::move(svg_target),
 		draw_tobor_grid(tobor_world, dss),
 		draw_walls(tobor_world, dss),
 		std::move(svg_pieces)
-		);
+	);
+	/* ORDER REQUIREMENTS
+
+		background is behind everything else					// otherwise cannot see anything
+		grid is behind walls									// walls should cover grid of cause
+
+		grid is in front of target								// otherwise grid would be covered partially
+		walls are in front of target							// since walls partially covered otherwise
+
+		target is in front of blocked							// if by error, target is blocked, we still see target, we also indirectly see it is blocked by seeing walls all around
+
+		pieces are in front of tagert							// since piece covered otherwise when in target cell
+
+		background   <---   blocked   <---   target   <---   grid   <---   walls
+											   |
+											   |
+
+												<---   pieces
+
+		By now there are three variants to place pieces behind/before  ...  grid / walls
+	*/
+
 
 
 	const std::string svg_root_height = std::to_string(dss.CELL_HEIGHT * tobor_world.get_vertical_size() + dss.TOP_PADDING + dss.BOTTOM_PADDING);
