@@ -5,7 +5,8 @@
 #include <QMainWindow>
 #include <QXmlStreamReader>
 #include <QSvgRenderer>
- #include <QGraphicsSvgItem>
+#include <QGraphicsSvgItem>
+#include <QKeyEvent>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -27,6 +28,9 @@ private slots:
 
 private:
     Ui::MainWindow *ui;
+
+protected:
+    void keyPressEvent(QKeyEvent *e);
 };
 
 #endif // MAINWINDOW_H

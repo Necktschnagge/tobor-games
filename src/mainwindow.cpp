@@ -7,6 +7,7 @@ MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
 {
+    QWidget::grabKeyboard();
     ui->setupUi(this);
 }
 
@@ -14,8 +15,6 @@ MainWindow::~MainWindow()
 {
     delete ui;
 }
-
-
 
 void MainWindow::on_actionshowSVG_triggered()
 {
@@ -48,7 +47,6 @@ void MainWindow::on_actionshowSVG_triggered()
     //this->ui->graphicsView.
 }
 
-
 void MainWindow::on_actionAbout_triggered()
 {
     QMessageBox msgBox;
@@ -56,3 +54,7 @@ void MainWindow::on_actionAbout_triggered()
     msgBox.exec();
 }
 
+void MainWindow::keyPressEvent(QKeyEvent *e)
+{
+    qDebug() << "You typed " + QString::number(e->key());
+}
