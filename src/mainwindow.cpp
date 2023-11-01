@@ -57,5 +57,23 @@ void MainWindow::on_actionAbout_triggered()
 
 void MainWindow::keyPressEvent(QKeyEvent *e)
 {
-    qDebug() << "You typed " + QString::number(e->key());
+    // see: https://doc.qt.io/qt-6/qt.html#Key-enum
+
+    switch (e->key()) {
+        case Qt::Key_Up:
+        qDebug() << "Key_Up";
+        break;
+
+        case Qt::Key_Down:
+        qDebug() << "Key_Down";
+        break;
+
+        case Qt::Key_Left:
+        qDebug() << "Key_Left";
+        break;
+
+        case Qt::Key_Right:
+        qDebug() << "Key_Right";
+        break;
+    }
 }
