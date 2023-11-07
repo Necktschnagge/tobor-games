@@ -1,39 +1,71 @@
+#include "gtest/gtest.h"
 
-#include "logger.h"
-#include "solver.h"
-#include "tobor_svg.h"
+#include "../src/solver.h"
+
+#include <type_traits>
+#include <array>
+
+TEST(engine, create_division_by_2_error) {
+	ASSERT_NO_THROW(
+		tobor::v1_0::division_by_2_error error;
+	);
+}
+
+TEST(engine, create_blocked_center_error) {
+	ASSERT_NO_THROW(
+		tobor::v1_0::blocked_center_error error;
+	);
+}
+
+TEST(engine, create_wall_type_std_constructor) {
+	ASSERT_FALSE(
+		std::is_default_constructible<tobor::v1_0::wall_type>::value // convert into static assert! ###
+	);
+}
+
+TEST(engine, create_wall_type_bool_conversion) {
+	ASSERT_NO_THROW(
+		auto t_wall = tobor::v1_0::wall_type(true);
+	(void)t_wall;
+		auto f_wall = tobor::v1_0::wall_type(false);
+	(void)f_wall;
+	);
+}
+
+TEST(engine, create_world) {
+	ASSERT_NO_THROW(
+		tobor::v1_0::tobor_world world;
+	);
+}
+
+TEST(engine, create_universal_field_id) {
+	ASSERT_NO_THROW(
+		auto cell_id = tobor::v1_0::universal_cell_id();
+	(void)cell_id;
+	);
+}
+
+TEST(engine, universal_field_id_consistency) {
+	// ### check that id conversion has no inconsistencies...
+	ASSERT_NO_THROW(
+		auto field_id = 0;
+		(void)field_id;
+	);
+}
 
 
-//#include "mainwindow.h"
 
-//#include <QApplication>
+TEST(engine, example_integration) {
+	// check the following scenario:
+	// create world
+	// create initial robots position
+	// run solver
 
-// TERMINOLOGY
+	auto w = tobor::v1_0::tobor_world(16, 16);
 
+	w.block_center_cells(2, 2);
 
-/*
-[GAME] BOARD            :       the entire world
-CELL                    :       atomic unit of a BOARD
-TARGET CELL             :       the CELL which is marked as goal
-TARGET PIECE            :       PIECE which must be moved to the TARGET CELL
-PIECE                   :       one robot / piece 
->>>>>>> feature-tobor-solver-engine-single-thread
-
-
-*/
-
-
-int main(int argc, char *argv[])
-{
-
-
-	init_logger();	
-
-	auto tobor_world = tobor::v1_0::tobor_world(16, 16);
-	tobor_world.block_center_cells(2, 2);
-
-	auto& w{ tobor_world };
-
+	// add vertical walls row by row, starting left
 	w.west_wall_by_id(w.coordinates_to_cell_id(6, 0)) = true;
 	w.west_wall_by_id(w.coordinates_to_cell_id(12, 0)) = true;
 	w.west_wall_by_id(w.coordinates_to_cell_id(2, 1)) = true;
@@ -75,14 +107,24 @@ int main(int argc, char *argv[])
 	w.south_wall_by_transposed_id(w.coordinates_to_transposed_cell_id(15, 7)) = true;
 	w.south_wall_by_transposed_id(w.coordinates_to_transposed_cell_id(15, 12)) = true;
 
-	draw_tobor_world(tobor_world);
-	return 0;
-	(void)argc;
-	(void)argv;
-	/*
-    QApplication a(argc, argv);
-    MainWindow w;
-    w.show();
-    return a.exec();
-	*/
+	// specify initial state
+	auto target_piece = tobor::v1_0::universal_cell_id::create_by_coordinates(6, 9, w);
+	auto green_robot = tobor::v1_0::universal_cell_id::create_by_coordinates(12, 7, w);
+	auto red_robot = tobor::v1_0::universal_cell_id::create_by_coordinates(12, 12, w);
+	auto yellow_robot = tobor::v1_0::universal_cell_id::create_by_coordinates(6, 14, w);
+
+	std::array<tobor::v1_0::universal_cell_id, 3> other_robots{ green_robot, red_robot, yellow_robot };
+
+	//auto initial_state = tobor::v1_0::positions_of_pieces<3>(target_piece, std::move(other_robots));
+
+	// specify target field
+	auto target = tobor::v1_0::universal_cell_id::create_by_coordinates(9, 1, w);
+
+	auto w_analyzer = tobor::v1_0::move_one_piece_calculator<3>(w);
+
+	auto the_partial_state_graph = tobor::v1_0::build_state_graph_for_all_optimal_solutions<3>(w_analyzer, target, target_piece, std::move(other_robots));
+
+	ASSERT_EQ(9, the_partial_state_graph.optimal_solution_size);
+
 }
+
