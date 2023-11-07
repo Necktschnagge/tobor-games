@@ -2,6 +2,7 @@
 
 #include "models.h"
 
+#include "logger.h"
 
 #include <string>
 #include <numeric>
@@ -820,7 +821,7 @@ std::unique_ptr<svg_generator> draw_duck_piece(const tobor::v1_0::tobor_world& t
 }
 
 
-void draw_tobor_world(const tobor::v1_0::tobor_world& tobor_world) {
+std::string draw_tobor_world(const tobor::v1_0::tobor_world& tobor_world) {
 
 	drawing_style_sheet dss;
 
@@ -874,6 +875,8 @@ void draw_tobor_world(const tobor::v1_0::tobor_world& tobor_world) {
 	auto fs = std::ofstream(R"(C:\Users\F-NET-ADMIN\Desktop\preview.svg)");
 
 	fs << svg_root->get_svg();
+
+	return svg_root->get_svg();
 
 }
 
