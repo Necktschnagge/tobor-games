@@ -3,6 +3,9 @@
 
 #include "./ui_mainwindow.h"
 
+#include "gui_interactive_controller.h"
+
+
 #include "solver.h"
 #include "tobor_svg.h"
 
@@ -140,7 +143,7 @@ void MainWindow::on_actionNewGame_triggered() {
 }
 
 void MainWindow::on_actionStopGame_triggered() {
-	guiInteractiveController.stopGame();
+	//guiInteractiveController.stopGame();
 }
 
 void MainWindow::keyPressEvent(QKeyEvent* e)
@@ -166,35 +169,3 @@ void MainWindow::keyPressEvent(QKeyEvent* e)
 	}
 }
 
-inline void GuiInteractiveController::startGame() {
-	if (interactive_mode == InteractiveMode::NO_GAME) {
-
-		mainWindow->ui->actionNewGame->setEnabled(false);
-		mainWindow->ui->actionStopGame->setEnabled(true);
-		interactive_mode = InteractiveMode::GAME_INTERACTIVE;
-
-	}
-	else {
-
-		QMessageBox msgBox(QMessageBox::Icon::Critical, QString("GUI ERROR"), "This action should not be available.");
-		msgBox.exec();
-
-	}
-}
-
-inline void GuiInteractiveController::stopGame() {
-
-	if (interactive_mode == InteractiveMode::GAME_INTERACTIVE) {
-
-		mainWindow->ui->actionNewGame->setEnabled(true);
-		mainWindow->ui->actionStopGame->setEnabled(false);
-		interactive_mode = InteractiveMode::NO_GAME;
-
-	}
-	else {
-
-		QMessageBox msgBox(QMessageBox::Icon::Critical, QString("GUI ERROR"), "This action should not be available.");
-		msgBox.exec();
-
-	}
-}

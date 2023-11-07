@@ -22,18 +22,12 @@ PIECE                   :       one robot / piece
 */
 
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]){
 
+	init_logger();
 
-	init_logger();	
-
-//	return 0;
-//	(void)argc;
-//	(void)argv;
-
-    QApplication qt_app(argc, argv);
-    MainWindow main_window;
+	QApplication qt_app(argc, argv);
+	MainWindow main_window;
 	main_window.show();
-    return qt_app.exec();
+	return qt_app.exec();
 }
