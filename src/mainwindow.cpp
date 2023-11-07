@@ -143,7 +143,7 @@ void MainWindow::on_actionNewGame_triggered() {
 }
 
 void MainWindow::on_actionStopGame_triggered() {
-	//guiInteractiveController.stopGame();
+	guiInteractiveController.stopGame();
 }
 
 void MainWindow::keyPressEvent(QKeyEvent* e)
