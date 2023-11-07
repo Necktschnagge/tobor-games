@@ -13,6 +13,19 @@
 
 class MainWindow;
 
+struct GameController {
+public:
+
+	tobor::v1_0::tobor_world tobor_world;
+
+	tobor::v1_0::positions_of_pieces<3> initial_state;
+
+	GameController(const tobor::v1_0::tobor_world& tobor_world, const tobor::v1_0::positions_of_pieces<3>& initial_state) : tobor_world(tobor_world), initial_state(initial_state) {
+
+	}
+
+};
+
 class GuiInteractiveController final {
 
 	MainWindow* mainWindow;
@@ -24,7 +37,7 @@ class GuiInteractiveController final {
 
 	InteractiveMode interactive_mode;
 
-
+	std::vector<GameController> gameHistory;
 
 public:
 
@@ -35,7 +48,10 @@ public:
 	}
 
 	void startGame();
+
 	void stopGame();
+
+	void refreshSVG();
 
 	tobor::v1_0::tobor_world generateBoard();
 

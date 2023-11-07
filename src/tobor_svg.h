@@ -500,7 +500,7 @@ struct drawing_style_sheet {
 
 };
 
-std::unique_ptr<svg_generator> draw_tobor_background(const tobor::v1_0::tobor_world& tobor_world, const drawing_style_sheet& dss) {
+inline std::unique_ptr<svg_generator> draw_tobor_background(const tobor::v1_0::tobor_world& tobor_world, const drawing_style_sheet& dss) {
 	auto svg_background = std::make_unique<svg_path>();
 	svg_background->fill() = "lightyellow";
 	svg_background->stroke_width() = "0";
@@ -520,7 +520,7 @@ std::unique_ptr<svg_generator> draw_tobor_background(const tobor::v1_0::tobor_wo
 	return svg_background;
 }
 
-std::unique_ptr<svg_path> get_vertical_grid_element(const tobor::v1_0::tobor_world& tobor_world, const drawing_style_sheet& dss, std::size_t cell_count_offset) {
+inline std::unique_ptr<svg_path> get_vertical_grid_element(const tobor::v1_0::tobor_world& tobor_world, const drawing_style_sheet& dss, std::size_t cell_count_offset) {
 	auto grid_element = std::make_unique<svg_path>();
 
 	grid_element->fill() = "dimgrey"; // !80 #0F54DA";
@@ -543,7 +543,7 @@ std::unique_ptr<svg_path> get_vertical_grid_element(const tobor::v1_0::tobor_wor
 	return grid_element;
 }
 
-std::unique_ptr<svg_path> get_horizontal_grid_element(const tobor::v1_0::tobor_world& tobor_world, const drawing_style_sheet& dss, std::size_t cell_count_offset) {
+inline std::unique_ptr<svg_path> get_horizontal_grid_element(const tobor::v1_0::tobor_world& tobor_world, const drawing_style_sheet& dss, std::size_t cell_count_offset) {
 	auto grid_element = std::make_unique<svg_path>();
 
 	grid_element->fill() = "dimgrey"; // !80 #0F54DA";
@@ -566,7 +566,7 @@ std::unique_ptr<svg_path> get_horizontal_grid_element(const tobor::v1_0::tobor_w
 	return grid_element;
 }
 
-std::unique_ptr<svg_generator> draw_tobor_grid(const tobor::v1_0::tobor_world& tobor_world, const drawing_style_sheet& dss) {
+inline std::unique_ptr<svg_generator> draw_tobor_grid(const tobor::v1_0::tobor_world& tobor_world, const drawing_style_sheet& dss) {
 	auto svg_grid = std::make_unique<svg_compound>();
 
 	for (std::size_t i{ 0 }; i <= tobor_world.get_horizontal_size(); ++i) { // draw vertical grid lines
@@ -580,7 +580,7 @@ std::unique_ptr<svg_generator> draw_tobor_grid(const tobor::v1_0::tobor_world& t
 	return svg_grid;
 }
 
-std::unique_ptr<svg_path> get_horizontal_south_wall(const tobor::v1_0::tobor_world& tobor_world, const drawing_style_sheet& dss, std::size_t x, std::size_t y) {
+inline std::unique_ptr<svg_path> get_horizontal_south_wall(const tobor::v1_0::tobor_world& tobor_world, const drawing_style_sheet& dss, std::size_t x, std::size_t y) {
 	auto horizontal_wall_element = std::make_unique<svg_path>();
 
 	horizontal_wall_element->fill() = "black"; // !80 #0F54DA";
@@ -615,7 +615,7 @@ std::unique_ptr<svg_path> get_horizontal_south_wall(const tobor::v1_0::tobor_wor
 	return horizontal_wall_element;
 }
 
-std::unique_ptr<svg_path> get_vertical_west_wall(const tobor::v1_0::tobor_world& tobor_world, const drawing_style_sheet& dss, std::size_t x, std::size_t y) {
+inline std::unique_ptr<svg_path> get_vertical_west_wall(const tobor::v1_0::tobor_world& tobor_world, const drawing_style_sheet& dss, std::size_t x, std::size_t y) {
 	auto vertical_wall_element = std::make_unique<svg_path>();
 
 	vertical_wall_element->fill() = "black"; // !80 #0F54DA";
@@ -650,7 +650,7 @@ std::unique_ptr<svg_path> get_vertical_west_wall(const tobor::v1_0::tobor_world&
 	return vertical_wall_element;
 }
 
-std::unique_ptr<svg_generator> draw_blocked_cells(const tobor::v1_0::tobor_world& tobor_world, const drawing_style_sheet& dss) {
+inline std::unique_ptr<svg_generator> draw_blocked_cells(const tobor::v1_0::tobor_world& tobor_world, const drawing_style_sheet& dss) {
 	auto blocked_cells = std::make_unique<svg_compound>();
 
 	for (std::size_t cell_id{ 0 }; cell_id < tobor_world.count_cells(); ++cell_id) {
@@ -698,7 +698,7 @@ std::unique_ptr<svg_generator> draw_blocked_cells(const tobor::v1_0::tobor_world
 	return blocked_cells;
 }
 
-std::unique_ptr<svg_generator> draw_walls(const tobor::v1_0::tobor_world& tobor_world, const drawing_style_sheet& dss) {
+inline std::unique_ptr<svg_generator> draw_walls(const tobor::v1_0::tobor_world& tobor_world, const drawing_style_sheet& dss) {
 	auto svg_walls = std::make_unique<svg_compound>();
 
 	// horizontal walls:
@@ -729,7 +729,7 @@ std::unique_ptr<svg_generator> draw_walls(const tobor::v1_0::tobor_world& tobor_
 	return svg_walls;
 }
 
-std::unique_ptr<svg_generator> draw_duck_piece(const tobor::v1_0::tobor_world& tobor_world, const drawing_style_sheet& dss, const tobor::v1_0::universal_cell_id& cell, bool look_right, const std::string& color) {
+inline std::unique_ptr<svg_generator> draw_duck_piece(const tobor::v1_0::tobor_world& tobor_world, const drawing_style_sheet& dss, const tobor::v1_0::universal_cell_id& cell, bool look_right, const std::string& color) {
 
 	(void)look_right;
 
@@ -821,7 +821,7 @@ std::unique_ptr<svg_generator> draw_duck_piece(const tobor::v1_0::tobor_world& t
 }
 
 
-std::string draw_tobor_world(const tobor::v1_0::tobor_world& tobor_world) {
+inline std::string draw_tobor_world(const tobor::v1_0::tobor_world& tobor_world) {
 
 	drawing_style_sheet dss;
 

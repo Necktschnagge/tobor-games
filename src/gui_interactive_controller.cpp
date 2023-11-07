@@ -5,6 +5,10 @@
 #include "./ui_mainwindow.h"
 
 
+#include"tobor_svg.h"
+
+
+
 void GuiInteractiveController::startGame() {
 	if (interactive_mode == InteractiveMode::NO_GAME) {
 
@@ -13,8 +17,21 @@ void GuiInteractiveController::startGame() {
 		interactive_mode = InteractiveMode::GAME_INTERACTIVE;
 
 		// create a board
+		tobor::v1_0::tobor_world tobor_world = generateBoard();
 
+		gameHistory.emplace_back(
+			tobor_world,
+			tobor::v1_0::positions_of_pieces<3>(
+				tobor::v1_0::universal_cell_id::create_by_coordinates(2, 3, tobor_world),
+				{
+					tobor::v1_0::universal_cell_id::create_by_coordinates(12,3, tobor_world),
+					tobor::v1_0::universal_cell_id::create_by_coordinates(11,12, tobor_world),
+					tobor::v1_0::universal_cell_id::create_by_coordinates(5,13, tobor_world)
+				}
+			)
+		);
 
+		refreshSVG();
 
 	}
 	else {
@@ -33,12 +50,42 @@ void GuiInteractiveController::stopGame() {
 		mainWindow->ui->actionStopGame->setEnabled(false);
 		interactive_mode = InteractiveMode::NO_GAME;
 
+		refreshSVG();
+
 	}
 	else {
 
 		QMessageBox msgBox(QMessageBox::Icon::Critical, QString("GUI ERROR"), "This action should not be available.");
 		msgBox.exec();
 
+	}
+}
+
+void GuiInteractiveController::refreshSVG()
+{
+	if (interactive_mode == InteractiveMode::GAME_INTERACTIVE) {
+
+		std::string example_svg_string = draw_tobor_world(gameHistory.back().tobor_world);
+
+
+		QXmlStreamReader xml;
+		xml.addData(example_svg_string);
+
+		QSvgRenderer* svgRenderer = new QSvgRenderer(&xml);
+		QGraphicsSvgItem* item = new QGraphicsSvgItem();
+		QGraphicsScene* scene = new QGraphicsScene();
+
+		item->setSharedRenderer(svgRenderer);
+		scene->addItem(item);
+		mainWindow->ui->graphicsView->setScene(scene);
+		mainWindow->ui->graphicsView->fitInView(scene->sceneRect(), Qt::KeepAspectRatio);
+		mainWindow->ui->graphicsView->show();
+
+	}
+
+	if (interactive_mode == InteractiveMode::NO_GAME) {
+		QGraphicsScene* scene = new QGraphicsScene();
+		mainWindow->ui->graphicsView->setScene(scene);
 	}
 }
 
