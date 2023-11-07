@@ -69,7 +69,7 @@ void GuiInteractiveController::refreshSVG()
 
 
 		QXmlStreamReader xml;
-		xml.addData(example_svg_string);
+		xml.addData(QString::fromUtf8(example_svg_string));
 
 		QSvgRenderer* svgRenderer = new QSvgRenderer(&xml);
 		QGraphicsSvgItem* item = new QGraphicsSvgItem();
