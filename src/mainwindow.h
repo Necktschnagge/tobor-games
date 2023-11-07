@@ -20,10 +20,6 @@ class MainWindow : public QMainWindow
 {
 	Q_OBJECT
 
-private:
-	GuiInteractiveController guiInteractiveController;
-	friend class GuiInteractiveController;
-
 public:
 	MainWindow(QWidget* parent = nullptr);
 	~MainWindow();
@@ -39,6 +35,8 @@ private slots:
 
 private:
 	Ui::MainWindow* ui;
+	GuiInteractiveController guiInteractiveController;
+	friend class GuiInteractiveController;
 
 protected:
 	void keyPressEvent(QKeyEvent* e);
