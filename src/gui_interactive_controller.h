@@ -18,9 +18,15 @@ public:
 
 	tobor::v1_0::tobor_world tobor_world;
 
-	tobor::v1_0::positions_of_pieces<3> initial_state;
+	tobor::v1_0::positions_of_pieces<1,3> initial_state;
 
-	GameController(const tobor::v1_0::tobor_world& tobor_world, const tobor::v1_0::positions_of_pieces<3>& initial_state) : tobor_world(tobor_world), initial_state(initial_state) {
+	tobor::v1_0::positions_of_pieces<1,3> current_state;
+
+	GameController(const tobor::v1_0::tobor_world& tobor_world, const tobor::v1_0::positions_of_pieces<1,3>& initial_state) :
+		tobor_world(tobor_world),
+		initial_state(initial_state),
+		current_state(initial_state)
+	{
 
 	}
 
@@ -41,7 +47,7 @@ class GuiInteractiveController final {
 
 public:
 
-	GuiInteractiveController(MainWindow* mainWindow) : 
+	GuiInteractiveController(MainWindow* mainWindow) :
 		mainWindow(mainWindow),
 		interactive_mode(InteractiveMode::NO_GAME) {
 

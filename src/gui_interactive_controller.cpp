@@ -21,8 +21,10 @@ void GuiInteractiveController::startGame() {
 
 		gameHistory.emplace_back(
 			tobor_world,
-			tobor::v1_0::positions_of_pieces<3>(
-				tobor::v1_0::universal_cell_id::create_by_coordinates(2, 3, tobor_world),
+			tobor::v1_0::positions_of_pieces<1,3>(
+				{
+					tobor::v1_0::universal_cell_id::create_by_coordinates(2, 3, tobor_world)
+				},
 				{
 					tobor::v1_0::universal_cell_id::create_by_coordinates(12,3, tobor_world),
 					tobor::v1_0::universal_cell_id::create_by_coordinates(11,12, tobor_world),

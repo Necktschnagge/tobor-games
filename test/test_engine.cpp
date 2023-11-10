@@ -114,15 +114,16 @@ TEST(engine, example_integration) {
 	auto yellow_robot = tobor::v1_0::universal_cell_id::create_by_coordinates(6, 14, w);
 
 	std::array<tobor::v1_0::universal_cell_id, 3> other_robots{ green_robot, red_robot, yellow_robot };
+	std::array<tobor::v1_0::universal_cell_id, 1> target_robots{ target_piece };
 
 	//auto initial_state = tobor::v1_0::positions_of_pieces<3>(target_piece, std::move(other_robots));
 
 	// specify target field
 	auto target = tobor::v1_0::universal_cell_id::create_by_coordinates(9, 1, w);
 
-	auto w_analyzer = tobor::v1_0::move_one_piece_calculator<3>(w);
+	auto w_analyzer = tobor::v1_0::move_one_piece_calculator<1,3>(w);
 
-	auto the_partial_state_graph = tobor::v1_0::build_state_graph_for_all_optimal_solutions<3>(w_analyzer, target, target_piece, std::move(other_robots));
+	auto the_partial_state_graph = tobor::v1_0::build_state_graph_for_all_optimal_solutions<1,3>(w_analyzer, target, target_robots, other_robots);
 
 	ASSERT_EQ(9, the_partial_state_graph.optimal_solution_size);
 

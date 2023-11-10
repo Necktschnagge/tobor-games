@@ -11,82 +11,6 @@ namespace tobor {
 
 	namespace v1_0 {
 
-#if false
-		/**
-		*	@brief Stores the cell ids which can be reached by moving in one of the four directions,
-					assuming moving as far as possible until hitting a wall,
-					also assuming there are no other obstacles than walls on the way.
-					Should be used as one object per cell.
-		*/
-		class [[deprecated]] quick_moves_of_cell {
-
-			using cell_id = universal_cell_id;
-
-			using game_board = tobor_world;
-
-		public:
-			cell_id next_north; // ### cannot be const, because of ctor, should be only const-accessable!
-			cell_id next_east;
-			cell_id next_south;
-			cell_id next_west;
-
-			quick_moves_of_cell(const cell_id& start_field, const game_board& world) {
-				// ### inefficient: try to use some recursive call on next east of left neighbour cell, if next_east is not equal to start cell
-				// east, west - vwalls - id
-				std::size_t next_west_id = start_field.get_id();
-				while (!world.west_wall_by_id(next_west_id)) {
-					--next_west_id;
-				}
-				next_west.set_id(next_west_id, world);
-
-				std::size_t next_east_id = start_field.get_id();
-				while (!world.east_wall_by_id(next_east_id)) {
-					++next_east_id;
-				}
-				next_east.set_id(next_east_id, world);
-
-				// north south - hwalls - transposed_id
-				std::size_t next_south_transposed_id = start_field.get_transposed_id();
-				while (!world.south_wall_by_transposed_id(next_south_transposed_id)) {
-					--next_south_transposed_id;
-				}
-				next_south.set_transposed_id(next_south_transposed_id, world);
-
-				std::size_t next_north_transposed_id = start_field.get_transposed_id();
-				while (!world.north_wall_by_transposed_id(next_north_transposed_id)) {
-					++next_north_transposed_id;
-				}
-				next_north.set_transposed_id(next_north_transposed_id, world);
-
-			}
-		};
-
-
-		/**
-		*	@brief Stores the quick move information for all cells of the game's board.
-		*/
-		class [[deprecated]] quick_move_board {
-		public:
-			using cell_id = universal_cell_id;
-			using game_board = tobor_world;
-
-			// maps:   id |-> quick_moves_of_cell of cell with given id
-			std::vector<quick_moves_of_cell> cells;
-
-			quick_move_board() {}
-
-			quick_move_board(const game_board& world) {
-				cells.reserve(world.count_cells());
-				for (std::size_t id = 0; id < world.count_cells(); ++id) {
-					cell_id cell;
-					cell.set_id(id, world);
-
-					cells.emplace_back(quick_moves_of_cell(cell, world));
-				}
-			}
-		};
-#endif
-
 		// ### alternative board representation is just two sorted vectors of indices where there are walls, additionally you can uniformly encode pieces like walls, in this case double walls left and right, or top and bottom.
 
 
@@ -189,13 +113,18 @@ namespace tobor {
 			std::size_t get_north(std::size_t transposed_id) const { return go_north[transposed_id]; }
 		};
 
+
 		/**
 		*	@brief Calculates successor states by calcualting successor cell of single pieces for moving in a given direction.
 		*/
-		template<std::size_t COUNT_NON_TARGET_PIECES>
-		class move_one_piece_calculator {
+		template<std::size_t COUNT_TARGET_PIECES_V, std::size_t COUNT_NON_TARGET_PIECES_V>
+		class move_one_piece_calculator { // logic engine
 		public:
 			using world_type = tobor_world;
+
+			static constexpr std::size_t COUNT_TARGET_PIECES{ COUNT_TARGET_PIECES_V };
+
+			static constexpr std::size_t COUNT_NON_TARGET_PIECES{ COUNT_NON_TARGET_PIECES_V };
 
 		private:
 			const world_type& my_world;
@@ -218,22 +147,17 @@ namespace tobor {
 			/**
 			*	@brief Calculates the successor cell to reach starting at \p start_cell moving west until obstacle.
 			*/
-			inline std::pair<universal_cell_id, bool> get_next_field_on_west_move(const universal_cell_id& start_cell, const positions_of_pieces<COUNT_NON_TARGET_PIECES>& state) {
+			inline std::pair<universal_cell_id, bool> get_next_cell_on_west_move(const universal_cell_id& start_cell, const positions_of_pieces<COUNT_TARGET_PIECES, COUNT_NON_TARGET_PIECES>& state) {
 				std::size_t next_cell{ cache.get_west(start_cell.get_id()) };
 
-				if (start_cell.get_id() == next_cell) { // no move possible by walls
-					return std::make_pair(universal_cell_id::create_by_id(next_cell, my_world), false);
-				}
+				//if (start_cell.get_id() == next_cell) { // no move possible by walls
+				//	return std::make_pair(universal_cell_id::create_by_id(next_cell, my_world), false);
+				//}
 
 				// iterate over all pieces since they may appear as obstacle
-
-				if (next_cell <= state.target_piece.get_id() && state.target_piece.get_id() < start_cell.get_id()) { // target piece
-					next_cell = state.target_piece.get_id() + 1;
-				}
-
-				for (std::size_t i = 0; i < COUNT_NON_TARGET_PIECES; ++i) { // non target pieces
-					if (next_cell <= state.non_target_pieces[i].get_id() && state.non_target_pieces[i].get_id() < start_cell.get_id()) { // target piece
-						next_cell = state.non_target_pieces[i].get_id() + 1;
+				for (std::size_t i = 0; i < state.COUNT_ALL_PIECES; ++i) { // iterate over all pieces
+					if (next_cell <= state.piece_positions[i].get_id() && state.piece_positions[i].get_id() < start_cell.get_id()) { // target piece
+						next_cell = state.piece_positions[i].get_id() + 1;
 					}
 				}
 
@@ -247,26 +171,22 @@ namespace tobor {
 			/**
 			*	@brief Calculates the successor cell to reach starting at \p start_cell moving east until obstacle.
 			*/
-			inline std::pair<universal_cell_id, bool> get_next_field_on_east_move(const universal_cell_id& start_cell, const positions_of_pieces< COUNT_NON_TARGET_PIECES>& state) {
+			inline std::pair<universal_cell_id, bool> get_next_cell_on_east_move(const universal_cell_id& start_cell, const positions_of_pieces<COUNT_TARGET_PIECES, COUNT_NON_TARGET_PIECES>& state) {
 
 				//decltype(universal_cell_id::get_id) universal_cell_id::* get_id_type = &universal_cell_id::get_id;
 				//decltype(quick_move_cache::get_west) quick_move_cache::* next_cache_direction = &quick_move_cache::get_east;
 
 				std::size_t next_cell{ cache.get_east(start_cell.get_id()) };
 
-				if (start_cell.get_id() == next_cell) { // no move possible by walls
-					return std::make_pair(universal_cell_id::create_by_id(next_cell, my_world), false);
-				}
+				//if (start_cell.get_id() == next_cell) { // no move possible by walls
+				//	return std::make_pair(universal_cell_id::create_by_id(next_cell, my_world), false);
+				//}
 
 				// iterate over all pieces since they may appear as obstacle
 
-				if (start_cell.get_id() < state.target_piece.get_id() && state.target_piece.get_id() <= next_cell) { // target piece
-					next_cell = state.target_piece.get_id() - 1;
-				}
-
-				for (std::size_t i = 0; i < COUNT_NON_TARGET_PIECES; ++i) { // non target pieces
-					if (start_cell.get_id() < state.non_target_pieces[i].get_id() && state.non_target_pieces[i].get_id() <= next_cell) { // target piece
-						next_cell = state.non_target_pieces[i].get_id() - 1;
+				for (std::size_t i = 0; i < state.COUNT_ALL_PIECES; ++i) { // iterate over all pieces
+					if (start_cell.get_id() < state.piece_positions[i].get_id() && state.piece_positions[i].get_id() <= next_cell) { // target piece
+						next_cell = state.piece_positions[i].get_id() - 1;
 					}
 				}
 
@@ -280,22 +200,18 @@ namespace tobor {
 			/**
 			*	@brief Calculates the successor cell to reach starting at \p start_cell moving south until obstacle.
 			*/
-			inline std::pair<universal_cell_id, bool> get_next_field_on_south_move(const universal_cell_id& start_cell, const positions_of_pieces< COUNT_NON_TARGET_PIECES>& state) {
+			inline std::pair<universal_cell_id, bool> get_next_cell_on_south_move(const universal_cell_id& start_cell, const positions_of_pieces<COUNT_TARGET_PIECES, COUNT_NON_TARGET_PIECES>& state) {
 				std::size_t next_cell{ cache.get_south(start_cell.get_transposed_id()) };
 
-				if (start_cell.get_transposed_id() == next_cell) { // no move possible by walls
-					return std::make_pair(universal_cell_id::create_by_transposed_id(next_cell, my_world), false);
-				}
+				//if (start_cell.get_transposed_id() == next_cell) { // no move possible by walls
+				//	return std::make_pair(universal_cell_id::create_by_transposed_id(next_cell, my_world), false);
+				//}
 
 				// iterate over all pieces since they may appear as obstacle
 
-				if (next_cell <= state.target_piece.get_transposed_id() && state.target_piece.get_transposed_id() < start_cell.get_transposed_id()) { // target piece
-					next_cell = state.target_piece.get_transposed_id() + 1;
-				}
-
-				for (std::size_t i = 0; i < COUNT_NON_TARGET_PIECES; ++i) { // non target pieces
-					if (next_cell <= state.non_target_pieces[i].get_transposed_id() && state.non_target_pieces[i].get_transposed_id() < start_cell.get_transposed_id()) { // target piece
-						next_cell = state.non_target_pieces[i].get_transposed_id() + 1;
+				for (std::size_t i = 0; i < state.COUNT_ALL_PIECES; ++i) { // iterate over all pieces
+					if (next_cell <= state.piece_positions[i].get_transposed_id() && state.piece_positions[i].get_transposed_id() < start_cell.get_transposed_id()) { // target piece
+						next_cell = state.piece_positions[i].get_transposed_id() + 1;
 					}
 				}
 
@@ -309,22 +225,18 @@ namespace tobor {
 			/**
 			*	@brief Calculates the successor cell to reach starting at \p start_cell moving north until obstacle.
 			*/
-			inline std::pair<universal_cell_id, bool> get_next_field_on_north_move(const universal_cell_id& start_cell, const positions_of_pieces<  COUNT_NON_TARGET_PIECES>& state) {
+			inline std::pair<universal_cell_id, bool> get_next_cell_on_north_move(const universal_cell_id& start_cell, const positions_of_pieces<COUNT_TARGET_PIECES, COUNT_NON_TARGET_PIECES>& state) {
 				std::size_t next_cell{ cache.get_north(start_cell.get_transposed_id()) };
 
-				if (start_cell.get_transposed_id() == next_cell) { // no move possible by walls
-					return std::make_pair(universal_cell_id::create_by_transposed_id(next_cell, my_world), false);
-				}
+				//if (start_cell.get_transposed_id() == next_cell) { // no move possible by walls
+				//	return std::make_pair(universal_cell_id::create_by_transposed_id(next_cell, my_world), false);
+				//}
 
 				// iterate over all pieces since they may appear as obstacle
 
-				if (start_cell.get_transposed_id() < state.target_piece.get_transposed_id() && state.target_piece.get_transposed_id() <= next_cell) { // target piece
-					next_cell = state.target_piece.get_transposed_id() - 1;
-				}
-
-				for (std::size_t i = 0; i < COUNT_NON_TARGET_PIECES; ++i) { // non target pieces
-					if (start_cell.get_transposed_id() < state.non_target_pieces[i].get_transposed_id() && state.non_target_pieces[i].get_transposed_id() <= next_cell) { // target piece
-						next_cell = state.non_target_pieces[i].get_transposed_id() - 1;
+				for (std::size_t i = 0; i < state.COUNT_ALL_PIECES; ++i) { // iterate over all pieces
+					if (start_cell.get_transposed_id() < state.piece_positions[i].get_transposed_id() && state.piece_positions[i].get_transposed_id() <= next_cell) { // target piece
+						next_cell = state.piece_positions[i].get_transposed_id() - 1;
 					}
 				}
 
@@ -335,6 +247,41 @@ namespace tobor {
 				return std::make_pair(universal_cell_id::create_by_transposed_id(next_cell, my_world), true);
 			}
 
+			inline std::pair<positions_of_pieces<COUNT_TARGET_PIECES, COUNT_NON_TARGET_PIECES>, bool> successor_state(
+				const positions_of_pieces<COUNT_TARGET_PIECES, COUNT_NON_TARGET_PIECES>& state,
+				const piece_id& _piece_id,
+				const direction& _direction) {
+				positions_of_pieces<COUNT_TARGET_PIECES, COUNT_NON_TARGET_PIECES> next_state{ state };
+				auto& cell_to_be_moved = next_state.piece_positions[_piece_id.value];
+				std::pair<universal_cell_id, bool> next_cell_paired_true_move;
+				switch (_direction.value)
+				{
+				case direction::EAST:
+					next_cell_paired_true_move = get_next_cell_on_east_move(cell_to_be_moved, state);
+					break;
+				case direction::WEST:
+					next_cell_paired_true_move = get_next_cell_on_west_move(cell_to_be_moved, state);
+					break;
+				case direction::SOUTH:
+					next_cell_paired_true_move = get_next_cell_on_south_move(cell_to_be_moved, state);
+					break;
+				case direction::NORTH:
+					next_cell_paired_true_move = get_next_cell_on_north_move(cell_to_be_moved, state);
+					break;
+				default:
+					return std::make_pair(state, false);
+					break;  // error
+				}
+				if (!next_cell_paired_true_move.second) {
+					return std::make_pair(state, false);
+				}
+
+				next_state.piece_positions[_piece_id.value] = next_cell_paired_true_move.first;
+				next_state.sort_pieces();
+				
+				return std::make_pair(next_state, true);
+			}
+
 		};
 
 
@@ -343,27 +290,12 @@ namespace tobor {
 		*
 		*	@details Does not define how piece_id is interpreted.
 		*/
-		class piece_move {
+		struct piece_move {
 		public:
-			using piece_id_type = uint8_t;
-			using move_direction_type = uint8_t;
+			piece_id _piece_id;
+			direction _direction;
 
-			static constexpr move_direction_type NORTH{ 1 << 0 };
-			static constexpr move_direction_type EAST{ 1 << 1 };
-			static constexpr move_direction_type SOUTH{ 1 << 2 };
-			static constexpr move_direction_type WEST{ 1 << 3 };
-
-			static_assert(NORTH != EAST, "piece_move: NORTH == EAST");
-			static_assert(NORTH != SOUTH, "piece_move: NORTH == SOUTH");
-			static_assert(NORTH != WEST, "piece_move: NORTH == WEST");
-			static_assert(EAST != SOUTH, "piece_move: EAST == SOUTH");
-			static_assert(EAST != WEST, "piece_move: EAST == WEST");
-			static_assert(SOUTH != WEST, "piece_move: SOUTH == WEST");
-
-			piece_id_type piece_id;
-			move_direction_type direction;
-
-			piece_move(const piece_id_type& _piece_id, const move_direction_type& _direction) : piece_id(_piece_id), direction(_direction) {}
+			piece_move(const piece_id& _piece_id, const direction& _direction) : _piece_id(_piece_id), _direction(_direction) {}
 		};
 
 
@@ -373,14 +305,13 @@ namespace tobor {
 			The number of successors where this is an optimal predecessor
 			The optimal number of steps from initial state
 		*/
-		template <std::size_t COUNT_NON_TARGET_PIECES>
+		template <std::size_t COUNT_TARGET_PIECES, std::size_t COUNT_NON_TARGET_PIECES>
 		class state_graph_node {
 		public:
-			using cell_id = universal_cell_id;
-			using State_Type = positions_of_pieces<COUNT_NON_TARGET_PIECES>;
+			using cell_id_type = universal_cell_id;
+			using state_type = positions_of_pieces<COUNT_TARGET_PIECES, COUNT_NON_TARGET_PIECES>;
 
-
-			using partial_solutions_map_type = std::map<positions_of_pieces<COUNT_NON_TARGET_PIECES>, state_graph_node>;
+			using partial_solutions_map_type = std::map<positions_of_pieces<COUNT_TARGET_PIECES, COUNT_NON_TARGET_PIECES>, state_graph_node>;
 
 			using map_iterator_type = typename partial_solutions_map_type::iterator;
 
@@ -399,29 +330,41 @@ namespace tobor {
 		class move_candidate {
 		public:
 			piece_move move;
-			std::pair<universal_cell_id, bool> next_ceell_paired_enable;
+			std::pair<universal_cell_id, bool> next_cell_paired_enable;
 
-			move_candidate(const piece_move& m, const std::pair<universal_cell_id, bool>& n) : move(m), next_ceell_paired_enable(n) {}
+			move_candidate(const piece_move& m, const std::pair<universal_cell_id, bool>& n) : move(m), next_cell_paired_enable(n) {}
+		};
+		
+		template <std::size_t COUNT_TARGET_PIECES, std::size_t COUNT_NON_TARGET_PIECES>
+		class move_candidate_2 {
+		public:
+			
+			piece_move move;
+
+			std::pair<positions_of_pieces<COUNT_TARGET_PIECES, COUNT_NON_TARGET_PIECES>, bool> next_cell_paired_enable;
+
+			move_candidate_2(const piece_move& m, const std::pair<positions_of_pieces<COUNT_TARGET_PIECES, COUNT_NON_TARGET_PIECES>, bool>& n) : move(m), next_cell_paired_enable(n) {}
+
 		};
 
-		template <std::size_t COUNT_NON_TARGET_PIECES>
+		template <std::size_t COUNT_TARGET_PIECES, std::size_t COUNT_NON_TARGET_PIECES>
 		class partial_state_graph {
 		public:
 
 			// all game states that have been found so far,
 			// each one with pointers to their optimal predecessors as well as a counter for successors.
-			using solutions_map_type = typename state_graph_node<COUNT_NON_TARGET_PIECES>::partial_solutions_map_type;
+			using solutions_map_type = typename state_graph_node<COUNT_TARGET_PIECES, COUNT_NON_TARGET_PIECES>::partial_solutions_map_type;
 
 			// to be used as a pointer to a game state
-			using map_iterator = typename state_graph_node<COUNT_NON_TARGET_PIECES>::map_iterator_type;
+			using map_iterator = typename state_graph_node<COUNT_TARGET_PIECES, COUNT_NON_TARGET_PIECES>::map_iterator_type;
 
 			solutions_map_type solutions_map;
 
 			// number of steps needed by any optimal solution
-			std::size_t optimal_solution_size{ state_graph_node<COUNT_NON_TARGET_PIECES>::MAX };
+			std::size_t optimal_solution_size{ state_graph_node<COUNT_TARGET_PIECES,COUNT_NON_TARGET_PIECES>::MAX };
 
 			// initial state
-			positions_of_pieces<COUNT_NON_TARGET_PIECES> initial_state;
+			positions_of_pieces<COUNT_TARGET_PIECES, COUNT_NON_TARGET_PIECES> initial_state;
 
 			// All game states that have been found yet, ordered by their shortest distance from initial state.
 			// .back() contains all game states to be explored if one deepening step just finished.
@@ -429,20 +372,24 @@ namespace tobor {
 			// ### note in case of removing states with no optimal successors, the invalid iterator problem arises.
 
 
-			partial_state_graph(const positions_of_pieces<COUNT_NON_TARGET_PIECES>& p_initial_state): initial_state(p_initial_state) {}
+			partial_state_graph(const positions_of_pieces<COUNT_TARGET_PIECES, COUNT_NON_TARGET_PIECES>& p_initial_state) : initial_state(p_initial_state) {}
+
+			// add the logic for exploring into this class., like explore one level
 		};
 
-		template<std::size_t COUNT_NON_TARGET_PIECES = 3>
-		inline partial_state_graph<COUNT_NON_TARGET_PIECES> build_state_graph_for_all_optimal_solutions(
-			move_one_piece_calculator<COUNT_NON_TARGET_PIECES>& move_one_piece_c,
+		template<std::size_t COUNT_TARGET_PIECES = 1, std::size_t COUNT_NON_TARGET_PIECES = 3>
+		inline partial_state_graph<COUNT_TARGET_PIECES, COUNT_NON_TARGET_PIECES> build_state_graph_for_all_optimal_solutions(
+			move_one_piece_calculator<COUNT_TARGET_PIECES, COUNT_NON_TARGET_PIECES>& move_one_piece_c,
 			const universal_cell_id& p_target_cell,
-			const universal_cell_id& p_target_piece,
-			std::array<universal_cell_id, COUNT_NON_TARGET_PIECES>&& p_non_target_pieces
+			const std::array<universal_cell_id, COUNT_TARGET_PIECES>& p_target_pieces,
+			const std::array<universal_cell_id, COUNT_NON_TARGET_PIECES>& p_non_target_pieces
 		) {
-			partial_state_graph<COUNT_NON_TARGET_PIECES> state_graph = partial_state_graph<COUNT_NON_TARGET_PIECES>(positions_of_pieces<COUNT_NON_TARGET_PIECES>(p_target_piece, std::move(p_non_target_pieces)));
+			partial_state_graph<COUNT_TARGET_PIECES, COUNT_NON_TARGET_PIECES> state_graph = partial_state_graph<COUNT_TARGET_PIECES, COUNT_NON_TARGET_PIECES>(
+				positions_of_pieces<COUNT_TARGET_PIECES, COUNT_NON_TARGET_PIECES>(p_target_pieces, p_non_target_pieces)
+				);
 
 
-			using map_iterator = typename partial_state_graph<COUNT_NON_TARGET_PIECES>::map_iterator;
+			using map_iterator = typename partial_state_graph<COUNT_TARGET_PIECES, COUNT_NON_TARGET_PIECES>::map_iterator;
 
 
 			/*	insert the initial game state into map of all visited states : */
@@ -460,72 +407,46 @@ namespace tobor {
 				state_graph.visited_game_states.emplace_back(); // possibly invalidates iterators on sub-vectors, but on most compilers it will work anyway.
 				// But please do not rely on this behaviour.
 
-				for (const auto& current_iterator : state_graph.visited_game_states[expand_size]) {
+				for (const map_iterator& current_iterator : state_graph.visited_game_states[expand_size]) {
 					//const auto current_iterator{ visited_game_states[index_next_exploration] };
 
-					std::vector<move_candidate> candidates_for_successor_states;
+					std::vector<move_candidate_2<COUNT_TARGET_PIECES, COUNT_NON_TARGET_PIECES>> candidates_for_successor_states;
 
-					// get next fields in our world with respect to current state
-					candidates_for_successor_states.emplace_back(
-						piece_move(COUNT_NON_TARGET_PIECES, piece_move::WEST),
-						move_one_piece_c.get_next_field_on_west_move(current_iterator->first.target_piece, current_iterator->first)
-					);
-					candidates_for_successor_states.emplace_back(
-						piece_move(COUNT_NON_TARGET_PIECES, piece_move::EAST),
-						move_one_piece_c.get_next_field_on_east_move(current_iterator->first.target_piece, current_iterator->first)
-					);
-					candidates_for_successor_states.emplace_back(
-						piece_move(COUNT_NON_TARGET_PIECES, piece_move::NORTH),
-						move_one_piece_c.get_next_field_on_north_move(current_iterator->first.target_piece, current_iterator->first)
-					);
-					candidates_for_successor_states.emplace_back(
-						piece_move(COUNT_NON_TARGET_PIECES, piece_move::SOUTH),
-						move_one_piece_c.get_next_field_on_south_move(current_iterator->first.target_piece, current_iterator->first)
-					);
 
-					for (std::size_t rob_id{ 0 }; rob_id < COUNT_NON_TARGET_PIECES; ++rob_id) {
-						candidates_for_successor_states.emplace_back(
-							piece_move(static_cast<piece_move::piece_id_type>(rob_id), piece_move::WEST),
-							move_one_piece_c.get_next_field_on_west_move(current_iterator->first.non_target_pieces[rob_id], current_iterator->first)
-						);
-						candidates_for_successor_states.emplace_back(
-							piece_move(static_cast<piece_move::piece_id_type>(rob_id), piece_move::EAST),
-							move_one_piece_c.get_next_field_on_east_move(current_iterator->first.non_target_pieces[rob_id], current_iterator->first)
-						);
-						candidates_for_successor_states.emplace_back(
-							piece_move(static_cast<piece_move::piece_id_type>(rob_id), piece_move::NORTH),
-							move_one_piece_c.get_next_field_on_north_move(current_iterator->first.non_target_pieces[rob_id], current_iterator->first)
-						);
-						candidates_for_successor_states.emplace_back(
-							piece_move(static_cast<piece_move::piece_id_type>(rob_id), piece_move::SOUTH),
-							move_one_piece_c.get_next_field_on_south_move(current_iterator->first.non_target_pieces[rob_id], current_iterator->first)
-						);
+					// compute all successor state candidates:
+
+					for (piece_id::int_type current_piece_id{ 0 }; current_piece_id < state_graph.initial_state.COUNT_ALL_PIECES ; ++current_piece_id) { // create a dependent type with begin(), end() of piece ids as member class inside piece_position...
+
+						for (direction direction_iter = direction::begin(); direction_iter < direction::end(); ++direction_iter) {
+
+							candidates_for_successor_states.emplace_back(
+								piece_move(piece_id(current_piece_id), direction_iter),
+								move_one_piece_c.successor_state(current_iterator->first, current_piece_id, direction_iter)
+							);
+
+						}
+
 					}
 
 					// check if reached goal
-					for (std::size_t candidate{ 0 }; candidate < 4; ++candidate) {
-						if (candidates_for_successor_states[candidate].next_ceell_paired_enable.first == p_target_cell) {
+					for (std::size_t candidate{ 0 }; candidate < static_cast<std::size_t>(4) * COUNT_TARGET_PIECES; ++candidate) { // only the first 4 candidates arise from moved target robots...
+						if (candidates_for_successor_states[candidate].next_cell_paired_enable.first.piece_positions[candidate/4 ] == p_target_cell) {
 							state_graph.optimal_solution_size = current_iterator->second.smallest_seen_step_distance_from_initial_state + 1;
 						}
 					}
 
 					// add candidates to map if they are valid:
 					for (auto& c : candidates_for_successor_states) {
-						if (c.next_ceell_paired_enable.second) { // there is a real move
+						if (c.next_cell_paired_enable.second) { // there is a real move
 
-							// create next state
-							// c.next_ceell_paired_enable.first; // new cell id
-							auto new_state = positions_of_pieces<COUNT_NON_TARGET_PIECES>(current_iterator->first);
+							auto& new_state_2 = c.next_cell_paired_enable.first;
 
-							if (c.move.piece_id < COUNT_NON_TARGET_PIECES) {
-								new_state.non_target_pieces[c.move.piece_id] = c.next_ceell_paired_enable.first;
-								new_state.sort_non_target_pieces();
-							}
-							else {
-								new_state.target_piece = c.next_ceell_paired_enable.first;
-							}
 
-							if (state_graph.solutions_map[new_state].smallest_seen_step_distance_from_initial_state > current_iterator->second.smallest_seen_step_distance_from_initial_state + 1) { // check if path to successor state is an optimal one (as far as we have seen)
+							/// check this whole comparison again!
+
+							if (state_graph.solutions_map[new_state_2].smallest_seen_step_distance_from_initial_state > current_iterator->second.smallest_seen_step_distance_from_initial_state + 1) { // check if path to successor state is an optimal one (as far as we have seen)
+								/// ?????????????? if improvement.... only occurs as improving from not seen (=MAX) to some finite value for a distance
+
 								// to make it more efficient: use an .insert(...) get the iterator to newly inserted element.
 
 								// hint: on map entry creation by if condition, steps defaults to MAX value of std::size_t
@@ -536,14 +457,14 @@ namespace tobor {
 								//}
 								//solutions_map[new_state].predecessors.clear();
 
-								state_graph.solutions_map[new_state].smallest_seen_step_distance_from_initial_state = current_iterator->second.smallest_seen_step_distance_from_initial_state + 1;
-								state_graph.solutions_map[new_state].optimal_predecessors.emplace_back(current_iterator, c.move);
+								state_graph.solutions_map[new_state_2].smallest_seen_step_distance_from_initial_state = current_iterator->second.smallest_seen_step_distance_from_initial_state + 1;
+								state_graph.solutions_map[new_state_2].optimal_predecessors.emplace_back(current_iterator, c.move); // why not delete old ones?
 								++(current_iterator->second.count_successors_where_this_is_one_optimal_predecessor);
-								state_graph.visited_game_states[expand_size + 1].push_back(state_graph.solutions_map.find(new_state));
+								state_graph.visited_game_states[expand_size + 1].push_back(state_graph.solutions_map.find(new_state_2));
 							}
 							else {
-								if (state_graph.solutions_map[new_state].smallest_seen_step_distance_from_initial_state == current_iterator->second.smallest_seen_step_distance_from_initial_state + 1) {
-									state_graph.solutions_map[new_state].optimal_predecessors.emplace_back(current_iterator, c.move);
+								if (state_graph.solutions_map[new_state_2].smallest_seen_step_distance_from_initial_state == current_iterator->second.smallest_seen_step_distance_from_initial_state + 1) {
+									state_graph.solutions_map[new_state_2].optimal_predecessors.emplace_back(current_iterator, c.move);
 									++(current_iterator->second.count_successors_where_this_is_one_optimal_predecessor);
 									// visited_game_states.push_back(solutions_map.find(new_state)); don't add, already added on first path reaching new_state
 								}

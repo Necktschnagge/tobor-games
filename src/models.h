@@ -24,14 +24,60 @@ namespace tobor {
 			blocked_center_error() : std::logic_error(MESSAGE) {}
 		};
 
+		struct direction {
+
+			using int_type = uint8_t;
+		private:
+
+			direction(int_type v) : value(v) {}
+
+		public:
+
+			int_type value;
+
+			static constexpr int_type NORTH{ 1 << 0 };
+			static constexpr int_type EAST{ 1 << 1 };
+			static constexpr int_type SOUTH{ 1 << 2 };
+			static constexpr int_type WEST{ 1 << 3 };
+			static constexpr int_type END{ 1 << 4 };
+
+			inline static direction begin() { return NORTH; }
+			inline static direction end() { return END; }
+
+			inline direction& operator++() { value <<= 1; return *this; }
+			inline direction& operator++(int) { direction c = *this; value <<= 1; return c; }
+
+			inline bool operator<(const direction& another) { return this->value < another.value; }
+
+			static_assert(NORTH != EAST, "piece_move: NORTH == EAST");
+			static_assert(NORTH != SOUTH, "piece_move: NORTH == SOUTH");
+			static_assert(NORTH != WEST, "piece_move: NORTH == WEST");
+			static_assert(EAST != SOUTH, "piece_move: EAST == SOUTH");
+			static_assert(EAST != WEST, "piece_move: EAST == WEST");
+			static_assert(SOUTH != WEST, "piece_move: SOUTH == WEST");
+
+
+		};
+
+		struct piece_id {
+
+		public:
+
+			using int_type = uint8_t;
+
+			int_type value;
+
+			piece_id(int_type v) : value(v) {}
+		};
+
 
 		/**
 		*	@brief One single boolean wall
 		*/
 		class wall_type { // OK
-			
+
 			bool is_wall;
-		
+
 		public:
 
 			wall_type(bool p_is_wall) : is_wall(p_is_wall) {}
@@ -51,10 +97,10 @@ namespace tobor {
 
 
 		/**
-		* 
+		*
 		*	@brief Represents the game's entire board, stating which fields are separated by walls.
 		*	@details Does NOT contain any information about where pieces are located.
-		* 
+		*
 		*/
 		class tobor_world { // OK
 		public:
@@ -229,7 +275,7 @@ namespace tobor {
 			inline std::size_t get_horizontal_size() const noexcept {
 				return x_size;
 			}
-			
+
 			/**
 			*	@brief Returns the board's number of cells in a column.
 			*/
@@ -242,7 +288,7 @@ namespace tobor {
 
 		/**
 		*	@brief Kind of iterator to a cell of a board game. Does only store a cell id.
-		* 
+		*
 		*	@details This version calculates all three cell id types when set and stores all of them.
 					It is the least memory efficient way but may reduce computation time (not yet tested!).
 		*/
@@ -342,84 +388,56 @@ namespace tobor {
 		*	@details It only distinguishes the target piece from non target pieces.
 		*			Non target pieces cannot be distiguished. They are kept sorted acending by their cell ids.
 		*/
-		template <std::size_t COUNT_NON_TARGET_PIECES>
+		template <std::size_t COUNT_TARGET_PIECES_V, std::size_t COUNT_NON_TARGET_PIECES_V>
 		class positions_of_pieces { // OK
-		// ## alternative implementation using std::vector instead of array, as non-template variant
-
-			using cell_id = universal_cell_id;
-
-			// just for fun
-			[[deprecated]]
-			inline void sort_non_target_pieces(std::size_t p_index_of_the_only_changed_piece) {
-				constexpr std::size_t INDEX_BEGIN{ 0 };
-				constexpr std::size_t INDEX_END{ COUNT_NON_TARGET_PIECES };
-
-				if (p_index_of_the_only_changed_piece != INDEX_BEGIN) { // not first element
-					if (non_target_pieces[p_index_of_the_only_changed_piece] < non_target_pieces[p_index_of_the_only_changed_piece - 1]) { // look in range [INDEX_BEGIN, p_index_of_the_only_changed_piece) for need of swap
-						std::size_t shift_begin{ INDEX_BEGIN };
-						//const std::size_t shift_end{ p_index_of_the_only_changed_piece + 1 };
-
-						while (non_target_pieces[shift_begin] < non_target_pieces[p_index_of_the_only_changed_piece]) {
-							++shift_begin;
-						}
-
-						//A B C D G J M E P R S T // move E to the left...
-						// shift in determined range
-						{
-							cell_id swap = non_target_pieces[p_index_of_the_only_changed_piece];
-							for (std::size_t i = p_index_of_the_only_changed_piece; i != shift_begin; --i) {
-								non_target_pieces[i] = non_target_pieces[i - 1];
-							}
-							non_target_pieces[shift_begin] = swap;
-						}
-
-						return;
-					}
-				}
-				if (p_index_of_the_only_changed_piece + 1 < INDEX_END) { // not last element
-					if (non_target_pieces[p_index_of_the_only_changed_piece + 1] < non_target_pieces[p_index_of_the_only_changed_piece]) {
-						//const std::size_t shift_begin{ p_index_of_the_only_changed_piece };
-						std::size_t shift_rbegin{ INDEX_END - 1 };
-
-						while (non_target_pieces[p_index_of_the_only_changed_piece] < non_target_pieces[shift_rbegin]) {
-							--shift_rbegin;
-						}
-
-						// shift in determined range
-						{
-							cell_id swap = non_target_pieces[p_index_of_the_only_changed_piece];
-							for (std::size_t i = p_index_of_the_only_changed_piece; i != shift_rbegin; ++i) {
-								non_target_pieces[i] = non_target_pieces[i + 1];
-							}
-							non_target_pieces[shift_rbegin] = swap;
-						}
-						return;
-					}
-				}
-
-			}
+			// ## alternative implementation using std::vector instead of array, as non-template variant
 
 		public:
+
+			static constexpr std::size_t COUNT_TARGET_PIECES{ COUNT_TARGET_PIECES_V };
+
+			static constexpr std::size_t COUNT_NON_TARGET_PIECES{ COUNT_NON_TARGET_PIECES_V };
+
+			static constexpr std::size_t COUNT_ALL_PIECES{ COUNT_TARGET_PIECES + COUNT_NON_TARGET_PIECES };
+
+			static_assert(std::is_signed<std::size_t>::value == false, "size integer type is unsigned so that overflow does not have undefined behavior.");
+
+			static_assert(COUNT_TARGET_PIECES >= 1, "positions_of_pieces: condition: at least one target piece");
+			static_assert(COUNT_ALL_PIECES >= COUNT_TARGET_PIECES, "positions_of_pieces: condition: no sum overflow");
+			static_assert(COUNT_ALL_PIECES > COUNT_NON_TARGET_PIECES, "positions_of_pieces: condition: no sum overflow");
+
+			/*
+			struct theoretical_coloring {
+
+				std::size_t target_color;
+
+				std::array<std::size_t, COUNT_NON_TARGET_PIECES> non_target_colors;
+
+			};
+			*/
+
+
 
 			/**
 			*	@brief Cell id of the target piece, i.e. the one which should be moved to the target cell.
 			*/
-			cell_id target_piece;
+			//cell_id target_piece;
 
 			/**
 			*	@brief Cell id of the non-target piece, i.e. the ones which can be used to buld obstacles. Need to be ordered by < all the time.
+			*
+			* --->>> TARGET_PIECES : NON_TARGET_PIECES
 			*/
-			std::array<cell_id, COUNT_NON_TARGET_PIECES> non_target_pieces;
+			std::array<universal_cell_id, COUNT_ALL_PIECES> piece_positions;
 
 			/**
 			*	@brief Creates an object when cell positions of the pieces are given.
 			*	@param p_non_target_pieces Does not need to be sorted when passed to this constructor.
 			*/
-			positions_of_pieces(const cell_id& p_target_piece, std::array<cell_id, COUNT_NON_TARGET_PIECES>&& p_non_target_pieces) :
-				target_piece(p_target_piece),
-				non_target_pieces(std::move(p_non_target_pieces))
-			{
-				sort_non_target_pieces();
+			positions_of_pieces(const std::array<universal_cell_id, COUNT_TARGET_PIECES>& target_pieces, const std::array<universal_cell_id, COUNT_NON_TARGET_PIECES>& non_target_pieces) {
+				std::copy_n(target_pieces.begin(), COUNT_TARGET_PIECES, piece_positions.begin());
+				std::copy_n(non_target_pieces.begin(), COUNT_NON_TARGET_PIECES, piece_positions.begin() + COUNT_TARGET_PIECES);
+				sort_pieces();
 			}
 
 			positions_of_pieces(const positions_of_pieces&) = default;
@@ -427,20 +445,31 @@ namespace tobor {
 			positions_of_pieces(positions_of_pieces&&) = default;
 
 			bool operator< (const positions_of_pieces& another) const noexcept {
-				return (target_piece < another.target_piece) || (
-					(target_piece == another.target_piece) && (non_target_pieces < another.non_target_pieces)
-					);
+				return piece_positions < another.piece_positions;
 			}
 
 			bool operator== (const positions_of_pieces& another) const noexcept {
-				return target_piece == another.target_piece && non_target_pieces == another.non_target_pieces;
+				return piece_positions == another.piece_positions;
 			}
 
-			inline void sort_non_target_pieces() {
-				std::sort(non_target_pieces.begin(), non_target_pieces.end());
+			inline auto target_pieces_begin() -> typename std::array<universal_cell_id, COUNT_ALL_PIECES>::iterator{ return piece_positions.begin(); }
+
+			inline auto target_pieces_end() -> typename std::array<universal_cell_id, COUNT_ALL_PIECES>::iterator{ return piece_positions.begin() + COUNT_TARGET_PIECES; }
+
+			inline auto non_target_pieces_begin() -> typename std::array<universal_cell_id, COUNT_ALL_PIECES>::iterator{ return target_pieces_end(); }
+
+			inline auto non_target_pieces_end() -> typename std::array<universal_cell_id, COUNT_ALL_PIECES>::iterator{ return piece_positions.end(); }
+
+				inline void sort_pieces() {
+				std::sort(target_pieces_begin(), target_pieces_end());
+				std::sort(non_target_pieces_begin(), non_target_pieces_end());
+				// may be optimized for fixed array sizes
 			}
+
+			//inline positions_of_pieces next(/* id, direction */) {			}  --->>> not here ... belongs to the single_move_engine a.k.a. logic_engine
 
 		};
+		//### todo: update any code that uses this position thing...
 
 
 	}
