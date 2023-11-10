@@ -83,7 +83,7 @@ stages:
        - script: ./build/test/TEST-$(project_name)
          displayName: "Run Tests on Linux / Mac OS"
          condition: and(succeeded(), ne( variables['Agent.OS'], 'Windows_NT'))
-       - script: .\build\test\Debug\TEST-$(project_name).exe
+       - script: .\build\test\Release\TEST-$(project_name).exe
          displayName: "Run Tests on Windows"
          condition: and(true, succeeded(), eq( variables['Agent.OS'], 'Windows_NT' ))
     - job: Qt_6
@@ -147,6 +147,6 @@ stages:
        - script: ./build/test/TEST-$(project_name)
          displayName: "Run Tests on Linux / Mac OS"
          condition: and(succeeded(), ne( variables['Agent.OS'], 'Windows_NT'))
-       - script: .\build\test\Debug\TEST-$(project_name).exe
+       - script: .\build\test\Release\TEST-$(project_name).exe
          displayName: "Run Tests on Windows"
          condition: and(true, succeeded(), eq( variables['Agent.OS'], 'Windows_NT' ))
