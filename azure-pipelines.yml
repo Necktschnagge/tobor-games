@@ -68,7 +68,7 @@ stages:
        - script: git submodule update --init --recursive
          displayName: "Init Git Submodules"
          condition: succeeded()
-       - script: cmake -S . -B ./build/ -DCMAKE_PREFIX_PATH="C:\Qt\5.15.2\msvc2019_64" -DUSE_QT6:BOOL=FALSE
+       - script: cmake -S . -B ./build/ -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="C:\Qt\5.15.2\msvc2019_64" -DUSE_QT6:BOOL=FALSE
          displayName: "CMake: Create Project (Windows)"
          condition: and(succeeded(), eq( variables['Agent.OS'], 'Windows_NT'))
        - script: PATH="/usr/local/opt/qt@5/bin:$PATH" && cmake -S . -B ./build/ -DUSE_QT6:BOOL=FALSE
@@ -85,7 +85,7 @@ stages:
          condition: and(succeeded(), ne( variables['Agent.OS'], 'Windows_NT'))
        - script: .\build\test\Debug\TEST-$(project_name).exe
          displayName: "Run Tests on Windows"
-         condition: and(false, succeeded(), eq( variables['Agent.OS'], 'Windows_NT' ))
+         condition: and(true, succeeded(), eq( variables['Agent.OS'], 'Windows_NT' ))
     - job: Qt_6
       strategy:
         matrix:
@@ -149,4 +149,4 @@ stages:
          condition: and(succeeded(), ne( variables['Agent.OS'], 'Windows_NT'))
        - script: .\build\test\Debug\TEST-$(project_name).exe
          displayName: "Run Tests on Windows"
-         condition: and(false, succeeded(), eq( variables['Agent.OS'], 'Windows_NT' ))
+         condition: and(true, succeeded(), eq( variables['Agent.OS'], 'Windows_NT' ))
