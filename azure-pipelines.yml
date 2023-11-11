@@ -50,7 +50,10 @@ stages:
        - script: sudo apt-get update && sudo apt-get install qtbase5-dev libqt5svg5-dev
          displayName: "Install Qt (Linux)"
          condition: and(succeeded(), eq( variables['Agent.OS'], 'Linux'))
-       - script: brew install qt@5
+       - name: Install Qt
+         uses: jurplel/install-qt-action@v3
+         with:
+           version: '5.15.2'
          displayName: "Install Qt (Darwin)"
          condition: and(succeeded(), eq( variables['Agent.OS'], 'Darwin'))
        - script: |
@@ -117,7 +120,10 @@ stages:
        - script: sudo apt-get update && sudo apt-get install build-essential libgl1-mesa-dev qt6-base-dev libqt6svg6 libqt6svg6-dev
          displayName: "Install Qt (Linux)"
          condition: and(succeeded(), eq( variables['Agent.OS'], 'Linux'))
-       - script: brew install qt@6
+       - name: Install Qt
+         uses: jurplel/install-qt-action@v3
+         with:
+           version: '6.5.1'
          displayName: "Install Qt (Darwin)"
          condition: and(succeeded(), eq( variables['Agent.OS'], 'Darwin'))
        - script: |
