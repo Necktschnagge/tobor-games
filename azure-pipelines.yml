@@ -16,7 +16,7 @@ stages:
    
    jobs:
     - job: Qt_5
-      timeoutInMinutes: 20
+      timeoutInMinutes: 30
       strategy:
         matrix:
           ubuntu_22_04:
@@ -91,7 +91,7 @@ stages:
          displayName: "Run Tests on Windows"
          condition: and(succeeded(), eq( variables['Agent.OS'], 'Windows_NT' ))
     - job: Qt_6
-      timeoutInMinutes: 20
+      timeoutInMinutes: 30
       strategy:
         matrix:
           ubuntu_22_04:
