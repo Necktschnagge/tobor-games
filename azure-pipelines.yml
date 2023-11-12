@@ -87,11 +87,8 @@ stages:
        - script: ./build/test/TEST-$(project_name)
          displayName: "Run Tests on Linux / Mac OS"
          condition: and(succeeded(), ne( variables['Agent.OS'], 'Windows_NT'))
-       - script: tree /F .\build\test
-         displayName: "Search Tests on Windows"
-         condition: and(succeeded(), eq( variables['Agent.OS'], 'Windows_NT' ))
        - script: tree /F .\build
-         displayName: "Search Tests on Windows"
+         displayName: "View tree of 'build\' on Windows"
          condition: and(succeeded(), eq( variables['Agent.OS'], 'Windows_NT' ))
        - script: .\build\test\Release\TEST-$(project_name).exe
          displayName: "Run Tests on Windows"
@@ -161,11 +158,8 @@ stages:
        - script: ./build/test/TEST-$(project_name)
          displayName: "Run Tests on Linux / Mac OS"
          condition: and(succeeded(), ne( variables['Agent.OS'], 'Windows_NT'))
-       - script: tree /F .\build\test
-         displayName: "Search Tests on Windows"
-         condition: and(succeeded(), eq( variables['Agent.OS'], 'Windows_NT' ))
        - script: tree /F .\build
-         displayName: "Search Tests on Windows"
+         displayName: "View tree of 'build\' on Windows"
          condition: and(succeeded(), eq( variables['Agent.OS'], 'Windows_NT' ))
        - script: .\build\test\Release\TEST-$(project_name).exe
          displayName: "Run Tests on Windows"
