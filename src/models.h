@@ -544,6 +544,19 @@ namespace tobor {
 			piece_id(int_type v) : value(v) {}
 
 			piece_id() : value(0) {}
+
+			inline static piece_id begin() { return piece_id(0); }
+
+			inline static piece_id end() { return piece_id(pieces_quantity_type::COUNT_ALL_PIECES); }
+
+			inline bool operator < (const piece_id& another) { return value < another.value; }
+
+			inline bool operator == (const piece_id& another) { return value == another.value; }
+
+			inline piece_id& operator++() { ++value; return *this; }
+
+			inline piece_id operator++(int) { const piece_id copy{ *this }; ++value; return copy; }
+
 		};
 
 		using default_piece_id = piece_id<>;

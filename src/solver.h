@@ -150,6 +150,17 @@ namespace tobor {
 				"Incompatible template arguments. typename Position_Of_Pieces_T::pieces_quantity_type must equal typenname Piece_Move_Type::pieces_quantity_type"
 				);
 
+			struct arithmetic_error {
+
+				struct no_move {
+					std::vector<piece_move_type> zero_moves;
+				};
+
+				struct multi_move {
+					std::vector<piece_move_type> zero_moves;
+				};
+			};
+
 		private:
 
 			const world_type& my_world;
@@ -283,7 +294,7 @@ namespace tobor {
 				std::pair<cell_id_type, bool> next_cell_paired_true_move;
 				switch (_direction.operator tobor::v1_0::direction::int_type())
 				{
-				case direction::encoding::EAST :
+				case direction::encoding::EAST:
 					next_cell_paired_true_move = get_next_cell_on_east_move(cell_to_be_moved, state);
 					break;
 				case direction::encoding::WEST:
@@ -307,6 +318,51 @@ namespace tobor {
 				next_state.sort_pieces();
 
 				return std::make_pair(next_state, true);
+			}
+
+			inline std::pair<positions_of_pieces_type, bool> successor_state(
+				const positions_of_pieces_type& state,
+				const piece_move_type& move)
+			{
+				return successor_state(state, move.pid, move.dir);
+			}
+
+			inline positions_of_pieces_type state_plus_move(const positions_of_pieces_type& state, const piece_move_type& move) {
+				return successor_state(state, move).first;
+			}
+
+			inline piece_move_type state_minus_state(const positions_of_pieces_type& to_state, const positions_of_pieces_type& from_state) {
+				if (from_state == to_state) { // no move error
+
+					arithmetic_error::no_move no_move_exception;
+
+					for (auto pid = typename piece_move_type::piece_id_type::begin(); pid < typename piece_move_type::piece_id_type::end(); ++pid) {
+						for (auto dir = direction::begin(); dir < direction::end(); ++dir) {
+							if (state_plus_move(from_state, piece_move_type(pid, dir)) == to_state) {
+								no_move_exception.zero_moves.emplace_back(pid, dir);
+							}
+						}
+					}
+
+					throw no_move_exception;
+				}
+
+				arithmetic_error::multi_move multi_move_exception; // collect all valid moves
+
+				for (auto pid = typename piece_move_type::piece_id_type::begin(); pid < typename piece_move_type::piece_id_type::end(); ++pid) {
+					for (auto dir = direction::begin(); dir < direction::end(); ++dir) {
+						if (state_plus_move(from_state, piece_move_type(pid, dir)) == to_state) {
+							multi_move_exception.zero_moves.emplace_back(pid, dir);
+						}
+					}
+				}
+
+				if (multi_move_exception.zero_moves.size() != 1) {
+					throw multi_move_exception;
+				}
+
+				return multi_move_exception.zero_moves[0];
+
 			}
 
 		};
@@ -379,34 +435,6 @@ namespace tobor {
 
 		using default_state_graph_node = state_graph_node<>;
 
-
-		/**
-		*	@brief A struct consisting of
-				a piece_move,
-				a pair of the next cell to reach in one step and an enable flag
-		*/
-		/*
-		class move_candidate {
-		public:
-			piece_move move;
-			std::pair<universal_cell_id, bool> next_cell_paired_enable;
-
-			move_candidate(const piece_move& m, const std::pair<universal_cell_id, bool>& n) : move(m), next_cell_paired_enable(n) {}
-		};
-		*/
-
-		/*
-		class move_candidate_2 {
-		public:
-
-			piece_move move;
-
-			std::pair<positions_of_pieces<COUNT_TARGET_PIECES, COUNT_NON_TARGET_PIECES>, bool> next_cell_paired_enable;
-
-			move_candidate_2(const piece_move& m, const std::pair<positions_of_pieces<COUNT_TARGET_PIECES, COUNT_NON_TARGET_PIECES>, bool>& n) : move(m), next_cell_paired_enable(n) {}
-
-		};
-		*/
 
 		template <class Move_One_Piece_Calculator, class State_Graph_Node = default_state_graph_node>
 		class partial_state_graph {
@@ -575,3 +603,5 @@ namespace tobor {
 	}
 
 }
+
+
