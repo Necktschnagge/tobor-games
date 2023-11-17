@@ -334,7 +334,7 @@ namespace tobor {
 			inline piece_move_type state_minus_state(const positions_of_pieces_type& to_state, const positions_of_pieces_type& from_state) {
 				if (from_state == to_state) { // no move error
 
-					arithmetic_error::no_move no_move_exception;
+					typename arithmetic_error::no_move no_move_exception;
 
 					for (auto pid = typename piece_move_type::piece_id_type::begin(); pid < typename piece_move_type::piece_id_type::end(); ++pid) {
 						for (auto dir = direction::begin(); dir < direction::end(); ++dir) {
@@ -347,7 +347,7 @@ namespace tobor {
 					throw no_move_exception;
 				}
 
-				arithmetic_error::multi_move multi_move_exception; // collect all valid moves
+				typename arithmetic_error::multi_move multi_move_exception; // collect all valid moves
 
 				for (auto pid = typename piece_move_type::piece_id_type::begin(); pid < typename piece_move_type::piece_id_type::end(); ++pid) {
 					for (auto dir = direction::begin(); dir < direction::end(); ++dir) {
