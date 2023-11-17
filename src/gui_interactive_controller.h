@@ -16,13 +16,13 @@ class MainWindow;
 struct GameController {
 public:
 
-	tobor::v1_0::tobor_world tobor_world;
+	tobor::v1_0::default_world tobor_world;
 
-	tobor::v1_0::positions_of_pieces<1,3> initial_state;
+	tobor::v1_0::default_positions_of_pieces initial_state;
 
-	tobor::v1_0::positions_of_pieces<1,3> current_state;
+	tobor::v1_0::default_positions_of_pieces current_state;
 
-	GameController(const tobor::v1_0::tobor_world& tobor_world, const tobor::v1_0::positions_of_pieces<1,3>& initial_state) :
+	GameController(const tobor::v1_0::tobor_world<>& tobor_world, const tobor::v1_0::default_positions_of_pieces& initial_state) :
 		tobor_world(tobor_world),
 		initial_state(initial_state),
 		current_state(initial_state)
@@ -59,7 +59,7 @@ public:
 
 	void refreshSVG();
 
-	tobor::v1_0::tobor_world generateBoard();
+	tobor::v1_0::tobor_world<> generateBoard();
 
 };
 

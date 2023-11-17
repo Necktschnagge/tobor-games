@@ -21,14 +21,14 @@ void GuiInteractiveController::startGame() {
 
 		gameHistory.emplace_back(
 			tobor_world,
-			tobor::v1_0::positions_of_pieces<1,3>(
+			tobor::v1_0::default_positions_of_pieces(
 				{
-					tobor::v1_0::universal_cell_id::create_by_coordinates(2, 3, tobor_world)
+					tobor::v1_0::default_cell_id::create_by_coordinates(2, 3, tobor_world)
 				},
 				{
-					tobor::v1_0::universal_cell_id::create_by_coordinates(12,3, tobor_world),
-					tobor::v1_0::universal_cell_id::create_by_coordinates(11,12, tobor_world),
-					tobor::v1_0::universal_cell_id::create_by_coordinates(5,13, tobor_world)
+					tobor::v1_0::default_cell_id::create_by_coordinates(12,3, tobor_world),
+					tobor::v1_0::default_cell_id::create_by_coordinates(11,12, tobor_world),
+					tobor::v1_0::default_cell_id::create_by_coordinates(5,13, tobor_world)
 				}
 			)
 		);
@@ -91,9 +91,9 @@ void GuiInteractiveController::refreshSVG()
 	}
 }
 
-tobor::v1_0::tobor_world GuiInteractiveController::generateBoard()
+tobor::v1_0::default_world GuiInteractiveController::generateBoard()
 {
-	auto tobor_world = tobor::v1_0::tobor_world(16, 16);
+	auto tobor_world = tobor::v1_0::default_world(16, 16);
 
 	tobor_world.block_center_cells(2, 2);
 
