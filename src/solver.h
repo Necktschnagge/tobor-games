@@ -551,7 +551,7 @@ namespace tobor {
 						// check if reached goal
 						for (
 							typename std::vector<move_candidate>::size_type candidate{ 0 };
-							candidate < static_cast<std::vector<move_candidate>::size_type>(4) * positions_of_pieces_type::COUNT_TARGET_PIECES; // only check candidates arising from moved target robots...
+							candidate < static_cast<typename std::vector<move_candidate>::size_type>(4) * positions_of_pieces_type::COUNT_TARGET_PIECES; // only check candidates arising from moved target robots...
 							++candidate
 							)
 						{
