@@ -414,13 +414,14 @@ namespace tobor {
 			static constexpr size_type MAX{ std::numeric_limits<size_type>::max() };
 
 
-			struct move_candidate_3 {
+			struct move_candidate {
 
 				piece_move_type move;
 
 				std::pair<positions_of_pieces_type, bool> next_cell_paired_enable;
 
-				move_candidate_3(const piece_move_type& move, const std::pair<positions_of_pieces_type, bool>& n) : move(move), next_cell_paired_enable(n) {}
+				move_candidate(const piece_move_type& move, const std::pair<positions_of_pieces_type, bool>& n) : move(move), next_cell_paired_enable(n) {}
+
 			};
 
 
@@ -451,6 +452,8 @@ namespace tobor {
 			using piece_move_type = typename move_one_piece_calculator_type::piece_move_type;
 
 			using state_graph_node_type = State_Graph_Node;
+
+			using move_candidate = typename state_graph_node_type::move_candidate;
 
 			static_assert(
 				std::is_same<
@@ -533,7 +536,7 @@ namespace tobor {
 
 					for (const map_iterator& current_iterator : visited_game_states[expand_size]) {
 
-						std::vector<state_graph_node_type::move_candidate_3> candidates_for_successor_states;
+						std::vector<move_candidate> candidates_for_successor_states;
 
 						// compute all successor state candidates:
 						for (typename piece_move_type::piece_id_type::int_type pid = 0; pid < positions_of_pieces_type::COUNT_ALL_PIECES; ++pid) {
@@ -547,8 +550,8 @@ namespace tobor {
 
 						// check if reached goal
 						for (
-							typename std::vector<state_graph_node_type::move_candidate_3>::size_type candidate{ 0 };
-							candidate < static_cast<std::vector<state_graph_node_type::move_candidate_3>::size_type>(4) * positions_of_pieces_type::COUNT_TARGET_PIECES; // only check candidates arising from moved target robots...
+							typename std::vector<move_candidate>::size_type candidate{ 0 };
+							candidate < static_cast<std::vector<move_candidate>::size_type>(4) * positions_of_pieces_type::COUNT_TARGET_PIECES; // only check candidates arising from moved target robots...
 							++candidate
 							)
 						{
