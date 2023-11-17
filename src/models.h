@@ -64,7 +64,7 @@ namespace tobor {
 			inline static direction end() { return encoding::END; }
 
 			inline direction& operator++() { value <<= 1; return *this; }
-			inline direction& operator++(int) { direction c = *this; value <<= 1; return c; }
+			inline direction operator++(int) { direction c = *this; value <<= 1; return c; }
 
 
 			/* comparison operators */
