@@ -6,6 +6,7 @@
 #include <vector>
 #include <algorithm>
 #include <stdexcept>
+#include <iterator>
 
 
 namespace tobor {
@@ -582,5 +583,49 @@ namespace tobor {
 
 		using default_piece_move = piece_move<>;
 
+
+		template<class Position_Of_Pieces_T = default_positions_of_pieces>
+		class state_path {
+		public:
+
+			using positions_of_pieces_type = Position_Of_Pieces_T;
+
+			using vector_type = std::vector<positions_of_pieces_type>;
+
+		private:
+
+			vector_type state_vector;
+
+		public:
+
+			vector_type& vector() { return state_vector; }
+
+			inline void make_canonical() {
+
+				typename vector_type::size_type count_duplicates{ 0 };
+				typename vector_type::size_type i = 0;
+
+				while (i + count_duplicates + 1 < state_vector.size()) {
+					if (state_vector[i] == state_vector[i + count_duplicates + 1]) {
+						++count_duplicates;
+					}
+					else {
+						if (count_duplicates)
+							state_vector[i + 1] = state_vector[i + count_duplicates + 1];
+						++i;
+					}
+				}
+
+				// now i + count_duplicates + 1 == state_vector.size()
+				state_vector.erase(state_vector.begin() + i + 1, state_vector.end());
+			}
+
+			inline state_path operator +(const state_path& another) {
+				state_path copy{ *this };
+				std::copy(another.state_vector.cbegin(), another.state_vector.cend(), std::back_inserter(copy.state_vector));
+				return copy;
+			}
+
+		};
 	}
 }
