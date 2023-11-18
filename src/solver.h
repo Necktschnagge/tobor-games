@@ -498,8 +498,8 @@ namespace tobor {
 
 			// ### note in case of removing states with no optimal successors, the invalid iterator problem arises.
 			partial_state_graph(const positions_of_pieces_type& initial_state) :
-				initial_state(initial_state),
-				optimal_solution_size(state_graph_node_type::MAX)
+				optimal_solution_size(state_graph_node_type::MAX),
+				initial_state(initial_state)
 			{
 				ps_map[initial_state].smallest_seen_step_distance_from_initial_state = 0; // insert initial state into map
 
