@@ -510,12 +510,8 @@ namespace tobor {
 				const typename positions_of_pieces_type::target_pieces_array_type& initial_target_pieces,
 				const typename positions_of_pieces_type::non_target_pieces_array_type& initial_non_target_pieces
 			) :
-				optimal_solution_size(state_graph_node_type::MAX),
-				initial_state(
-					positions_of_pieces_type(
-						initial_target_pieces,
-						initial_non_target_pieces
-					)
+				partial_state_graph(
+					positions_of_pieces_type(initial_target_pieces, initial_non_target_pieces)
 				)
 			{
 			}
