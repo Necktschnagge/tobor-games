@@ -504,19 +504,35 @@ namespace tobor {
 				return piece_positions == another.piece_positions;
 			}
 
-			inline auto target_pieces_begin() -> typename std::array<cell_id_type, COUNT_ALL_PIECES>::iterator{
+			inline typename std::array<cell_id_type, COUNT_ALL_PIECES>::const_iterator target_pieces_cbegin() const {
+				return piece_positions.cbegin();
+			};
+
+			inline typename std::array<cell_id_type, COUNT_ALL_PIECES>::iterator target_pieces_begin() {
 				return piece_positions.begin();
 			};
 
-			inline auto target_pieces_end() -> typename std::array<cell_id_type, COUNT_ALL_PIECES>::iterator{
+			inline typename std::array<cell_id_type, COUNT_ALL_PIECES>::const_iterator target_pieces_cend() const {
+				return piece_positions.cbegin() + COUNT_TARGET_PIECES;
+			};
+
+			inline typename std::array<cell_id_type, COUNT_ALL_PIECES>::iterator target_pieces_end() {
 				return piece_positions.begin() + COUNT_TARGET_PIECES;
 			};
 
-			inline auto non_target_pieces_begin() -> typename std::array<cell_id_type, COUNT_ALL_PIECES>::iterator{
+			inline typename std::array<cell_id_type, COUNT_ALL_PIECES>::const_iterator non_target_pieces_cbegin() const {
+				return target_pieces_cend();
+			};
+
+			inline typename std::array<cell_id_type, COUNT_ALL_PIECES>::iterator non_target_pieces_begin() {
 				return target_pieces_end();
 			};
 
-			inline auto non_target_pieces_end() -> typename std::array<cell_id_type, COUNT_ALL_PIECES>::iterator{
+			inline typename std::array<cell_id_type, COUNT_ALL_PIECES>::const_iterator non_target_pieces_cend() const {
+				return piece_positions.cend();
+			};
+
+			inline typename std::array<cell_id_type, COUNT_ALL_PIECES>::iterator non_target_pieces_end() {
 				return piece_positions.end();
 			};
 

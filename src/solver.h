@@ -131,14 +131,15 @@ namespace tobor {
 		public:
 
 			using positions_of_pieces_type = Position_Of_Pieces_T;
-
 			using cell_id_type = typename positions_of_pieces_type::cell_id_type;
-
 			using world_type = typename positions_of_pieces_type::world_type;
+
 
 			using quick_move_cache_type = Quick_Move_Cache_T;
 
+
 			using piece_move_type = Piece_Move_Type;
+			using piece_id_type = typename piece_move_type::piece_id_type;
 
 			static_assert(
 				std::is_same<typename positions_of_pieces_type::world_type, typename quick_move_cache_type::world_type>::value,
@@ -363,6 +364,14 @@ namespace tobor {
 
 				return multi_move_exception.zero_moves[0];
 
+			}
+
+			inline bool is_target_state(const positions_of_pieces_type& state, const cell_id_type& target_cell) {
+				for (auto iter = state.target_pieces_cbegin(); iter != state.target_pieces_cend(); ++iter) {
+					if (*iter == target_cell)
+						return true;
+				}
+				return false;
 			}
 
 		};
