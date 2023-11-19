@@ -67,7 +67,12 @@ void GuiInteractiveController::refreshSVG()
 {
 	if (interactive_mode == InteractiveMode::GAME_INTERACTIVE) {
 
-		std::string example_svg_string = draw_tobor_world(gameHistory.back().tobor_world);
+		std::string example_svg_string = tobor::v1_0::tobor_graphics<GameController::positions_of_pieces_type>::draw_tobor_world(
+			gameHistory.back().tobor_world,
+			gameHistory.back().current_state,
+			GameController::positions_of_pieces_type::cell_id_type::create_by_coordinates(13, 14, gameHistory.back().tobor_world),
+			tobor::v1_0::tobor_graphics<GameController::positions_of_pieces_type>::coloring("red", "green", "yellow", "blue")
+		);
 
 
 		QXmlStreamReader xml;

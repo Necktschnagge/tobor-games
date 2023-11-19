@@ -16,6 +16,8 @@ class MainWindow;
 struct GameController {
 public:
 
+	using positions_of_pieces_type = tobor::v1_0::default_positions_of_pieces;
+
 	tobor::v1_0::default_world tobor_world;
 
 	tobor::v1_0::default_positions_of_pieces initial_state;

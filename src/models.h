@@ -440,6 +440,9 @@ namespace tobor {
 			template<class Position_Of_Pieces_T, class Quick_Move_Cache_T, class Piece_Move_Type>
 			friend class move_one_piece_calculator;
 
+			template<class Positions_Of_Pieces_Type_T>
+			friend class tobor_graphics;
+
 		public:
 
 			using pieces_quantity_type = Pieces_Quantity_Type;
