@@ -598,6 +598,8 @@ namespace tobor {
 
 		public:
 
+			state_path() {}
+
 			vector_type& vector() { return state_vector; }
 
 			inline void make_canonical() {
@@ -623,6 +625,47 @@ namespace tobor {
 			inline state_path operator +(const state_path& another) {
 				state_path copy{ *this };
 				std::copy(another.state_vector.cbegin(), another.state_vector.cend(), std::back_inserter(copy.state_vector));
+				return copy;
+			}
+
+			inline state_path operator *(const state_path& another) {
+				if (another.state_vector.empty())
+					return *this;
+				if (this->state_vector.empty())
+					return another;
+				if (state_vector.back() == another.state_vector.front()) {
+					state_path copy = *this;
+					std::copy(
+						another.state_vector.cbegin() + 1,
+						another.state_vector.cend(),
+						std::back_inserter(copy.state_vector)
+					);
+					return copy;
+				}
+			}
+
+		};
+
+		template<class Piece_Move_Type = default_piece_move>
+		class move_path {
+
+		public:
+			using piece_move_type = Piece_Move_Type;
+
+			using vector_type = std::vector<piece_move_type>;
+
+		private:
+			vector_type move_vector;
+
+		public:
+
+			move_path() {}
+
+			vector_type& vector() { return move_vector; }
+
+			inline move_path operator +(const move_path& another) {
+				move_path copy{ *this };
+				std::copy(another.move_vector.cbegin(), another.move_vector.cend(), std::back_inserter(copy.move_vector));
 				return copy;
 			}
 
