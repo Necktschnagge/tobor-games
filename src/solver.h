@@ -11,82 +11,6 @@ namespace tobor {
 
 	namespace v1_0 {
 
-#if false
-		/**
-		*	@brief Stores the cell ids which can be reached by moving in one of the four directions,
-					assuming moving as far as possible until hitting a wall,
-					also assuming there are no other obstacles than walls on the way.
-					Should be used as one object per cell.
-		*/
-		class [[deprecated]] quick_moves_of_cell {
-
-			using cell_id = universal_cell_id;
-
-			using game_board = tobor_world;
-
-		public:
-			cell_id next_north; // ### cannot be const, because of ctor, should be only const-accessable!
-			cell_id next_east;
-			cell_id next_south;
-			cell_id next_west;
-
-			quick_moves_of_cell(const cell_id& start_field, const game_board& world) {
-				// ### inefficient: try to use some recursive call on next east of left neighbour cell, if next_east is not equal to start cell
-				// east, west - vwalls - id
-				std::size_t next_west_id = start_field.get_id();
-				while (!world.west_wall_by_id(next_west_id)) {
-					--next_west_id;
-				}
-				next_west.set_id(next_west_id, world);
-
-				std::size_t next_east_id = start_field.get_id();
-				while (!world.east_wall_by_id(next_east_id)) {
-					++next_east_id;
-				}
-				next_east.set_id(next_east_id, world);
-
-				// north south - hwalls - transposed_id
-				std::size_t next_south_transposed_id = start_field.get_transposed_id();
-				while (!world.south_wall_by_transposed_id(next_south_transposed_id)) {
-					--next_south_transposed_id;
-				}
-				next_south.set_transposed_id(next_south_transposed_id, world);
-
-				std::size_t next_north_transposed_id = start_field.get_transposed_id();
-				while (!world.north_wall_by_transposed_id(next_north_transposed_id)) {
-					++next_north_transposed_id;
-				}
-				next_north.set_transposed_id(next_north_transposed_id, world);
-
-			}
-		};
-
-
-		/**
-		*	@brief Stores the quick move information for all cells of the game's board.
-		*/
-		class [[deprecated]] quick_move_board {
-		public:
-			using cell_id = universal_cell_id;
-			using game_board = tobor_world;
-
-			// maps:   id |-> quick_moves_of_cell of cell with given id
-			std::vector<quick_moves_of_cell> cells;
-
-			quick_move_board() {}
-
-			quick_move_board(const game_board& world) {
-				cells.reserve(world.count_cells());
-				for (std::size_t id = 0; id < world.count_cells(); ++id) {
-					cell_id cell;
-					cell.set_id(id, world);
-
-					cells.emplace_back(quick_moves_of_cell(cell, world));
-				}
-			}
-		};
-#endif
-
 		// ### alternative board representation is just two sorted vectors of indices where there are walls, additionally you can uniformly encode pieces like walls, in this case double walls left and right, or top and bottom.
 
 
@@ -95,17 +19,22 @@ namespace tobor {
 		*
 		* @details For a board, it stores for each cell the information which are the cells to move to on one step [west, east, south, north] until wall, assuming that there are no pieces on the way.
 		*/
+		template<class World_Type_T = default_world>
 		class quick_move_cache {
+		public:
 
-			using game_board = tobor_world;
+			using world_type = World_Type_T;
+
+			using cell_id_int_type = typename world_type::int_type;
+			//### does the world type itself check for overflows?
 
 		private:
-			const game_board& board;
+			const world_type& board;
 
-			std::vector<std::size_t> go_west; // using cell ids
-			std::vector<std::size_t> go_east; // using cell ids
-			std::vector<std::size_t> go_south; // using cell transposed ids
-			std::vector<std::size_t> go_north; // using cell transposed ids
+			std::vector<cell_id_int_type> go_west; // using cell ids
+			std::vector<cell_id_int_type> go_east; // using cell ids
+			std::vector<cell_id_int_type> go_south; // using cell transposed ids
+			std::vector<cell_id_int_type> go_north; // using cell transposed ids
 
 		public:
 
@@ -114,7 +43,7 @@ namespace tobor {
 
 				@details Make sure that for this cache to be correct, update() needs to be called whenever board is changed.
 			*/
-			quick_move_cache(const game_board& board) : board(board) {
+			quick_move_cache(const world_type& board) : board(board) {
 				update();
 			}
 
@@ -122,16 +51,16 @@ namespace tobor {
 			* @brief Updates the cache stored by this object. Needs to be called after any change of the board for the cache to be valid.
 			*/
 			void update() {
-				const std::size_t VECTOR_SIZE{ board.count_cells() };
+				const cell_id_int_type VECTOR_SIZE{ board.count_cells() };
 
-				go_west = std::vector<std::size_t>(VECTOR_SIZE, static_cast<std::size_t>(-1));
-				go_east = std::vector<std::size_t>(VECTOR_SIZE, static_cast<std::size_t>(-1));
-				go_south = std::vector<std::size_t>(VECTOR_SIZE, static_cast<std::size_t>(-1));
-				go_north = std::vector<std::size_t>(VECTOR_SIZE, static_cast<std::size_t>(-1));
+				go_west = std::vector<cell_id_int_type>(VECTOR_SIZE, static_cast<cell_id_int_type>(-1));
+				go_east = std::vector<cell_id_int_type>(VECTOR_SIZE, static_cast<cell_id_int_type>(-1));
+				go_south = std::vector<cell_id_int_type>(VECTOR_SIZE, static_cast<cell_id_int_type>(-1));
+				go_north = std::vector<cell_id_int_type>(VECTOR_SIZE, static_cast<cell_id_int_type>(-1));
 
 				go_west[0] = 0;
 				go_south[0] = 0;
-				for (std::size_t id = 1; id < VECTOR_SIZE; ++id) {
+				for (cell_id_int_type id = 1; id < VECTOR_SIZE; ++id) {
 					if (board.west_wall_by_id(id)) {
 						go_west[id] = id;
 					}
@@ -148,7 +77,10 @@ namespace tobor {
 
 				go_east[VECTOR_SIZE - 1] = VECTOR_SIZE - 1;
 				go_north[VECTOR_SIZE - 1] = VECTOR_SIZE - 1;
-				for (std::size_t id = VECTOR_SIZE - 2; id != static_cast<std::size_t>(-1); --id) {
+				//static_assert(std::is_unsigned<cell_id_int_type>::value, "int type must be unsigned for the following loop to be correct:");
+				cell_id_int_type id = VECTOR_SIZE - 1;
+				do {
+					--id;
 					if (board.east_wall_by_id(id)) {
 						go_east[id] = id;
 					}
@@ -161,46 +93,80 @@ namespace tobor {
 					else {
 						go_north[id] = go_north[id + 1];
 					}
-				}
+				} while (id != 0);
 			}
 
 			/**
 			* @brief Returns the id of the cell you reach from cell \p id when moving west with no pieces on the way.
 			* @details Has undefined behavior if \p id is out of range. Valid range is [ 0, board.count_cells() - 1 ]
 			*/
-			std::size_t get_west(std::size_t id) const { return go_west[id]; }
+			cell_id_int_type get_west(cell_id_int_type id) const { return go_west[id]; }
 
 			/**
 			* @brief Returns the id of the cell you reach from cell \p id when moving east with no pieces on the way.
 			* @details Has undefined behavior if \p id is out of range. Valid range is [ 0, board.count_cells() - 1 ]
 			*/
-			std::size_t get_east(std::size_t id) const { return go_east[id]; }
+			cell_id_int_type get_east(cell_id_int_type id) const { return go_east[id]; }
 
 			/**
 			* @brief Returns the transposed id of the cell you reach from cell \p transposed_id when moving south with no pieces on the way.
 			* @details Has undefined behavior if \p id is out of range. Valid range is [ 0, board.count_cells() - 1 ]
 			*/
-			std::size_t get_south(std::size_t transposed_id) const { return go_south[transposed_id]; }
+			cell_id_int_type get_south(cell_id_int_type transposed_id) const { return go_south[transposed_id]; }
 
 			/**
 			* @brief Returns the transposed id of the cell you reach from cell \p transposed_id when moving north with no pieces on the way.
 			* @details Has undefined behavior if \p id is out of range. Valid range is [ 0, board.count_cells() - 1 ]
 			*/
-			std::size_t get_north(std::size_t transposed_id) const { return go_north[transposed_id]; }
+			cell_id_int_type get_north(cell_id_int_type transposed_id) const { return go_north[transposed_id]; }
 		};
+
+		using default_quick_move_cache = quick_move_cache<>;
 
 		/**
 		*	@brief Calculates successor states by calcualting successor cell of single pieces for moving in a given direction.
 		*/
-		template<std::size_t COUNT_NON_TARGET_PIECES>
-		class move_one_piece_calculator {
+		template<class Position_Of_Pieces_T = default_positions_of_pieces, class Quick_Move_Cache_T = default_quick_move_cache, class Piece_Move_Type = default_piece_move>
+		class move_one_piece_calculator { // logic engine
 		public:
-			using world_type = tobor_world;
+
+			using positions_of_pieces_type = Position_Of_Pieces_T;
+			using cell_id_type = typename positions_of_pieces_type::cell_id_type;
+			using world_type = typename positions_of_pieces_type::world_type;
+
+
+			using quick_move_cache_type = Quick_Move_Cache_T;
+
+
+			using piece_move_type = Piece_Move_Type;
+			using piece_id_type = typename piece_move_type::piece_id_type;
+
+			static_assert(
+				std::is_same<typename positions_of_pieces_type::world_type, typename quick_move_cache_type::world_type>::value,
+				"Incompatible template arguments. typename Position_Of_Pieces_T::world_type must equal typenname Quick_Move_Cache_T::world_type"
+				);
+
+			static_assert(
+				std::is_same<typename positions_of_pieces_type::pieces_quantity_type, typename piece_move_type::pieces_quantity_type>::value,
+				"Incompatible template arguments. typename Position_Of_Pieces_T::pieces_quantity_type must equal typenname Piece_Move_Type::pieces_quantity_type"
+				);
+
+			struct arithmetic_error {
+
+				struct no_move {
+					std::vector<piece_move_type> zero_moves;
+				};
+
+				struct multi_move {
+					std::vector<piece_move_type> zero_moves;
+				};
+			};
 
 		private:
+
 			const world_type& my_world;
 
-			quick_move_cache cache;
+			quick_move_cache_type cache;
 
 		public:
 
@@ -218,153 +184,199 @@ namespace tobor {
 			/**
 			*	@brief Calculates the successor cell to reach starting at \p start_cell moving west until obstacle.
 			*/
-			inline std::pair<universal_cell_id, bool> get_next_field_on_west_move(const universal_cell_id& start_cell, const positions_of_pieces<COUNT_NON_TARGET_PIECES>& state) {
+			inline std::pair<cell_id_type, bool> get_next_cell_on_west_move(const cell_id_type& start_cell, const positions_of_pieces_type& state) {
 				std::size_t next_cell{ cache.get_west(start_cell.get_id()) };
 
-				if (start_cell.get_id() == next_cell) { // no move possible by walls
-					return std::make_pair(universal_cell_id::create_by_id(next_cell, my_world), false);
-				}
+				//if (start_cell.get_id() == next_cell) { // no move possible by walls
+				//	return std::make_pair(cell_id_type::create_by_id(next_cell, my_world), false);
+				//}
 
 				// iterate over all pieces since they may appear as obstacle
-
-				if (next_cell <= state.target_piece.get_id() && state.target_piece.get_id() < start_cell.get_id()) { // target piece
-					next_cell = state.target_piece.get_id() + 1;
-				}
-
-				for (std::size_t i = 0; i < COUNT_NON_TARGET_PIECES; ++i) { // non target pieces
-					if (next_cell <= state.non_target_pieces[i].get_id() && state.non_target_pieces[i].get_id() < start_cell.get_id()) { // target piece
-						next_cell = state.non_target_pieces[i].get_id() + 1;
+				for (std::size_t i = 0; i < state.COUNT_ALL_PIECES; ++i) { // iterate over all pieces
+					if (next_cell <= state.piece_positions[i].get_id() && state.piece_positions[i].get_id() < start_cell.get_id()) { // target piece
+						next_cell = state.piece_positions[i].get_id() + 1;
 					}
 				}
+				// may be improved for sorted states.
 
 				if (start_cell.get_id() == next_cell) { // no move possible by walls
-					return std::make_pair(universal_cell_id::create_by_id(next_cell, my_world), false);
+					return std::make_pair(cell_id_type::create_by_id(next_cell, my_world), false);
 				}
 
-				return std::make_pair(universal_cell_id::create_by_id(next_cell, my_world), true);
+				return std::make_pair(cell_id_type::create_by_id(next_cell, my_world), true);
 			}
 
 			/**
 			*	@brief Calculates the successor cell to reach starting at \p start_cell moving east until obstacle.
 			*/
-			inline std::pair<universal_cell_id, bool> get_next_field_on_east_move(const universal_cell_id& start_cell, const positions_of_pieces< COUNT_NON_TARGET_PIECES>& state) {
+			inline std::pair<cell_id_type, bool> get_next_cell_on_east_move(const cell_id_type& start_cell, const positions_of_pieces_type& state) {
 
-				//decltype(universal_cell_id::get_id) universal_cell_id::* get_id_type = &universal_cell_id::get_id;
+				//decltype(cell_id_type::get_id) cell_id_type::* get_id_type = &cell_id_type::get_id;
 				//decltype(quick_move_cache::get_west) quick_move_cache::* next_cache_direction = &quick_move_cache::get_east;
 
 				std::size_t next_cell{ cache.get_east(start_cell.get_id()) };
 
-				if (start_cell.get_id() == next_cell) { // no move possible by walls
-					return std::make_pair(universal_cell_id::create_by_id(next_cell, my_world), false);
-				}
+				//if (start_cell.get_id() == next_cell) { // no move possible by walls
+				//	return std::make_pair(cell_id_type::create_by_id(next_cell, my_world), false);
+				//}
 
 				// iterate over all pieces since they may appear as obstacle
 
-				if (start_cell.get_id() < state.target_piece.get_id() && state.target_piece.get_id() <= next_cell) { // target piece
-					next_cell = state.target_piece.get_id() - 1;
-				}
-
-				for (std::size_t i = 0; i < COUNT_NON_TARGET_PIECES; ++i) { // non target pieces
-					if (start_cell.get_id() < state.non_target_pieces[i].get_id() && state.non_target_pieces[i].get_id() <= next_cell) { // target piece
-						next_cell = state.non_target_pieces[i].get_id() - 1;
+				for (std::size_t i = 0; i < state.COUNT_ALL_PIECES; ++i) { // iterate over all pieces
+					if (start_cell.get_id() < state.piece_positions[i].get_id() && state.piece_positions[i].get_id() <= next_cell) { // target piece
+						next_cell = state.piece_positions[i].get_id() - 1;
 					}
 				}
 
 				if (start_cell.get_id() == next_cell) { // no move possible by walls
-					return std::make_pair(universal_cell_id::create_by_id(next_cell, my_world), false);
+					return std::make_pair(cell_id_type::create_by_id(next_cell, my_world), false);
 				}
 
-				return std::make_pair(universal_cell_id::create_by_id(next_cell, my_world), true);
+				return std::make_pair(cell_id_type::create_by_id(next_cell, my_world), true);
 			}
 
 			/**
 			*	@brief Calculates the successor cell to reach starting at \p start_cell moving south until obstacle.
 			*/
-			inline std::pair<universal_cell_id, bool> get_next_field_on_south_move(const universal_cell_id& start_cell, const positions_of_pieces< COUNT_NON_TARGET_PIECES>& state) {
+			inline std::pair<cell_id_type, bool> get_next_cell_on_south_move(const cell_id_type& start_cell, const positions_of_pieces_type& state) {
 				std::size_t next_cell{ cache.get_south(start_cell.get_transposed_id()) };
 
-				if (start_cell.get_transposed_id() == next_cell) { // no move possible by walls
-					return std::make_pair(universal_cell_id::create_by_transposed_id(next_cell, my_world), false);
-				}
+				//if (start_cell.get_transposed_id() == next_cell) { // no move possible by walls
+				//	return std::make_pair(cell_id_type::create_by_transposed_id(next_cell, my_world), false);
+				//}
 
 				// iterate over all pieces since they may appear as obstacle
 
-				if (next_cell <= state.target_piece.get_transposed_id() && state.target_piece.get_transposed_id() < start_cell.get_transposed_id()) { // target piece
-					next_cell = state.target_piece.get_transposed_id() + 1;
-				}
-
-				for (std::size_t i = 0; i < COUNT_NON_TARGET_PIECES; ++i) { // non target pieces
-					if (next_cell <= state.non_target_pieces[i].get_transposed_id() && state.non_target_pieces[i].get_transposed_id() < start_cell.get_transposed_id()) { // target piece
-						next_cell = state.non_target_pieces[i].get_transposed_id() + 1;
+				for (std::size_t i = 0; i < state.COUNT_ALL_PIECES; ++i) { // iterate over all pieces
+					if (next_cell <= state.piece_positions[i].get_transposed_id() && state.piece_positions[i].get_transposed_id() < start_cell.get_transposed_id()) { // target piece
+						next_cell = state.piece_positions[i].get_transposed_id() + 1;
 					}
 				}
 
 				if (start_cell.get_transposed_id() == next_cell) { // no move possible by walls
-					return std::make_pair(universal_cell_id::create_by_transposed_id(next_cell, my_world), false);
+					return std::make_pair(cell_id_type::create_by_transposed_id(next_cell, my_world), false);
 				}
 
-				return std::make_pair(universal_cell_id::create_by_transposed_id(next_cell, my_world), true);
+				return std::make_pair(cell_id_type::create_by_transposed_id(next_cell, my_world), true);
 			}
 
 			/**
 			*	@brief Calculates the successor cell to reach starting at \p start_cell moving north until obstacle.
 			*/
-			inline std::pair<universal_cell_id, bool> get_next_field_on_north_move(const universal_cell_id& start_cell, const positions_of_pieces<  COUNT_NON_TARGET_PIECES>& state) {
+			inline std::pair<cell_id_type, bool> get_next_cell_on_north_move(const cell_id_type& start_cell, const positions_of_pieces_type& state) {
 				std::size_t next_cell{ cache.get_north(start_cell.get_transposed_id()) };
 
-				if (start_cell.get_transposed_id() == next_cell) { // no move possible by walls
-					return std::make_pair(universal_cell_id::create_by_transposed_id(next_cell, my_world), false);
-				}
+				//if (start_cell.get_transposed_id() == next_cell) { // no move possible by walls
+				//	return std::make_pair(cell_id_type::create_by_transposed_id(next_cell, my_world), false);
+				//}
 
 				// iterate over all pieces since they may appear as obstacle
 
-				if (start_cell.get_transposed_id() < state.target_piece.get_transposed_id() && state.target_piece.get_transposed_id() <= next_cell) { // target piece
-					next_cell = state.target_piece.get_transposed_id() - 1;
-				}
-
-				for (std::size_t i = 0; i < COUNT_NON_TARGET_PIECES; ++i) { // non target pieces
-					if (start_cell.get_transposed_id() < state.non_target_pieces[i].get_transposed_id() && state.non_target_pieces[i].get_transposed_id() <= next_cell) { // target piece
-						next_cell = state.non_target_pieces[i].get_transposed_id() - 1;
+				for (std::size_t i = 0; i < state.COUNT_ALL_PIECES; ++i) { // iterate over all pieces
+					if (start_cell.get_transposed_id() < state.piece_positions[i].get_transposed_id() && state.piece_positions[i].get_transposed_id() <= next_cell) { // target piece
+						next_cell = state.piece_positions[i].get_transposed_id() - 1;
 					}
 				}
 
 				if (start_cell.get_transposed_id() == next_cell) { // no move possible by walls
-					return std::make_pair(universal_cell_id::create_by_transposed_id(next_cell, my_world), false);
+					return std::make_pair(cell_id_type::create_by_transposed_id(next_cell, my_world), false);
 				}
 
-				return std::make_pair(universal_cell_id::create_by_transposed_id(next_cell, my_world), true);
+				return std::make_pair(cell_id_type::create_by_transposed_id(next_cell, my_world), true);
+			}
+
+			inline std::pair<positions_of_pieces_type, bool> successor_state(
+				const positions_of_pieces_type& state,
+				const typename piece_move_type::piece_id_type& _piece_id,
+				const direction& _direction)
+			{
+				positions_of_pieces_type next_state{ state };
+				auto& cell_to_be_moved = next_state.piece_positions[_piece_id.value];
+				std::pair<cell_id_type, bool> next_cell_paired_true_move;
+				switch (_direction.operator tobor::v1_0::direction::int_type())
+				{
+				case direction::encoding::EAST:
+					next_cell_paired_true_move = get_next_cell_on_east_move(cell_to_be_moved, state);
+					break;
+				case direction::encoding::WEST:
+					next_cell_paired_true_move = get_next_cell_on_west_move(cell_to_be_moved, state);
+					break;
+				case direction::encoding::SOUTH:
+					next_cell_paired_true_move = get_next_cell_on_south_move(cell_to_be_moved, state);
+					break;
+				case direction::encoding::NORTH:
+					next_cell_paired_true_move = get_next_cell_on_north_move(cell_to_be_moved, state);
+					break;
+				default:
+					return std::make_pair(state, false);
+					break;  // error
+				}
+				if (!next_cell_paired_true_move.second) {
+					return std::make_pair(state, false);
+				}
+
+				next_state.piece_positions[_piece_id.value] = next_cell_paired_true_move.first;
+				next_state.sort_pieces();
+
+				return std::make_pair(next_state, true);
+			}
+
+			inline std::pair<positions_of_pieces_type, bool> successor_state(
+				const positions_of_pieces_type& state,
+				const piece_move_type& move)
+			{
+				return successor_state(state, move.pid, move.dir);
+			}
+
+			inline positions_of_pieces_type state_plus_move(const positions_of_pieces_type& state, const piece_move_type& move) {
+				return successor_state(state, move).first;
+			}
+
+			inline piece_move_type state_minus_state(const positions_of_pieces_type& to_state, const positions_of_pieces_type& from_state) {
+				if (from_state == to_state) { // no move error
+
+					typename arithmetic_error::no_move no_move_exception;
+
+					for (auto pid = typename piece_move_type::piece_id_type::begin(); pid < typename piece_move_type::piece_id_type::end(); ++pid) {
+						for (auto dir = direction::begin(); dir < direction::end(); ++dir) {
+							if (state_plus_move(from_state, piece_move_type(pid, dir)) == to_state) {
+								no_move_exception.zero_moves.emplace_back(pid, dir);
+							}
+						}
+					}
+
+					throw no_move_exception;
+				}
+
+				typename arithmetic_error::multi_move multi_move_exception; // collect all valid moves
+
+				for (auto pid = typename piece_move_type::piece_id_type::begin(); pid < typename piece_move_type::piece_id_type::end(); ++pid) {
+					for (auto dir = direction::begin(); dir < direction::end(); ++dir) {
+						if (state_plus_move(from_state, piece_move_type(pid, dir)) == to_state) {
+							multi_move_exception.zero_moves.emplace_back(pid, dir);
+						}
+					}
+				}
+
+				if (multi_move_exception.zero_moves.size() != 1) {
+					throw multi_move_exception;
+				}
+
+				return multi_move_exception.zero_moves[0];
+
+			}
+
+			inline bool is_target_state(const positions_of_pieces_type& state, const cell_id_type& target_cell) {
+				for (auto iter = state.target_pieces_cbegin(); iter != state.target_pieces_cend(); ++iter) {
+					if (*iter == target_cell)
+						return true;
+				}
+				return false;
 			}
 
 		};
 
-
-		/*
-		*	@brief Equivalent to a pair of a piece_id and a direction where to move it
-		*
-		*	@details Does not define how piece_id is interpreted.
-		*/
-		class piece_move {
-		public:
-			using piece_id_type = uint8_t;
-			using move_direction_type = uint8_t;
-
-			static constexpr move_direction_type NORTH{ 1 << 0 };
-			static constexpr move_direction_type EAST{ 1 << 1 };
-			static constexpr move_direction_type SOUTH{ 1 << 2 };
-			static constexpr move_direction_type WEST{ 1 << 3 };
-
-			static_assert(NORTH != EAST, "piece_move: NORTH == EAST");
-			static_assert(NORTH != SOUTH, "piece_move: NORTH == SOUTH");
-			static_assert(NORTH != WEST, "piece_move: NORTH == WEST");
-			static_assert(EAST != SOUTH, "piece_move: EAST == SOUTH");
-			static_assert(EAST != WEST, "piece_move: EAST == WEST");
-			static_assert(SOUTH != WEST, "piece_move: SOUTH == WEST");
-
-			piece_id_type piece_id;
-			move_direction_type direction;
-
-			piece_move(const piece_id_type& _piece_id, const move_direction_type& _direction) : piece_id(_piece_id), direction(_direction) {}
-		};
+		using default_move_one_piece_calculator = move_one_piece_calculator<>;
 
 
 		/**
@@ -373,191 +385,231 @@ namespace tobor {
 			The number of successors where this is an optimal predecessor
 			The optimal number of steps from initial state
 		*/
-		template <std::size_t COUNT_NON_TARGET_PIECES>
-		class state_graph_node {
+		template <class Positions_Of_Pieces_Type = default_positions_of_pieces, class Piece_Move_Type = default_piece_move>
+		struct state_graph_node {
 		public:
-			using cell_id = universal_cell_id;
-			using State_Type = positions_of_pieces<COUNT_NON_TARGET_PIECES>;
+
+			/* dependent types... */
+
+			using type = state_graph_node<Positions_Of_Pieces_Type>;
+
+			using positions_of_pieces_type = Positions_Of_Pieces_Type;
+
+			using cell_id_type = typename positions_of_pieces_type::cell_id_type;
+
+			using piece_move_type = Piece_Move_Type;
 
 
-			using partial_solutions_map_type = std::map<positions_of_pieces<COUNT_NON_TARGET_PIECES>, state_graph_node>;
+
+			/* type consistency */
+
+			static_assert(
+				std::is_same<typename positions_of_pieces_type::pieces_quantity_type, typename piece_move_type::pieces_quantity_type>::value,
+				"Incompatible template arguments: typename Position_Of_Pieces_T::pieces_quantity_type must equal typenname Piece_Move_Type::pieces_quantity_type"
+				);
+
+
+
+			/* introduced types... */
+
+			using partial_solutions_map_type = std::map<positions_of_pieces_type, type>;
 
 			using map_iterator_type = typename partial_solutions_map_type::iterator;
 
-			static constexpr std::size_t MAX{ std::numeric_limits<std::size_t>::max() };
+			using predecessor_tuple = std::tuple<map_iterator_type, piece_move_type>;
 
-			std::vector<std::tuple<map_iterator_type, piece_move>> optimal_predecessors;
-			std::size_t smallest_seen_step_distance_from_initial_state{ MAX };
-			std::size_t count_successors_where_this_is_one_optimal_predecessor{ 0 }; // is leaf iff == 0, warning: can be 0 before exploration or after
+			using size_type = std::size_t;
+
+			static constexpr size_type MAX{ std::numeric_limits<size_type>::max() };
+
+
+			struct move_candidate {
+
+				piece_move_type move;
+
+				std::pair<positions_of_pieces_type, bool> next_cell_paired_enable;
+
+				move_candidate(const piece_move_type& move, const std::pair<positions_of_pieces_type, bool>& n) : move(move), next_cell_paired_enable(n) {}
+
+			};
+
+
+			/* data... */
+
+			std::vector<predecessor_tuple> optimal_predecessors;
+
+			size_type smallest_seen_step_distance_from_initial_state{ MAX };
+
+			size_type count_successors_where_this_is_one_optimal_predecessor{ 0 }; // is leaf iff == 0, warning: can be 0 before exploration or after
 		};
 
-		/**
-		*	@brief A struct consisting of
-				a piece_move,
-				a pair of the next cell to reach in one step and an enable flag
-		*/
-		class move_candidate {
-		public:
-			piece_move move;
-			std::pair<universal_cell_id, bool> next_ceell_paired_enable;
+		using default_state_graph_node = state_graph_node<>;
 
-			move_candidate(const piece_move& m, const std::pair<universal_cell_id, bool>& n) : move(m), next_ceell_paired_enable(n) {}
-		};
 
-		template <std::size_t COUNT_NON_TARGET_PIECES>
+		template <class Move_One_Piece_Calculator, class State_Graph_Node = default_state_graph_node>
 		class partial_state_graph {
 		public:
 
+			/* dependent types... */
+
+			using move_one_piece_calculator_type = Move_One_Piece_Calculator;
+
+			using positions_of_pieces_type = typename move_one_piece_calculator_type::positions_of_pieces_type;
+
+			using cell_id_type = typename positions_of_pieces_type::cell_id_type;
+
+			using piece_move_type = typename move_one_piece_calculator_type::piece_move_type;
+
+			using state_graph_node_type = State_Graph_Node;
+
+			using move_candidate = typename state_graph_node_type::move_candidate;
+
+			static_assert(
+				std::is_same<
+				typename move_one_piece_calculator_type::positions_of_pieces_type,
+				typename state_graph_node_type::positions_of_pieces_type>::value,
+				"Incompatible template arguments"
+				);
+
+			static_assert(
+				std::is_same<
+				typename move_one_piece_calculator_type::piece_move_type,
+				typename state_graph_node_type::piece_move_type>::value,
+				"Incompatible template arguments"
+				);
+
+
 			// all game states that have been found so far,
-			// each one with pointers to their optimal predecessors as well as a counter for successors.
-			using solutions_map_type = typename state_graph_node<COUNT_NON_TARGET_PIECES>::partial_solutions_map_type;
+			using partial_solutions_map_type = typename state_graph_node_type::partial_solutions_map_type;
 
 			// to be used as a pointer to a game state
-			using map_iterator = typename state_graph_node<COUNT_NON_TARGET_PIECES>::map_iterator_type;
+			using map_iterator = typename state_graph_node_type::map_iterator_type;
 
-			solutions_map_type solutions_map;
+			using size_type = typename state_graph_node_type::size_type;
+
+
+
+		private:
+
+			partial_solutions_map_type ps_map;
 
 			// number of steps needed by any optimal solution
-			std::size_t optimal_solution_size{ state_graph_node<COUNT_NON_TARGET_PIECES>::MAX };
+			size_type optimal_solution_size;
 
 			// initial state
-			positions_of_pieces<COUNT_NON_TARGET_PIECES> initial_state;
+			positions_of_pieces_type initial_state;
 
 			// All game states that have been found yet, ordered by their shortest distance from initial state.
 			// .back() contains all game states to be explored if one deepening step just finished.
 			std::vector<std::vector<map_iterator>> visited_game_states;
+
+		public:
+
 			// ### note in case of removing states with no optimal successors, the invalid iterator problem arises.
+			partial_state_graph(const positions_of_pieces_type& initial_state) :
+				optimal_solution_size(state_graph_node_type::MAX),
+				initial_state(initial_state)
+			{
+				ps_map[initial_state].smallest_seen_step_distance_from_initial_state = 0; // insert initial state into map
+
+				visited_game_states.push_back(std::vector<map_iterator>{ps_map.begin()}); // insert initial state into visited states
+			}
+
+			partial_state_graph(
+				const typename positions_of_pieces_type::target_pieces_array_type& initial_target_pieces,
+				const typename positions_of_pieces_type::non_target_pieces_array_type& initial_non_target_pieces
+			) :
+				partial_state_graph(
+					positions_of_pieces_type(initial_target_pieces, initial_non_target_pieces)
+				)
+			{
+			}
+
+			inline size_type get_optimal_solution_size() { return optimal_solution_size; };
 
 
-			partial_state_graph(const positions_of_pieces<COUNT_NON_TARGET_PIECES>& p_initial_state): initial_state(p_initial_state) {}
-		};
+			inline void build_state_graph_for_all_optimal_solutions(
+				move_one_piece_calculator_type& engine,
+				const cell_id_type& target_cell
+			) {
+				// what if initial state is already final? check this! ####
 
-		template<std::size_t COUNT_NON_TARGET_PIECES = 3>
-		inline partial_state_graph<COUNT_NON_TARGET_PIECES> build_state_graph_for_all_optimal_solutions(
-			move_one_piece_calculator<COUNT_NON_TARGET_PIECES>& move_one_piece_c,
-			const universal_cell_id& p_target_cell,
-			const universal_cell_id& p_target_piece,
-			std::array<universal_cell_id, COUNT_NON_TARGET_PIECES>&& p_non_target_pieces
-		) {
-			partial_state_graph<COUNT_NON_TARGET_PIECES> state_graph = partial_state_graph<COUNT_NON_TARGET_PIECES>(positions_of_pieces<COUNT_NON_TARGET_PIECES>(p_target_piece, std::move(p_non_target_pieces)));
+				for (size_type expand_size{ 0 }; expand_size < optimal_solution_size; ++expand_size) {
 
+					visited_game_states.emplace_back(); // possibly invalidates iterators on sub-vectors, but on most compilers it will work anyway.
+					// But please do not rely on this behaviour.
 
-			using map_iterator = typename partial_state_graph<COUNT_NON_TARGET_PIECES>::map_iterator;
+					for (const map_iterator& current_iterator : visited_game_states[expand_size]) {
 
+						std::vector<move_candidate> candidates_for_successor_states;
 
-			/*	insert the initial game state into map of all visited states : */
-			state_graph.solutions_map[state_graph.initial_state].smallest_seen_step_distance_from_initial_state = 0; // insert initial_state
-			// solutions_map[initial_state].predecessors.clear(); // already empty be default
-			// solutions_map[initial_state].count_successors = 0; // already empty be default
-
-			/*	insert the initial game state into vector of all visited states : */
-			state_graph.visited_game_states.push_back(std::vector<map_iterator>{state_graph.solutions_map.begin()});
-
-
-			// what if initial state is already final? check this! ####
-
-			for (std::size_t expand_size{ 0 }; expand_size < state_graph.optimal_solution_size; ++expand_size) {
-				state_graph.visited_game_states.emplace_back(); // possibly invalidates iterators on sub-vectors, but on most compilers it will work anyway.
-				// But please do not rely on this behaviour.
-
-				for (const auto& current_iterator : state_graph.visited_game_states[expand_size]) {
-					//const auto current_iterator{ visited_game_states[index_next_exploration] };
-
-					std::vector<move_candidate> candidates_for_successor_states;
-
-					// get next fields in our world with respect to current state
-					candidates_for_successor_states.emplace_back(
-						piece_move(COUNT_NON_TARGET_PIECES, piece_move::WEST),
-						move_one_piece_c.get_next_field_on_west_move(current_iterator->first.target_piece, current_iterator->first)
-					);
-					candidates_for_successor_states.emplace_back(
-						piece_move(COUNT_NON_TARGET_PIECES, piece_move::EAST),
-						move_one_piece_c.get_next_field_on_east_move(current_iterator->first.target_piece, current_iterator->first)
-					);
-					candidates_for_successor_states.emplace_back(
-						piece_move(COUNT_NON_TARGET_PIECES, piece_move::NORTH),
-						move_one_piece_c.get_next_field_on_north_move(current_iterator->first.target_piece, current_iterator->first)
-					);
-					candidates_for_successor_states.emplace_back(
-						piece_move(COUNT_NON_TARGET_PIECES, piece_move::SOUTH),
-						move_one_piece_c.get_next_field_on_south_move(current_iterator->first.target_piece, current_iterator->first)
-					);
-
-					for (std::size_t rob_id{ 0 }; rob_id < COUNT_NON_TARGET_PIECES; ++rob_id) {
-						candidates_for_successor_states.emplace_back(
-							piece_move(static_cast<piece_move::piece_id_type>(rob_id), piece_move::WEST),
-							move_one_piece_c.get_next_field_on_west_move(current_iterator->first.non_target_pieces[rob_id], current_iterator->first)
-						);
-						candidates_for_successor_states.emplace_back(
-							piece_move(static_cast<piece_move::piece_id_type>(rob_id), piece_move::EAST),
-							move_one_piece_c.get_next_field_on_east_move(current_iterator->first.non_target_pieces[rob_id], current_iterator->first)
-						);
-						candidates_for_successor_states.emplace_back(
-							piece_move(static_cast<piece_move::piece_id_type>(rob_id), piece_move::NORTH),
-							move_one_piece_c.get_next_field_on_north_move(current_iterator->first.non_target_pieces[rob_id], current_iterator->first)
-						);
-						candidates_for_successor_states.emplace_back(
-							piece_move(static_cast<piece_move::piece_id_type>(rob_id), piece_move::SOUTH),
-							move_one_piece_c.get_next_field_on_south_move(current_iterator->first.non_target_pieces[rob_id], current_iterator->first)
-						);
-					}
-
-					// check if reached goal
-					for (std::size_t candidate{ 0 }; candidate < 4; ++candidate) {
-						if (candidates_for_successor_states[candidate].next_ceell_paired_enable.first == p_target_cell) {
-							state_graph.optimal_solution_size = current_iterator->second.smallest_seen_step_distance_from_initial_state + 1;
+						// compute all successor state candidates:
+						for (typename piece_move_type::piece_id_type::int_type pid = 0; pid < positions_of_pieces_type::COUNT_ALL_PIECES; ++pid) {
+							for (direction direction_iter = direction::begin(); direction_iter < direction::end(); ++direction_iter) {
+								candidates_for_successor_states.emplace_back(
+									piece_move_type(pid, direction_iter),
+									engine.successor_state(current_iterator->first, pid, direction_iter)
+								);
+							}
 						}
-					}
 
-					// add candidates to map if they are valid:
-					for (auto& c : candidates_for_successor_states) {
-						if (c.next_ceell_paired_enable.second) { // there is a real move
-
-							// create next state
-							// c.next_ceell_paired_enable.first; // new cell id
-							auto new_state = positions_of_pieces<COUNT_NON_TARGET_PIECES>(current_iterator->first);
-
-							if (c.move.piece_id < COUNT_NON_TARGET_PIECES) {
-								new_state.non_target_pieces[c.move.piece_id] = c.next_ceell_paired_enable.first;
-								new_state.sort_non_target_pieces();
+						// check if reached goal
+						for (
+							typename std::vector<move_candidate>::size_type candidate{ 0 };
+							candidate < static_cast<typename std::vector<move_candidate>::size_type>(4) * positions_of_pieces_type::COUNT_TARGET_PIECES; // only check candidates arising from moved target robots...
+							++candidate
+							)
+						{
+							if (candidates_for_successor_states[candidate].next_cell_paired_enable.first.piece_positions[candidate / 4] == target_cell) {
+								optimal_solution_size = current_iterator->second.smallest_seen_step_distance_from_initial_state + 1;
 							}
-							else {
-								new_state.target_piece = c.next_ceell_paired_enable.first;
-							}
+						}
 
-							if (state_graph.solutions_map[new_state].smallest_seen_step_distance_from_initial_state > current_iterator->second.smallest_seen_step_distance_from_initial_state + 1) { // check if path to successor state is an optimal one (as far as we have seen)
-								// to make it more efficient: use an .insert(...) get the iterator to newly inserted element.
+						// add candidates to map if they are valid:
+						for (auto& c : candidates_for_successor_states) {
+							if (c.next_cell_paired_enable.second) { // there is a real move
 
-								// hint: on map entry creation by if condition, steps defaults to MAX value of std::size_t
+								auto& new_state_2 = c.next_cell_paired_enable.first;
 
-								// delete all predecessors!
-								//for (const auto& tuple : solutions_map[new_state].predecessors) { // it is always empty because of fifo order of visited_game_states
-								//	--(std::get<0>(tuple)->second.count_successors);
-								//}
-								//solutions_map[new_state].predecessors.clear();
 
-								state_graph.solutions_map[new_state].smallest_seen_step_distance_from_initial_state = current_iterator->second.smallest_seen_step_distance_from_initial_state + 1;
-								state_graph.solutions_map[new_state].optimal_predecessors.emplace_back(current_iterator, c.move);
-								++(current_iterator->second.count_successors_where_this_is_one_optimal_predecessor);
-								state_graph.visited_game_states[expand_size + 1].push_back(state_graph.solutions_map.find(new_state));
-							}
-							else {
-								if (state_graph.solutions_map[new_state].smallest_seen_step_distance_from_initial_state == current_iterator->second.smallest_seen_step_distance_from_initial_state + 1) {
-									state_graph.solutions_map[new_state].optimal_predecessors.emplace_back(current_iterator, c.move);
+								/// check this whole comparison again!
+
+								if (ps_map[new_state_2].smallest_seen_step_distance_from_initial_state > current_iterator->second.smallest_seen_step_distance_from_initial_state + 1) { // check if path to successor state is an optimal one (as far as we have seen)
+									/// ?????????????? if improvement.... only occurs as improving from not seen (=MAX) to some finite value for a distance
+
+									// to make it more efficient: use an .insert(...) get the iterator to newly inserted element.
+
+									// hint: on map entry creation by if condition, steps defaults to MAX value of std::size_t
+
+									// delete all predecessors!
+									//for (const auto& tuple : solutions_map[new_state].predecessors) { // it is always empty because of fifo order of visited_game_states
+									//	--(std::get<0>(tuple)->second.count_successors);
+									//}
+									//solutions_map[new_state].predecessors.clear();
+
+									ps_map[new_state_2].smallest_seen_step_distance_from_initial_state = current_iterator->second.smallest_seen_step_distance_from_initial_state + 1;
+									ps_map[new_state_2].optimal_predecessors.emplace_back(current_iterator, c.move); // why not delete old ones?
 									++(current_iterator->second.count_successors_where_this_is_one_optimal_predecessor);
-									// visited_game_states.push_back(solutions_map.find(new_state)); don't add, already added on first path reaching new_state
+									visited_game_states[expand_size + 1].push_back(ps_map.find(new_state_2));
+								}
+								else {
+									if (ps_map[new_state_2].smallest_seen_step_distance_from_initial_state == current_iterator->second.smallest_seen_step_distance_from_initial_state + 1) {
+										ps_map[new_state_2].optimal_predecessors.emplace_back(current_iterator, c.move);
+										++(current_iterator->second.count_successors_where_this_is_one_optimal_predecessor);
+										// visited_game_states.push_back(solutions_map.find(new_state)); don't add, already added on first path reaching new_state
+									}
 								}
 							}
 						}
 					}
+
 				}
-
 			}
-			return state_graph;
 
-		}
-
+		};
 
 	}
 
 }
+
+
