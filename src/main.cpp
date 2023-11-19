@@ -1,6 +1,5 @@
 #include "predefined.h"
 #include "logger.h"
-#include "solver.h"
 
 
 #include "mainwindow.h"
