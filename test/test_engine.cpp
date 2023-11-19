@@ -61,9 +61,9 @@ TEST(engine, example_integration) {
 	// create initial robots position
 	// run solver
 
-	auto w = tobor::v1_0::tobor_world(16, 16);
+	auto w = tobor::v1_0::default_world(16, 16);
 
-	w.block_center_fields(2, 2);
+	w.block_center_cells(2, 2);
 
 	// add vertical walls row by row, starting left
 	w.west_wall_by_id(w.coordinates_to_cell_id(6, 0)) = true;
@@ -108,23 +108,26 @@ TEST(engine, example_integration) {
 	w.south_wall_by_transposed_id(w.coordinates_to_transposed_cell_id(15, 12)) = true;
 
 	// specify initial state
-	auto target_piece = tobor::v1_0::universal_cell_id::create_by_coordinates(6, 9, w);
-	auto green_robot = tobor::v1_0::universal_cell_id::create_by_coordinates(12, 7, w);
-	auto red_robot = tobor::v1_0::universal_cell_id::create_by_coordinates(12, 12, w);
-	auto yellow_robot = tobor::v1_0::universal_cell_id::create_by_coordinates(6, 14, w);
+	auto target_piece = tobor::v1_0::default_cell_id::create_by_coordinates(6, 9, w);
+	auto green_robot = tobor::v1_0::default_cell_id::create_by_coordinates(12, 7, w);
+	auto red_robot = tobor::v1_0::default_cell_id::create_by_coordinates(12, 12, w);
+	auto yellow_robot = tobor::v1_0::default_cell_id::create_by_coordinates(6, 14, w);
 
-	std::array<tobor::v1_0::universal_cell_id, 3> other_robots{ green_robot, red_robot, yellow_robot };
+	std::array<tobor::v1_0::default_cell_id, 3> other_robots{ green_robot, red_robot, yellow_robot };
+	std::array<tobor::v1_0::default_cell_id, 1> target_robots{ target_piece };
 
 	//auto initial_state = tobor::v1_0::positions_of_pieces<3>(target_piece, std::move(other_robots));
 
 	// specify target field
-	auto target = tobor::v1_0::universal_cell_id::create_by_coordinates(9, 1, w);
+	auto target = tobor::v1_0::default_cell_id::create_by_coordinates(9, 1, w);
 
-	auto w_analyzer = tobor::v1_0::move_one_piece_calculator<3>(w);
+	auto w_analyzer = tobor::v1_0::default_move_one_piece_calculator(w);
 
-	auto the_partial_state_graph = tobor::v1_0::build_state_graph_for_all_optimal_solutions<3>(w_analyzer, target, target_piece, std::move(other_robots));
+	auto partial_state_graph = tobor::v1_0::partial_state_graph<tobor::v1_0::default_move_one_piece_calculator>(target_robots, other_robots);
 
-	ASSERT_EQ(9, the_partial_state_graph.optimal_solution_size);
+	partial_state_graph.build_state_graph_for_all_optimal_solutions(w_analyzer, target);
+
+	ASSERT_EQ(9, partial_state_graph.get_optimal_solution_size());
 
 }
 
