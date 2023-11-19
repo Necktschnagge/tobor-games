@@ -1,3 +1,4 @@
+#include "predefined.h"
 #include "logger.h"
 
 #include "internal_error.h"
