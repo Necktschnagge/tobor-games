@@ -6,7 +6,7 @@
       * Install **cmake**
       * Install the latest C++ compiler with **Visual Studio**.
       * Install **Qt6** or Qt5 (Qt6 is recommended). We recommend to [download the official Installer of **Qt Creator**](https://www.qt.io/product/development-tools). Alternatively, to install Qt from command line using **aqt**, see our [Azure Pipeline configuration](https://github.com/Necktschnagge/cmake-qt-prototype/blob/main/azure-pipelines.yml) (not recommended for Desktop Development).
-      * Remark: You may use the MinGW toolchain shipped with the Qt Creator IDE. However we do not recommend this.
+      * Remark: You may use the MinGW toolchain shipped with the Qt Creator IDE. However we do not recommend this. Instead make sure that you have installed the MSVC 2019 component of your selected Qt version. For this use Qt Maintenance Tool.
       * Check that system environment variables are set to enable cmake to find Qt when running `*--create-project.[ps1|sh|bat]` script at later steps, e.g.:
          * `QT_DIR = C:\Qt`
          * `PATH = C:\Qt\6.5.0\msvc2019_64\bin;...`
