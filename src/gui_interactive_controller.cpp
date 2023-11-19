@@ -1,4 +1,4 @@
-
+#include "predefined.h"
 #include "gui_interactive_controller.h"
 
 #include "mainwindow.h"
