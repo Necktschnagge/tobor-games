@@ -10,6 +10,7 @@
 #include "tobor_svg.h"
 
 
+#include <QStringListModel>
 #include <QMessageBox>
 #include <QDebug>
 #include <QStyle>
@@ -21,7 +22,7 @@ MainWindow::MainWindow(QWidget* parent)
 	, ui(new Ui::MainWindow),
 	guiInteractiveController(this)
 {
-	QWidget::grabKeyboard();
+    //QWidget::grabKeyboard();
 	ui->setupUi(this);
 }
 
@@ -102,5 +103,43 @@ void MainWindow::keyPressEvent(QKeyEvent* e)
 		qDebug() << "Key_Right";
 		break;
 	}
+}
+
+
+void MainWindow::on_actionTest_ListView_triggered()
+{
+    static QStringListModel *model{nullptr};
+
+    if (model == nullptr){
+        model     = new QStringListModel();
+    }
+    QStringList list;
+    list << "a" << "b" << "c";
+    list << "a" << "b" << "c";
+    list << "a" << "b" << "c";
+    list << "a" << "b" << "c";
+    list << "a" << "b" << "c";
+    list << "a" << "b" << "c";
+    list << "a" << "b" << "c";
+    model->setStringList(list);
+
+    ui->listView->setModel(model);
+
+}
+
+
+void MainWindow::on_actionRED_triggered()
+{
+    static QStringListModel *model{nullptr};
+
+    if (model == nullptr){
+        model     = new QStringListModel();
+    }
+    QStringList list;
+    list.clear();
+    list << "RED";
+    model->setStringList(list);
+
+    ui->listView->setModel(model);
 }
 
