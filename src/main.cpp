@@ -15,15 +15,15 @@ TARGET CELL             :       the CELL which is marked as goal
 TARGET PIECE            :       PIECE which must be moved to the TARGET CELL
 PIECE                   :       one robot / piece 
 
+
 */
 
-int main(int argc, char *argv[]){
 
+int main(int argc, char *argv[])
+{
 	init_logger();
-
-	QApplication qt_app(argc, argv);
-	MainWindow main_window;
-	main_window.show();
-	return qt_app.exec();
-
+    QApplication a(argc, argv);
+    MainWindow w;
+    w.show();
+    return a.exec();
 }
