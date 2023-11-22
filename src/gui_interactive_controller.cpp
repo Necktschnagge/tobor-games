@@ -99,10 +99,24 @@ void GuiInteractiveController::refreshSVG()
 tobor::v1_0::default_world GuiInteractiveController::generateBoard()
 {
 	auto tobor_world = tobor::v1_0::default_world(16, 16);
-
 	tobor_world.block_center_cells(2, 2);
 
-	tobor_world.west_wall_by_id(tobor_world.coordinates_to_cell_id(6, 0)) = true;
+    auto mist1 = tobor::v1_0::default_cell_id::create_by_coordinates(3,1,tobor_world);
+    tobor_world.west_wall_by_id(mist1.get_id()) = true;
+    tobor_world.west_wall_by_id(tobor_world.coordinates_to_cell_id(4, 0)) = true;
+    tobor_world.south_wall_by_transposed_id(tobor_world.coordinates_to_transposed_cell_id(2, 1)) = true;
+    auto mist2 = tobor::v1_0::default_cell_id::create_by_coordinates(6,2,tobor_world);
+    tobor_world.west_wall_by_id(mist2.get_id()) = true;
+    tobor_world.north_wall_by_transposed_id(mist2.get_transposed_id()) = true;
+    tobor_world.south_wall_by_transposed_id(tobor_world.coordinates_to_transposed_cell_id(0, 4)) = true;
+    auto mist3 = tobor::v1_0::default_cell_id::create_by_coordinates(1,5,tobor_world);
+    tobor_world.east_wall_by_id(mist3.get_id()) = true;
+    tobor_world.north_wall_by_transposed_id(mist3.get_transposed_id()) = true;
+    auto mist4 = tobor::v1_0::default_cell_id::create_by_coordinates(4,6,tobor_world);
+    tobor_world.west_wall_by_id(mist4.get_id()) = true;
+    tobor_world.south_wall_by_transposed_id(mist4.get_transposed_id()) = true;
+
+/*	tobor_world.west_wall_by_id(tobor_world.coordinates_to_cell_id(6, 0)) = true;
 	tobor_world.west_wall_by_id(tobor_world.coordinates_to_cell_id(12, 0)) = true;
 	tobor_world.west_wall_by_id(tobor_world.coordinates_to_cell_id(2, 1)) = true;
 	tobor_world.west_wall_by_id(tobor_world.coordinates_to_cell_id(10, 1)) = true;
@@ -142,8 +156,9 @@ tobor::v1_0::default_world GuiInteractiveController::generateBoard()
 	tobor_world.south_wall_by_transposed_id(tobor_world.coordinates_to_transposed_cell_id(14, 10)) = true;
 	tobor_world.south_wall_by_transposed_id(tobor_world.coordinates_to_transposed_cell_id(15, 7)) = true;
 	tobor_world.south_wall_by_transposed_id(tobor_world.coordinates_to_transposed_cell_id(15, 12)) = true;
+*/
 
-	return tobor_world;
+    return tobor_world;
 }
 
 

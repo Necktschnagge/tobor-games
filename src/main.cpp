@@ -27,10 +27,10 @@ int main(int argc, char *argv[]){
 	init_logger();
 
 	QApplication qt_app(argc, argv);
-#if defined(Q_OS_LINUX)
+#if defined( Q_OS_LINUX )
 	std::setlocale(LC_NUMERIC,"C");
 #endif
-#if (defined (Q_OS_MAC))
+#if defined( Q_OS_MAC )
 	setlocale(LC_NUMERIC,"C");
 #endif
 	MainWindow main_window;
