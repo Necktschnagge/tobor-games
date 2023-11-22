@@ -7,6 +7,8 @@
 
 #include <QApplication>
 
+#include <clocale>
+
 // TERMINOLOGY
 
 
@@ -27,12 +29,13 @@ int main(int argc, char *argv[]){
 	init_logger();
 
 	QApplication qt_app(argc, argv);
-#if defined( Q_OS_LINUX )
+//#if defined( Q_OS_LINUX )
 	std::setlocale(LC_NUMERIC,"C");
-#endif
-#if defined( Q_OS_MAC )
-	setlocale(LC_NUMERIC,"C");
-#endif
+
+//#endif
+//#if defined( Q_OS_MAC )
+//	setlocale(LC_NUMERIC,"C");
+//#endif
 	MainWindow main_window;
 	main_window.show();
 	return qt_app.exec();
