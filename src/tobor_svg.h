@@ -977,9 +977,9 @@ namespace tobor {
 
 
 				standard_logger()->info(svg_root->get_svg());
-				auto fs = std::ofstream(R"(C:\Users\F-NET-ADMIN\Desktop\preview.svg)");
+				//auto fs = std::ofstream(R"(C:\Users\F-NET-ADMIN\Desktop\preview.svg)");
 
-				fs << svg_root->get_svg();
+				//fs << svg_root->get_svg();
 
 				return svg_root->get_svg();
 
