@@ -131,6 +131,10 @@ tobor::v1_0::default_world GuiInteractiveController::generateBoard()
 	constexpr static std::size_t GREEN_PLANET{ 1 };
 	constexpr static std::size_t BLUE_PLANET{ 2 };
 	constexpr static std::size_t YELLOW_PLANET{ 3 };
+	(void)RED_PLANET;
+	(void)GREEN_PLANET;
+	(void)BLUE_PLANET;
+	(void)YELLOW_PLANET;
 
 
 	all_quadrants[RED_PLANET].emplace_back(16, 16);
