@@ -138,7 +138,7 @@ tobor::v1_0::default_world GuiInteractiveController::generateBoard()
 
 
 	auto ne_cell = tobor::v1_0::default_cell_id::create_by_coordinates(1, 5, tobor_world);
-	
+
 	auto nw_cell = tobor::v1_0::default_cell_id::create_by_coordinates(6, 2, tobor_world);
 
 	auto se_cell = tobor::v1_0::default_cell_id::create_by_coordinates(2, 1, tobor_world);
