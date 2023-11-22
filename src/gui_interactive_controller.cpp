@@ -130,25 +130,25 @@ tobor::v1_0::default_world GuiInteractiveController::generateBoard()
 
 	tobor_world.block_center_cells(2, 2);
 
-	auto sw_cell = tobor::v1_0::default_cell_id::create_by_coordinates(4, 6, tobor_world);
 
 	auto sw_cell_bottom_side = tobor::v1_0::default_cell_id::create_by_coordinates(4, 0, tobor_world);
-
 	auto sw_cell_left_side = tobor::v1_0::default_cell_id::create_by_coordinates(0, 4, tobor_world);
 
 
-	auto ne_cell = tobor::v1_0::default_cell_id::create_by_coordinates(1, 5, tobor_world);
+	auto sw_yellow_moon = tobor::v1_0::default_cell_id::create_by_coordinates(4, 6, tobor_world);
 
-	auto nw_cell = tobor::v1_0::default_cell_id::create_by_coordinates(6, 2, tobor_world);
+	auto ne_green_cross = tobor::v1_0::default_cell_id::create_by_coordinates(1, 5, tobor_world);
 
-	auto se_cell = tobor::v1_0::default_cell_id::create_by_coordinates(2, 1, tobor_world);
+	auto nw_blue_gear = tobor::v1_0::default_cell_id::create_by_coordinates(6, 2, tobor_world);
+
+	auto se_red_planet = tobor::v1_0::default_cell_id::create_by_coordinates(2, 1, tobor_world);
 
 	init_quadrant(
 		tobor_world,
-		{ sw_cell, sw_cell_bottom_side, sw_cell_left_side },
-		{ se_cell },
-		{ ne_cell },
-		{ nw_cell }
+		{ sw_yellow_moon, sw_cell_bottom_side, sw_cell_left_side },
+		{ se_red_planet },
+		{ ne_green_cross },
+		{ nw_blue_gear }
 	);
 
 	return tobor_world;
