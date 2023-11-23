@@ -246,20 +246,32 @@
    <property name="text">
     <string>&amp;NORTH</string>
    </property>
+   <property name="shortcut">
+    <string>Ctrl+Up</string>
+   </property>
   </action>
   <action name="actionEAST">
    <property name="text">
     <string>&amp;EAST</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Right</string>
    </property>
   </action>
   <action name="actionSOUTH">
    <property name="text">
     <string>&amp;SOUTH</string>
    </property>
+   <property name="shortcut">
+    <string>Ctrl+Down</string>
+   </property>
   </action>
   <action name="actionWEST">
    <property name="text">
     <string>&amp;WEST</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Left</string>
    </property>
   </action>
  </widget>

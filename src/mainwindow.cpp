@@ -23,7 +23,15 @@ MainWindow::MainWindow(QWidget* parent)
 	guiInteractiveController(this)
 {
 	ui->setupUi(this);
-    //ui->centralwidget->grabKeyboard();
+    grabKeyboard(); // https://doc.qt.io/qt-6/qwidget.html#grabKeyboard
+
+    // releaseKeyboard();  when entering main menu
+    // again call grabKeyboard() when exiting main menu (by triggering event or exiting without clicking any menu button)
+
+    // can we check this via some FocusEvent? Just check when the focus is changed?
+    // https://stackoverflow.com/questions/321656/get-a-notification-event-signal-when-a-qt-widget-gets-focus
+    // https://doc.qt.io/qt-6/qfocusevent.html#details
+
 }
 
 MainWindow::~MainWindow()
@@ -88,7 +96,12 @@ void MainWindow::keyPressEvent(QKeyEvent* e)
 {
 	// see: https://doc.qt.io/qt-6/qt.html#Key-enum
 
-	switch (e->key()) {
+    switch (e->key()) {
+
+    case Qt::Key_Alt:
+        releaseKeyboard();
+        break;
+
 	case Qt::Key_Up:
         on_actionNORTH_triggered();
 		break;
