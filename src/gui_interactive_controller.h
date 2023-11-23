@@ -11,6 +11,9 @@
 #include <QDebug>
 #include <QStyle>
 
+
+#include <memory>
+
 class MainWindow;
 
 struct GameController {
