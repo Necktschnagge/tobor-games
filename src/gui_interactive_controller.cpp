@@ -98,53 +98,74 @@ void GuiInteractiveController::refreshSVG()
 	}
 }
 
+
+void init_quadrant(
+	tobor::v1_0::default_world& world,
+	const std::vector<tobor::v1_0::default_cell_id>& SW_corners,
+	const std::vector<tobor::v1_0::default_cell_id>& SE_corners,
+	const std::vector<tobor::v1_0::default_cell_id>& NE_corners,
+	const std::vector<tobor::v1_0::default_cell_id>& NW_corners
+) {
+	for (const auto& cell_id : SW_corners) {
+		world.west_wall_by_id(cell_id.get_id()) = true;
+		world.south_wall_by_transposed_id(cell_id.get_transposed_id()) = true;
+	}
+	for (const auto& cell_id : NW_corners) {
+		world.west_wall_by_id(cell_id.get_id()) = true;
+		world.north_wall_by_transposed_id(cell_id.get_transposed_id()) = true;
+	}
+	for (const auto& cell_id : NE_corners) {
+		world.east_wall_by_id(cell_id.get_id()) = true;
+		world.north_wall_by_transposed_id(cell_id.get_transposed_id()) = true;
+	}
+	for (const auto& cell_id : SE_corners) {
+		world.east_wall_by_id(cell_id.get_id()) = true;
+		world.south_wall_by_transposed_id(cell_id.get_transposed_id()) = true;
+	}
+
+}
+
+
 tobor::v1_0::default_world GuiInteractiveController::generateBoard()
 {
-	auto tobor_world = tobor::v1_0::default_world(16, 16);
+	std::array<std::vector<tobor::v1_0::default_world>, 4> all_quadrants;
+	constexpr static std::size_t RED_PLANET{ 0 };
+	constexpr static std::size_t GREEN_PLANET{ 1 };
+	constexpr static std::size_t BLUE_PLANET{ 2 };
+	constexpr static std::size_t YELLOW_PLANET{ 3 };
+	(void)RED_PLANET;
+	(void)GREEN_PLANET;
+	(void)BLUE_PLANET;
+	(void)YELLOW_PLANET;
 
-	tobor_world.block_center_cells(2, 2);
 
-	tobor_world.west_wall_by_id(tobor_world.coordinates_to_cell_id(6, 0)) = true;
-	tobor_world.west_wall_by_id(tobor_world.coordinates_to_cell_id(12, 0)) = true;
-	tobor_world.west_wall_by_id(tobor_world.coordinates_to_cell_id(2, 1)) = true;
-	tobor_world.west_wall_by_id(tobor_world.coordinates_to_cell_id(10, 1)) = true;
-	tobor_world.west_wall_by_id(tobor_world.coordinates_to_cell_id(14, 3)) = true;
-	tobor_world.west_wall_by_id(tobor_world.coordinates_to_cell_id(1, 4)) = true;
-	tobor_world.west_wall_by_id(tobor_world.coordinates_to_cell_id(11, 4)) = true;
-	tobor_world.west_wall_by_id(tobor_world.coordinates_to_cell_id(13, 5)) = true;
-	tobor_world.west_wall_by_id(tobor_world.coordinates_to_cell_id(4, 6)) = true;
-	tobor_world.west_wall_by_id(tobor_world.coordinates_to_cell_id(12, 9)) = true;
-	tobor_world.west_wall_by_id(tobor_world.coordinates_to_cell_id(7, 10)) = true;
-	tobor_world.west_wall_by_id(tobor_world.coordinates_to_cell_id(14, 10)) = true;
-	tobor_world.west_wall_by_id(tobor_world.coordinates_to_cell_id(3, 11)) = true;
-	tobor_world.west_wall_by_id(tobor_world.coordinates_to_cell_id(7, 13)) = true;
-	tobor_world.west_wall_by_id(tobor_world.coordinates_to_cell_id(10, 13)) = true;
-	tobor_world.west_wall_by_id(tobor_world.coordinates_to_cell_id(1, 14)) = true;
-	tobor_world.west_wall_by_id(tobor_world.coordinates_to_cell_id(13, 14)) = true;
-	tobor_world.west_wall_by_id(tobor_world.coordinates_to_cell_id(4, 15)) = true;
-	tobor_world.west_wall_by_id(tobor_world.coordinates_to_cell_id(12, 15)) = true;
+	all_quadrants[RED_PLANET].emplace_back(16, 16);
 
-	tobor_world.south_wall_by_transposed_id(tobor_world.coordinates_to_transposed_cell_id(0, 2)) = true;
-	tobor_world.south_wall_by_transposed_id(tobor_world.coordinates_to_transposed_cell_id(0, 10)) = true;
-	tobor_world.south_wall_by_transposed_id(tobor_world.coordinates_to_transposed_cell_id(1, 4)) = true;
-	tobor_world.south_wall_by_transposed_id(tobor_world.coordinates_to_transposed_cell_id(1, 14)) = true;
-	tobor_world.south_wall_by_transposed_id(tobor_world.coordinates_to_transposed_cell_id(2, 2)) = true;
-	tobor_world.south_wall_by_transposed_id(tobor_world.coordinates_to_transposed_cell_id(2, 11)) = true;
-	tobor_world.south_wall_by_transposed_id(tobor_world.coordinates_to_transposed_cell_id(3, 7)) = true;
-	tobor_world.south_wall_by_transposed_id(tobor_world.coordinates_to_transposed_cell_id(6, 3)) = true;
-	tobor_world.south_wall_by_transposed_id(tobor_world.coordinates_to_transposed_cell_id(6, 14)) = true;
-	tobor_world.south_wall_by_transposed_id(tobor_world.coordinates_to_transposed_cell_id(7, 11)) = true;
-	tobor_world.south_wall_by_transposed_id(tobor_world.coordinates_to_transposed_cell_id(9, 2)) = true;
-	tobor_world.south_wall_by_transposed_id(tobor_world.coordinates_to_transposed_cell_id(9, 13)) = true;
-	tobor_world.south_wall_by_transposed_id(tobor_world.coordinates_to_transposed_cell_id(10, 4)) = true;
-	tobor_world.south_wall_by_transposed_id(tobor_world.coordinates_to_transposed_cell_id(11, 10)) = true;
-	tobor_world.south_wall_by_transposed_id(tobor_world.coordinates_to_transposed_cell_id(13, 6)) = true;
-	tobor_world.south_wall_by_transposed_id(tobor_world.coordinates_to_transposed_cell_id(13, 15)) = true;
-	tobor_world.south_wall_by_transposed_id(tobor_world.coordinates_to_transposed_cell_id(14, 3)) = true;
-	tobor_world.south_wall_by_transposed_id(tobor_world.coordinates_to_transposed_cell_id(14, 10)) = true;
-	tobor_world.south_wall_by_transposed_id(tobor_world.coordinates_to_transposed_cell_id(15, 7)) = true;
-	tobor_world.south_wall_by_transposed_id(tobor_world.coordinates_to_transposed_cell_id(15, 12)) = true;
+	auto& world = all_quadrants[RED_PLANET].back();
 
-	return tobor_world;
+	world.block_center_cells(2, 2);
+
+
+	auto sw_cell_bottom_side = tobor::v1_0::default_cell_id::create_by_coordinates(4, 0, world);
+	auto sw_cell_left_side = tobor::v1_0::default_cell_id::create_by_coordinates(0, 4, world);
+
+
+	auto sw_yellow_moon = tobor::v1_0::default_cell_id::create_by_coordinates(4, 6, world);
+
+	auto ne_green_cross = tobor::v1_0::default_cell_id::create_by_coordinates(1, 5, world);
+
+	auto nw_blue_gear = tobor::v1_0::default_cell_id::create_by_coordinates(6, 2, world);
+
+	auto se_red_planet = tobor::v1_0::default_cell_id::create_by_coordinates(2, 1, world);
+
+	init_quadrant(
+		world,
+		{ sw_yellow_moon, sw_cell_bottom_side, sw_cell_left_side },
+		{ se_red_planet },
+		{ ne_green_cross },
+		{ nw_blue_gear }
+	);
+
+	return world;
 }
 

@@ -77,6 +77,7 @@ void MainWindow::on_actionshowSVG_triggered()
 
 void MainWindow::on_actionAbout_triggered()
 {
+	qDebug() << "QLocale: " << QLocale().name();
 	QMessageBox msgBox;
 	msgBox.setText(QString("Qt Version used:   ") + qVersion());
 	msgBox.exec();
