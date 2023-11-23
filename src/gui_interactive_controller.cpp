@@ -14,6 +14,7 @@ void GuiInteractiveController::startGame() {
 
 		mainWindow->ui->actionNewGame->setEnabled(false);
 		mainWindow->ui->actionStopGame->setEnabled(true);
+
 		interactive_mode = InteractiveMode::GAME_INTERACTIVE;
 
 		// create a board
@@ -21,7 +22,7 @@ void GuiInteractiveController::startGame() {
 
 		gameHistory.emplace_back(
 			tobor_world,
-			tobor::v1_0::default_positions_of_pieces(
+			GameController::positions_of_pieces_type(
 				{
 					tobor::v1_0::default_cell_id::create_by_coordinates(2, 3, tobor_world)
 				},
@@ -50,6 +51,7 @@ void GuiInteractiveController::stopGame() {
 
 		mainWindow->ui->actionNewGame->setEnabled(true);
 		mainWindow->ui->actionStopGame->setEnabled(false);
+
 		interactive_mode = InteractiveMode::NO_GAME;
 
 		refreshSVG();
@@ -69,9 +71,9 @@ void GuiInteractiveController::refreshSVG()
 
 		std::string example_svg_string = tobor::v1_0::tobor_graphics<GameController::positions_of_pieces_type>::draw_tobor_world(
 			gameHistory.back().tobor_world,
-			gameHistory.back().current_state,
+			gameHistory.back().path.back(),
 			GameController::positions_of_pieces_type::cell_id_type::create_by_coordinates(13, 14, gameHistory.back().tobor_world),
-			tobor::v1_0::tobor_graphics<GameController::positions_of_pieces_type>::coloring("red", "green", "yellow", "blue")
+			tobor::v1_0::tobor_graphics<GameController::positions_of_pieces_type>::coloring("red", "yellow", "green", "blue")
 		);
 
 
@@ -145,5 +147,4 @@ tobor::v1_0::default_world GuiInteractiveController::generateBoard()
 
 	return tobor_world;
 }
-
 
