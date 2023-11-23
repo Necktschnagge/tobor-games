@@ -1,268 +1,268 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
-  <class>MainWindow</class>
-  <widget class="QMainWindow" name="MainWindow">
-    <property name="geometry">
-      <rect>
-        <x>0</x>
-        <y>0</y>
-        <width>1300</width>
-        <height>900</height>
-      </rect>
-    </property>
-    <property name="minimumSize">
-      <size>
-        <width>400</width>
-        <height>300</height>
-      </size>
-    </property>
-    <property name="windowTitle">
-      <string>Tobor 1.0</string>
-    </property>
-    <widget class="QWidget" name="centralwidget">
-      <layout class="QGridLayout" name="gridLayout">
-        <item row="0" column="0">
-          <layout class="QHBoxLayout" name="horizontalLayout" stretch="1,0,0">
-            <item>
-              <widget class="QGraphicsView" name="graphicsView">
-                <property name="minimumSize">
-                  <size>
-                    <width>200</width>
-                    <height>200</height>
-                  </size>
-                </property>
-              </widget>
-            </item>
-            <item>
-              <spacer name="horizontalSpacer">
-                <property name="orientation">
-                  <enum>Qt::Horizontal</enum>
-                </property>
-                <property name="sizeType">
-                  <enum>QSizePolicy::Minimum</enum>
-                </property>
-                <property name="sizeHint" stdset="0">
-                  <size>
-                    <width>1</width>
-                    <height>1</height>
-                  </size>
-                </property>
-              </spacer>
-            </item>
-            <item>
-              <layout class="QVBoxLayout" name="verticalLayout_2" stretch="0,0,0">
-                <item>
-                  <widget class="QListView" name="listView"/>
-                </item>
-                <item>
-                  <spacer name="verticalSpacer">
-                    <property name="orientation">
-                      <enum>Qt::Vertical</enum>
-                    </property>
-                    <property name="sizeType">
-                      <enum>QSizePolicy::Maximum</enum>
-                    </property>
-                    <property name="sizeHint" stdset="0">
-                      <size>
-                        <width>0</width>
-                        <height>20</height>
-                      </size>
-                    </property>
-                  </spacer>
-                </item>
-                <item>
-                  <widget class="QTreeView" name="treeView"/>
-                </item>
-              </layout>
-            </item>
-          </layout>
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1300</width>
+    <height>900</height>
+   </rect>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>400</width>
+    <height>300</height>
+   </size>
+  </property>
+  <property name="windowTitle">
+   <string>Tobor 1.0</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QGridLayout" name="gridLayout">
+    <item row="0" column="0">
+     <layout class="QHBoxLayout" name="horizontalLayout" stretch="1,0,0">
+      <item>
+       <widget class="QGraphicsView" name="graphicsView">
+        <property name="minimumSize">
+         <size>
+          <width>200</width>
+          <height>200</height>
+         </size>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <spacer name="horizontalSpacer">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeType">
+         <enum>QSizePolicy::Minimum</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>1</width>
+          <height>1</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item>
+       <layout class="QVBoxLayout" name="verticalLayout_2" stretch="0,0,0">
+        <item>
+         <widget class="QListView" name="listView"/>
         </item>
-        <item row="1" column="0">
-          <layout class="QHBoxLayout" name="horizontalLayout_2">
-            <item>
-              <widget class="QRadioButton" name="radioButton">
-                <property name="text">
-                  <string>RED</string>
-                </property>
-              </widget>
-            </item>
-            <item>
-              <widget class="QRadioButton" name="radioButton_4">
-                <property name="text">
-                  <string>YELLOW</string>
-                </property>
-              </widget>
-            </item>
-            <item>
-              <widget class="QRadioButton" name="radioButton_3">
-                <property name="text">
-                  <string>GREEN</string>
-                </property>
-              </widget>
-            </item>
-            <item>
-              <widget class="QRadioButton" name="radioButton_2">
-                <property name="text">
-                  <string>BLUE</string>
-                </property>
-              </widget>
-            </item>
-            <item>
-              <widget class="QCommandLinkButton" name="commandLinkButton">
-                <property name="text">
-                  <string>CommandLinkButton</string>
-                </property>
-              </widget>
-            </item>
-          </layout>
+        <item>
+         <spacer name="verticalSpacer">
+          <property name="orientation">
+           <enum>Qt::Vertical</enum>
+          </property>
+          <property name="sizeType">
+           <enum>QSizePolicy::Maximum</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>0</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
         </item>
-      </layout>
-    </widget>
-    <widget class="QMenuBar" name="menubar">
-      <property name="geometry">
-        <rect>
-          <x>0</x>
-          <y>0</y>
-          <width>1300</width>
-          <height>21</height>
-        </rect>
-      </property>
-      <widget class="QMenu" name="menuFile">
-        <property name="title">
-          <string>&amp;File</string>
+        <item>
+         <widget class="QTreeView" name="treeView"/>
+        </item>
+       </layout>
+      </item>
+     </layout>
+    </item>
+    <item row="1" column="0">
+     <layout class="QHBoxLayout" name="horizontalLayout_2">
+      <item>
+       <widget class="QRadioButton" name="radioButton">
+        <property name="text">
+         <string>RED</string>
         </property>
-        <addaction name="actionshowSVG"/>
-      </widget>
-      <widget class="QMenu" name="menuGame">
-        <property name="title">
-          <string>&amp;Game</string>
+       </widget>
+      </item>
+      <item>
+       <widget class="QRadioButton" name="radioButton_4">
+        <property name="text">
+         <string>YELLOW</string>
         </property>
-        <widget class="QMenu" name="menuSelect_Piece">
-          <property name="title">
-            <string>Select Piece...</string>
-          </property>
-          <addaction name="actionRED"/>
-          <addaction name="actionYELLOW"/>
-          <addaction name="actionGREEN"/>
-          <addaction name="actionBLUE"/>
-        </widget>
-        <widget class="QMenu" name="menuMove">
-          <property name="title">
-            <string>Move...</string>
-          </property>
-          <addaction name="actionNORTH"/>
-          <addaction name="actionEAST"/>
-          <addaction name="actionSOUTH"/>
-          <addaction name="actionWEST"/>
-        </widget>
-        <addaction name="actionNewGame"/>
-        <addaction name="actionStopGame"/>
-        <addaction name="separator"/>
-        <addaction name="menuSelect_Piece"/>
-        <addaction name="menuMove"/>
-      </widget>
-      <widget class="QMenu" name="menuEdit">
-        <property name="title">
-          <string>&amp;Edit</string>
+       </widget>
+      </item>
+      <item>
+       <widget class="QRadioButton" name="radioButton_3">
+        <property name="text">
+         <string>GREEN</string>
         </property>
-        <addaction name="actionTest_ListView"/>
-      </widget>
-      <widget class="QMenu" name="menuHelp">
-        <property name="title">
-          <string>&amp;Help</string>
+       </widget>
+      </item>
+      <item>
+       <widget class="QRadioButton" name="radioButton_2">
+        <property name="text">
+         <string>BLUE</string>
         </property>
-        <addaction name="actionAbout"/>
-      </widget>
-      <addaction name="menuFile"/>
-      <addaction name="menuEdit"/>
-      <addaction name="menuGame"/>
-      <addaction name="menuHelp"/>
-    </widget>
-    <widget class="QStatusBar" name="statusbar"/>
-    <action name="actionshowSVG">
-      <property name="text">
-        <string>showSVG</string>
-      </property>
-    </action>
-    <action name="actionNewGame">
-      <property name="enabled">
-        <bool>true</bool>
-      </property>
-      <property name="text">
-        <string>New Game</string>
-      </property>
-    </action>
-    <action name="actionStopGame">
-      <property name="enabled">
-        <bool>false</bool>
-      </property>
-      <property name="text">
-        <string>Stop Game</string>
-      </property>
-    </action>
-    <action name="actionAbout">
-      <property name="text">
-        <string>About</string>
-      </property>
-    </action>
-    <action name="actionTest_ListView">
-      <property name="text">
-        <string>Test ListView</string>
-      </property>
-    </action>
-    <action name="actionRED">
-      <property name="text">
-        <string>RED</string>
-      </property>
-      <property name="shortcut">
-        <string>Ctrl+R</string>
-      </property>
-    </action>
-    <action name="actionYELLOW">
-      <property name="text">
-        <string>YELLOW</string>
-      </property>
-      <property name="shortcut">
-        <string>Ctrl+Y</string>
-      </property>
-    </action>
-    <action name="actionGREEN">
-      <property name="text">
-        <string>GREEN</string>
-      </property>
-      <property name="shortcut">
-        <string>Ctrl+G</string>
-      </property>
-    </action>
-    <action name="actionBLUE">
-      <property name="text">
-        <string>BLUE</string>
-      </property>
-      <property name="shortcut">
-        <string>Ctrl+B</string>
-      </property>
-    </action>
-    <action name="actionNORTH">
-      <property name="text">
-        <string>NORTH</string>
-      </property>
-    </action>
-    <action name="actionEAST">
-      <property name="text">
-        <string>EAST</string>
-      </property>
-    </action>
-    <action name="actionSOUTH">
-      <property name="text">
-        <string>SOUTH</string>
-      </property>
-    </action>
-    <action name="actionWEST">
-      <property name="text">
-        <string>WEST</string>
-      </property>
-    </action>
+       </widget>
+      </item>
+      <item>
+       <widget class="QCommandLinkButton" name="commandLinkButton">
+        <property name="text">
+         <string>CommandLinkButton</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+   </layout>
   </widget>
-  <resources/>
-  <connections/>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>1300</width>
+     <height>22</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menuFile">
+    <property name="title">
+     <string>&amp;File</string>
+    </property>
+    <addaction name="actionshowSVG"/>
+   </widget>
+   <widget class="QMenu" name="menuGame">
+    <property name="title">
+     <string>&amp;Game</string>
+    </property>
+    <widget class="QMenu" name="menuSelect_Piece">
+     <property name="title">
+      <string>Select &amp;Piece...</string>
+     </property>
+     <addaction name="actionRED"/>
+     <addaction name="actionYELLOW"/>
+     <addaction name="actionGREEN"/>
+     <addaction name="actionBLUE"/>
+    </widget>
+    <widget class="QMenu" name="menuMove">
+     <property name="title">
+      <string>&amp;Move...</string>
+     </property>
+     <addaction name="actionNORTH"/>
+     <addaction name="actionEAST"/>
+     <addaction name="actionSOUTH"/>
+     <addaction name="actionWEST"/>
+    </widget>
+    <addaction name="actionNewGame"/>
+    <addaction name="actionStopGame"/>
+    <addaction name="separator"/>
+    <addaction name="menuSelect_Piece"/>
+    <addaction name="menuMove"/>
+   </widget>
+   <widget class="QMenu" name="menuEdit">
+    <property name="title">
+     <string>&amp;Edit</string>
+    </property>
+    <addaction name="actionTest_ListView"/>
+   </widget>
+   <widget class="QMenu" name="menuHelp">
+    <property name="title">
+     <string>&amp;Help</string>
+    </property>
+    <addaction name="actionAbout"/>
+   </widget>
+   <addaction name="menuFile"/>
+   <addaction name="menuEdit"/>
+   <addaction name="menuGame"/>
+   <addaction name="menuHelp"/>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+  <action name="actionshowSVG">
+   <property name="text">
+    <string>showSVG</string>
+   </property>
+  </action>
+  <action name="actionNewGame">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>&amp;New Game</string>
+   </property>
+  </action>
+  <action name="actionStopGame">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>&amp;Stop Game</string>
+   </property>
+  </action>
+  <action name="actionAbout">
+   <property name="text">
+    <string>About</string>
+   </property>
+  </action>
+  <action name="actionTest_ListView">
+   <property name="text">
+    <string>Test ListView</string>
+   </property>
+  </action>
+  <action name="actionRED">
+   <property name="text">
+    <string>&amp;RED</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+R</string>
+   </property>
+  </action>
+  <action name="actionYELLOW">
+   <property name="text">
+    <string>&amp;YELLOW</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Y</string>
+   </property>
+  </action>
+  <action name="actionGREEN">
+   <property name="text">
+    <string>&amp;GREEN</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+G</string>
+   </property>
+  </action>
+  <action name="actionBLUE">
+   <property name="text">
+    <string>&amp;BLUE</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+B</string>
+   </property>
+  </action>
+  <action name="actionNORTH">
+   <property name="text">
+    <string>&amp;NORTH</string>
+   </property>
+  </action>
+  <action name="actionEAST">
+   <property name="text">
+    <string>&amp;EAST</string>
+   </property>
+  </action>
+  <action name="actionSOUTH">
+   <property name="text">
+    <string>&amp;SOUTH</string>
+   </property>
+  </action>
+  <action name="actionWEST">
+   <property name="text">
+    <string>&amp;WEST</string>
+   </property>
+  </action>
+ </widget>
+ <resources/>
+ <connections/>
 </ui>

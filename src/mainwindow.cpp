@@ -22,8 +22,8 @@ MainWindow::MainWindow(QWidget* parent)
 	, ui(new Ui::MainWindow),
 	guiInteractiveController(this)
 {
-    //QWidget::grabKeyboard();
 	ui->setupUi(this);
+    //ui->centralwidget->grabKeyboard();
 }
 
 MainWindow::~MainWindow()
@@ -76,10 +76,12 @@ void MainWindow::on_actionAbout_triggered()
 
 void MainWindow::on_actionNewGame_triggered() {
 	guiInteractiveController.startGame();
+    statusBar()->showMessage("Game started.");
 }
 
 void MainWindow::on_actionStopGame_triggered() {
 	guiInteractiveController.stopGame();
+    statusBar()->showMessage("Game stopped.");
 }
 
 void MainWindow::keyPressEvent(QKeyEvent* e)
@@ -88,21 +90,22 @@ void MainWindow::keyPressEvent(QKeyEvent* e)
 
 	switch (e->key()) {
 	case Qt::Key_Up:
-		qDebug() << "Key_Up";
+        on_actionNORTH_triggered();
 		break;
 
 	case Qt::Key_Down:
-		qDebug() << "Key_Down";
-		break;
+        on_actionSOUTH_triggered();
+        break;
 
 	case Qt::Key_Left:
-		qDebug() << "Key_Left";
-		break;
+        on_actionWEST_triggered();
+        break;
 
 	case Qt::Key_Right:
-		qDebug() << "Key_Right";
-		break;
+        on_actionEAST_triggered();
+        break;
 	}
+    qDebug() << "catch keyboard";
 }
 
 
@@ -130,16 +133,48 @@ void MainWindow::on_actionTest_ListView_triggered()
 
 void MainWindow::on_actionRED_triggered()
 {
-    static QStringListModel *model{nullptr};
+    statusBar()->showMessage("RED selected.");
+}
 
-    if (model == nullptr){
-        model     = new QStringListModel();
-    }
-    QStringList list;
-    list.clear();
-    list << "RED";
-    model->setStringList(list);
 
-    ui->listView->setModel(model);
+void MainWindow::on_actionYELLOW_triggered()
+{
+    statusBar()->showMessage("YELLOW selected.");
+}
+
+
+void MainWindow::on_actionGREEN_triggered()
+{
+    statusBar()->showMessage("GREEN selected.");
+}
+
+
+void MainWindow::on_actionBLUE_triggered()
+{
+    statusBar()->showMessage("BLUE selected.");
+}
+
+
+void MainWindow::on_actionNORTH_triggered()
+{
+    statusBar()->showMessage("Went north.");
+}
+
+
+void MainWindow::on_actionEAST_triggered()
+{
+    statusBar()->showMessage("Went east.");
+}
+
+
+void MainWindow::on_actionSOUTH_triggered()
+{
+    statusBar()->showMessage("Went south.");
+}
+
+
+void MainWindow::on_actionWEST_triggered()
+{
+    statusBar()->showMessage("Went west.");
 }
 
