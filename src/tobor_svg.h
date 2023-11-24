@@ -975,7 +975,10 @@ namespace tobor {
 
 				//standard_logger()->info(svg_root->get_svg());
 
-				return svg_root->get_svg();
+                auto fs = std::ofstream(R"(preview.svg)");
+                fs << svg_root->get_svg();
+
+                return svg_root->get_svg();
 			}
 
 		};
