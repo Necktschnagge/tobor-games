@@ -4,10 +4,7 @@
 #include "mainwindow.h"
 #include "./ui_mainwindow.h"
 
-
 #include"tobor_svg.h"
-
-
 
 void GuiInteractiveController::startGame() {
 	if (interactive_mode == InteractiveMode::NO_GAME) {
@@ -96,33 +93,76 @@ void GuiInteractiveController::refreshSVG()
 	}
 }
 
+void set_cell(
+    tobor::v1_0::default_world& world,
+    int x_coord,
+    int y_coord,
+    std::string direction){
 
-void init_quadrant(
-	tobor::v1_0::default_world& world,
-	const std::vector<tobor::v1_0::default_cell_id>& SW_corners,
-	const std::vector<tobor::v1_0::default_cell_id>& SE_corners,
-	const std::vector<tobor::v1_0::default_cell_id>& NE_corners,
-	const std::vector<tobor::v1_0::default_cell_id>& NW_corners
-) {
-	for (const auto& cell_id : SW_corners) {
-		world.west_wall_by_id(cell_id.get_id()) = true;
-		world.south_wall_by_transposed_id(cell_id.get_transposed_id()) = true;
-	}
-	for (const auto& cell_id : NW_corners) {
-		world.west_wall_by_id(cell_id.get_id()) = true;
-		world.north_wall_by_transposed_id(cell_id.get_transposed_id()) = true;
-	}
-	for (const auto& cell_id : NE_corners) {
-		world.east_wall_by_id(cell_id.get_id()) = true;
-		world.north_wall_by_transposed_id(cell_id.get_transposed_id()) = true;
-	}
-	for (const auto& cell_id : SE_corners) {
-		world.east_wall_by_id(cell_id.get_id()) = true;
-		world.south_wall_by_transposed_id(cell_id.get_transposed_id()) = true;
-	}
+    x_coord--;  // start counting with 1
+    y_coord--;
 
+    for(std::string::iterator it = direction.begin(); it != direction.end(); ++it) {
+        switch (*it)
+        {
+            case 'n':
+                world.north_wall_by_transposed_id(world.coordinates_to_transposed_cell_id(x_coord, y_coord)) = true;
+                break;
+            case 'o':
+                world.east_wall_by_id(world.coordinates_to_cell_id(x_coord, y_coord)) = true;
+                break;
+            case 's':
+                world.south_wall_by_transposed_id(world.coordinates_to_transposed_cell_id(x_coord, y_coord)) = true;
+                break;
+            case 'w':
+                world.west_wall_by_id(world.coordinates_to_cell_id(x_coord, y_coord)) = true;
+                break;
+         }
+    }
 }
 
+void init_quadrant(
+    tobor::v1_0::default_world& world,
+    int quad_no) {
+
+    switch(quad_no)
+    {
+        case 1:
+            set_cell(world, 5, 1, "w");     // |<-
+            set_cell(world, 1, 5, "s");     //  _
+            set_cell(world, 7, 3, "nw");    // ┌
+            set_cell(world, 2, 6, "no");    //  ┐
+            set_cell(world, 5, 7, "sw");    // └
+            set_cell(world, 3, 2, "so");    //  ┘
+            break;
+        case 2:
+            set_cell(world, 6, 1, "w");
+            set_cell(world, 1, 6, "s");
+            set_cell(world, 6, 5, "nw");
+            set_cell(world, 7, 2, "no");
+            set_cell(world, 2, 3, "sw");
+            set_cell(world, 4, 7, "so");
+            break;
+        case 3:
+            set_cell(world, 6, 1, "w");
+            set_cell(world, 1, 6, "s");
+            set_cell(world, 7, 6, "nw");
+            set_cell(world, 2, 3, "no");
+            set_cell(world, 8, 4, "no");
+            set_cell(world, 5, 7, "sw");
+            set_cell(world, 4, 2, "so");
+            break;
+        case 4:
+            set_cell(world, 8, 1, "w");
+            set_cell(world, 1, 5, "s");
+            set_cell(world, 4, 2, "nw");
+            set_cell(world, 6, 3, "no");
+            set_cell(world, 6, 8, "no");
+            set_cell(world, 5, 6, "sw");
+            set_cell(world, 2, 7, "so");
+            break;
+    }
+}
 
 tobor::v1_0::default_world GuiInteractiveController::generateBoard()
 {
@@ -131,40 +171,29 @@ tobor::v1_0::default_world GuiInteractiveController::generateBoard()
 	constexpr static std::size_t GREEN_PLANET{ 1 };
 	constexpr static std::size_t BLUE_PLANET{ 2 };
 	constexpr static std::size_t YELLOW_PLANET{ 3 };
-	(void)RED_PLANET;
-	(void)GREEN_PLANET;
-	(void)BLUE_PLANET;
-	(void)YELLOW_PLANET;
+    (void)GREEN_PLANET;
+    (void)BLUE_PLANET;
+    (void)YELLOW_PLANET;
 
+    {
+        all_quadrants[RED_PLANET].emplace_back(16, 16);
+        auto& world = all_quadrants[RED_PLANET].back();
+        world.block_center_cells(2, 2);
+        init_quadrant(world, 1);
+    }
+    {
+        all_quadrants[RED_PLANET].emplace_back(16, 16);
+        auto& world = all_quadrants[RED_PLANET].back();
+        world.block_center_cells(2, 2);
+        set_cell(world, 6, 1, "w");
+        set_cell(world, 1, 6, "s");
+        set_cell(world, 6, 5, "nw");
+        set_cell(world, 7, 2, "no");
+        set_cell(world, 2, 3, "sw");
+        set_cell(world, 4, 7, "so");
+    }
 
-	all_quadrants[RED_PLANET].emplace_back(16, 16);
-
-	auto& world = all_quadrants[RED_PLANET].back();
-
-	world.block_center_cells(2, 2);
-
-
-	auto sw_cell_bottom_side = tobor::v1_0::default_cell_id::create_by_coordinates(4, 0, world);
-	auto sw_cell_left_side = tobor::v1_0::default_cell_id::create_by_coordinates(0, 4, world);
-
-
-	auto sw_yellow_moon = tobor::v1_0::default_cell_id::create_by_coordinates(4, 6, world);
-
-	auto ne_green_cross = tobor::v1_0::default_cell_id::create_by_coordinates(1, 5, world);
-
-	auto nw_blue_gear = tobor::v1_0::default_cell_id::create_by_coordinates(6, 2, world);
-
-	auto se_red_planet = tobor::v1_0::default_cell_id::create_by_coordinates(2, 1, world);
-
-	init_quadrant(
-		world,
-		{ sw_yellow_moon, sw_cell_bottom_side, sw_cell_left_side },
-		{ se_red_planet },
-		{ ne_green_cross },
-		{ nw_blue_gear }
-	);
-
-	return world;
+    return all_quadrants[RED_PLANET][1];
 }
 
 
