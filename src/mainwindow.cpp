@@ -2,11 +2,13 @@
 #include "mainwindow.h"
 #include "./ui_mainwindow.h"
 #include <QMessageBox>
+#include <QDebug>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
 {
+    QWidget::grabKeyboard();
     ui->setupUi(this);
 }
 
@@ -14,8 +16,6 @@ MainWindow::~MainWindow()
 {
     delete ui;
 }
-
-
 
 void MainWindow::on_actionshowSVG_triggered()
 {
@@ -48,7 +48,6 @@ void MainWindow::on_actionshowSVG_triggered()
     //this->ui->graphicsView.
 }
 
-
 void MainWindow::on_actionAbout_triggered()
 {
     QMessageBox msgBox;
@@ -56,3 +55,25 @@ void MainWindow::on_actionAbout_triggered()
     msgBox.exec();
 }
 
+void MainWindow::keyPressEvent(QKeyEvent *e)
+{
+    // see: https://doc.qt.io/qt-6/qt.html#Key-enum
+
+    switch (e->key()) {
+        case Qt::Key_Up:
+        qDebug() << "Key_Up";
+        break;
+
+        case Qt::Key_Down:
+        qDebug() << "Key_Down";
+        break;
+
+        case Qt::Key_Left:
+        qDebug() << "Key_Left";
+        break;
+
+        case Qt::Key_Right:
+        qDebug() << "Key_Right";
+        break;
+    }
+}
