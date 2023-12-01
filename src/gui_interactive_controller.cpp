@@ -462,3 +462,4 @@ tobor::v1_0::default_world GuiInteractiveController::generateBoard()
     }
     return all_quadrants[0][0];
 }
+
