@@ -22,8 +22,16 @@ MainWindow::MainWindow(QWidget* parent)
 	, ui(new Ui::MainWindow),
 	guiInteractiveController(this)
 {
-    //QWidget::grabKeyboard();
 	ui->setupUi(this);
+    grabKeyboard(); // https://doc.qt.io/qt-6/qwidget.html#grabKeyboard
+
+    // releaseKeyboard();  when entering main menu
+    // again call grabKeyboard() when exiting main menu (by triggering event or exiting without clicking any menu button)
+
+    // can we check this via some FocusEvent? Just check when the focus is changed?
+    // https://stackoverflow.com/questions/321656/get-a-notification-event-signal-when-a-qt-widget-gets-focus
+    // https://doc.qt.io/qt-6/qfocusevent.html#details
+
 }
 
 MainWindow::~MainWindow()
@@ -77,33 +85,41 @@ void MainWindow::on_actionAbout_triggered()
 
 void MainWindow::on_actionNewGame_triggered() {
 	guiInteractiveController.startGame();
+    statusBar()->showMessage("Game started.");
 }
 
 void MainWindow::on_actionStopGame_triggered() {
 	guiInteractiveController.stopGame();
+    statusBar()->showMessage("Game stopped.");
 }
 
 void MainWindow::keyPressEvent(QKeyEvent* e)
 {
 	// see: https://doc.qt.io/qt-6/qt.html#Key-enum
 
-	switch (e->key()) {
+    switch (e->key()) {
+
+    case Qt::Key_Alt:
+        releaseKeyboard();
+        break;
+
 	case Qt::Key_Up:
-		qDebug() << "Key_Up";
+        on_actionNORTH_triggered();
 		break;
 
 	case Qt::Key_Down:
-		qDebug() << "Key_Down";
-		break;
+        on_actionSOUTH_triggered();
+        break;
 
 	case Qt::Key_Left:
-		qDebug() << "Key_Left";
-		break;
+        on_actionWEST_triggered();
+        break;
 
 	case Qt::Key_Right:
-		qDebug() << "Key_Right";
-		break;
+        on_actionEAST_triggered();
+        break;
 	}
+    qDebug() << "catch keyboard";
 }
 
 
@@ -131,16 +147,62 @@ void MainWindow::on_actionTest_ListView_triggered()
 
 void MainWindow::on_actionRED_triggered()
 {
-    static QStringListModel *model{nullptr};
+    statusBar()->showMessage("RED selected.");
+    guiInteractiveController.setPieceId(0);
+}
 
-    if (model == nullptr){
-        model     = new QStringListModel();
-    }
-    QStringList list;
-    list.clear();
-    list << "RED";
-    model->setStringList(list);
 
-    ui->listView->setModel(model);
+void MainWindow::on_actionYELLOW_triggered()
+{
+    statusBar()->showMessage("YELLOW selected.");
+    guiInteractiveController.setPieceId(1);
+
+}
+
+
+void MainWindow::on_actionGREEN_triggered()
+{
+    statusBar()->showMessage("GREEN selected.");
+    guiInteractiveController.setPieceId(2);
+
+}
+
+
+void MainWindow::on_actionBLUE_triggered()
+{
+    statusBar()->showMessage("BLUE selected.");
+    guiInteractiveController.setPieceId(3);
+
+}
+
+
+void MainWindow::on_actionNORTH_triggered()
+{
+    statusBar()->showMessage("Went north.");
+    guiInteractiveController.movePiece(tobor::v1_0::direction::NORTH());
+}
+
+
+void MainWindow::on_actionEAST_triggered()
+{
+    statusBar()->showMessage("Went east.");
+    guiInteractiveController.movePiece(tobor::v1_0::direction::EAST());
+
+}
+
+
+void MainWindow::on_actionSOUTH_triggered()
+{
+    statusBar()->showMessage("Went south.");
+    guiInteractiveController.movePiece(tobor::v1_0::direction::SOUTH());
+
+}
+
+
+void MainWindow::on_actionWEST_triggered()
+{
+    statusBar()->showMessage("Went west.");
+    guiInteractiveController.movePiece(tobor::v1_0::direction::WEST());
+
 }
 

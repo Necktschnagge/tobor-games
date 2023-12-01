@@ -5,6 +5,7 @@
 #include <map>
 #include <array>
 #include <algorithm>
+#include <limits>
 
 
 namespace tobor {

@@ -37,6 +37,20 @@ private slots:
 
     void on_actionRED_triggered();
 
+    void on_actionYELLOW_triggered();
+
+    void on_actionGREEN_triggered();
+
+    void on_actionBLUE_triggered();
+
+    void on_actionNORTH_triggered();
+
+    void on_actionEAST_triggered();
+
+    void on_actionSOUTH_triggered();
+
+    void on_actionWEST_triggered();
+
 private:
 	Ui::MainWindow* ui;
 	GuiInteractiveController guiInteractiveController;
