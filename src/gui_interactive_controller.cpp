@@ -93,74 +93,36 @@ void GuiInteractiveController::refreshSVG()
 	}
 }
 
-void set_cell(
-    tobor::v1_0::default_world& world,
-    int x_coord,
-    int y_coord,
-    std::string direction){
-
-    x_coord--;  // start counting with 1
-    y_coord--;
-
-    for(std::string::iterator it = direction.begin(); it != direction.end(); ++it) {
-        switch (*it)
-        {
-            case 'n':
-                world.north_wall_by_transposed_id(world.coordinates_to_transposed_cell_id(x_coord, y_coord)) = true;
-                break;
-            case 'o':
-                world.east_wall_by_id(world.coordinates_to_cell_id(x_coord, y_coord)) = true;
-                break;
-            case 's':
-                world.south_wall_by_transposed_id(world.coordinates_to_transposed_cell_id(x_coord, y_coord)) = true;
-                break;
-            case 'w':
-                world.west_wall_by_id(world.coordinates_to_cell_id(x_coord, y_coord)) = true;
-                break;
-         }
-    }
-}
-
 void init_quadrant(
     tobor::v1_0::default_world& world,
-    int quad_no) {
-
-    switch(quad_no)
-    {
-        case 1:
-            set_cell(world, 5, 1, "w");     // |<-
-            set_cell(world, 1, 5, "s");     //  _
-            set_cell(world, 7, 3, "nw");    // ┌
-            set_cell(world, 2, 6, "no");    //  ┐
-            set_cell(world, 5, 7, "sw");    // └
-            set_cell(world, 3, 2, "so");    //  ┘
-            break;
-        case 2:
-            set_cell(world, 6, 1, "w");
-            set_cell(world, 1, 6, "s");
-            set_cell(world, 6, 5, "nw");
-            set_cell(world, 7, 2, "no");
-            set_cell(world, 2, 3, "sw");
-            set_cell(world, 4, 7, "so");
-            break;
-        case 3:
-            set_cell(world, 6, 1, "w");
-            set_cell(world, 1, 6, "s");
-            set_cell(world, 7, 6, "nw");
-            set_cell(world, 2, 3, "no");
-            set_cell(world, 8, 4, "no");
-            set_cell(world, 5, 7, "sw");
-            set_cell(world, 4, 2, "so");
-            break;
-        case 4:
-            set_cell(world, 8, 1, "w");
-            set_cell(world, 1, 5, "s");
-            set_cell(world, 4, 2, "nw");
-            set_cell(world, 6, 3, "no");
-            set_cell(world, 6, 8, "no");
-            set_cell(world, 5, 6, "sw");
-            set_cell(world, 2, 7, "so");
-            break;
+    const std::vector<tobor::v1_0::default_cell_id>& W_wall,
+    const std::vector<tobor::v1_0::default_cell_id>& S_wall,
+    const std::vector<tobor::v1_0::default_cell_id>& NW_corners,
+    const std::vector<tobor::v1_0::default_cell_id>& NE_corners,
+    const std::vector<tobor::v1_0::default_cell_id>& SW_corners,
+    const std::vector<tobor::v1_0::default_cell_id>& SE_corners)
+{
+    for (const auto& cell_id : W_wall) {
+        world.west_wall_by_id(cell_id.get_id()) = true;
+    }
+    for (const auto& cell_id : S_wall) {
+        world.south_wall_by_transposed_id(cell_id.get_transposed_id()) = true;
+    }
+    for (const auto& cell_id : SW_corners) {
+        world.west_wall_by_id(cell_id.get_id()) = true;
+        world.south_wall_by_transposed_id(cell_id.get_transposed_id()) = true;
+    }
+    for (const auto& cell_id : NW_corners) {
+        world.west_wall_by_id(cell_id.get_id()) = true;
+        world.north_wall_by_transposed_id(cell_id.get_transposed_id()) = true;
+    }
+    for (const auto& cell_id : NE_corners) {
+        world.east_wall_by_id(cell_id.get_id()) = true;
+        world.north_wall_by_transposed_id(cell_id.get_transposed_id()) = true;
+    }
+    for (const auto& cell_id : SE_corners) {
+        world.east_wall_by_id(cell_id.get_id()) = true;
+        world.south_wall_by_transposed_id(cell_id.get_transposed_id()) = true;
     }
 }
 
@@ -171,29 +133,330 @@ tobor::v1_0::default_world GuiInteractiveController::generateBoard()
 	constexpr static std::size_t GREEN_PLANET{ 1 };
 	constexpr static std::size_t BLUE_PLANET{ 2 };
 	constexpr static std::size_t YELLOW_PLANET{ 3 };
-    (void)GREEN_PLANET;
-    (void)BLUE_PLANET;
-    (void)YELLOW_PLANET;
 
     {
         all_quadrants[RED_PLANET].emplace_back(16, 16);
         auto& world = all_quadrants[RED_PLANET].back();
         world.block_center_cells(2, 2);
-        init_quadrant(world, 1);
+        auto bottom = tobor::v1_0::default_cell_id::create_by_coordinates(0, 4, world);
+        auto left = tobor::v1_0::default_cell_id::create_by_coordinates(4, 0, world);
+        auto moon = tobor::v1_0::default_cell_id::create_by_coordinates(4, 6, world);
+        auto cross = tobor::v1_0::default_cell_id::create_by_coordinates(1, 5, world);
+        auto gear = tobor::v1_0::default_cell_id::create_by_coordinates(6, 2, world);
+        auto planet = tobor::v1_0::default_cell_id::create_by_coordinates(2, 1, world);
+        init_quadrant(
+            world,
+            { left },
+            { bottom },
+            { gear },       // NW
+            { cross },      // NE
+            { moon },       // SW
+            { planet }      // SE
+        );
     }
     {
         all_quadrants[RED_PLANET].emplace_back(16, 16);
         auto& world = all_quadrants[RED_PLANET].back();
         world.block_center_cells(2, 2);
-        set_cell(world, 6, 1, "w");
-        set_cell(world, 1, 6, "s");
-        set_cell(world, 6, 5, "nw");
-        set_cell(world, 7, 2, "no");
-        set_cell(world, 2, 3, "sw");
-        set_cell(world, 4, 7, "so");
+        auto left = tobor::v1_0::default_cell_id::create_by_coordinates(5, 0, world);
+        auto bottom = tobor::v1_0::default_cell_id::create_by_coordinates(0, 5, world);
+        auto moon = tobor::v1_0::default_cell_id::create_by_coordinates(1, 2, world);
+        auto cross = tobor::v1_0::default_cell_id::create_by_coordinates(6, 1, world);
+        auto gear = tobor::v1_0::default_cell_id::create_by_coordinates(3, 6, world);
+        auto planet = tobor::v1_0::default_cell_id::create_by_coordinates(5, 4, world);
+        init_quadrant(
+            world,
+            { left },
+            { bottom },
+            { planet },     // NW
+            { cross },      // NE
+            { moon },       // SW
+            { gear }        // SE
+        );
     }
-
-    return all_quadrants[RED_PLANET][1];
+    {
+        all_quadrants[RED_PLANET].emplace_back(16, 16);
+        auto& world = all_quadrants[RED_PLANET].back();
+        world.block_center_cells(2, 2);
+        auto bottom = tobor::v1_0::default_cell_id::create_by_coordinates(0, 6, world);
+        auto left = tobor::v1_0::default_cell_id::create_by_coordinates(4, 0, world);
+        auto moon = tobor::v1_0::default_cell_id::create_by_coordinates(2, 3, world);
+        auto cross = tobor::v1_0::default_cell_id::create_by_coordinates(5, 4, world);
+        auto gear = tobor::v1_0::default_cell_id::create_by_coordinates(3, 5, world);
+        auto planet = tobor::v1_0::default_cell_id::create_by_coordinates(4, 2, world);
+        init_quadrant(
+            world,
+            { left },
+            { bottom },
+            { planet },     // NW
+            { cross },      // NE
+            { moon },       // SW
+            { gear }        // SE
+        );
+    }
+    {
+        all_quadrants[RED_PLANET].emplace_back(16, 16);
+        auto& world = all_quadrants[RED_PLANET].back();
+        world.block_center_cells(2, 2);
+        auto left = tobor::v1_0::default_cell_id::create_by_coordinates(7, 0, world);
+        auto bottom = tobor::v1_0::default_cell_id::create_by_coordinates(0, 3, world);
+        auto moon = tobor::v1_0::default_cell_id::create_by_coordinates(2, 6, world);
+        auto cross = tobor::v1_0::default_cell_id::create_by_coordinates(2, 5, world);
+        auto gear = tobor::v1_0::default_cell_id::create_by_coordinates(7, 4, world);
+        auto planet = tobor::v1_0::default_cell_id::create_by_coordinates(5, 1, world);
+        init_quadrant(
+            world,
+            { left },
+            { bottom },
+            { gear },       // NW
+            { cross },      // NE
+            { moon },       // SW
+            { planet }      // SE
+        );
+    }
+    {
+        all_quadrants[GREEN_PLANET].emplace_back(16, 16);
+        auto& world = all_quadrants[GREEN_PLANET].back();
+        world.block_center_cells(2, 2);
+        auto left = tobor::v1_0::default_cell_id::create_by_coordinates(5, 0, world);
+        auto bottom = tobor::v1_0::default_cell_id::create_by_coordinates(0, 5, world);
+        auto moon = tobor::v1_0::default_cell_id::create_by_coordinates(6, 5, world);
+        auto cross = tobor::v1_0::default_cell_id::create_by_coordinates(1, 2, world);
+        auto gear = tobor::v1_0::default_cell_id::create_by_coordinates(4, 6, world);
+        auto planet = tobor::v1_0::default_cell_id::create_by_coordinates(3, 1, world);
+        auto swirl = tobor::v1_0::default_cell_id::create_by_coordinates(7, 3, world);
+        init_quadrant(
+            world,
+            { left },
+            { bottom },
+            { moon },               // NW
+            { cross, swirl },       // NE
+            { gear },               // SW
+            { planet }              // SE
+        );
+    }
+    {
+        all_quadrants[GREEN_PLANET].emplace_back(16, 16);
+        auto& world = all_quadrants[GREEN_PLANET].back();
+        world.block_center_cells(2, 2);
+        auto left = tobor::v1_0::default_cell_id::create_by_coordinates(7, 0, world);
+        auto bottom = tobor::v1_0::default_cell_id::create_by_coordinates(0, 4, world);
+        auto moon = tobor::v1_0::default_cell_id::create_by_coordinates(1, 6, world);
+        auto cross = tobor::v1_0::default_cell_id::create_by_coordinates(5, 2, world);
+        auto gear = tobor::v1_0::default_cell_id::create_by_coordinates(3, 1, world);
+        auto planet = tobor::v1_0::default_cell_id::create_by_coordinates(4, 5, world);
+        auto swirl = tobor::v1_0::default_cell_id::create_by_coordinates(5, 7, world);
+        init_quadrant(
+            world,
+            { left },
+            { bottom },
+            { gear },               // NW
+            { cross, swirl },       // NE
+            { planet },             // SW
+            { moon }                // SE
+        );
+    }
+    {
+        all_quadrants[GREEN_PLANET].emplace_back(16, 16);
+        auto& world = all_quadrants[GREEN_PLANET].back();
+        world.block_center_cells(2, 2);
+        auto left = tobor::v1_0::default_cell_id::create_by_coordinates(7, 0, world);
+        auto bottom = tobor::v1_0::default_cell_id::create_by_coordinates(0, 5, world);
+        auto moon = tobor::v1_0::default_cell_id::create_by_coordinates(3, 2, world);
+        auto cross = tobor::v1_0::default_cell_id::create_by_coordinates(5, 1, world);
+        auto gear = tobor::v1_0::default_cell_id::create_by_coordinates(2, 6, world);
+        auto planet = tobor::v1_0::default_cell_id::create_by_coordinates(3, 3, world);
+        auto swirl = tobor::v1_0::default_cell_id::create_by_coordinates(7, 5, world);
+        init_quadrant(
+            world,
+            { left },
+            { bottom },
+            { moon },               // NW
+            { cross, swirl },       // NE
+            { gear },               // SW
+            { planet }              // SE
+        );
+    }
+    {
+        all_quadrants[GREEN_PLANET].emplace_back(16, 16);
+        auto& world = all_quadrants[GREEN_PLANET].back();
+        world.block_center_cells(2, 2);
+        auto left = tobor::v1_0::default_cell_id::create_by_coordinates(4, 0, world);
+        auto bottom = tobor::v1_0::default_cell_id::create_by_coordinates(0, 3, world);
+        auto moon = tobor::v1_0::default_cell_id::create_by_coordinates(1, 5, world);
+        auto cross = tobor::v1_0::default_cell_id::create_by_coordinates(4, 3, world);
+        auto gear = tobor::v1_0::default_cell_id::create_by_coordinates(6, 1, world);
+        auto planet = tobor::v1_0::default_cell_id::create_by_coordinates(5, 6, world);
+        auto swirl = tobor::v1_0::default_cell_id::create_by_coordinates(2, 7, world);
+        init_quadrant(
+            world,
+            { left },
+            { bottom },
+            { gear },               // NW
+            { cross, swirl },       // NE
+            { planet },             // SW
+            { moon }                // SE
+        );
+    }
+    {
+        all_quadrants[BLUE_PLANET].emplace_back(16, 16);
+        auto& world = all_quadrants[BLUE_PLANET].back();
+        world.block_center_cells(2, 2);
+        auto bottom = tobor::v1_0::default_cell_id::create_by_coordinates(0, 5, world);
+        auto left = tobor::v1_0::default_cell_id::create_by_coordinates(6, 0, world);
+        auto moon = tobor::v1_0::default_cell_id::create_by_coordinates(6, 3, world);
+        auto cross = tobor::v1_0::default_cell_id::create_by_coordinates(1, 6, world);
+        auto gear = tobor::v1_0::default_cell_id::create_by_coordinates(2, 1, world);
+        auto planet = tobor::v1_0::default_cell_id::create_by_coordinates(5, 6, world);
+        init_quadrant(
+            world,
+            { left },
+            { bottom },
+            { planet },     // NW
+            { cross },      // NE
+            { gear },       // SW
+            { moon }        // SE
+        );
+    }
+    {
+        all_quadrants[BLUE_PLANET].emplace_back(16, 16);
+        auto& world = all_quadrants[BLUE_PLANET].back();
+        world.block_center_cells(2, 2);
+        auto bottom = tobor::v1_0::default_cell_id::create_by_coordinates(0, 2, world);
+        auto left = tobor::v1_0::default_cell_id::create_by_coordinates(6, 0, world);
+        auto moon = tobor::v1_0::default_cell_id::create_by_coordinates(1, 4, world);
+        auto cross = tobor::v1_0::default_cell_id::create_by_coordinates(3, 6, world);
+        auto gear = tobor::v1_0::default_cell_id::create_by_coordinates(2, 1, world);
+        auto planet = tobor::v1_0::default_cell_id::create_by_coordinates(6, 3, world);
+        init_quadrant(
+            world,
+            { left },
+            { bottom },
+            { gear },       // NW
+            { cross },      // NE
+            { moon },       // SW
+            { planet }      // SE
+        );
+    }
+    {
+        all_quadrants[BLUE_PLANET].emplace_back(16, 16);
+        auto& world = all_quadrants[BLUE_PLANET].back();
+        world.block_center_cells(2, 2);
+        auto bottom = tobor::v1_0::default_cell_id::create_by_coordinates(0, 6, world);
+        auto left = tobor::v1_0::default_cell_id::create_by_coordinates(6, 0, world);
+        auto moon = tobor::v1_0::default_cell_id::create_by_coordinates(3, 1, world);
+        auto cross = tobor::v1_0::default_cell_id::create_by_coordinates(4, 6, world);
+        auto gear = tobor::v1_0::default_cell_id::create_by_coordinates(6, 2, world);
+        auto planet = tobor::v1_0::default_cell_id::create_by_coordinates(6, 3, world);
+        init_quadrant(
+            world,
+            { left },
+            { bottom },
+            { gear },       // NW
+            { cross },      // NE
+            { moon },       // SW
+            { planet }      // SE
+        );
+    }
+    {
+        all_quadrants[BLUE_PLANET].emplace_back(16, 16);
+        auto& world = all_quadrants[BLUE_PLANET].back();
+        world.block_center_cells(2, 2);
+        auto bottom = tobor::v1_0::default_cell_id::create_by_coordinates(0, 2, world);
+        auto left = tobor::v1_0::default_cell_id::create_by_coordinates(7, 0, world);
+        auto moon = tobor::v1_0::default_cell_id::create_by_coordinates(4, 1, world);
+        auto cross = tobor::v1_0::default_cell_id::create_by_coordinates(3, 6, world);
+        auto gear = tobor::v1_0::default_cell_id::create_by_coordinates(1, 3, world);
+        auto planet = tobor::v1_0::default_cell_id::create_by_coordinates(6, 4, world);
+        init_quadrant(
+            world,
+            { left },
+            { bottom },
+            { planet },     // NW
+            { cross },      // NE
+            { gear },       // SW
+            { moon }        // SE
+        );
+    }
+    {
+        all_quadrants[YELLOW_PLANET].emplace_back(16, 16);
+        auto& world = all_quadrants[YELLOW_PLANET].back();
+        world.block_center_cells(2, 2);
+        auto bottom = tobor::v1_0::default_cell_id::create_by_coordinates(0, 5, world);
+        auto left = tobor::v1_0::default_cell_id::create_by_coordinates(3, 0, world);
+        auto moon = tobor::v1_0::default_cell_id::create_by_coordinates(4, 2, world);
+        auto cross = tobor::v1_0::default_cell_id::create_by_coordinates(2, 6, world);
+        auto gear = tobor::v1_0::default_cell_id::create_by_coordinates(4, 3, world);
+        auto planet = tobor::v1_0::default_cell_id::create_by_coordinates(6, 5, world);
+        init_quadrant(
+            world,
+            { left },
+            { bottom },
+            { moon },       // NW
+            { cross },      // NE
+            { planet },     // SW
+            { gear }        // SE
+        );
+    }
+    {
+        all_quadrants[YELLOW_PLANET].emplace_back(16, 16);
+        auto& world = all_quadrants[YELLOW_PLANET].back();
+        world.block_center_cells(2, 2);
+        auto bottom = tobor::v1_0::default_cell_id::create_by_coordinates(0, 2, world);
+        auto left = tobor::v1_0::default_cell_id::create_by_coordinates(6, 0, world);
+        auto moon = tobor::v1_0::default_cell_id::create_by_coordinates(1, 4, world);
+        auto cross = tobor::v1_0::default_cell_id::create_by_coordinates(6, 3, world);
+        auto gear = tobor::v1_0::default_cell_id::create_by_coordinates(3, 1, world);
+        auto planet = tobor::v1_0::default_cell_id::create_by_coordinates(5, 5, world);
+        init_quadrant(
+            world,
+            { left },
+            { bottom },
+            { moon },       // NW
+            { cross },      // NE
+            { planet },     // SW
+            { gear }        // SE
+        );
+    }
+    {
+        all_quadrants[YELLOW_PLANET].emplace_back(16, 16);
+        auto& world = all_quadrants[YELLOW_PLANET].back();
+        world.block_center_cells(2, 2);
+        auto bottom = tobor::v1_0::default_cell_id::create_by_coordinates(0, 4, world);
+        auto left = tobor::v1_0::default_cell_id::create_by_coordinates(5, 0, world);
+        auto moon = tobor::v1_0::default_cell_id::create_by_coordinates(4, 2, world);
+        auto cross = tobor::v1_0::default_cell_id::create_by_coordinates(2, 5, world);
+        auto gear = tobor::v1_0::default_cell_id::create_by_coordinates(5, 7, world);
+        auto planet = tobor::v1_0::default_cell_id::create_by_coordinates(6, 1, world);
+        init_quadrant(
+            world,
+            { left },
+            { bottom },
+            { moon },       // NW
+            { cross },      // NE
+            { planet },     // SW
+            { gear }        // SE
+        );
+    }
+    {
+        all_quadrants[YELLOW_PLANET].emplace_back(16, 16);
+        auto& world = all_quadrants[YELLOW_PLANET].back();
+        world.block_center_cells(2, 2);
+        auto bottom = tobor::v1_0::default_cell_id::create_by_coordinates(0, 4, world);
+        auto left = tobor::v1_0::default_cell_id::create_by_coordinates(6, 0, world);
+        auto moon = tobor::v1_0::default_cell_id::create_by_coordinates(2, 6, world);
+        auto cross = tobor::v1_0::default_cell_id::create_by_coordinates(4, 2, world);
+        auto gear = tobor::v1_0::default_cell_id::create_by_coordinates(1, 1, world);
+        auto planet = tobor::v1_0::default_cell_id::create_by_coordinates(5, 7, world);
+        init_quadrant(
+            world,
+            { left },
+            { bottom },
+            { moon },       // NW
+            { cross },      // NE
+            { planet },     // SW
+            { gear }        // SE
+        );
+    }
+    return all_quadrants[0][0];
 }
-
-
