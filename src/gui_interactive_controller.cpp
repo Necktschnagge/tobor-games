@@ -460,6 +460,7 @@ tobor::v1_0::default_world GuiInteractiveController::generateBoard()
             { gear }        // SE
         );
     }
+
     return all_quadrants[0][0];
 }
 
