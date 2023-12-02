@@ -1,14 +1,11 @@
 #include "predefined.h"
 #include "mainwindow.h"
-
 #include "./ui_mainwindow.h"
-
 #include "gui_interactive_controller.h"
-
-
 #include "solver.h"
 #include "tobor_svg.h"
-
+#include "spdlog/spdlog.h"
+#include "spdlog/sinks/qt_sinks.h"
 
 #include <QStringListModel>
 #include <QMessageBox>
@@ -32,6 +29,14 @@ MainWindow::MainWindow(QWidget* parent)
     // https://stackoverflow.com/questions/321656/get-a-notification-event-signal-when-a-qt-widget-gets-focus
     // https://doc.qt.io/qt-6/qfocusevent.html#details
 
+/*    auto log_widget = new QTextEdit();
+    auto logger = spdlog::qt_logger_mt("qt_logger", log_widget);
+    log_widget->setMinimumSize(640, 480);
+    log_widget->setWindowTitle("Debug console");
+    log_widget->show();
+    logger->info("QLocale: " + QLocale().name().toStdString());
+    logger->info("Qt Version: " + std::string(qVersion()));
+*/
 }
 
 MainWindow::~MainWindow()
@@ -77,10 +82,11 @@ void MainWindow::on_actionshowSVG_triggered()
 
 void MainWindow::on_actionAbout_triggered()
 {
-	qDebug() << "QLocale: " << QLocale().name();
-	QMessageBox msgBox;
-	msgBox.setText(QString("Qt Version used:   ") + qVersion());
-	msgBox.exec();
+    qDebug() << "QLocale: " << QLocale().name();
+
+    QMessageBox msgBox;
+    msgBox.setText(QString("Qt Version used:   ") + qVersion());
+    msgBox.exec();
 }
 
 void MainWindow::on_actionNewGame_triggered() {
