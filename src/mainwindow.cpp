@@ -16,7 +16,6 @@ MainWindow::~MainWindow()
 }
 
 
-
 void MainWindow::on_actionshowSVG_triggered()
 {
 	for (int i = 0; i < 300; ++i) {
@@ -33,49 +32,8 @@ void MainWindow::on_actionshowSVG_triggered()
 )xxx"
 		};
 
-		QXmlStreamReader xml;
-		xml.addData(example_svg_string);
+		viewSvgInMainView(example_svg_string);
 
-		// https://stackoverflow.com/questions/36026593/how-to-add-children-to-qgraphicsitem
-		//auto graphicsView = new QGraphicsView();
-
-		q_svg_renderer = std::make_unique<QSvgRenderer>(&xml); // is this ok? when this function runs out of scope, xml is deleted, but does q_svg_renderer still use the xml?
-		//q_svg_renderer = std::unique_ptr<QSvgRenderer>(new QSvgRenderer(&xml));
-
-		/*
-		q_graphics_svg_item = std::make_unique<QGraphicsSvgItem>(); // depends on q_svg_renderer -> destroy order
-		q_graphics_svg_item->setSharedRenderer(q_svg_renderer.get()); // does not take ownership
-		*/
-		auto local_q_graphics_svg_item = new QGraphicsSvgItem(); // depends on q_svg_renderer -> destroy order
-		local_q_graphics_svg_item->setSharedRenderer(q_svg_renderer.get()); // does not take ownership
-
-
-		q_graphics_scene = std::make_unique<QGraphicsScene>();
-		q_graphics_scene->addItem(local_q_graphics_svg_item); // takes ownership
-
-		
-		// todo: whenever setting a new Scene, do not reuse the exactly same unique_ptrs..
-		// first build up the new bunch of objects,
-		// then setScene
-		// then destroy old objects in reverse order compared to construction...
-
-
-		ui->graphicsView->setScene(q_graphics_scene.get());
-		ui->graphicsView->fitInView(q_graphics_scene.get()->sceneRect(), Qt::KeepAspectRatio);
-		ui->graphicsView->show();
-
-		/*QSvgRenderer* svgRenderer = new QSvgRenderer(&xml);
-		QGraphicsSvgItem *item = new QGraphicsSvgItem();
-		QGraphicsScene *scene = new QGraphicsScene();
-
-		item->setSharedRenderer(svgRenderer);
-		scene->addItem(item);
-		ui->graphicsView->setScene(scene);
-		ui->graphicsView->fitInView(scene->sceneRect(), Qt::KeepAspectRatio);
-		ui->graphicsView->show();*/
-
-		//auto foo = ui->centralwidget->children().size();
-		//this->ui->graphicsView.
 	}
 }
 
@@ -85,5 +43,28 @@ void MainWindow::on_actionAbout_triggered()
 	QMessageBox msgBox;
 	msgBox.setText(QString("Qt Version used:   ") + qVersion());
 	msgBox.exec();
+}
+
+void MainWindow::viewSvgInMainView(const QString& svg_string)
+{
+	QXmlStreamReader xml;
+	xml.addData(svg_string);
+
+	SvgViewToolchain new_chain;
+
+	new_chain.q_svg_renderer = std::make_unique<QSvgRenderer>(&xml);
+	// is this ok? when this function runs out of scope, xml is deleted, but does q_svg_renderer still use the xml?
+
+	auto local_q_graphics_svg_item = new QGraphicsSvgItem(); // depends on q_svg_renderer -> destroy order
+	local_q_graphics_svg_item->setSharedRenderer(new_chain.q_svg_renderer.get()); // does not take ownership
+
+	new_chain.q_graphics_scene = std::make_unique<QGraphicsScene>();
+	new_chain.q_graphics_scene->addItem(local_q_graphics_svg_item); // takes ownership
+
+	ui->graphicsView->setScene(new_chain.q_graphics_scene.get());
+	ui->graphicsView->fitInView(new_chain.q_graphics_scene.get()->sceneRect(), Qt::KeepAspectRatio);
+	ui->graphicsView->show();
+
+	svgViewToolchain = std::move(new_chain); // then destroy old objects in reverse order compared to construction...
 }
 

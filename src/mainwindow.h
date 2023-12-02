@@ -13,12 +13,19 @@ QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
 
-class MainWindow : public QMainWindow
 
+
+class MainWindow : public QMainWindow
 {
     Q_OBJECT
 
 public:
+
+    struct SvgViewToolchain {
+        std::unique_ptr<QSvgRenderer> q_svg_renderer;
+        std::unique_ptr<QGraphicsScene> q_graphics_scene;
+    };
+
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
@@ -30,10 +37,9 @@ private slots:
 private:
     Ui::MainWindow *ui;
 
-    std::unique_ptr<QSvgRenderer> q_svg_renderer;
-    std::unique_ptr<QGraphicsSvgItem> q_graphics_svg_item;
-    std::unique_ptr<QGraphicsScene> q_graphics_scene;
+    SvgViewToolchain svgViewToolchain;
 
+    void viewSvgInMainView(const QString& svg_string);
 };
 
 #endif // MAINWINDOW_H
