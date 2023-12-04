@@ -1,6 +1,12 @@
 #include "predefined.h"
+
 #include "mainwindow.h"
+
 #include "./ui_mainwindow.h"
+
+
+#include <QXmlStreamReader>
+#include <QGraphicsSvgItem>
 #include <QMessageBox>
 
 MainWindow::MainWindow(QWidget* parent)
@@ -52,16 +58,15 @@ void MainWindow::viewSvgInMainView(const QString& svg_string)
 
 	SvgViewToolchain new_chain;
 
-	new_chain.q_svg_renderer = std::make_unique<QSvgRenderer>(&xml);
-	// is this ok? when this function runs out of scope, xml is deleted, but does q_svg_renderer still use the xml?
+	new_chain.q_svg_renderer = std::make_unique<QSvgRenderer>(&xml); // doc does not require argument to be valid for duration of renderer
 
-	auto local_q_graphics_svg_item = new QGraphicsSvgItem(); // depends on q_svg_renderer -> destroy order
+	auto local_q_graphics_svg_item = new QGraphicsSvgItem();
 	local_q_graphics_svg_item->setSharedRenderer(new_chain.q_svg_renderer.get()); // does not take ownership
 
 	new_chain.q_graphics_scene = std::make_unique<QGraphicsScene>();
 	new_chain.q_graphics_scene->addItem(local_q_graphics_svg_item); // takes ownership
 
-	ui->graphicsView->setScene(new_chain.q_graphics_scene.get());
+	ui->graphicsView->setScene(new_chain.q_graphics_scene.get()); // does not take ownership
 	ui->graphicsView->fitInView(new_chain.q_graphics_scene.get()->sceneRect(), Qt::KeepAspectRatio);
 	ui->graphicsView->show();
 

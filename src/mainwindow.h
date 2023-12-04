@@ -3,9 +3,8 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-#include <QXmlStreamReader>
 #include <QSvgRenderer>
- #include <QGraphicsSvgItem>
+#include <QGraphicsScene>
 
 #include <memory>
 
@@ -17,29 +16,42 @@ QT_END_NAMESPACE
 
 class MainWindow : public QMainWindow
 {
-    Q_OBJECT
+	Q_OBJECT
 
 public:
 
-    struct SvgViewToolchain {
-        std::unique_ptr<QSvgRenderer> q_svg_renderer;
-        std::unique_ptr<QGraphicsScene> q_graphics_scene;
-    };
+	struct SvgViewToolchain {
+		std::unique_ptr<QSvgRenderer> q_svg_renderer;
+		std::unique_ptr<QGraphicsScene> q_graphics_scene;
+		/*
+		*/
+		inline SvgViewToolchain& operator =(SvgViewToolchain&& another) {
+			q_graphics_scene = std::move(another.q_graphics_scene);
+			q_svg_renderer = std::move(another.q_svg_renderer);
 
-    MainWindow(QWidget *parent = nullptr);
-    ~MainWindow();
+			return *this;
+		}
+
+		inline ~SvgViewToolchain() {
+			q_graphics_scene.release();
+			q_svg_renderer.release();
+		}
+	};
+
+	MainWindow(QWidget* parent = nullptr);
+	~MainWindow();
 
 private slots:
-    void on_actionshowSVG_triggered();
+	void on_actionshowSVG_triggered();
 
-    void on_actionAbout_triggered();
+	void on_actionAbout_triggered();
 
 private:
-    Ui::MainWindow *ui;
+	Ui::MainWindow* ui;
 
-    SvgViewToolchain svgViewToolchain;
+	SvgViewToolchain svgViewToolchain;
 
-    void viewSvgInMainView(const QString& svg_string);
+	void viewSvgInMainView(const QString& svg_string);
 };
 
 #endif // MAINWINDOW_H
