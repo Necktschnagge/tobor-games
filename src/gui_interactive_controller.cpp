@@ -1,5 +1,6 @@
 #include "predefined.h"
 #include "gui_interactive_controller.h"
+#include "world_generator.h"
 
 #include "mainwindow.h"
 #include "./ui_mainwindow.h"
@@ -98,6 +99,8 @@ void GuiInteractiveController::refreshSVG()
 
 tobor::v1_0::default_world GuiInteractiveController::generateBoard()
 {
-	return tobor::v1_0::default_world();
+	return tobor::v1_0::world_generator::original_4_of_16::get_world(347, 2);
+
+	//return tobor::v1_0::default_world();
 }
 
