@@ -100,7 +100,14 @@ void GuiInteractiveController::refreshSVG()
 tobor::v1_0::default_world GuiInteractiveController::generateBoard()
 {
 	// allowed parameters: 0..1535, 0..3
-	return tobor::v1_0::world_generator::original_4_of_16::get_world(347, 2);
+	static uint64_t counter{ 0 };
+
+	static constexpr uint64_t generator{ 313 };
+
+	++counter;
+	counter %= 1536;
+
+	return tobor::v1_0::world_generator::original_4_of_16::get_world((counter * generator) % 1536, 0);
 
 	//return tobor::v1_0::default_world();
 }
