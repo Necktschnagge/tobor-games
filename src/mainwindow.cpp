@@ -1,5 +1,7 @@
 #include "predefined.h"
+
 #include "mainwindow.h"
+
 #include "./ui_mainwindow.h"
 #include "gui_interactive_controller.h"
 #include "solver.h"
@@ -11,6 +13,9 @@
 #include <QMessageBox>
 #include <QDebug>
 #include <QStyle>
+#include <QXmlStreamReader>
+#include <QGraphicsSvgItem>
+#include <QMessageBox>
 
 
 
@@ -46,9 +51,6 @@ MainWindow::~MainWindow()
 
 void MainWindow::on_actionshowSVG_triggered()
 {
-	if constexpr (true) {
-
-
 		const QString example_svg_string{
 		  R"xxx(<?xml version="1.0" ?>
 <!DOCTYPE svg  PUBLIC '-//W3C//DTD SVG 1.1//EN'  'http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd'>
@@ -59,25 +61,9 @@ void MainWindow::on_actionshowSVG_triggered()
 <g id="Layer_1_1_"/>
 </svg>
 )xxx"
-		};
+	};
 
-		QXmlStreamReader xml;
-		xml.addData(example_svg_string);
-
-		QSvgRenderer* svgRenderer = new QSvgRenderer(&xml);
-		QGraphicsSvgItem* item = new QGraphicsSvgItem();
-		QGraphicsScene* scene = new QGraphicsScene();
-
-		item->setSharedRenderer(svgRenderer);
-		scene->addItem(item);
-		ui->graphicsView->setScene(scene);
-		ui->graphicsView->fitInView(scene->sceneRect(), Qt::KeepAspectRatio);
-		ui->graphicsView->show();
-
-		//auto foo = ui->centralwidget->children().size();
-		//this->ui->graphicsView.
-	}
-
+	viewSvgInMainView(example_svg_string);
 }
 
 void MainWindow::on_actionAbout_triggered()
@@ -87,6 +73,29 @@ void MainWindow::on_actionAbout_triggered()
     QMessageBox msgBox;
     msgBox.setText(QString("Qt Version used:   ") + qVersion());
     msgBox.exec();
+}
+
+
+void MainWindow::viewSvgInMainView(const QString& svg_string)
+{
+	QXmlStreamReader xml;
+	xml.addData(svg_string);
+
+	SvgViewToolchain new_chain;
+
+	new_chain.q_svg_renderer = std::make_unique<QSvgRenderer>(&xml); // doc does not require argument to be valid for duration of renderer
+
+	auto local_q_graphics_svg_item = new QGraphicsSvgItem();
+	local_q_graphics_svg_item->setSharedRenderer(new_chain.q_svg_renderer.get()); // does not take ownership
+
+	new_chain.q_graphics_scene = std::make_unique<QGraphicsScene>();
+	new_chain.q_graphics_scene->addItem(local_q_graphics_svg_item); // takes ownership
+
+	ui->graphicsView->setScene(new_chain.q_graphics_scene.get()); // does not take ownership
+	ui->graphicsView->fitInView(new_chain.q_graphics_scene.get()->sceneRect(), Qt::KeepAspectRatio);
+	ui->graphicsView->show();
+
+	svgViewToolchain = std::move(new_chain); // then destroy old objects in reverse order compared to construction...
 }
 
 void MainWindow::on_actionNewGame_triggered() {
