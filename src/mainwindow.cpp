@@ -24,10 +24,8 @@ MainWindow::~MainWindow()
 
 void MainWindow::on_actionshowSVG_triggered()
 {
-	for (int i = 0; i < 300; ++i) {
-
-		const QString example_svg_string{
-		  R"xxx(<?xml version="1.0" ?>
+	static const QString example_svg_string{
+	  R"xxx(<?xml version="1.0" ?>
 <!DOCTYPE svg  PUBLIC '-//W3C//DTD SVG 1.1//EN'  'http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd'>
 <svg enable-background="new 0 0 512 512.068" height="512.068px" id="Layer_1" version="1.1" viewBox="0 0 512 512.068" width="512px" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
 <g id="meanicons_x5F_23">
@@ -36,11 +34,9 @@ void MainWindow::on_actionshowSVG_triggered()
 <g id="Layer_1_1_"/>
 </svg>
 )xxx"
-		};
+	};
 
-		viewSvgInMainView(example_svg_string);
-
-	}
+	viewSvgInMainView(example_svg_string);
 }
 
 
