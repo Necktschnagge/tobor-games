@@ -99,6 +99,7 @@ void GuiInteractiveController::refreshSVG()
 
 tobor::v1_0::default_world GuiInteractiveController::generateBoard()
 {
+	// allowed parameters: 0..1535, 0..3
 	return tobor::v1_0::world_generator::original_4_of_16::get_world(347, 2);
 
 	//return tobor::v1_0::default_world();
