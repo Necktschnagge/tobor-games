@@ -6,21 +6,43 @@
 
 
 #include <QMainWindow>
-#include <QXmlStreamReader>
 #include <QSvgRenderer>
 #include <QGraphicsSvgItem>
 #include <QKeyEvent>
+#include <QGraphicsScene>
+
+#include <memory>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
 
-class MainWindow : public QMainWindow
 
+
+class MainWindow : public QMainWindow
 {
 	Q_OBJECT
 
 public:
+
+	struct SvgViewToolchain {
+		std::unique_ptr<QSvgRenderer> q_svg_renderer;
+		std::unique_ptr<QGraphicsScene> q_graphics_scene;
+		/*
+		*/
+		inline SvgViewToolchain& operator =(SvgViewToolchain&& another) {
+			q_graphics_scene = std::move(another.q_graphics_scene);
+			q_svg_renderer = std::move(another.q_svg_renderer);
+
+			return *this;
+		}
+
+		inline ~SvgViewToolchain() {
+			q_graphics_scene.release();
+			q_svg_renderer.release();
+		}
+	};
+
 	MainWindow(QWidget* parent = nullptr);
 	~MainWindow();
 
@@ -56,8 +78,14 @@ private:
 	GuiInteractiveController guiInteractiveController;
 	friend class GuiInteractiveController;
 
+	SvgViewToolchain svgViewToolchain;
+
+	void viewSvgInMainView(const QString& svg_string);
+
+
 protected:
 	void keyPressEvent(QKeyEvent* e);
+
 };
 
 #endif // MAINWINDOW_H
