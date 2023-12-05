@@ -158,10 +158,10 @@ namespace tobor {
 					}
 
 					virtual std::shared_ptr<svg_path_element> clone() const override {
-						return std::make_shared< M>(*this);
+						return std::make_shared<M>(*this);
 					}
 
-					virtual ~M() {}
+					virtual ~M() override {}
 				};
 
 				class Z : public svg_path_element {
@@ -175,10 +175,10 @@ namespace tobor {
 					}
 
 					virtual std::shared_ptr<svg_path_element> clone() const override {
-						return std::make_shared< Z>(*this);
+						return std::make_shared<Z>(*this);
 					}
 
-					virtual ~Z() {}
+					virtual ~Z() override {}
 				};
 
 				template <class Number>
@@ -221,7 +221,7 @@ namespace tobor {
 						return std::make_shared<l>(*this);
 					}
 
-					virtual ~l() {}
+					virtual ~l() override {}
 				};
 
 				template <class Number>
@@ -285,7 +285,7 @@ namespace tobor {
 						return std::make_shared<c>(*this);
 					}
 
-					virtual ~c() {}
+					virtual ~c() override {}
 				};
 
 				template <class Number>
@@ -332,10 +332,7 @@ namespace tobor {
 
 				public:
 
-					a(const step& s) :
-						coordinates({ s })
-					{
-					}
+					a(const step& s) : coordinates({ s }) {}
 
 					inline void add_coordinates() const noexcept {}
 
@@ -365,7 +362,7 @@ namespace tobor {
 						return std::make_shared<a>(*this);
 					}
 
-					virtual ~a() {}
+					virtual ~a() override {}
 				};
 
 			}
@@ -375,13 +372,9 @@ namespace tobor {
 
 			public:
 
-
-				//using u_ptr = std::unique_ptr<svg_generator>;
-
 				using map = std::map<std::string, std::string>;
 
 				map other_properties;
-
 
 				std::vector<std::shared_ptr<svg_path_element>> path_elements;
 
@@ -414,7 +407,9 @@ namespace tobor {
 							path_elements.cend(),
 							std::string(""),
 							[](const std::string& acc, const std::shared_ptr<svg_path_element>& el) -> std::string {
-								return acc + " " + el->str();
+								return acc.empty() ?
+									el->str() :
+									acc + " " + el->str();
 							})
 						+ "\"";
 							result += std::accumulate(
