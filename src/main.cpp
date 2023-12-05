@@ -6,6 +6,8 @@
 
 #include <QApplication>
 
+#include <clocale>
+
 // TERMINOLOGY
 
 /*
@@ -13,17 +15,19 @@
 CELL                    :       atomic unit of a BOARD
 TARGET CELL             :       the CELL which is marked as goal
 TARGET PIECE            :       PIECE which must be moved to the TARGET CELL
-PIECE                   :       one robot / piece 
+PIECE                   :       one robot / piece
 
 
 */
 
 
-int main(int argc, char *argv[])
+int main(int argc, char* argv[])
 {
 	init_logger();
-    QApplication a(argc, argv);
-    MainWindow w;
-    w.show();
-    return a.exec();
+
+	QApplication qt_app(argc, argv);
+	std::setlocale(LC_NUMERIC, "C");
+	MainWindow main_window;
+	main_window.show();
+	return qt_app.exec();
 }
