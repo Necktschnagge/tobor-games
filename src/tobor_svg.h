@@ -109,8 +109,8 @@ namespace tobor {
 
 				svg_primitive(const std::string& primitive) : primitive(primitive) {}
 
-				inline void set(const std::string& primitive) {
-					this->primitive = primitive;
+				inline void set(const std::string& primitive_p) {
+					this->primitive = primitive_p;
 				}
 
 				virtual std::string get_svg() const override {
