@@ -21,7 +21,6 @@ namespace tobor {
 
 		namespace svg {
 
-
 			class svg_generator {
 
 				static std::string get_xml_header() {
@@ -36,8 +35,6 @@ namespace tobor {
 					return std::string();
 				}
 				//< svg width = "6400" height = "1600" version = "1.1" xmlns = "http://www.w3.org/2000/svg" >
-
-
 
 			public:
 				static std::string create_svg() {
@@ -928,7 +925,7 @@ namespace tobor {
 
 				drawing_style_sheet dss;
 
-				auto svg_target = fill_whole_cell(tw,dss,target_cell, c.colors[0]);
+				auto svg_target = fill_whole_cell(tw, dss, target_cell, c.colors[0]);
 
 				auto svg_pieces = std::make_unique<svg::svg_compound>();
 
@@ -964,7 +961,7 @@ namespace tobor {
 
 															<---   pieces
 
-					By now there are three variants to place pieces behind/before  ...  grid / walls
+					By now there are three variants to place pieces behind/in front of  ...  grid / walls
 				*/
 
 
@@ -973,16 +970,9 @@ namespace tobor {
 				const std::string svg_root_width = std::to_string(dss.CELL_WIDTH * tw.get_vertical_size() + dss.LEFT_PADDING + dss.RIGHT_PADDING);
 				auto svg_root = std::make_unique<svg::svg_environment>(svg_root_height, svg_root_width, std::make_unique<svg::xml_header>(), std::move(svg_body));
 
-
-
-
-				standard_logger()->info(svg_root->get_svg());
-				auto fs = std::ofstream(R"(C:\Users\F-NET-ADMIN\Desktop\preview.svg)");
-
-				fs << svg_root->get_svg();
+				//standard_logger()->info(svg_root->get_svg());
 
 				return svg_root->get_svg();
-
 			}
 
 		};
