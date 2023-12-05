@@ -39,7 +39,8 @@ add_compile_definitions(GIT_REPOSITORY_URL="https://github.com/Necktschnagge/cma
 project(${PROJECT_NAME} VERSION 0.1 LANGUAGES CXX)
 
 
-set(CMAKE_SUPPRESS_REGENERATION true) # CMAKE then does not create the target ZERO_CHECK, hence Visual Studio is able to generate class diagrams.
+#set(CMAKE_SUPPRESS_REGENERATION true) # CMAKE then does not create the target ZERO_CHECK, hence Visual Studio is able to generate class diagrams.
+
 ############### Programming Language and Compiler Flags ###############
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTOMOC ON)

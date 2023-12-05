@@ -22,37 +22,13 @@ namespace tobor {
 		namespace svg {
 
 			class svg_generator {
-
-				static std::string get_xml_header() {
-					return R"xxx(<?xml version="1.0" standalone="no"?>
-)xxx";
-				}
-
-				static std::string wrap_svg(const std::string& height, const std::string& width, const std::string& nested_content) {
-					(void)height;
-					(void)width;
-					(void)nested_content;
-					return std::string();
-				}
-				//< svg width = "6400" height = "1600" version = "1.1" xmlns = "http://www.w3.org/2000/svg" >
-
 			public:
-				static std::string create_svg() {
-					std::string svg_result;
-
-					return svg_result;
-				}
-
-
 				virtual std::string get_svg() const = 0;
 
-				virtual ~svg_generator() {
-				}
-
+				virtual ~svg_generator() {}
 			};
 
-			class xml_header : public svg_generator {
-
+			class xml_version final : public svg_generator {
 			public:
 				virtual std::string get_svg() const override {
 					return R"xxx(<?xml version="1.0" standalone="no"?>
@@ -77,14 +53,14 @@ namespace tobor {
 + "</svg>";
 				}
 
-				std::unique_ptr<xml_header> header;
+				std::unique_ptr<xml_version> header;
 				std::unique_ptr<svg_generator> body;
 				std::string height;
 				std::string width;
 
 			public:
 
-				svg_environment(const std::string& height, const std::string& width, std::unique_ptr<xml_header> header, std::unique_ptr<svg_generator> body) :
+				svg_environment(const std::string& height, const std::string& width, std::unique_ptr<xml_version> header, std::unique_ptr<svg_generator> body) :
 					header(std::move(header)),
 					body(std::move(body)),
 					height(height),
@@ -108,8 +84,6 @@ namespace tobor {
 
 				svg_compound() {}
 
-				//svg_compound(std::initializer_list<std::unique_ptr<svg_compound>> init) : elements(init) {}
-
 				template<class... T>
 				svg_compound(T&&... init) {
 					((void)elements.push_back(std::forward<T>(init)), ...);
@@ -128,19 +102,16 @@ namespace tobor {
 
 			class svg_primitive : public svg_generator {
 
-			public:
-
-				using u_ptr = std::unique_ptr<svg_generator>;
-
-				//std::vector<u_ptr> elements;
 				std::string primitive;
 
+			public:
 				svg_primitive() {}
 
-				//svg_compound(std::initializer_list<std::unique_ptr<svg_compound>> init) : elements(init) {}
-
-				//template<class... T>
 				svg_primitive(const std::string& primitive) : primitive(primitive) {}
+
+				inline void set(const std::string& primitive) {
+					this->primitive = primitive;
+				}
 
 				virtual std::string get_svg() const override {
 					return primitive;
@@ -968,7 +939,7 @@ namespace tobor {
 
 				const std::string svg_root_height = std::to_string(dss.CELL_HEIGHT * tw.get_vertical_size() + dss.TOP_PADDING + dss.BOTTOM_PADDING);
 				const std::string svg_root_width = std::to_string(dss.CELL_WIDTH * tw.get_vertical_size() + dss.LEFT_PADDING + dss.RIGHT_PADDING);
-				auto svg_root = std::make_unique<svg::svg_environment>(svg_root_height, svg_root_width, std::make_unique<svg::xml_header>(), std::move(svg_body));
+				auto svg_root = std::make_unique<svg::svg_environment>(svg_root_height, svg_root_width, std::make_unique<svg::xml_version>(), std::move(svg_body));
 
 				//standard_logger()->info(svg_root->get_svg());
 
