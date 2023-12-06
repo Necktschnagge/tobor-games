@@ -423,19 +423,19 @@ namespace tobor {
 							return result;
 				}
 
-				auto fill() -> decltype(other_properties["fill"]) {
+				std::string& fill() {
 					return other_properties["fill"];
 				}
-				auto stroke() -> decltype(other_properties["stroke"]) {
+				std::string& stroke() {
 					return other_properties["stroke"];
 				}
-				auto stroke_width() -> decltype(other_properties["stroke-width"]) {
+				std::string& stroke_width() {
 					return other_properties["stroke-width"];
 				}
-				auto stroke_linecap() -> decltype(other_properties["stroke-linecap"]) {
+				std::string& stroke_linecap() {
 					return other_properties["stroke-linecap"];
 				}
-				auto stroke_linejoin() -> decltype(other_properties["stroke-linejoin"]) {
+				std::string& stroke_linejoin() {
 					return other_properties["stroke-linejoin"];
 				}
 			};
@@ -629,14 +629,12 @@ namespace tobor {
 		}
 
 		template<class cell_id_type, class ...T>
-		inline std::unique_ptr<svg::svg_generator> fill_whole_cell(
+		inline std::unique_ptr<svg::svg_path> fill_whole_cell(
 			const tobor::v1_0::tobor_world<T...>& tobor_world,
 			const drawing_style_sheet& dss,
 			const cell_id_type& cell_id,
 			const std::string& color
 		) {
-			//using cell_id_type = tobor::v1_0::universal_cell_id<tobor::v1_0::tobor_world<T...>>;
-
 			auto whole_cell = std::make_unique<svg::svg_path>();
 
 			whole_cell->fill() = color;
@@ -678,7 +676,7 @@ namespace tobor {
 
 			for (std::size_t cell_id{ 0 }; cell_id < tobor_world.count_cells(); ++cell_id) {
 				const auto universal_cell_id = cell_id_type::create_by_id(cell_id, tobor_world);
-				//const auto cell_transposed_id = tobor_world.id_to_transposed_id(cell_id);
+
 				if (
 					tobor_world.west_wall_by_id(cell_id) &&
 					tobor_world.east_wall_by_id(cell_id) &&
@@ -686,34 +684,12 @@ namespace tobor {
 					tobor_world.north_wall_by_transposed_id(universal_cell_id.get_transposed_id())
 					) {
 
-					/// ####### use fill_whole_cell() here with color black.
-
-					auto block = std::make_unique<svg::svg_path>();
-
-					block->fill() = "black";
-					block->stroke() = block->fill();
-					block->stroke_width() = "0";
-
-					auto start_at_north_west = std::make_shared<svg::svg_path_elements::M<double>>(
-						dss.LEFT_PADDING + dss.CELL_WIDTH * universal_cell_id.get_x_coord(),
-						dss.TOP_PADDING + dss.CELL_HEIGHT * (tobor_world.get_vertical_size() - universal_cell_id.get_y_coord() - 1)
+					auto block = fill_whole_cell(
+						tobor_world,
+						dss,
+						universal_cell_id,
+						"black"
 					);
-
-					auto go_east = std::make_shared<svg::svg_path_elements::l<double>>(
-						dss.CELL_WIDTH, 0
-					);
-
-					auto go_south = std::make_shared<svg::svg_path_elements::l<double>>(
-						0, dss.CELL_HEIGHT
-					);
-
-					auto go_west = std::make_shared<svg::svg_path_elements::l<double>>(
-						-dss.CELL_WIDTH, 0
-					);
-
-					auto go_back = std::make_shared<svg::svg_path_elements::Z>();
-
-					block->path_elements = { start_at_north_west, go_east, go_south, go_west, go_back };
 
 					blocked_cells->elements.push_back(std::move(block));
 
@@ -880,7 +856,6 @@ namespace tobor {
 
 			static_assert(pieces_quantity_type::COUNT_TARGET_PIECES == 1, "Not yet supported: multiple target pieces");
 
-			//template<class World_Type_T = default_world>
 			template<class ... T>
 			inline static std::string draw_tobor_world(
 				const tobor::v1_0::tobor_world<T...>& tw,
@@ -935,8 +910,6 @@ namespace tobor {
 				const std::string svg_root_height = std::to_string(dss.CELL_HEIGHT * tw.get_vertical_size() + dss.TOP_PADDING + dss.BOTTOM_PADDING);
 				const std::string svg_root_width = std::to_string(dss.CELL_WIDTH * tw.get_vertical_size() + dss.LEFT_PADDING + dss.RIGHT_PADDING);
 				auto svg_root = std::make_unique<svg::svg_environment>(svg_root_height, svg_root_width, std::make_unique<svg::xml_version>(), std::move(svg_body));
-
-				//standard_logger()->info(svg_root->get_svg());
 
 				return svg_root->get_svg();
 			}
