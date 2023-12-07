@@ -1,5 +1,5 @@
 #include "gtest/gtest.h"
 
-TEST(example_test, dummy_test_assert_true){
+TEST(example, file_exists){
 	ASSERT_TRUE(true);
 }

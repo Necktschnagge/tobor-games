@@ -1,6 +1,6 @@
 #include "gtest/gtest.h"
 
-#include "../src/solver.h"
+#include "../src/engine.h"
 
 #include <type_traits>
 #include <array>
@@ -26,9 +26,7 @@ TEST(engine, create_wall_type_std_constructor) {
 TEST(engine, create_wall_type_bool_conversion) {
 	ASSERT_NO_THROW(
 		auto t_wall = tobor::v1_0::wall_type(true);
-	(void)t_wall;
-		auto f_wall = tobor::v1_0::wall_type(false);
-	(void)f_wall;
+	auto f_wall = tobor::v1_0::wall_type(false);
 	);
 }
 
@@ -40,8 +38,7 @@ TEST(engine, create_world) {
 
 TEST(engine, create_universal_field_id) {
 	ASSERT_NO_THROW(
-		auto cell_id = tobor::v1_0::universal_cell_id();
-	(void)cell_id;
+		auto field_id = tobor::v1_0::universal_field_id();
 	);
 }
 
@@ -49,7 +46,6 @@ TEST(engine, universal_field_id_consistency) {
 	// ### check that id conversion has no inconsistencies...
 	ASSERT_NO_THROW(
 		auto field_id = 0;
-		(void)field_id;
 	);
 }
 
@@ -61,73 +57,73 @@ TEST(engine, example_integration) {
 	// create initial robots position
 	// run solver
 
-	auto w = tobor::v1_0::default_world(16, 16);
+	auto w = tobor::v1_0::tobor_world(16, 16);
 
-	w.block_center_cells(2, 2);
+	w.block_center_fields(2, 2);
 
 	// add vertical walls row by row, starting left
-	w.west_wall_by_id(w.coordinates_to_cell_id(6, 0)) = true;
-	w.west_wall_by_id(w.coordinates_to_cell_id(12, 0)) = true;
-	w.west_wall_by_id(w.coordinates_to_cell_id(2, 1)) = true;
-	w.west_wall_by_id(w.coordinates_to_cell_id(10, 1)) = true;
-	w.west_wall_by_id(w.coordinates_to_cell_id(14, 3)) = true;
-	w.west_wall_by_id(w.coordinates_to_cell_id(1, 4)) = true;
-	w.west_wall_by_id(w.coordinates_to_cell_id(11, 4)) = true;
-	w.west_wall_by_id(w.coordinates_to_cell_id(13, 5)) = true;
-	w.west_wall_by_id(w.coordinates_to_cell_id(4, 6)) = true;
-	w.west_wall_by_id(w.coordinates_to_cell_id(12, 9)) = true;
-	w.west_wall_by_id(w.coordinates_to_cell_id(7, 10)) = true;
-	w.west_wall_by_id(w.coordinates_to_cell_id(14, 10)) = true;
-	w.west_wall_by_id(w.coordinates_to_cell_id(3, 11)) = true;
-	w.west_wall_by_id(w.coordinates_to_cell_id(7, 13)) = true;
-	w.west_wall_by_id(w.coordinates_to_cell_id(10, 13)) = true;
-	w.west_wall_by_id(w.coordinates_to_cell_id(1, 14)) = true;
-	w.west_wall_by_id(w.coordinates_to_cell_id(13, 14)) = true;
-	w.west_wall_by_id(w.coordinates_to_cell_id(4, 15)) = true;
-	w.west_wall_by_id(w.coordinates_to_cell_id(12, 15)) = true;
+	w.west_wall_by_id(w.field_id_of(6, 0)).is_wall = true;
+	w.west_wall_by_id(w.field_id_of(12, 0)).is_wall = true;
+	w.west_wall_by_id(w.field_id_of(2, 1)).is_wall = true;
+	w.west_wall_by_id(w.field_id_of(10, 1)).is_wall = true;
+	w.west_wall_by_id(w.field_id_of(7, 3)).is_wall = true;
+	w.west_wall_by_id(w.field_id_of(14, 3)).is_wall = true;
+	w.west_wall_by_id(w.field_id_of(1, 4)).is_wall = true;
+	w.west_wall_by_id(w.field_id_of(11, 4)).is_wall = true;
+	w.west_wall_by_id(w.field_id_of(13, 5)).is_wall = true;
+	w.west_wall_by_id(w.field_id_of(4, 6)).is_wall = true;
+	w.west_wall_by_id(w.field_id_of(12, 9)).is_wall = true;
+	w.west_wall_by_id(w.field_id_of(7, 10)).is_wall = true;
+	w.west_wall_by_id(w.field_id_of(14, 10)).is_wall = true;
+	w.west_wall_by_id(w.field_id_of(3, 11)).is_wall = true;
+	w.west_wall_by_id(w.field_id_of(7, 13)).is_wall = true;
+	w.west_wall_by_id(w.field_id_of(10, 13)).is_wall = true;
+	w.west_wall_by_id(w.field_id_of(1, 14)).is_wall = true;
+	w.west_wall_by_id(w.field_id_of(13, 14)).is_wall = true;
+	w.west_wall_by_id(w.field_id_of(4, 15)).is_wall = true;
+	w.west_wall_by_id(w.field_id_of(12, 15)).is_wall = true;
 
-	w.south_wall_by_transposed_id(w.coordinates_to_transposed_cell_id(0, 2)) = true;
-	w.south_wall_by_transposed_id(w.coordinates_to_transposed_cell_id(0, 10)) = true;
-	w.south_wall_by_transposed_id(w.coordinates_to_transposed_cell_id(1, 4)) = true;
-	w.south_wall_by_transposed_id(w.coordinates_to_transposed_cell_id(1, 14)) = true;
-	w.south_wall_by_transposed_id(w.coordinates_to_transposed_cell_id(2, 2)) = true;
-	w.south_wall_by_transposed_id(w.coordinates_to_transposed_cell_id(2, 11)) = true;
-	w.south_wall_by_transposed_id(w.coordinates_to_transposed_cell_id(3, 7)) = true;
-	w.south_wall_by_transposed_id(w.coordinates_to_transposed_cell_id(6, 3)) = true;
-	w.south_wall_by_transposed_id(w.coordinates_to_transposed_cell_id(6, 14)) = true;
-	w.south_wall_by_transposed_id(w.coordinates_to_transposed_cell_id(7, 11)) = true;
-	w.south_wall_by_transposed_id(w.coordinates_to_transposed_cell_id(9, 2)) = true;
-	w.south_wall_by_transposed_id(w.coordinates_to_transposed_cell_id(9, 13)) = true;
-	w.south_wall_by_transposed_id(w.coordinates_to_transposed_cell_id(10, 4)) = true;
-	w.south_wall_by_transposed_id(w.coordinates_to_transposed_cell_id(11, 10)) = true;
-	w.south_wall_by_transposed_id(w.coordinates_to_transposed_cell_id(13, 6)) = true;
-	w.south_wall_by_transposed_id(w.coordinates_to_transposed_cell_id(13, 15)) = true;
-	w.south_wall_by_transposed_id(w.coordinates_to_transposed_cell_id(14, 3)) = true;
-	w.south_wall_by_transposed_id(w.coordinates_to_transposed_cell_id(14, 10)) = true;
-	w.south_wall_by_transposed_id(w.coordinates_to_transposed_cell_id(15, 7)) = true;
-	w.south_wall_by_transposed_id(w.coordinates_to_transposed_cell_id(15, 12)) = true;
+	w.south_wall_by_transposed_id(w.transposed_field_id_of(0, 2)).is_wall = true;
+	w.south_wall_by_transposed_id(w.transposed_field_id_of(0, 10)).is_wall = true;
+	w.south_wall_by_transposed_id(w.transposed_field_id_of(1, 4)).is_wall = true;
+	w.south_wall_by_transposed_id(w.transposed_field_id_of(1, 14)).is_wall = true;
+	w.south_wall_by_transposed_id(w.transposed_field_id_of(2, 2)).is_wall = true;
+	w.south_wall_by_transposed_id(w.transposed_field_id_of(2, 11)).is_wall = true;
+	w.south_wall_by_transposed_id(w.transposed_field_id_of(3, 7)).is_wall = true;
+	w.south_wall_by_transposed_id(w.transposed_field_id_of(6, 3)).is_wall = true;
+	w.south_wall_by_transposed_id(w.transposed_field_id_of(6, 14)).is_wall = true;
+	w.south_wall_by_transposed_id(w.transposed_field_id_of(7, 11)).is_wall = true;
+	w.south_wall_by_transposed_id(w.transposed_field_id_of(9, 2)).is_wall = true;
+	w.south_wall_by_transposed_id(w.transposed_field_id_of(9, 13)).is_wall = true;
+	w.south_wall_by_transposed_id(w.transposed_field_id_of(10, 4)).is_wall = true;
+	w.south_wall_by_transposed_id(w.transposed_field_id_of(11, 10)).is_wall = true;
+	w.south_wall_by_transposed_id(w.transposed_field_id_of(13, 6)).is_wall = true;
+	w.south_wall_by_transposed_id(w.transposed_field_id_of(13, 15)).is_wall = true;
+	w.south_wall_by_transposed_id(w.transposed_field_id_of(14, 3)).is_wall = true;
+	w.south_wall_by_transposed_id(w.transposed_field_id_of(14, 10)).is_wall = true;
+	w.south_wall_by_transposed_id(w.transposed_field_id_of(15, 7)).is_wall = true;
+	w.south_wall_by_transposed_id(w.transposed_field_id_of(15, 12)).is_wall = true;
 
 	// specify initial state
-	auto target_piece = tobor::v1_0::default_cell_id::create_by_coordinates(6, 9, w);
-	auto green_robot = tobor::v1_0::default_cell_id::create_by_coordinates(12, 7, w);
-	auto red_robot = tobor::v1_0::default_cell_id::create_by_coordinates(12, 12, w);
-	auto yellow_robot = tobor::v1_0::default_cell_id::create_by_coordinates(6, 14, w);
+	auto target_robot = tobor::v1_0::universal_field_id::create_by_coord(6, 9, w);
+	auto rob1 = tobor::v1_0::universal_field_id::create_by_coord(12, 7, w);
+	auto rob2 = tobor::v1_0::universal_field_id::create_by_coord(12, 12, w);
+	auto rob3 = tobor::v1_0::universal_field_id::create_by_coord(6, 14, w);
 
-	std::array<tobor::v1_0::default_cell_id, 3> other_robots{ green_robot, red_robot, yellow_robot };
-	std::array<tobor::v1_0::default_cell_id, 1> target_robots{ target_piece };
+	std::array<tobor::v1_0::universal_field_id, 3> other_robots{ rob1, rob2, rob3 };
 
-	//auto initial_state = tobor::v1_0::positions_of_pieces<3>(target_piece, std::move(other_robots));
+	//auto initial_state = tobor::v1_0::robots_position_state<3>(target_robot, std::move(other_robots));
 
 	// specify target field
-	auto target = tobor::v1_0::default_cell_id::create_by_coordinates(9, 1, w);
+	auto target = tobor::v1_0::universal_field_id::create_by_coord(9, 1, w);
 
-	auto w_analyzer = tobor::v1_0::default_move_one_piece_calculator(w);
+	auto w_analyzer = tobor::v1_0::tobor_world_analyzer<3>(w);
 
-	auto partial_state_graph = tobor::v1_0::partial_state_graph<tobor::v1_0::default_move_one_piece_calculator>(target_robots, other_robots);
+	auto optimal_solution_length = tobor::v1_0::get_all_optimal_solutions<3>(w_analyzer , target, target_robot, std::move(other_robots));
 
-	partial_state_graph.build_state_graph_for_all_optimal_solutions(w_analyzer, target);
+	std::cout << optimal_solution_length << std::endl;
 
-	ASSERT_EQ(9, partial_state_graph.get_optimal_solution_size());
+	ASSERT_EQ(9, optimal_solution_length);
 
 }
 
