@@ -295,6 +295,21 @@ namespace tobor {
 				return y_size;
 			}
 
+			type turn_left_90() const { // only for quadratic
+				if (x_size != y_size) {
+					throw std::logic_error("Cannot turn for non-quadratic world.");
+				}
+				auto copy = type(x_size, y_size);
+
+				for (int_type big_id = 0; big_id < x_size; ++big_id) {
+					for (int_type little_id = 0; little_id < x_size; ++little_id) {
+						copy.v_walls[big_id * x_size + little_id] = h_walls[big_id * x_size + (x_size - little_id)];
+						copy.h_walls[big_id * x_size + little_id] = v_walls[((x_size - 1) - big_id) * x_size + little_id];
+					}
+				}
+				return copy;
+			}
+
 		};
 
 		using default_world = tobor_world<>;
