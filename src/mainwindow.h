@@ -38,8 +38,8 @@ public:
 		}
 
 		inline ~SvgViewToolchain() {
-			q_graphics_scene.release();
-			q_svg_renderer.release();
+			q_graphics_scene.reset();
+			q_svg_renderer.reset();
 		}
 	};
 

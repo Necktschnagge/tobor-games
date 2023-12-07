@@ -21,41 +21,14 @@ namespace tobor {
 
 		namespace svg {
 
-
 			class svg_generator {
-
-				static std::string get_xml_header() {
-					return R"xxx(<?xml version="1.0" standalone="no"?>
-)xxx";
-				}
-
-				static std::string wrap_svg(const std::string& height, const std::string& width, const std::string& nested_content) {
-					(void)height;
-					(void)width;
-					(void)nested_content;
-					return std::string();
-				}
-				//< svg width = "6400" height = "1600" version = "1.1" xmlns = "http://www.w3.org/2000/svg" >
-
-
-
 			public:
-				static std::string create_svg() {
-					std::string svg_result;
-
-					return svg_result;
-				}
-
-
 				virtual std::string get_svg() const = 0;
 
-				virtual ~svg_generator() {
-				}
-
+				virtual ~svg_generator() {}
 			};
 
-			class xml_header : public svg_generator {
-
+			class xml_version final : public svg_generator {
 			public:
 				virtual std::string get_svg() const override {
 					return R"xxx(<?xml version="1.0" standalone="no"?>
@@ -80,14 +53,14 @@ namespace tobor {
 + "</svg>";
 				}
 
-				std::unique_ptr<xml_header> header;
+				std::unique_ptr<xml_version> header;
 				std::unique_ptr<svg_generator> body;
 				std::string height;
 				std::string width;
 
 			public:
 
-				svg_environment(const std::string& height, const std::string& width, std::unique_ptr<xml_header> header, std::unique_ptr<svg_generator> body) :
+				svg_environment(const std::string& height, const std::string& width, std::unique_ptr<xml_version> header, std::unique_ptr<svg_generator> body) :
 					header(std::move(header)),
 					body(std::move(body)),
 					height(height),
@@ -111,8 +84,6 @@ namespace tobor {
 
 				svg_compound() {}
 
-				//svg_compound(std::initializer_list<std::unique_ptr<svg_compound>> init) : elements(init) {}
-
 				template<class... T>
 				svg_compound(T&&... init) {
 					((void)elements.push_back(std::forward<T>(init)), ...);
@@ -131,19 +102,16 @@ namespace tobor {
 
 			class svg_primitive : public svg_generator {
 
-			public:
-
-				using u_ptr = std::unique_ptr<svg_generator>;
-
-				//std::vector<u_ptr> elements;
 				std::string primitive;
 
+			public:
 				svg_primitive() {}
 
-				//svg_compound(std::initializer_list<std::unique_ptr<svg_compound>> init) : elements(init) {}
-
-				//template<class... T>
 				svg_primitive(const std::string& primitive) : primitive(primitive) {}
+
+				inline void set(const std::string& primitive_p) {
+					this->primitive = primitive_p;
+				}
 
 				virtual std::string get_svg() const override {
 					return primitive;
@@ -190,10 +158,10 @@ namespace tobor {
 					}
 
 					virtual std::shared_ptr<svg_path_element> clone() const override {
-						return std::make_shared< M>(*this);
+						return std::make_shared<M>(*this);
 					}
 
-					virtual ~M() {}
+					virtual ~M() override {}
 				};
 
 				class Z : public svg_path_element {
@@ -207,10 +175,10 @@ namespace tobor {
 					}
 
 					virtual std::shared_ptr<svg_path_element> clone() const override {
-						return std::make_shared< Z>(*this);
+						return std::make_shared<Z>(*this);
 					}
 
-					virtual ~Z() {}
+					virtual ~Z() override {}
 				};
 
 				template <class Number>
@@ -253,7 +221,7 @@ namespace tobor {
 						return std::make_shared<l>(*this);
 					}
 
-					virtual ~l() {}
+					virtual ~l() override {}
 				};
 
 				template <class Number>
@@ -317,7 +285,7 @@ namespace tobor {
 						return std::make_shared<c>(*this);
 					}
 
-					virtual ~c() {}
+					virtual ~c() override {}
 				};
 
 				template <class Number>
@@ -364,10 +332,7 @@ namespace tobor {
 
 				public:
 
-					a(const step& s) :
-						coordinates({ s })
-					{
-					}
+					a(const step& s) : coordinates({ s }) {}
 
 					inline void add_coordinates() const noexcept {}
 
@@ -397,7 +362,7 @@ namespace tobor {
 						return std::make_shared<a>(*this);
 					}
 
-					virtual ~a() {}
+					virtual ~a() override {}
 				};
 
 			}
@@ -407,13 +372,9 @@ namespace tobor {
 
 			public:
 
-
-				//using u_ptr = std::unique_ptr<svg_generator>;
-
 				using map = std::map<std::string, std::string>;
 
 				map other_properties;
-
 
 				std::vector<std::shared_ptr<svg_path_element>> path_elements;
 
@@ -446,7 +407,9 @@ namespace tobor {
 							path_elements.cend(),
 							std::string(""),
 							[](const std::string& acc, const std::shared_ptr<svg_path_element>& el) -> std::string {
-								return acc + " " + el->str();
+								return acc.empty() ?
+									el->str() :
+									acc + " " + el->str();
 							})
 						+ "\"";
 							result += std::accumulate(
@@ -460,19 +423,19 @@ namespace tobor {
 							return result;
 				}
 
-				auto fill() -> decltype(other_properties["fill"]) {
+				std::string& fill() {
 					return other_properties["fill"];
 				}
-				auto stroke() -> decltype(other_properties["stroke"]) {
+				std::string& stroke() {
 					return other_properties["stroke"];
 				}
-				auto stroke_width() -> decltype(other_properties["stroke-width"]) {
+				std::string& stroke_width() {
 					return other_properties["stroke-width"];
 				}
-				auto stroke_linecap() -> decltype(other_properties["stroke-linecap"]) {
+				std::string& stroke_linecap() {
 					return other_properties["stroke-linecap"];
 				}
-				auto stroke_linejoin() -> decltype(other_properties["stroke-linejoin"]) {
+				std::string& stroke_linejoin() {
 					return other_properties["stroke-linejoin"];
 				}
 			};
@@ -666,14 +629,12 @@ namespace tobor {
 		}
 
 		template<class cell_id_type, class ...T>
-		inline std::unique_ptr<svg::svg_generator> fill_whole_cell(
+		inline std::unique_ptr<svg::svg_path> fill_whole_cell(
 			const tobor::v1_0::tobor_world<T...>& tobor_world,
 			const drawing_style_sheet& dss,
 			const cell_id_type& cell_id,
 			const std::string& color
 		) {
-			//using cell_id_type = tobor::v1_0::universal_cell_id<tobor::v1_0::tobor_world<T...>>;
-
 			auto whole_cell = std::make_unique<svg::svg_path>();
 
 			whole_cell->fill() = color;
@@ -715,7 +676,7 @@ namespace tobor {
 
 			for (std::size_t cell_id{ 0 }; cell_id < tobor_world.count_cells(); ++cell_id) {
 				const auto universal_cell_id = cell_id_type::create_by_id(cell_id, tobor_world);
-				//const auto cell_transposed_id = tobor_world.id_to_transposed_id(cell_id);
+
 				if (
 					tobor_world.west_wall_by_id(cell_id) &&
 					tobor_world.east_wall_by_id(cell_id) &&
@@ -723,34 +684,12 @@ namespace tobor {
 					tobor_world.north_wall_by_transposed_id(universal_cell_id.get_transposed_id())
 					) {
 
-					/// ####### use fill_whole_cell() here with color black.
-
-					auto block = std::make_unique<svg::svg_path>();
-
-					block->fill() = "black";
-					block->stroke() = block->fill();
-					block->stroke_width() = "0";
-
-					auto start_at_north_west = std::make_shared<svg::svg_path_elements::M<double>>(
-						dss.LEFT_PADDING + dss.CELL_WIDTH * universal_cell_id.get_x_coord(),
-						dss.TOP_PADDING + dss.CELL_HEIGHT * (tobor_world.get_vertical_size() - universal_cell_id.get_y_coord() - 1)
+					auto block = fill_whole_cell(
+						tobor_world,
+						dss,
+						universal_cell_id,
+						"black"
 					);
-
-					auto go_east = std::make_shared<svg::svg_path_elements::l<double>>(
-						dss.CELL_WIDTH, 0
-					);
-
-					auto go_south = std::make_shared<svg::svg_path_elements::l<double>>(
-						0, dss.CELL_HEIGHT
-					);
-
-					auto go_west = std::make_shared<svg::svg_path_elements::l<double>>(
-						-dss.CELL_WIDTH, 0
-					);
-
-					auto go_back = std::make_shared<svg::svg_path_elements::Z>();
-
-					block->path_elements = { start_at_north_west, go_east, go_south, go_west, go_back };
 
 					blocked_cells->elements.push_back(std::move(block));
 
@@ -917,7 +856,6 @@ namespace tobor {
 
 			static_assert(pieces_quantity_type::COUNT_TARGET_PIECES == 1, "Not yet supported: multiple target pieces");
 
-			//template<class World_Type_T = default_world>
 			template<class ... T>
 			inline static std::string draw_tobor_world(
 				const tobor::v1_0::tobor_world<T...>& tw,
@@ -964,16 +902,14 @@ namespace tobor {
 
 															<---   pieces
 
-					By now there are three variants to place pieces behind/before  ...  grid / walls
+					By now there are three variants to place pieces behind/in front of  ...  grid / walls
 				*/
 
 
 
 				const std::string svg_root_height = std::to_string(dss.CELL_HEIGHT * tw.get_vertical_size() + dss.TOP_PADDING + dss.BOTTOM_PADDING);
 				const std::string svg_root_width = std::to_string(dss.CELL_WIDTH * tw.get_vertical_size() + dss.LEFT_PADDING + dss.RIGHT_PADDING);
-				auto svg_root = std::make_unique<svg::svg_environment>(svg_root_height, svg_root_width, std::make_unique<svg::xml_header>(), std::move(svg_body));
-
-				//standard_logger()->info(svg_root->get_svg());
+				auto svg_root = std::make_unique<svg::svg_environment>(svg_root_height, svg_root_width, std::make_unique<svg::xml_version>(), std::move(svg_body));
 
 				return svg_root->get_svg();
 			}
