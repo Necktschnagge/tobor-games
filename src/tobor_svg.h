@@ -911,7 +911,10 @@ namespace tobor {
 				const std::string svg_root_width = std::to_string(dss.CELL_WIDTH * tw.get_vertical_size() + dss.LEFT_PADDING + dss.RIGHT_PADDING);
 				auto svg_root = std::make_unique<svg::svg_environment>(svg_root_height, svg_root_width, std::make_unique<svg::xml_version>(), std::move(svg_body));
 
-				return svg_root->get_svg();
+                auto fs = std::ofstream(R"(preview.svg)");
+                fs << svg_root->get_svg();
+
+                return svg_root->get_svg();
 			}
 
 		};
