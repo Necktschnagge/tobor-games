@@ -4,12 +4,19 @@
 #include "mainwindow.h"
 #include "./ui_mainwindow.h"
 
+#include "tobor_svg.h"
 
-#include"tobor_svg.h"
+#include "Random.h"
 
-
-
+int random_number(int n) {
+    Random rand_no(0, n);
+    std::random_device rd;
+    rand_no.setSeed(rd());
+    return rand_no();
+}
 void GuiInteractiveController::startGame() {
+    qDebug() << "random number: " << random_number(9);
+
 	if (interactive_mode == InteractiveMode::NO_GAME) {
 
 		mainWindow->ui->actionNewGame->setEnabled(false);
