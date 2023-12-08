@@ -3,7 +3,7 @@
 #include "world_generator.h"
 
 
-inline void red_planet_0(tobor::v1_0::world_generator::original_4_of_16::world_type& world){
+inline void tobor::v1_0::world_generator::original_4_of_16::set_red_planet_0(world_type& world){
 		world.block_center_cells(2, 2);
 		auto bottom = tobor::v1_0::default_cell_id::create_by_coordinates(0, 4, world);
 		auto left = tobor::v1_0::default_cell_id::create_by_coordinates(4, 0, world);
@@ -11,7 +11,7 @@ inline void red_planet_0(tobor::v1_0::world_generator::original_4_of_16::world_t
 		auto cross = tobor::v1_0::default_cell_id::create_by_coordinates(1, 5, world);
 		auto gear = tobor::v1_0::default_cell_id::create_by_coordinates(6, 2, world);
 		auto planet = tobor::v1_0::default_cell_id::create_by_coordinates(2, 1, world);
-		tobor::v1_0::world_generator::original_4_of_16::set_wall_corners(
+		set_wall_corners(
 			world,
 			{ left },
 			{ bottom },
@@ -22,9 +22,35 @@ inline void red_planet_0(tobor::v1_0::world_generator::original_4_of_16::world_t
 		);
 }
 
+inline void tobor::v1_0::world_generator::original_4_of_16::set_wall_corners(world_type& world, const std::vector<cell_id_type>& W_wall, const std::vector<cell_id_type>& S_wall, const std::vector<cell_id_type>& NW_corners, const std::vector<cell_id_type>& NE_corners, const std::vector<cell_id_type>& SW_corners, const std::vector<cell_id_type>& SE_corners)
+{
+	for (const auto& cell_id : W_wall) {
+		world.west_wall_by_id(cell_id.get_id()) = true;
+	}
+	for (const auto& cell_id : S_wall) {
+		world.south_wall_by_transposed_id(cell_id.get_transposed_id()) = true;
+	}
+	for (const auto& cell_id : SW_corners) {
+		world.west_wall_by_id(cell_id.get_id()) = true;
+		world.south_wall_by_transposed_id(cell_id.get_transposed_id()) = true;
+	}
+	for (const auto& cell_id : NW_corners) {
+		world.west_wall_by_id(cell_id.get_id()) = true;
+		world.north_wall_by_transposed_id(cell_id.get_transposed_id()) = true;
+	}
+	for (const auto& cell_id : NE_corners) {
+		world.east_wall_by_id(cell_id.get_id()) = true;
+		world.north_wall_by_transposed_id(cell_id.get_transposed_id()) = true;
+	}
+	for (const auto& cell_id : SE_corners) {
+		world.east_wall_by_id(cell_id.get_id()) = true;
+		world.south_wall_by_transposed_id(cell_id.get_transposed_id()) = true;
+	}
+}
+
 void tobor::v1_0::world_generator::original_4_of_16::create_quadrants(std::array<std::vector<world_type>, 4>& all_quadrants) {
 
-	red_planet_0(all_quadrants[RED_PLANET].emplace_back(16, 16));
+	set_red_planet_0(all_quadrants[RED_PLANET].emplace_back(16, 16));
 
 	{
 		all_quadrants[RED_PLANET].emplace_back(16, 16);

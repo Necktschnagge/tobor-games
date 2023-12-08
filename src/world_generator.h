@@ -25,38 +25,17 @@ namespace tobor {
 				constexpr static std::size_t BLUE_PLANET{ 2 };
 				constexpr static std::size_t YELLOW_PLANET{ 3 };
 
+			private:
 				inline static void set_wall_corners(
-					tobor::v1_0::default_world& world,
-					const std::vector<tobor::v1_0::default_cell_id>& W_wall,
-					const std::vector<tobor::v1_0::default_cell_id>& S_wall,
-					const std::vector<tobor::v1_0::default_cell_id>& NW_corners,
-					const std::vector<tobor::v1_0::default_cell_id>& NE_corners,
-					const std::vector<tobor::v1_0::default_cell_id>& SW_corners,
-					const std::vector<tobor::v1_0::default_cell_id>& SE_corners)
-				{
-					for (const auto& cell_id : W_wall) {
-						world.west_wall_by_id(cell_id.get_id()) = true;
-					}
-					for (const auto& cell_id : S_wall) {
-						world.south_wall_by_transposed_id(cell_id.get_transposed_id()) = true;
-					}
-					for (const auto& cell_id : SW_corners) {
-						world.west_wall_by_id(cell_id.get_id()) = true;
-						world.south_wall_by_transposed_id(cell_id.get_transposed_id()) = true;
-					}
-					for (const auto& cell_id : NW_corners) {
-						world.west_wall_by_id(cell_id.get_id()) = true;
-						world.north_wall_by_transposed_id(cell_id.get_transposed_id()) = true;
-					}
-					for (const auto& cell_id : NE_corners) {
-						world.east_wall_by_id(cell_id.get_id()) = true;
-						world.north_wall_by_transposed_id(cell_id.get_transposed_id()) = true;
-					}
-					for (const auto& cell_id : SE_corners) {
-						world.east_wall_by_id(cell_id.get_id()) = true;
-						world.south_wall_by_transposed_id(cell_id.get_transposed_id()) = true;
-					}
-				}
+					world_type& world,
+					const std::vector<cell_id_type>& W_wall,
+					const std::vector<cell_id_type>& S_wall,
+					const std::vector<cell_id_type>& NW_corners,
+					const std::vector<cell_id_type>& NE_corners,
+					const std::vector<cell_id_type>& SW_corners,
+					const std::vector<cell_id_type>& SE_corners);
+
+				static void set_red_planet_0(world_type& world);
 
 				static void create_quadrants(std::array<std::vector<world_type>, 4>& all_quadrants);
 
