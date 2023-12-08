@@ -36,6 +36,24 @@ namespace tobor {
 					const std::vector<cell_id_type>& SE_corners);
 
 				static void set_red_planet_0(world_type& world);
+				static void set_red_planet_1(world_type& world);
+				static void set_red_planet_2(world_type& world);
+				static void set_red_planet_3(world_type& world);
+				
+				static void set_green_planet_0(world_type& world);
+				static void set_green_planet_1(world_type& world);
+				static void set_green_planet_2(world_type& world);
+				static void set_green_planet_3(world_type& world);
+				
+				static void set_blue_planet_0(world_type& world);
+				static void set_blue_planet_1(world_type& world);
+				static void set_blue_planet_2(world_type& world);
+				static void set_blue_planet_3(world_type& world);
+				
+				static void set_yellow_planet_0(world_type& world);
+				static void set_yellow_planet_1(world_type& world);
+				static void set_yellow_planet_2(world_type& world);
+				static void set_yellow_planet_3(world_type& world);
 
 				static void create_quadrants(std::array<std::vector<world_type>, 4>& all_quadrants);
 
