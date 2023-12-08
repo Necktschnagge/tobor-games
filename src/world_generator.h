@@ -26,6 +26,9 @@ namespace tobor {
 				constexpr static std::size_t YELLOW_PLANET{ 3 };
 
 			private:
+
+				static std::optional<std::array<std::vector<world_type>, 4>> quadrants;
+
 				inline static void set_wall_corners(
 					world_type& world,
 					const std::vector<cell_id_type>& W_wall,
@@ -39,17 +42,17 @@ namespace tobor {
 				static void set_red_planet_1(world_type& world);
 				static void set_red_planet_2(world_type& world);
 				static void set_red_planet_3(world_type& world);
-				
+
 				static void set_green_planet_0(world_type& world);
 				static void set_green_planet_1(world_type& world);
 				static void set_green_planet_2(world_type& world);
 				static void set_green_planet_3(world_type& world);
-				
+
 				static void set_blue_planet_0(world_type& world);
 				static void set_blue_planet_1(world_type& world);
 				static void set_blue_planet_2(world_type& world);
 				static void set_blue_planet_3(world_type& world);
-				
+
 				static void set_yellow_planet_0(world_type& world);
 				static void set_yellow_planet_1(world_type& world);
 				static void set_yellow_planet_2(world_type& world);
@@ -57,73 +60,37 @@ namespace tobor {
 
 				static void create_quadrants(std::array<std::vector<world_type>, 4>& all_quadrants);
 
-				inline static world_type get_quadrant(std::size_t planet_color, std::size_t quadrant_index) {
-
-					static std::optional<std::array<std::vector<world_type>, 4>> quadrants;
-
-					if (!quadrants.has_value()) {
-						quadrants.emplace();
-						create_quadrants(quadrants.value());
-					}
-
-					return quadrants.value()[planet_color][quadrant_index];
-				}
-
 			public:
 
-				constexpr static uint64_t COUNT_CHOOSE_PLANET{ 4 };
-				constexpr static uint64_t COUNT_CHOOSE_GEAR{ 4 };
-				constexpr static uint64_t COUNT_CHOOSE_CROSS{ 4 };
-				constexpr static uint64_t COUNT_CHOOSE_MOON{ 4 };
-
+				constexpr static uint64_t COUNT_PLANET_R{ 4 };
+				constexpr static uint64_t COUNT_PLANET_G{ 4 };
+				constexpr static uint64_t COUNT_PLANET_B{ 4 };
+				constexpr static uint64_t COUNT_PLANET_Y{ 4 };
 
 				constexpr static uint64_t COUNT_ALIGNED_WORLDS{
-					COUNT_CHOOSE_PLANET * COUNT_CHOOSE_GEAR * COUNT_CHOOSE_CROSS * COUNT_CHOOSE_MOON *
+					COUNT_PLANET_R * COUNT_PLANET_G * COUNT_PLANET_B * COUNT_PLANET_Y *
 					3 * // choose the second quadrant's position
 					2 // choose the third quadrant's position
 				};
 
 				constexpr static uint64_t COUNT_ROTATIONS{ 4 };
 
-				constexpr static uint64_t COUNT_ALL_WORLDS{
-					COUNT_ALIGNED_WORLDS * COUNT_ROTATIONS
-				};
+				constexpr static uint64_t COUNT_ALL_WORLDS{ COUNT_ALIGNED_WORLDS * COUNT_ROTATIONS };
 
-#if false
-				struct turn_access {
-
-					bool is_horizontal = 0;
-					bool big_inversion = 0;
-					bool little_inversion = 0;
-
-					void turn(uint8_t rotation) {
-						auto next_is_horizontal = is_horizontal /*XOR:*/ != !!(rotation % 2);
-						auto next_big_inversion = (big_inversion /*XOR*/ != !!()) != !!();
+				inline static world_type get_quadrant(std::size_t planet_color, std::size_t quadrant_index) {
+					if (!quadrants.has_value()) {
+						quadrants.emplace();
+						create_quadrants(quadrants.value());
 					}
+					return quadrants.value()[planet_color][quadrant_index];
+				}
 
-				};
-
-#endif
 				inline static void copy_walls_turned(const world_type& source, uint8_t rotation, world_type& destination) {
 					rotation %= 4;
-					auto  turned = source;
+					auto turned = source;
 					while (rotation--) {
 						turned = turned.turn_left_90();
 					}
-
-					/*
-					auto rotate_coordinates = [&destination, &source](const cell_id_type& cell_id, uint8_t rotation) {
-						//90: yy = x; xx = (YMAX - y)
-						cell_id_type::int_type x = cell_id.get_x_coord();
-						cell_id_type::int_type y = cell_id.get_y_coord();
-						while (rotation--) {
-							auto copy = y;
-							y = x;
-							x = source.get_vertical_size() - copy;
-						}
-						return cell_id_type::create_by_coordinates(x, y, destination);
-						};
-					*/
 
 					for (cell_id_type::int_type cell_id = 0; cell_id < source.count_cells(); ++cell_id) {
 						destination.west_wall_by_id(cell_id) |= turned.west_wall_by_id(cell_id);
@@ -163,10 +130,10 @@ namespace tobor {
 						get_quadrant(BLUE_PLANET, CHOOSE_BLUE_PLANET),
 						get_quadrant(YELLOW_PLANET, CHOOSE_YELLOW_PLANET)
 					};
-					
+
 					//permutation:
-					std::swap(other_quardants[1], other_quardants[1+ PERMUTATION_3]);
-					std::swap(other_quardants[2], other_quardants[2+ PERMUTATION_2]);
+					std::swap(other_quardants[1], other_quardants[1 + PERMUTATION_3]);
+					std::swap(other_quardants[2], other_quardants[2 + PERMUTATION_2]);
 
 					for (uint8_t i{ 0 }; i < 4; ++i) {
 						//other_quardants[i].second += i;
