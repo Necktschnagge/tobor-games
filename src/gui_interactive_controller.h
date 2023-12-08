@@ -114,9 +114,6 @@ public:
 		this->selected_piece_id = piece_id;
 	}
 
-	tobor::v1_0::tobor_world<> generateBoard();
-
-
 	void movePiece(const tobor::v1_0::direction& direction) {
 		gameHistory.back().movePiece(selected_piece_id, direction);
 		refreshSVG();
