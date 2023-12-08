@@ -12,7 +12,6 @@ namespace tobor {
 
 		namespace world_generator {
 
-			//template<class Cell_Id_Type>
 			class original_4_of_16 {
 			public:
 
@@ -27,9 +26,7 @@ namespace tobor {
 
 			private:
 
-				static std::optional<std::array<std::vector<world_type>, 4>> quadrants;
-
-				inline static void set_wall_corners(
+				static void set_wall_corners(
 					world_type& world,
 					const std::vector<cell_id_type>& W_wall,
 					const std::vector<cell_id_type>& S_wall,
@@ -77,73 +74,149 @@ namespace tobor {
 
 				constexpr static uint64_t COUNT_ALL_WORLDS{ COUNT_ALIGNED_WORLDS * COUNT_ROTATIONS };
 
-				inline static world_type get_quadrant(std::size_t planet_color, std::size_t quadrant_index) {
-					if (!quadrants.has_value()) {
-						quadrants.emplace();
-						create_quadrants(quadrants.value());
-					}
-					return quadrants.value()[planet_color][quadrant_index];
+				constexpr static uint64_t COUNT_TARGET_CELLS{ 11 };
+
+				constexpr static uint64_t COUNT_ALL_WORLDS_WITH_SELECTED_TARGET{ COUNT_ALL_WORLDS * COUNT_TARGET_CELLS };
+
+
+				static world_type get_quadrant(std::size_t planet_color, std::size_t quadrant_index);
+
+				static void copy_walls_turned(const world_type& source, uint8_t rotation, world_type& destination);
+
+				static world_type get_world(uint64_t select_aligned_world, uint64_t rotation);
+
+			private:
+				// standard generator:
+				// 4 times: select a quadrant
+				// 6 permutations
+				// 4 board rotation
+				// 11 select a target
+				// 
+				// 4   x   4   x   4   x   4   x   6   x   4   x   11
+				//  1       2       3       0       5                1
+
+				static constexpr uint64_t STANDARD_GENERATOR{
+					1 +
+					2 * 4 +
+					3 * 4 * 4 +
+					0 * 4 * 4 * 4 +
+					5 * 4 * 4 * 4 * 4 +
+					1 * 4 * 4 * 4 * 4 * 6 * 4
+				};
+
+				static constexpr uint64_t SECOND_GENERATOR{
+					1 +
+					0 * 4 +
+					1 * 4 * 4 +
+					2 * 4 * 4 * 4 +
+					3 * 4 * 4 * 4 * 4 +
+					1 * 4 * 4 * 4 * 4 * 6 +
+					7 * 4 * 4 * 4 * 4 * 6 * 4
+				};
+
+				static constexpr uint64_t CYCLIC_GROUP_SIZE{
+					COUNT_ALL_WORLDS_WITH_SELECTED_TARGET
+				};
+
+				uint64_t generator;
+				uint64_t counter;
+
+				static constexpr uint64_t gcd(uint64_t x, uint64_t y) {
+					if (x == 0)
+						return y;
+					return gcd(y % x, x);
 				}
 
-				inline static void copy_walls_turned(const world_type& source, uint8_t rotation, world_type& destination) {
-					rotation %= 4;
-					auto turned = source;
-					while (rotation--) {
-						turned = turned.turn_left_90();
-					}
+				//static_assert(gcd(STANDARD_GENERATOR, CYCLIC_GROUP_SIZE) == 1, "check generator");
+				//static_assert(gcd(SECOND_GENERATOR, CYCLIC_GROUP_SIZE) == 1, "check generator");
 
-					for (cell_id_type::int_type cell_id = 0; cell_id < source.count_cells(); ++cell_id) {
-						destination.west_wall_by_id(cell_id) |= turned.west_wall_by_id(cell_id);
-						destination.south_wall_by_transposed_id(cell_id) |= turned.south_wall_by_transposed_id(cell_id);
+				inline uint64_t& increment_generator_until_gcd_1() {
+					while (gcd(generator, CYCLIC_GROUP_SIZE) != 1) {
+						++generator;
+						generator %= CYCLIC_GROUP_SIZE;
 					}
+					return generator;
 				}
 
-				static world_type get_world(uint64_t select_aligned_world, uint64_t rotation) {
-					rotation %= 4;
+				std::tuple<uint64_t, uint64_t, uint64_t> split_element() const {
+					uint64_t global_select = (counter * generator) % CYCLIC_GROUP_SIZE;
 
-					const std::size_t CHOOSE_RED_PLANET = select_aligned_world % 4;
-					select_aligned_world /= 4;
-					const std::size_t CHOOSE_GREEN_PLANET = select_aligned_world % 4;
-					select_aligned_world /= 4;
-					const std::size_t CHOOSE_BLUE_PLANET = select_aligned_world % 4;
-					select_aligned_world /= 4;
-					const std::size_t CHOOSE_YELLOW_PLANET = select_aligned_world % 4;
-					select_aligned_world /= 4;
+					uint64_t select_aligned_world = global_select % COUNT_ALIGNED_WORLDS;
+					global_select /= COUNT_ALIGNED_WORLDS;
 
-					const uint8_t PERMUTATION_3 = select_aligned_world % 3;
-					select_aligned_world /= 3;
+					uint64_t rotation = global_select % COUNT_ROTATIONS;
+					global_select /= COUNT_ROTATIONS;
 
-					const uint8_t PERMUTATION_2 = select_aligned_world % 2;
-					select_aligned_world /= 2;
+					uint64_t select_target = global_select / COUNT_TARGET_CELLS;
 
-					if (select_aligned_world) {
-						/* number too big*/
-					}
-
-					auto aligned_result = world_type(16, 16);
-					// ad red planet without turn:
-					//copy_walls_turned(get_quadrant(RED_PLANET, CHOOSE_RED_PLANET), 0, aligned_result);
-
-					std::vector<world_type> other_quardants{
-						get_quadrant(RED_PLANET, CHOOSE_RED_PLANET),
-						get_quadrant(GREEN_PLANET, CHOOSE_GREEN_PLANET),
-						get_quadrant(BLUE_PLANET, CHOOSE_BLUE_PLANET),
-						get_quadrant(YELLOW_PLANET, CHOOSE_YELLOW_PLANET)
-					};
-
-					//permutation:
-					std::swap(other_quardants[1], other_quardants[1 + PERMUTATION_3]);
-					std::swap(other_quardants[2], other_quardants[2 + PERMUTATION_2]);
-
-					for (uint8_t i{ 0 }; i < 4; ++i) {
-						//other_quardants[i].second += i;
-						copy_walls_turned(other_quardants[i], (rotation + i) % 4, aligned_result);
-					}
-
-					return aligned_result;
-
+					return std::make_tuple(select_aligned_world, rotation, select_target);
 				}
 
+			public:
+				original_4_of_16(const std::size_t& counter_p = 0, const std::size_t& generator_p = STANDARD_GENERATOR) {
+					counter = counter_p % CYCLIC_GROUP_SIZE;
+					generator = generator_p % CYCLIC_GROUP_SIZE;
+					increment_generator_until_gcd_1();
+				}
+
+				template<class Aggregation_Type>
+				Aggregation_Type obtain_standard_4_coloring_permutation(const Aggregation_Type& original_ordered_colors) {
+					Aggregation_Type result = original_ordered_colors;
+					auto permutation = (counter * SECOND_GENERATOR % CYCLIC_GROUP_SIZE) / (CYCLIC_GROUP_SIZE / (4 * 3 * 2));
+					std::swap(result[0], result[permutation % 4]);
+					permutation /= 4;
+					std::swap(result[1], result[1 + permutation % 3]);
+					permutation /= 3;
+					std::swap(result[2], result[2 + permutation % 2]);
+					return result;
+				}
+
+				world_type get_tobor_world() const {
+					auto [select_aligned_world, rotation, select_target] = split_element();
+					return get_world(select_aligned_world, rotation);
+				}
+
+				tobor::v1_0::default_cell_id get_target_cell() const {
+					auto w = get_tobor_world();
+					std::vector<tobor::v1_0::default_cell_id::int_type> cell_ids;
+					const tobor::v1_0::default_cell_id::int_type MIN = 0;
+					const tobor::v1_0::default_cell_id::int_type MAX = 15;
+
+					for (tobor::v1_0::default_cell_id::int_type i = 0; i < w.count_cells(); ++i) {
+						auto cid = tobor::v1_0::default_cell_id::create_by_id(i, w);
+						if (cid.get_x_coord() == MIN || cid.get_x_coord() == MAX)
+							continue;
+						if (cid.get_y_coord() == MIN || cid.get_y_coord() == MAX)
+							continue;
+
+						uint8_t count_walls =
+							w.west_wall_by_id(i) +
+							w.east_wall_by_id(i) +
+							w.south_wall_by_transposed_id(cid.get_transposed_id()) +
+							w.north_wall_by_transposed_id(cid.get_transposed_id());
+
+						if (count_walls > 1 && count_walls < 4) {
+							cell_ids.push_back(i);
+						}
+					}
+
+					auto [select_aligned_world, rotation, select_target] = split_element();
+
+					// cell_ids.size() // should always be 11. test this.!!!
+
+					auto index = select_target % cell_ids.size();
+					return tobor::v1_0::default_cell_id::create_by_id(cell_ids[index], w);
+				}
+
+				inline original_4_of_16& operator++() {
+					++counter;
+					counter %= CYCLIC_GROUP_SIZE;
+				}
+
+				inline original_4_of_16& operator--() {
+					counter += CYCLIC_GROUP_SIZE - 1;
+					counter %= CYCLIC_GROUP_SIZE;
+				}
 
 			};
 
