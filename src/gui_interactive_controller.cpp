@@ -19,6 +19,15 @@ void GuiInteractiveController::startGame() {
 
 		// create a board
 
+		auto tup = originalGenerator.split_element();
+		(void)tup;
+		auto x = std::get<0>(tup);
+		auto a = x % 4; x /= 4;
+		auto b = x % 4; x /= 4;
+		auto c = x % 4; x /= 4;
+		auto d = x % 4; x /= 4;
+		auto e = x;
+		qDebug() << a << "   :   " << b << "   :   " << c << "   :   " << d << "   :   " << e << "   :   " << std::get<1>(tup) << "   :   " << std::get<2>(tup) << "\n";
 		auto world = originalGenerator.get_tobor_world();
 		auto target = originalGenerator.get_target_cell();
 
