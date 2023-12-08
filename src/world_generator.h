@@ -211,11 +211,13 @@ namespace tobor {
 				inline original_4_of_16& operator++() {
 					++counter;
 					counter %= CYCLIC_GROUP_SIZE;
+					return *this;
 				}
 
 				inline original_4_of_16& operator--() {
 					counter += CYCLIC_GROUP_SIZE - 1;
 					counter %= CYCLIC_GROUP_SIZE;
+					return *this;
 				}
 
 			};
