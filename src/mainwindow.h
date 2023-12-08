@@ -82,6 +82,10 @@ private:
 
 	void viewSvgInMainView(const QString& svg_string);
 
+	inline void viewSvgInMainView(const std::string& svg_string) {
+		return viewSvgInMainView(QString::fromStdString(svg_string));
+	}
+
 
 protected:
 	void keyPressEvent(QKeyEvent* e);

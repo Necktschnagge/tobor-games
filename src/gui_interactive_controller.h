@@ -2,6 +2,10 @@
 
 #include "solver.h" // ..., tobor::v1_0::tobor_world
 
+#include "world_generator.h"
+
+
+
 #include <QMainWindow>
 #include <QXmlStreamReader>
 #include <QSvgRenderer>
@@ -28,8 +32,9 @@ public:
 
 	};
 
+	using cell_id_type = tobor::v1_0::default_cell_id;
 
-	using positions_of_pieces_type = tobor::v1_0::positions_of_pieces<tobor::v1_0::default_pieces_quantity, tobor::v1_0::default_cell_id, false, false>;
+	using positions_of_pieces_type = tobor::v1_0::positions_of_pieces<tobor::v1_0::default_pieces_quantity, cell_id_type, false, false>;
 
 	using world_type = tobor::v1_0::default_world;
 
@@ -43,11 +48,18 @@ public:
 
 	std::vector<positions_of_pieces_type> path;
 
+	cell_id_type target_cell;
 
-	GameController(const world_type& tobor_world, const positions_of_pieces_type& initial_state) :
+
+	GameController(
+		const world_type& tobor_world,
+		const positions_of_pieces_type& initial_state,
+		const cell_id_type& target_cell
+	) :
 		tobor_world(tobor_world),
 		move_one_piece_calculator(this->tobor_world),
-		path{ initial_state }
+		path{ initial_state },
+		target_cell(target_cell)
 	{
 
 	}
@@ -60,7 +72,7 @@ public:
 		if (valid) {
 			path.push_back(next_state);
 		}
-		
+
 	}
 
 };
@@ -74,26 +86,21 @@ class GuiInteractiveController final {
 		GAME_INTERACTIVE
 	};
 
-	/*
-	enum class Colors {
-		RED = 0,
-		YELLOW = 1,
-		GREEN = 2,
-		BLUE = 3
-	};
-	*/
-
 	InteractiveMode interactive_mode;
 
 	std::vector<GameController> gameHistory;
 
 	tobor::v1_0::default_piece_id selected_piece_id{ 0 };
 
+	tobor::v1_0::world_generator::original_4_of_16 originalGenerator;
+
+
 public:
 
 	GuiInteractiveController(MainWindow* mainWindow) :
 		mainWindow(mainWindow),
-		interactive_mode(InteractiveMode::NO_GAME) {
+		interactive_mode(InteractiveMode::NO_GAME),
+		originalGenerator() {
 
 	}
 
@@ -106,9 +113,6 @@ public:
 	void setPieceId(const tobor::v1_0::default_piece_id& piece_id) {
 		this->selected_piece_id = piece_id;
 	}
-
-	tobor::v1_0::tobor_world<> generateBoard();
-
 
 	void movePiece(const tobor::v1_0::direction& direction) {
 		gameHistory.back().movePiece(selected_piece_id, direction);
