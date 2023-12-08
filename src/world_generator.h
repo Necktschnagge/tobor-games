@@ -220,6 +220,10 @@ namespace tobor {
 					return *this;
 				}
 
+				void set_counter(const uint64_t& counter_p) {
+					counter = counter_p % CYCLIC_GROUP_SIZE;
+				}
+
 			};
 
 		}

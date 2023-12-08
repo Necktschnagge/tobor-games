@@ -18,24 +18,28 @@ void GuiInteractiveController::startGame() {
 		interactive_mode = InteractiveMode::GAME_INTERACTIVE;
 
 		// create a board
-		tobor::v1_0::tobor_world tobor_world = generateBoard();
+
+		auto world = originalGenerator.get_tobor_world();
+		auto target = originalGenerator.get_target_cell();
 
 		gameHistory.emplace_back(
-			tobor_world,
+			world,
 			GameController::positions_of_pieces_type(
 				{
-					tobor::v1_0::default_cell_id::create_by_coordinates(2, 3, tobor_world)
+					tobor::v1_0::default_cell_id::create_by_coordinates(0, 0, world)
 				},
 				{
-					tobor::v1_0::default_cell_id::create_by_coordinates(12,3, tobor_world),
-					tobor::v1_0::default_cell_id::create_by_coordinates(11,12, tobor_world),
-					tobor::v1_0::default_cell_id::create_by_coordinates(5,13, tobor_world)
+					tobor::v1_0::default_cell_id::create_by_coordinates(0,15, world),
+					tobor::v1_0::default_cell_id::create_by_coordinates(15,15, world),
+					tobor::v1_0::default_cell_id::create_by_coordinates(15,0, world)
 				}
-			)
+			),
+			target
 		);
 
-		refreshSVG();
+		++originalGenerator;
 
+		refreshSVG();
 	}
 	else {
 
@@ -72,24 +76,12 @@ void GuiInteractiveController::refreshSVG()
 		std::string example_svg_string = tobor::v1_0::tobor_graphics<GameController::positions_of_pieces_type>::draw_tobor_world(
 			gameHistory.back().tobor_world,
 			gameHistory.back().path.back(),
-			GameController::positions_of_pieces_type::cell_id_type::create_by_coordinates(13, 14, gameHistory.back().tobor_world),
+			gameHistory.back().target_cell,
 			tobor::v1_0::tobor_graphics<GameController::positions_of_pieces_type>::coloring("red", "yellow", "green", "blue")
+			// use the color permutation given by generator
 		);
 
-
-		QXmlStreamReader xml;
-		xml.addData(QString::fromStdString(example_svg_string));
-
-		QSvgRenderer* svgRenderer = new QSvgRenderer(&xml);
-		QGraphicsSvgItem* item = new QGraphicsSvgItem();
-		QGraphicsScene* scene = new QGraphicsScene();
-
-		item->setSharedRenderer(svgRenderer);
-		scene->addItem(item);
-		mainWindow->ui->graphicsView->setScene(scene);
-		mainWindow->ui->graphicsView->fitInView(scene->sceneRect(), Qt::KeepAspectRatio);
-		mainWindow->ui->graphicsView->show();
-
+		mainWindow->viewSvgInMainView(example_svg_string);
 	}
 
 	if (interactive_mode == InteractiveMode::NO_GAME) {
