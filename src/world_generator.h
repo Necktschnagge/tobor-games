@@ -74,7 +74,7 @@ namespace tobor {
 
 				constexpr static uint64_t COUNT_ALL_WORLDS{ COUNT_ALIGNED_WORLDS * COUNT_ROTATIONS };
 
-				constexpr static uint64_t COUNT_TARGET_CELLS{ 11 };
+				constexpr static uint64_t COUNT_TARGET_CELLS{ 17 };
 
 				constexpr static uint64_t COUNT_ALL_WORLDS_WITH_SELECTED_TARGET{ COUNT_ALL_WORLDS * COUNT_TARGET_CELLS };
 
@@ -90,9 +90,9 @@ namespace tobor {
 				// 4 times: select a quadrant
 				// 6 permutations
 				// 4 board rotation
-				// 11 select a target
+				// 17 select a target
 				// 
-				// 4   x   4   x   4   x   4   x   6   x   4   x   11
+				// 4   x   4   x   4   x   4   x   6   x   4   x   17
 				//  1       2       3       0       5                1
 
 				static constexpr uint64_t STANDARD_GENERATOR{
@@ -202,7 +202,7 @@ namespace tobor {
 
 					auto [select_aligned_world, rotation, select_target] = split_element();
 
-					// cell_ids.size() // should always be 11. test this.!!!
+					// cell_ids.size() // should always be 17. test this.!!!
 
 					auto index = select_target % cell_ids.size();
 					return tobor::v1_0::default_cell_id::create_by_id(cell_ids[index], w);
