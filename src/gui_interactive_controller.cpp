@@ -14,6 +14,7 @@ int random_number(int n) {
     rand_no.setSeed(rd());
     return rand_no();
 }
+
 void GuiInteractiveController::startGame() {
     qDebug() << "random number: " << random_number(9);
 
