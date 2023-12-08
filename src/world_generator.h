@@ -101,7 +101,8 @@ namespace tobor {
 					3 * 4 * 4 +
 					0 * 4 * 4 * 4 +
 					5 * 4 * 4 * 4 * 4 +
-					1 * 4 * 4 * 4 * 4 * 6 * 4
+					0 * 4 * 4 * 4 * 4 * 6 +
+					5 * 4 * 4 * 4 * 4 * 6 * 4
 				};
 
 				static constexpr uint64_t SECOND_GENERATOR{
@@ -138,6 +139,7 @@ namespace tobor {
 					return generator;
 				}
 
+			public://remove
 				std::tuple<uint64_t, uint64_t, uint64_t> split_element() const {
 					uint64_t global_select = (counter * generator) % CYCLIC_GROUP_SIZE;
 
@@ -147,7 +149,7 @@ namespace tobor {
 					uint64_t rotation = global_select % COUNT_ROTATIONS;
 					global_select /= COUNT_ROTATIONS;
 
-					uint64_t select_target = global_select / COUNT_TARGET_CELLS;
+					uint64_t select_target = global_select % COUNT_TARGET_CELLS;
 
 					return std::make_tuple(select_aligned_world, rotation, select_target);
 				}
@@ -195,7 +197,10 @@ namespace tobor {
 							w.south_wall_by_transposed_id(cid.get_transposed_id()) +
 							w.north_wall_by_transposed_id(cid.get_transposed_id());
 
-						if (count_walls > 1 && count_walls < 4) {
+						bool WE = w.west_wall_by_id(i) || w.east_wall_by_id(i);
+						bool SN = w.south_wall_by_transposed_id(cid.get_transposed_id()) || w.north_wall_by_transposed_id(cid.get_transposed_id());
+
+						if (count_walls > 1 && count_walls < 4 && WE && SN) {
 							cell_ids.push_back(i);
 						}
 					}
