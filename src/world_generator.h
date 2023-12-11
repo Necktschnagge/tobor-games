@@ -85,6 +85,10 @@ namespace tobor {
 
 				static world_type get_world(uint64_t select_aligned_world, uint64_t rotation);
 
+				static constexpr uint64_t CYCLIC_GROUP_SIZE{
+					COUNT_ALL_WORLDS_WITH_SELECTED_TARGET
+				};
+
 			private:
 				// standard generator:
 				// 4 times: select a quadrant
@@ -113,10 +117,6 @@ namespace tobor {
 					3 * 4 * 4 * 4 * 4 +
 					1 * 4 * 4 * 4 * 4 * 6 +
 					7 * 4 * 4 * 4 * 4 * 6 * 4
-				};
-
-				static constexpr uint64_t CYCLIC_GROUP_SIZE{
-					COUNT_ALL_WORLDS_WITH_SELECTED_TARGET
 				};
 
 				uint64_t generator;

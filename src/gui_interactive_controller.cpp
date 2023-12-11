@@ -4,12 +4,11 @@
 #include "mainwindow.h"
 #include "./ui_mainwindow.h"
 
-
-#include"tobor_svg.h"
-
+#include "tobor_svg.h"
 
 
 void GuiInteractiveController::startGame() {
+
 	if (interactive_mode == InteractiveMode::NO_GAME) {
 
 		mainWindow->ui->actionNewGame->setEnabled(false);
