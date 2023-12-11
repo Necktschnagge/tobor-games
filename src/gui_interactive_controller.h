@@ -17,6 +17,7 @@
 
 
 #include <memory>
+#include <random>
 
 class MainWindow;
 
@@ -86,22 +87,32 @@ class GuiInteractiveController final {
 		GAME_INTERACTIVE
 	};
 
+	using board_generator_type = tobor::v1_0::world_generator::original_4_of_16;
+
 	InteractiveMode interactive_mode;
 
 	std::vector<GameController> gameHistory;
 
 	tobor::v1_0::default_piece_id selected_piece_id{ 0 };
 
-	tobor::v1_0::world_generator::original_4_of_16 originalGenerator;
+	board_generator_type originalGenerator;
 
+	std::mt19937 generator;
 
 public:
 
 	GuiInteractiveController(MainWindow* mainWindow) :
 		mainWindow(mainWindow),
 		interactive_mode(InteractiveMode::NO_GAME),
-		originalGenerator() {
+		originalGenerator()
+	{
+		std::random_device rd;
 
+		generator.seed(rd());
+
+		std::uniform_int_distribution<uint64_t> distribution_on_uint64(0, board_generator_type::CYCLIC_GROUP_SIZE);
+
+		originalGenerator.set_counter(distribution_on_uint64(generator));
 	}
 
 	void startGame();
