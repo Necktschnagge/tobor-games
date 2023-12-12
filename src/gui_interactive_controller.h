@@ -24,6 +24,7 @@ class MainWindow;
 struct GameController {
 public:
 
+	/*
 	class ExplorationTree {
 
 		std::vector<std::shared_ptr<ExplorationTree>> children;
@@ -32,6 +33,7 @@ public:
 		ExplorationTree() {} // create root
 
 	};
+	*/
 
 	using cell_id_type = tobor::v1_0::default_cell_id;
 
@@ -65,8 +67,15 @@ public:
 
 	}
 
+	inline bool isFinal() const {
+		return path.back().is_final(target_cell);
+	}
 
-	void movePiece(const tobor::v1_0::default_piece_id& piece_id, const tobor::v1_0::direction& direction) {
+	inline void movePiece(const tobor::v1_0::default_piece_id& piece_id, const tobor::v1_0::direction& direction) {
+		if (isFinal()) {
+			return;
+		}
+
 		positions_of_pieces_type current_state = path.back();
 
 		auto [next_state, valid] = move_one_piece_calculator.successor_state(current_state, piece_id, direction);
@@ -75,6 +84,8 @@ public:
 		}
 
 	}
+
+
 
 };
 
@@ -125,11 +136,7 @@ public:
 		this->selected_piece_id = piece_id;
 	}
 
-	void movePiece(const tobor::v1_0::direction& direction) {
-		gameHistory.back().movePiece(selected_piece_id, direction);
-		refreshSVG();
-	}
-
+	void movePiece(const tobor::v1_0::direction& direction);
 
 };
 

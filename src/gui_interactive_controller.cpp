@@ -98,4 +98,14 @@ void GuiInteractiveController::refreshSVG()
 	}
 }
 
+void GuiInteractiveController::movePiece(const tobor::v1_0::direction& direction) {
+	gameHistory.back().movePiece(selected_piece_id, direction);
+	refreshSVG();
+
+	QString number_of_steps = QString::number(gameHistory.back().path.size() - 1);
+
+	mainWindow->setWindowTitle(number_of_steps);
+	// refresh number of steps...
+}
+
 

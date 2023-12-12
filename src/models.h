@@ -560,6 +560,14 @@ namespace tobor {
 				}
 				// may be optimized for fixed array sizes
 			}
+
+			inline bool is_final(const cell_id_type& target_cell) const {
+				for (auto iter = target_pieces_cbegin(); iter != target_pieces_cend(); ++iter) {
+					if (*iter == target_cell)
+						return true;
+				}
+				return false;
+			}
 		};
 
 		using default_positions_of_pieces = positions_of_pieces<default_pieces_quantity, default_cell_id, false, true>;
