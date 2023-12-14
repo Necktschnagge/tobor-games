@@ -82,13 +82,19 @@ void GuiInteractiveController::refreshSVG()
 {
 	if (interactive_mode == InteractiveMode::GAME_INTERACTIVE) {
 
-		std::string example_svg_string = tobor::v1_0::tobor_graphics<GameController::positions_of_pieces_type>::draw_tobor_world(
-			gameHistory.back().tobor_world,
-			gameHistory.back().path.back(),
-			gameHistory.back().target_cell,
-			tobor::v1_0::tobor_graphics<GameController::positions_of_pieces_type>::coloring("red", "yellow", "green", "blue")
-			// use the color permutation given by generator
-		);
+		auto coloring = tobor::v1_0::tobor_graphics<GameController::positions_of_pieces_type>::coloring("red", "yellow", "green", "blue");
+
+		// coloring = originalGenerator.obtain_standard_4_coloring_permutation(coloring.colors);
+		// we also have to permutate the selected (user input) color!
+		// Otherwise choosing the yellow duck e.g. moves the blue duck.
+
+		std::string example_svg_string =
+			tobor::v1_0::tobor_graphics<GameController::positions_of_pieces_type>::draw_tobor_world(
+				gameHistory.back().tobor_world,
+				gameHistory.back().path.back(),
+				gameHistory.back().target_cell,
+				coloring
+			);
 
 		mainWindow->viewSvgInMainView(example_svg_string);
 	}
@@ -99,14 +105,35 @@ void GuiInteractiveController::refreshSVG()
 	}
 }
 
-void GuiInteractiveController::movePiece(const tobor::v1_0::direction& direction) {
-	gameHistory.back().movePiece(selected_piece_id, direction);
-	refreshSVG();
-
+void GuiInteractiveController::viewNumberOfSteps() {
 	QString number_of_steps = QString::number(gameHistory.back().path.size() - 1);
 
 	mainWindow->setWindowTitle(number_of_steps);
+}
+
+void GuiInteractiveController::movePiece(const tobor::v1_0::direction& direction) {
+	gameHistory.back().movePiece(selected_piece_id, direction);
+
+	mainWindow->ui->actionMoveBack->setEnabled(true);
+
+	refreshSVG();
+
+	viewNumberOfSteps();
 	// refresh number of steps...
+}
+
+void GuiInteractiveController::undo() {
+	auto& vec = gameHistory.back().path;
+
+	if (vec.size() > 1) {
+		vec.pop_back();
+	}
+
+	mainWindow->ui->actionMoveBack->setEnabled(vec.size() > 1);
+
+	refreshSVG();
+	viewNumberOfSteps();
+
 }
 
 

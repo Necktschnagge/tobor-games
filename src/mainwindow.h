@@ -55,6 +55,8 @@ private slots:
 
 	void on_actionStopGame_triggered();
 
+	void on_actionMoveBack_triggered();
+
     void on_actionTest_ListView_triggered();
 
     void on_actionRED_triggered();

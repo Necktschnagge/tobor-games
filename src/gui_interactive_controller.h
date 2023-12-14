@@ -136,7 +136,11 @@ public:
 		this->selected_piece_id = piece_id;
 	}
 
+	void viewNumberOfSteps();
+
 	void movePiece(const tobor::v1_0::direction& direction);
+
+	void undo();
 
 };
 
