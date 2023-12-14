@@ -27,6 +27,7 @@ void GuiInteractiveController::startGame() {
 		auto d = x % 4; x /= 4;
 		auto e = x;
 		qDebug() << a << "   :   " << b << "   :   " << c << "   :   " << d << "   :   " << e << "   :   " << std::get<1>(tup) << "   :   " << std::get<2>(tup) << "\n";
+		qDebug() << originalGenerator.get_counter() << "\n";
 		auto world = originalGenerator.get_tobor_world();
 		auto target = originalGenerator.get_target_cell();
 
