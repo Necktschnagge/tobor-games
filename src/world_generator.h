@@ -173,6 +173,10 @@ namespace tobor {
 					return result;
 				}
 
+				inline uint64_t get_counter() {
+					return counter;
+				}
+
 				world_type get_tobor_world() const {
 					auto [select_aligned_world, rotation, select_target] = split_element();
 					return get_world(select_aligned_world, rotation);
