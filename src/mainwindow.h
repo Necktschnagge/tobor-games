@@ -77,6 +77,8 @@ private slots:
 
     void on_actionStart_Solver_triggered();
 
+    void on_listView_doubleClicked(const QModelIndex &index);
+
 private:
 	Ui::MainWindow* ui;
 	GuiInteractiveController guiInteractiveController;
