@@ -79,6 +79,10 @@ public:
 		return path.back().is_final(target_cell);
 	}
 
+	inline bool isEmptyPath() const {
+		return path.size() == 1;
+	}
+
 	inline void movePiece(const tobor::v1_0::default_piece_id& piece_id, const tobor::v1_0::direction& direction) {
 		if (isFinal()) {
 			return;
@@ -93,7 +97,11 @@ public:
 
 	}
 
-
+	inline void undo() {
+		if (path.size() > 1) {
+			path.pop_back();
+		}
+	}
 
 };
 
@@ -141,13 +149,21 @@ public:
 
 	void stopGame();
 
-	void refreshSVG();
-
 	void setPieceId(const tobor::v1_0::default_piece_id& piece_id) {
 		this->selected_piece_id = piece_id;
 	}
 
-	void viewNumberOfSteps();
+	void refreshNumberOfSteps();
+
+	void refreshSVG();
+
+	void refreshMenuButtonEnable();
+
+	inline void refreshAll() {
+		refreshSVG();
+		refreshNumberOfSteps();
+		refreshMenuButtonEnable();
+	}
 
 	void movePiece(const tobor::v1_0::direction& direction);
 
