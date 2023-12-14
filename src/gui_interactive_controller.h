@@ -21,6 +21,10 @@
 
 class MainWindow;
 
+/**
+* @brief Keeps track of the path of states visited so far
+*
+*/
 struct GameController {
 public:
 
@@ -35,6 +39,9 @@ public:
 	};
 	*/
 
+
+	/* Types */
+
 	using cell_id_type = tobor::v1_0::default_cell_id;
 
 	using positions_of_pieces_type = tobor::v1_0::positions_of_pieces<tobor::v1_0::default_pieces_quantity, cell_id_type, false, false>;
@@ -44,10 +51,11 @@ public:
 	using move_one_piece_calculator_type = tobor::v1_0::move_one_piece_calculator<positions_of_pieces_type>;
 
 
+	/* data */
+
 	world_type tobor_world;
 
 	move_one_piece_calculator_type move_one_piece_calculator;
-
 
 	std::vector<positions_of_pieces_type> path;
 
@@ -95,7 +103,8 @@ class GuiInteractiveController final {
 
 	enum class InteractiveMode {
 		NO_GAME,
-		GAME_INTERACTIVE
+		GAME_INTERACTIVE,
+		SOLVER_INTERACTIVE_STEPS
 	};
 
 	using board_generator_type = tobor::v1_0::world_generator::original_4_of_16;
@@ -109,6 +118,8 @@ class GuiInteractiveController final {
 	board_generator_type originalGenerator;
 
 	std::mt19937 generator;
+
+
 
 public:
 
