@@ -13,6 +13,7 @@ void GuiInteractiveController::startGame() {
 
 		mainWindow->ui->actionNewGame->setEnabled(false);
 		mainWindow->ui->actionStopGame->setEnabled(true);
+        mainWindow->ui->actionStart_Solver->setEnabled(true);
 
 		interactive_mode = InteractiveMode::GAME_INTERACTIVE;
 
@@ -64,6 +65,8 @@ void GuiInteractiveController::stopGame() {
 
 		mainWindow->ui->actionNewGame->setEnabled(true);
 		mainWindow->ui->actionStopGame->setEnabled(false);
+        mainWindow->ui->actionStart_Solver->setEnabled(false);
+
 
 		interactive_mode = InteractiveMode::NO_GAME;
 
