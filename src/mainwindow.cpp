@@ -226,3 +226,9 @@ void MainWindow::on_actionWEST_triggered()
 
 }
 
+
+void MainWindow::on_actionStart_Solver_triggered()
+{
+    ui->statusbar->showMessage("starting solver...");
+}
+

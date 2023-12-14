@@ -75,6 +75,8 @@ private slots:
 
     void on_actionWEST_triggered();
 
+    void on_actionStart_Solver_triggered();
+
 private:
 	Ui::MainWindow* ui;
 	GuiInteractiveController guiInteractiveController;
