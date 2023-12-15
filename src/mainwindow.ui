@@ -37,7 +37,7 @@
           <number>2</number>
         </property>
         <item row="0" column="0">
-          <layout class="QHBoxLayout" name="horizontalLayout" stretch="1,0,0">
+          <layout class="QHBoxLayout" name="horizontalLayout" stretch="1,0,1">
             <item>
               <widget class="QGraphicsView" name="graphicsView">
                 <property name="minimumSize">

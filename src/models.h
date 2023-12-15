@@ -831,7 +831,7 @@ namespace tobor {
 					}
 					else {
 						equivalence_classes[indices[0]].emplace_back(p);
-						for (std::size_t j = indices.size(); j != 0; --j) {
+						for (std::size_t j = indices.size() - 1; j != 0; --j) {
 							std::copy(
 								equivalence_classes[indices[j]].cbegin(),
 								equivalence_classes[indices[j]].cend(),

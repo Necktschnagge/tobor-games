@@ -179,13 +179,15 @@ public:
 		interactive_mode(InteractiveMode::NO_GAME),
 		originalGenerator()
 	{
-		std::random_device rd;
+		//std::random_device rd;
 
-		generator.seed(rd());
+		//generator.seed(rd());
 
-		std::uniform_int_distribution<uint64_t> distribution_on_uint64(0, board_generator_type::CYCLIC_GROUP_SIZE);
+		//std::uniform_int_distribution<uint64_t> distribution_on_uint64(0, board_generator_type::CYCLIC_GROUP_SIZE);
 
-		originalGenerator.set_counter(distribution_on_uint64(generator));
+		//originalGenerator.set_counter(distribution_on_uint64(generator));
+
+		originalGenerator.set_counter(72972);
 	}
 
 	void startGame();

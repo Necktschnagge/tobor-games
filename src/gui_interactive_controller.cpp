@@ -76,7 +76,7 @@ void GuiInteractiveController::refreshSVG()
 {
 	if (interactive_mode == InteractiveMode::GAME_INTERACTIVE) {
 
-		auto coloring = tobor::v1_0::tobor_graphics<GameController::positions_of_pieces_type>::coloring("red", "yellow", "green", "blue");
+		auto coloring = tobor::v1_0::tobor_graphics<GameController::positions_of_pieces_type>::coloring("red", "green", "blue", "yellow");
 
 		// coloring = originalGenerator.obtain_standard_4_coloring_permutation(coloring.colors);
 		// we also have to permutate the selected (user input) color!
@@ -208,16 +208,12 @@ void GuiInteractiveController::viewSolutionPaths()
 		++goal_counter;
 	}
 
-
-
-
 	static QStringListModel* model{ nullptr };
 
 	if (model == nullptr) {
 		model = new QStringListModel();
 	}
 
-	qStringList << "a" << "b" << "c";
 	model->setStringList(qStringList);
 
 	mainWindow->ui->listView->setModel(model);
