@@ -136,6 +136,7 @@
         <addaction name="separator"/>
         <addaction name="menuSelect_Piece"/>
         <addaction name="menuMove"/>
+        <addaction name="actionMoveBack"/>
         <addaction name="separator"/>
         <addaction name="actionStart_Solver"/>
         <addaction name="actionSolver_Configuration"/>
@@ -184,6 +185,17 @@
       </property>
       <property name="shortcut">
         <string>Esc</string>
+      </property>
+    </action>
+    <action name="actionMoveBack">
+      <property name="enabled">
+        <bool>false</bool>
+      </property>
+      <property name="text">
+        <string>&amp;Undo</string>
+      </property>
+      <property name="shortcut">
+        <string>Backspace</string>
       </property>
     </action>
     <action name="actionAbout">
