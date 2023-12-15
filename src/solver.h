@@ -548,34 +548,24 @@ namespace tobor {
 
 			}
 
-			inline std::vector<move_path_type> optimal_paths(const cell_id_type& target_cell) {
+			inline std::map<positions_of_pieces_type, std::vector<move_path_type>> optimal_paths(const cell_id_type& target_cell) {
 				
-				std::map< positions_of_pieces_type,std::vector<move_path_type>> result;
+				std::map<positions_of_pieces_type,std::vector<move_path_type>> result;
 
-				std::vector<positions_of_pieces_type> goal_states;
+				//std::vector<positions_of_pieces_type> goal_states;
 
 				for (
 					auto iter = ps_map.begin(); iter != ps_map.end(); ++iter
 					) {
 					auto& state{ iter->first };
 					if (state.is_final(target_cell)) {
-						goal_states.push_back(state);
+						//goal_states.push_back(state);
 
 						optimal_path_helper_back_to_front(iter, std::back_inserter(result[state]));
 					}
 				}
 
-				move_path_type x();
-
-
-
-				//auto iter_target{ ps_map.find(target_cell) };
-
-				//if (
-
-				//decltype(ps_map)::key_type
-
-					//ps_map[target_cell]
+				return result;
 
 			}
 
