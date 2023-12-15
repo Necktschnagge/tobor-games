@@ -592,9 +592,9 @@ namespace tobor {
 
 			inline static piece_id end() { return piece_id(pieces_quantity_type::COUNT_ALL_PIECES); }
 
-			inline bool operator < (const piece_id& another) { return value < another.value; }
+			inline bool operator < (const piece_id& another) const { return value < another.value; }
 
-			inline bool operator == (const piece_id& another) { return value == another.value; }
+			inline bool operator == (const piece_id& another) const { return value == another.value; }
 
 			inline piece_id& operator++() { ++value; return *this; }
 
@@ -621,6 +621,18 @@ namespace tobor {
 			direction dir;
 
 			piece_move(const piece_id_type& pid, const direction& dir) : pid(pid), dir(dir) {}
+
+			piece_move() : pid(0), dir(direction::NORTH()) {}
+
+			inline bool operator<(const piece_move& another) const {
+				return pid == another.pid ?
+					dir < another.dir :
+					pid < another.pid;
+			}
+
+			inline bool operator==(const piece_move& another) const {
+				return pid == another.pid && dir == another.dir;
+			}
 		};
 
 		using default_piece_move = piece_move<>;
@@ -696,6 +708,8 @@ namespace tobor {
 
 			using vector_type = std::vector<piece_move_type>;
 
+			using pieces_quantity_type = typename piece_move_type::pieces_quantity_type;
+
 		private:
 			vector_type move_vector;
 
@@ -703,7 +717,11 @@ namespace tobor {
 
 			move_path() {}
 
+			move_path(std::size_t n) : move_vector(n, piece_move_type()) {}
+
 			vector_type& vector() { return move_vector; }
+
+			const vector_type& vector() const { return move_vector; }
 
 			inline move_path operator +(const move_path& another) {
 				move_path copy{ *this };
@@ -711,6 +729,70 @@ namespace tobor {
 				return copy;
 			}
 
+			/*
+			inline std::vector<bool> colored_footprint() const {
+
+				std::array<vector_type::const_iterator, pieces_quantity_type::COUNT_ALL_PIECES> color_next;
+
+				for (auto& iter : color_next) {
+					iter = move_vector.cbegin();
+				}
+
+				while (true) {
+					uint8_t i = 0;
+					bool IS_NORTH_OR_SOUTH = 0;
+					bool
+					while (color_next[i] != move_vector.cend() && color_next[i]->pid.value != i) {
+						++color_next[i];
+					}
+					if (color_next[i] != move_vector.cend()) {
+
+						++color_next[i];
+					}
+				}
+
+				... to much effort in coding for a footprint. will also probably take longer computation time.
+			}
+			*/
+
+			inline move_path color_sorted_footprint() const {
+				auto result = move_path(*this);
+
+				std::stable_sort(
+					result.vector().begin(),
+					result.vector().end(),
+					[](const piece_move_type& left, const piece_move_type& right) { return left.pid < right.pid; }
+				);
+
+				return result;
+			}
+
+			inline bool is_interleaving_neighbour(const move_path& another) const {
+				if (vector().size() != another.vector().size()) {
+					return false;
+				}
+
+				typename vector_type::size_type i{ 0 };
+
+				while (i + 1 < vector().size()) { // looking for the switched positions i, i+1
+
+					if (vector()[i] != another.vector()[i]) {
+						// here it must be switched i, i+1 and the rest must be equal to return true...
+
+						return
+							vector()[i] == another.vector()[i + 1] &&
+							vector()[i + 1] == another.vector()[i] &&
+							std::equal(
+								vector().cbegin() + i + 2,
+								vector().cend(),
+								another.vector().cbegin() + i + 2
+							);
+					}
+
+					++i;
+				}
+				return false;
+			}
 		};
 	}
 }

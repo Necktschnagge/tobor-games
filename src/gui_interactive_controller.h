@@ -42,13 +42,19 @@ public:
 
 	/* Types */
 
+	using world_type = tobor::v1_0::default_world;
+
 	using cell_id_type = tobor::v1_0::default_cell_id;
 
 	using positions_of_pieces_type = tobor::v1_0::positions_of_pieces<tobor::v1_0::default_pieces_quantity, cell_id_type, false, false>;
 
-	using world_type = tobor::v1_0::default_world;
+	using piece_move_type = tobor::v1_0::default_piece_move;
 
-	using move_one_piece_calculator_type = tobor::v1_0::move_one_piece_calculator<positions_of_pieces_type>;
+	using move_one_piece_calculator_type = tobor::v1_0::move_one_piece_calculator<positions_of_pieces_type, tobor::v1_0::default_quick_move_cache, piece_move_type>;
+
+	using state_graph_node_type = tobor::v1_0::state_graph_node<positions_of_pieces_type, piece_move_type>;
+
+	using partial_state_graph_type = tobor::v1_0::partial_state_graph<move_one_piece_calculator_type, state_graph_node_type>;
 
 
 	/* data */
@@ -61,6 +67,10 @@ public:
 
 	cell_id_type target_cell;
 
+	std::vector<positions_of_pieces_type>::iterator solver_begin;
+
+	std::optional<partial_state_graph_type> optional_solver_state_graph;
+
 
 	GameController(
 		const world_type& tobor_world,
@@ -70,17 +80,22 @@ public:
 		tobor_world(tobor_world),
 		move_one_piece_calculator(this->tobor_world),
 		path{ initial_state },
-		target_cell(target_cell)
+		target_cell(target_cell),
+		solver_begin(path.begin())
 	{
 
 	}
 
 	inline bool isFinal() const {
-		return path.back().is_final(target_cell);
+		return currentState().is_final(target_cell);
 	}
 
 	inline bool isEmptyPath() const {
 		return path.size() == 1;
+	}
+
+	const positions_of_pieces_type& currentState() const {
+		return path.back();
 	}
 
 	inline void movePiece(const tobor::v1_0::default_piece_id& piece_id, const tobor::v1_0::direction& direction) {
@@ -88,9 +103,8 @@ public:
 			return;
 		}
 
-		positions_of_pieces_type current_state = path.back();
+		auto [next_state, valid] = move_one_piece_calculator.successor_state(currentState(), piece_id, direction);
 
-		auto [next_state, valid] = move_one_piece_calculator.successor_state(current_state, piece_id, direction);
 		if (valid) {
 			path.push_back(next_state);
 		}
@@ -101,6 +115,38 @@ public:
 		if (path.size() > 1) {
 			path.pop_back();
 		}
+	}
+
+	inline void startSolver() {
+
+		optional_solver_state_graph.emplace(currentState());
+
+		partial_state_graph_type& graph{ optional_solver_state_graph.value() };
+
+		graph.build_state_graph_for_all_optimal_solutions(move_one_piece_calculator, target_cell);
+
+		// now extract all paths...
+
+
+
+
+		// turn into solver mode,
+		// run solver from current state
+		// display all optimal solutions in ListView
+	}
+
+	inline void selectSolution(const std::size_t& index) {
+		(void)index;
+		// selects a solution from the list of solutions
+	}
+
+	inline void solverStep() {
+		// move one step forward according to the current selected solver solution.
+		// disable the ListView... make it gray, cannot click there anymore...
+	}
+
+	inline void resetSolverSteps() {
+		// go back to solver_init
 	}
 
 };
