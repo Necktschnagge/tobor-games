@@ -28,18 +28,6 @@ class MainWindow;
 struct GameController {
 public:
 
-	/*
-	class ExplorationTree {
-
-		std::vector<std::shared_ptr<ExplorationTree>> children;
-
-	public:
-		ExplorationTree() {} // create root
-
-	};
-	*/
-
-
 	/* Types */
 
 	using world_type = tobor::v1_0::default_world;
