@@ -4,6 +4,7 @@
 
 #include "world_generator.h"
 
+// #include "tobor_svg.h" produces error
 
 
 #include <QMainWindow>
@@ -44,6 +45,7 @@ public:
 
 	using partial_state_graph_type = tobor::v1_0::partial_state_graph<move_one_piece_calculator_type, state_graph_node_type>;
 
+	using move_path_type = tobor::v1_0::move_path<piece_move_type>;
 
 	/* data */
 
@@ -58,7 +60,8 @@ public:
 	std::vector<positions_of_pieces_type>::iterator solver_begin;
 
 	std::optional<partial_state_graph_type> optional_solver_state_graph;
-
+	
+	std::optional<std::map<positions_of_pieces_type, std::vector<std::vector<move_path_type>>>> optional_classified_move_paths;
 
 	GameController(
 		const world_type& tobor_world,
@@ -113,14 +116,19 @@ public:
 
 		graph.build_state_graph_for_all_optimal_solutions(move_one_piece_calculator, target_cell);
 
-		// now extract all paths...
+		std::map<positions_of_pieces_type, std::vector<move_path_type>> optimal_paths_map{ graph.optimal_paths(target_cell) };
 
+		optional_classified_move_paths.reset();
+		optional_classified_move_paths.emplace();
 
+		auto& classified_move_paths{ optional_classified_move_paths.value() };
 
-
-		// turn into solver mode,
-		// run solver from current state
-		// display all optimal solutions in ListView
+		for (const auto& pair : optimal_paths_map) {
+			classified_move_paths[pair.first] = move_path_type::interleaving_partitioning(pair.second);
+			for (auto& equivalence_class : classified_move_paths[pair.first]) {
+				std::sort(equivalence_class.begin(), equivalence_class.end(), move_path_type::antiprettiness_relation);
+			}
+		}
 	}
 
 	inline void selectSolution(const std::size_t& index) {
@@ -161,7 +169,8 @@ class GuiInteractiveController final {
 
 	std::mt19937 generator;
 
-
+	//tobor::v1_0::tobor_graphics<GameController::positions_of_pieces_type>::coloring coloring = tobor::v1_0::tobor_graphics<GameController::positions_of_pieces_type>::coloring("red", "yellow", "green", "blue");
+	// needs tobor svg include which brings errors...
 
 public:
 
@@ -202,6 +211,10 @@ public:
 	void movePiece(const tobor::v1_0::direction& direction);
 
 	void undo();
+
+	void startSolver();
+
+	void viewSolutionPaths();
 
 };
 

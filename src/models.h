@@ -76,6 +76,21 @@ namespace tobor {
 			/* access via conversion to underlying type */
 			inline operator int_type() const { return value; }
 
+			inline operator std::string() const {
+				switch (value) {
+				case encoding::NORTH:
+					return "N";
+				case encoding::EAST:
+					return "E";
+				case encoding::SOUTH:
+					return "S";
+				case encoding::WEST:
+					return "W";
+				default:
+					return " ";
+				}
+			}
+
 		};
 
 		/**
@@ -776,7 +791,7 @@ namespace tobor {
 
 				while (i + 1 < vector().size()) { // looking for the switched positions i, i+1
 
-					if (vector()[i] != another.vector()[i]) {
+					if (!(vector()[i] == another.vector()[i])) {
 						// here it must be switched i, i+1 and the rest must be equal to return true...
 
 						return
@@ -793,6 +808,54 @@ namespace tobor {
 				}
 				return false;
 			}
+
+			inline static std::vector<std::vector<move_path>> interleaving_partitioning(const std::vector<move_path>& paths) {
+				std::vector<std::vector<move_path>> equivalence_classes;
+
+				for (const auto& p : paths) {
+
+					std::vector<std::size_t> indices; // all indices of matching equivalence classes
+					for (std::size_t i{ 0 }; i < equivalence_classes.size(); ++i) {
+						auto& ec{ equivalence_classes[i] };
+						for (const auto& el : ec) {
+							if (el.is_interleaving_neighbour(p)) {
+								indices.push_back(i);
+								break;
+							}
+						}
+					}
+
+					if (indices.empty()) {
+						equivalence_classes.emplace_back();
+						equivalence_classes.back().push_back(p);
+					}
+					else {
+						equivalence_classes[indices[0]].emplace_back(p);
+						for (std::size_t j = indices.size(); j != 0; --j) {
+							std::copy(
+								equivalence_classes[indices[j]].cbegin(),
+								equivalence_classes[indices[j]].cend(),
+								std::back_inserter(equivalence_classes[indices[0]])
+							);
+							equivalence_classes.erase(equivalence_classes.begin() + indices[j]);
+						}
+					}
+				}
+				return equivalence_classes;
+			}
+
+			std::size_t changes() const {
+				std::size_t counter{ 0 };
+				for (std::size_t i = 0; i + 1 < move_vector.size(); ++i) {
+					counter += !(move_vector[i].pid == move_vector[i + 1].pid);
+				}
+				return counter;
+			}
+
+			inline static bool antiprettiness_relation(const move_path& l, const move_path& r) {
+				return l.changes() < r.changes();
+			}
+
 		};
 	}
 }

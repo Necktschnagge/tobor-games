@@ -4,6 +4,7 @@
 #include "mainwindow.h"
 #include "./ui_mainwindow.h"
 
+#include <QStringListModel>
 #include "tobor_svg.h"
 
 
@@ -169,4 +170,51 @@ void GuiInteractiveController::undo() {
 
 }
 
+void GuiInteractiveController::startSolver()
+{
+	gameHistory.back().startSolver();
+	viewSolutionPaths();
+}
+
+void GuiInteractiveController::viewSolutionPaths()
+{
+	QStringList qStringList;
+
+
+	std::size_t goal_counter{ 0 };
+
+	for (const auto& pair : gameHistory.back().optional_classified_move_paths.value()) {
+		//const auto& goal_state{ pair.first };
+		const auto& equivalence_classes{ pair.second };
+
+		for (std::size_t i = 0; i < equivalence_classes.size(); ++i) {
+			QString s;
+			s = s + "[" + QString::number(goal_counter) + "]     ";
+			s = s + QString::number(i) + ": ";
+			for (const GameController::piece_move_type& m : equivalence_classes[i][0].vector()) {
+				
+				QString color;
+
+				s = s + "  " + color + QString::fromStdString(static_cast<std::string>(m.dir));
+			}
+			qStringList << s;
+		}
+		++goal_counter;
+	}
+
+
+
+
+	static QStringListModel* model{ nullptr };
+
+	if (model == nullptr) {
+		model = new QStringListModel();
+	}
+
+	qStringList << "a" << "b" << "c";
+	model->setStringList(qStringList);
+
+	mainWindow->ui->listView->setModel(model);
+
+}
 

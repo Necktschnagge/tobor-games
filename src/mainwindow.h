@@ -30,7 +30,7 @@ public:
 		std::unique_ptr<QGraphicsScene> q_graphics_scene;
 		/*
 		*/
-		inline SvgViewToolchain& operator =(SvgViewToolchain&& another) {
+		inline SvgViewToolchain& operator =(SvgViewToolchain&& another) noexcept {
 			q_graphics_scene = std::move(another.q_graphics_scene);
 			q_svg_renderer = std::move(another.q_svg_renderer);
 
