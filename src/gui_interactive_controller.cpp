@@ -193,9 +193,15 @@ void GuiInteractiveController::viewSolutionPaths()
 			s = s + QString::number(i) + ": ";
 			for (const GameController::piece_move_type& m : equivalence_classes[i][0].vector()) {
 				
-				QString color;
+				std::string color = "RGBY";
+				color = color.substr(m.pid.value, 1); // this is not okay. we need to properly use the coloring array.
+				// please check #69 so that we may include tobor svg in this file's corresponding header to define coloring there....
 
-				s = s + "  " + color + QString::fromStdString(static_cast<std::string>(m.dir));
+				// the solution might be a "global" fixed coloring with full words and with Letter, 
+				// additionally a permutation which is applied anywhere before reading the colors,
+				// and which is also used at that position where GUI input is interpreted.
+
+				s = s + "  " + QString::fromStdString(color) + QString::fromStdString(static_cast<std::string>(m.dir));
 			}
 			qStringList << s;
 		}
