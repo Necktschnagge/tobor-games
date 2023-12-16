@@ -108,6 +108,11 @@ void MainWindow::on_actionStopGame_triggered() {
     statusBar()->showMessage("Game stopped.");
 }
 
+void MainWindow::on_actionMoveBack_triggered()
+{
+    guiInteractiveController.undo();
+}
+
 void MainWindow::keyPressEvent(QKeyEvent* e)
 {
 	// see: https://doc.qt.io/qt-6/qt.html#Key-enum
