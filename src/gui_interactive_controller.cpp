@@ -203,6 +203,7 @@ void GuiInteractiveController::viewSolutionPaths()
 
 				s = s + "  " + QString::fromStdString(color) + QString::fromStdString(static_cast<std::string>(m.dir));
 			}
+			s = s + "     (x" + QString::number(equivalence_classes[i].size()) + ")";
 			qStringList << s;
 		}
 		++goal_counter;
