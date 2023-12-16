@@ -26,9 +26,6 @@ MainWindow::MainWindow(QWidget* parent)
 {
 	ui->setupUi(this);
 
-
-    QLabel* labelNumberOfSteps;
-    QLabel* countNumberOfSteps;
     labelNumberOfSteps = new QLabel(this);
     countNumberOfSteps = new QLabel(this);
     labelNumberOfSteps->setText("Steps:");
@@ -36,7 +33,6 @@ MainWindow::MainWindow(QWidget* parent)
     ui->statusbar->addPermanentWidget(countNumberOfSteps);
     QString number_of_steps = QString::number(0);
     countNumberOfSteps->setText(number_of_steps);
-
 
     grabKeyboard(); // https://doc.qt.io/qt-6/qwidget.html#grabKeyboard
 

@@ -83,6 +83,9 @@ private:
 
 	SvgViewToolchain svgViewToolchain;
 
+    QLabel* labelNumberOfSteps;
+    QLabel* countNumberOfSteps;
+
 	void viewSvgInMainView(const QString& svg_string);
 
 	inline void viewSvgInMainView(const std::string& svg_string) {
