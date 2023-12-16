@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <stdexcept>
 #include <iterator>
+#include <string>
 
 
 namespace tobor {
