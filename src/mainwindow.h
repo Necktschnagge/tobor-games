@@ -10,6 +10,7 @@
 #include <QGraphicsSvgItem>
 #include <QKeyEvent>
 #include <QGraphicsScene>
+#include <QLabel>
 
 #include <memory>
 

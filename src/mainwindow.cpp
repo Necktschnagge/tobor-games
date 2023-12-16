@@ -25,6 +25,19 @@ MainWindow::MainWindow(QWidget* parent)
 	guiInteractiveController(this)
 {
 	ui->setupUi(this);
+
+
+    QLabel* labelNumberOfSteps;
+    QLabel* countNumberOfSteps;
+    labelNumberOfSteps = new QLabel(this);
+    countNumberOfSteps = new QLabel(this);
+    labelNumberOfSteps->setText("Steps:");
+    ui->statusbar->addPermanentWidget(labelNumberOfSteps);
+    ui->statusbar->addPermanentWidget(countNumberOfSteps);
+    QString number_of_steps = QString::number(0);
+    countNumberOfSteps->setText(number_of_steps);
+
+
     grabKeyboard(); // https://doc.qt.io/qt-6/qwidget.html#grabKeyboard
 
     // releaseKeyboard();  when entering main menu
