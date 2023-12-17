@@ -29,6 +29,9 @@ private:
 		QLabel* stepsKey;
 		QLabel* stepsValue;
 
+		// add more labels: "BoardId:" "702563:378 // 3:0:2:3:5:2:7 " hint: redPlanetQuadrant, .., .., .., permutation, board rotation, target cell
+		// add more labels: "Solver:" "RUNNING / OFF / AUTO-PLAY / STEP-MODE"
+
 		void init(QWidget* parent, QStatusBar* statusbar);
 	};
 
