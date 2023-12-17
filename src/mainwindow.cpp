@@ -235,3 +235,7 @@ void MainWindow::on_actionWEST_triggered()
 
 }
 
+void MainWindow::setNumberOfSteps(QString& c)
+{
+    countNumberOfSteps->setText(c);
+}

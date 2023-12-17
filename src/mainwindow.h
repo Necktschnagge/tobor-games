@@ -76,6 +76,8 @@ private slots:
 
     void on_actionWEST_triggered();
 
+    void setNumberOfSteps(QString& c);
+
 private:
 	Ui::MainWindow* ui;
 	GuiInteractiveController guiInteractiveController;
