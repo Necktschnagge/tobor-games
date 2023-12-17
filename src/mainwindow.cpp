@@ -77,10 +77,10 @@ void MainWindow::on_actionshowSVG_triggered()
 
 void MainWindow::on_actionAbout_triggered()
 {
-    qDebug() << "QLocale: " << QLocale().name();
+    qDebug() << "QLocale:" << QLocale().name();
 
     QMessageBox msgBox;
-    msgBox.setText(QString("Qt Version used:   ") + qVersion());
+    msgBox.setText(QString("Qt Version used: ") + qVersion());
     msgBox.exec();
 }
 
@@ -115,6 +115,7 @@ void MainWindow::on_actionNewGame_triggered() {
 void MainWindow::on_actionStopGame_triggered() {
 	guiInteractiveController.stopGame();
     statusBar()->showMessage("Game stopped.");
+    countNumberOfSteps->setText(QString::number(0));
 }
 
 void MainWindow::on_actionMoveBack_triggered()
