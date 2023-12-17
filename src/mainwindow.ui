@@ -159,7 +159,18 @@
       <addaction name="menuGame"/>
       <addaction name="menuHelp"/>
     </widget>
-    <widget class="QStatusBar" name="statusbar"/>
+    <widget class="QStatusBar" name="statusbar">
+      <!--
+      <widget class="QLabel" name="firstLabel">
+        <property name="text">
+          <string>Content of Label</string>
+        </property>
+      </widget>
+        -->
+      <!--
+      <addPermanentWidget name="firstLabel"/>
+      -->
+    </widget>
     <action name="actionshowSVG">
       <property name="text">
         <string>showSVG</string>

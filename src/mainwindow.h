@@ -24,6 +24,14 @@ class MainWindow : public QMainWindow
 {
 	Q_OBJECT
 
+private:
+	struct StatusbarItems {
+		QLabel* stepsKey;
+		QLabel* stepsValue;
+
+		void init(QWidget* parent, QStatusBar* statusbar);
+	};
+
 public:
 
 	struct SvgViewToolchain {
@@ -31,7 +39,7 @@ public:
 		std::unique_ptr<QGraphicsScene> q_graphics_scene;
 		/*
 		*/
-		inline SvgViewToolchain& operator =(SvgViewToolchain&& another) {
+		inline SvgViewToolchain& operator =(SvgViewToolchain&& another) noexcept {
 			q_graphics_scene = std::move(another.q_graphics_scene);
 			q_svg_renderer = std::move(another.q_svg_renderer);
 
@@ -58,25 +66,25 @@ private slots:
 
 	void on_actionMoveBack_triggered();
 
-    void on_actionTest_ListView_triggered();
+	void on_actionTest_ListView_triggered();
 
-    void on_actionRED_triggered();
+	void on_actionRED_triggered();
 
-    void on_actionYELLOW_triggered();
+	void on_actionYELLOW_triggered();
 
-    void on_actionGREEN_triggered();
+	void on_actionGREEN_triggered();
 
-    void on_actionBLUE_triggered();
+	void on_actionBLUE_triggered();
 
-    void on_actionNORTH_triggered();
+	void on_actionNORTH_triggered();
 
-    void on_actionEAST_triggered();
+	void on_actionEAST_triggered();
 
-    void on_actionSOUTH_triggered();
+	void on_actionSOUTH_triggered();
 
-    void on_actionWEST_triggered();
+	void on_actionWEST_triggered();
 
-    void setNumberOfSteps(QString& c);
+	void setNumberOfSteps(QString& c);
 
 private:
 	Ui::MainWindow* ui;
@@ -85,8 +93,7 @@ private:
 
 	SvgViewToolchain svgViewToolchain;
 
-    QLabel* labelNumberOfSteps;
-    QLabel* countNumberOfSteps;
+	StatusbarItems statusbarItems;
 
 	void viewSvgInMainView(const QString& svg_string);
 
