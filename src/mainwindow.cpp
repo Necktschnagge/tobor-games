@@ -239,13 +239,17 @@ void MainWindow::setNumberOfSteps(QString& c)
 }
 
 void MainWindow::StatusbarItems::init(QWidget* parent, QStatusBar* statusbar) {
-	stepsKey = new QLabel(parent);
-	stepsValue = new QLabel(parent);
+	stepsKey = new QLabel(parent); // parent takes ownership
+	stepsValue = new QLabel(parent); // parent takes ownership
+
+	statusbar->addPermanentWidget(stepsKey); // parent is replaced?
+	statusbar->addPermanentWidget(stepsValue); // parent is replaced?
+
 	stepsKey->setText("Steps:");
-	statusbar->addPermanentWidget(stepsKey);
-	statusbar->addPermanentWidget(stepsValue);
+
 	QString number_of_steps = QString::number(0);
 	stepsValue->setText(number_of_steps);
+
 	stepsKey->hide();
 	stepsValue->hide();
 }
