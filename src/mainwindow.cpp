@@ -152,19 +152,6 @@ void MainWindow::keyPressEvent(QKeyEvent* e)
 
 void MainWindow::on_actionTest_ListView_triggered()
 {
-	for (int i = 0; i < 1000; ++i) {
-
-		QMainWindow w2;
-
-		Ui::MainWindow* ui2 = new Ui::MainWindow();
-		(void)ui2;
-
-		ui->setupUi(&w2);
-
-		//delete ui2;
-
-	}
-
 	static QStringListModel* model{ nullptr };
 
 	if (model == nullptr) {
