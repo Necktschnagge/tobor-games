@@ -33,6 +33,8 @@ MainWindow::MainWindow(QWidget* parent)
     ui->statusbar->addPermanentWidget(countNumberOfSteps);
     QString number_of_steps = QString::number(0);
     countNumberOfSteps->setText(number_of_steps);
+    labelNumberOfSteps->hide();
+    countNumberOfSteps->hide();
 
     grabKeyboard(); // https://doc.qt.io/qt-6/qwidget.html#grabKeyboard
 
@@ -110,12 +112,16 @@ void MainWindow::viewSvgInMainView(const QString& svg_string)
 void MainWindow::on_actionNewGame_triggered() {
 	guiInteractiveController.startGame();
     statusBar()->showMessage("Game started.");
+    labelNumberOfSteps->show();
+    countNumberOfSteps->show();
 }
 
 void MainWindow::on_actionStopGame_triggered() {
 	guiInteractiveController.stopGame();
     statusBar()->showMessage("Game stopped.");
     countNumberOfSteps->setText(QString::number(0));
+    labelNumberOfSteps->hide();
+    countNumberOfSteps->hide();
 }
 
 void MainWindow::on_actionMoveBack_triggered()
