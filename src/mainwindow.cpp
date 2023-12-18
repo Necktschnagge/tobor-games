@@ -25,7 +25,7 @@ MainWindow::MainWindow(QWidget* parent)
 	guiInteractiveController(this)
 {
 	ui->setupUi(this);
-	statusbarItems.init(this, ui->statusbar);
+	statusbarItems.init(ui->statusbar);
 
 	grabKeyboard(); // https://doc.qt.io/qt-6/qwidget.html#grabKeyboard
 
@@ -238,9 +238,9 @@ void MainWindow::setNumberOfSteps(QString& c)
 	statusbarItems.stepsValue->setText(c);
 }
 
-void MainWindow::StatusbarItems::init(QWidget* parent, QStatusBar* statusbar) {
-	stepsKey = new QLabel(parent); // parent takes ownership
-	stepsValue = new QLabel(parent); // parent takes ownership
+void MainWindow::StatusbarItems::init(QStatusBar* statusbar) {
+	stepsKey = new QLabel(statusbar); // parent takes ownership
+	stepsValue = new QLabel(statusbar); // parent takes ownership
 
 	statusbar->addPermanentWidget(stepsKey); // parent is replaced?
 	statusbar->addPermanentWidget(stepsValue); // parent is replaced?

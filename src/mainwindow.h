@@ -31,8 +31,9 @@ private:
 
 		// add more labels: "BoardId:" "702563:378 // 3:0:2:3:5:2:7 " hint: redPlanetQuadrant, .., .., .., permutation, board rotation, target cell
 		// add more labels: "Solver:" "RUNNING / OFF / AUTO-PLAY / STEP-MODE"
+		// add more labels: "Color: " "[colored square]" current selected piece's color
 
-		void init(QWidget* parent, QStatusBar* statusbar);
+		void init(QStatusBar* statusbar);
 	};
 
 public:
