@@ -1,6 +1,5 @@
-#include "predefined.h"
 #include "logger.h"
-
+#include "predefined.h"
 
 #include "mainwindow.h"
 
@@ -20,14 +19,12 @@ PIECE                   :       one robot / piece
 
 */
 
+int main(int argc, char *argv[]) {
+  init_logger();
 
-int main(int argc, char* argv[])
-{
-	init_logger();
-
-	QApplication qt_app(argc, argv);
-	std::setlocale(LC_NUMERIC, "C");
-	MainWindow main_window;
-	main_window.show();
-	return qt_app.exec();
+  QApplication qt_app(argc, argv);
+  std::setlocale(LC_NUMERIC, "C");
+  MainWindow main_window;
+  main_window.show();
+  return qt_app.exec();
 }
