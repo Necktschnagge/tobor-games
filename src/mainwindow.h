@@ -58,23 +58,23 @@ private slots:
 
 	void on_actionMoveBack_triggered();
 
-    void on_actionTest_ListView_triggered();
+	void on_actionTest_ListView_triggered();
 
-    void on_actionRED_triggered();
+	void on_actionRED_triggered();
 
-    void on_actionYELLOW_triggered();
+	void on_actionYELLOW_triggered();
 
-    void on_actionGREEN_triggered();
+	void on_actionGREEN_triggered();
 
-    void on_actionBLUE_triggered();
+	void on_actionBLUE_triggered();
 
-    void on_actionNORTH_triggered();
+	void on_actionNORTH_triggered();
 
-    void on_actionEAST_triggered();
+	void on_actionEAST_triggered();
 
-    void on_actionSOUTH_triggered();
+	void on_actionSOUTH_triggered();
 
-    void on_actionWEST_triggered();
+	void on_actionWEST_triggered();
 
     void setNumberOfSteps(QString& c);
 
