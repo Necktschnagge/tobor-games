@@ -11,6 +11,7 @@
 #include <QKeyEvent>
 #include <QGraphicsScene>
 #include <QLabel>
+#include <QColor>
 
 #include <memory>
 
@@ -89,6 +90,8 @@ private slots:
 	void on_actionWEST_triggered();
 
 	void setNumberOfSteps(QString& c);
+
+    void getColorBall();
 
 private:
 	Ui::MainWindow* ui;
