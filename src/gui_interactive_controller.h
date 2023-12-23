@@ -182,6 +182,8 @@ class GuiInteractiveController final {
 
 public:
 
+	void startReferenceGame();
+
 	GuiInteractiveController(MainWindow* mainWindow) :
 		mainWindow(mainWindow),
 		interactive_mode(InteractiveMode::NO_GAME),

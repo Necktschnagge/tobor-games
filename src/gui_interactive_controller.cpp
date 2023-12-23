@@ -8,6 +8,93 @@
 #include "tobor_svg.h"
 
 
+void GuiInteractiveController::startReferenceGame() {
+
+	interactive_mode = InteractiveMode::GAME_INTERACTIVE;
+
+	// create a board
+
+	//auto tup = originalGenerator.split_element();
+	//(void)tup;
+	//auto x = std::get<0>(tup);
+	//auto a = x % 4; x /= 4;
+	//auto b = x % 4; x /= 4;
+	//auto c = x % 4; x /= 4;
+	//auto d = x % 4; x /= 4;
+	//auto e = x;
+	//qDebug() << a << "   :   " << b << "   :   " << c << "   :   " << d << "   :   " << e << "   :   " << std::get<1>(tup) << "   :   " << std::get<2>(tup) << "\n";
+	//qDebug() << originalGenerator.get_counter() << "\n";
+	//auto world = originalGenerator.get_tobor_world();
+	//auto target = originalGenerator.get_target_cell();
+
+	auto world = GameController::world_type(16, 16);
+	world.block_center_cells(2, 2);
+
+	world.west_wall_by_id(6) = true;
+	world.west_wall_by_id(11) = true;
+	world.west_wall_by_id(16 + 2) = true;
+	world.west_wall_by_id(16 + 14) = true;
+	world.west_wall_by_id(3 * 16 + 7) = true;
+	world.west_wall_by_id(3 * 16 + 10) = true;
+	world.west_wall_by_id(4 * 16 + 1) = true;
+	world.west_wall_by_id(5 * 16 + 11) = true;
+	world.west_wall_by_id(6 * 16 + 4) = true;
+	world.west_wall_by_id(6 * 16 + 14) = true;
+	world.west_wall_by_id(8 * 16 + 11) = true;
+	world.west_wall_by_id(9 * 16 + 14) = true;
+	world.west_wall_by_id(10 * 16 + 3) = true;
+	world.west_wall_by_id(11 * 16 + 5) = true;
+	world.west_wall_by_id(12 * 16 + 2) = true;
+	world.west_wall_by_id(13 * 16 + 11) = true;
+	world.west_wall_by_id(14 * 16 + 6) = true;
+	world.west_wall_by_id(14 * 16 + 14) = true;
+	world.west_wall_by_id(15 * 16 + 4) = true;
+	world.west_wall_by_id(15 * 16 + 10) = true;
+
+	world.south_wall_by_transposed_id(2) = true;
+	world.south_wall_by_transposed_id(9) = true;
+	world.south_wall_by_transposed_id(16 + 4) = true;
+	world.south_wall_by_transposed_id(16 + 13) = true;
+	world.south_wall_by_transposed_id(2 * 16 + 2) = true;
+	world.south_wall_by_transposed_id(2 * 16 + 10) = true;
+	world.south_wall_by_transposed_id(3 * 16 + 7) = true;
+	world.south_wall_by_transposed_id(5 * 16 + 12) = true;
+	world.south_wall_by_transposed_id(6 * 16 + 3) = true;
+	world.south_wall_by_transposed_id(6 * 16 + 14) = true;
+	world.south_wall_by_transposed_id(9 * 16 + 4) = true;
+	world.south_wall_by_transposed_id(10 * 16 + 9) = true;
+	world.south_wall_by_transposed_id(11 * 16 + 5) = true;
+	world.south_wall_by_transposed_id(11 * 16 + 13) = true;
+	world.south_wall_by_transposed_id(13 * 16 + 1) = true;
+	world.south_wall_by_transposed_id(13 * 16 + 9) = true;
+	world.south_wall_by_transposed_id(14 * 16 + 7) = true;
+	world.south_wall_by_transposed_id(14 * 16 + 15) = true;
+	world.south_wall_by_transposed_id(15 * 16 + 5) = true;
+	world.south_wall_by_transposed_id(15 * 16 + 12) = true;
+
+
+
+
+
+	gameHistory.emplace_back(
+		world,
+		GameController::positions_of_pieces_type(
+			{
+				tobor::v1_0::default_cell_id::create_by_coordinates(15, 15, world)
+			},
+				{
+					tobor::v1_0::default_cell_id::create_by_coordinates(1,0, world),
+					tobor::v1_0::default_cell_id::create_by_coordinates(12,14, world),
+					tobor::v1_0::default_cell_id::create_by_coordinates(12,15, world)
+				}
+		),
+		tobor::v1_0::default_cell_id::create_by_coordinates(9, 3, world)
+	);
+
+	refreshAll();
+
+}
+
 void GuiInteractiveController::startGame() {
 
 	if (interactive_mode != InteractiveMode::NO_GAME) {

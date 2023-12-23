@@ -145,22 +145,7 @@ void MainWindow::keyPressEvent(QKeyEvent* e)
 
 void MainWindow::on_actionTest_ListView_triggered()
 {
-	static QStringListModel* model{ nullptr };
-
-	if (model == nullptr) {
-		model = new QStringListModel();
-	}
-	QStringList list;
-	list << "a" << "b" << "c";
-	list << "a" << "b" << "c";
-	list << "a" << "b" << "c";
-	list << "a" << "b" << "c";
-	list << "a" << "b" << "c";
-	list << "a" << "b" << "c";
-	list << "a" << "b" << "c";
-	model->setStringList(list);
-
-	ui->listView->setModel(model);
+	guiInteractiveController.startReferenceGame();
 
 }
 
