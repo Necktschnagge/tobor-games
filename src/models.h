@@ -525,7 +525,11 @@ namespace tobor {
 
 			positions_of_pieces(const positions_of_pieces&) = default;
 
+			inline positions_of_pieces& operator = (const positions_of_pieces&) = default;
+
 			positions_of_pieces(positions_of_pieces&&) = default;
+
+			inline positions_of_pieces& operator = (positions_of_pieces&&) = default;
 
 			bool operator< (const positions_of_pieces& another) const noexcept {
 				return piece_positions < another.piece_positions;

@@ -233,8 +233,11 @@ void MainWindow::on_actionStart_Solver_triggered()
 
 void MainWindow::on_listView_doubleClicked(const QModelIndex &index)
 {
-    QString m{"double-clicked ListView on" };
-    m+=QString::number(index.row());
-    ui->statusbar->showMessage(m);
+    //QString m{"double-clicked ListView on" };
+    //m+=QString::number(index.row());
+    //ui->statusbar->showMessage(m);
+
+	guiInteractiveController.selectSolution(index.row());
+	guiInteractiveController.refreshAll();
 }
 

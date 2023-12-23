@@ -72,9 +72,38 @@ void GuiInteractiveController::stopGame() {
 
 }
 
+void GuiInteractiveController::moveBySolver(bool forward)
+{
+	gameHistory.back().moveBySolver(forward);
+
+}
+
+void GuiInteractiveController::setPieceId(const tobor::v1_0::default_piece_id& piece_id) {
+
+	switch (interactive_mode)
+	{
+	case GuiInteractiveController::InteractiveMode::NO_GAME:
+		showErrorDialog("Cannot select a piece with no game opened.");
+		break;
+	case GuiInteractiveController::InteractiveMode::GAME_INTERACTIVE:
+		this->selected_piece_id = piece_id;
+		break;
+	case GuiInteractiveController::InteractiveMode::SOLVER_INTERACTIVE_STEPS:
+		showErrorDialog("Cannot select a piece while in Solver Mode."); // should never be reached (?), TODO disable acrions...
+		break;
+	default:
+		showErrorDialog(
+			QString("Undefined setPieceId for mode ") +
+			QString::number(static_cast<uint64_t>(interactive_mode))
+		);
+		break;
+	}
+
+}
+
 void GuiInteractiveController::refreshSVG()
 {
-	if (interactive_mode == InteractiveMode::GAME_INTERACTIVE) {
+	if (interactive_mode == InteractiveMode::GAME_INTERACTIVE || interactive_mode == InteractiveMode::SOLVER_INTERACTIVE_STEPS) {
 
 		auto coloring = tobor::v1_0::tobor_graphics<GameController::positions_of_pieces_type>::coloring("red", "green", "blue", "yellow");
 
@@ -148,17 +177,42 @@ void GuiInteractiveController::refreshNumberOfSteps() {
 
 void GuiInteractiveController::movePiece(const tobor::v1_0::direction& direction) {
 
-	gameHistory.back().movePiece(selected_piece_id, direction);
+	switch (interactive_mode)
+	{
+	case GuiInteractiveController::InteractiveMode::NO_GAME:
+		showErrorDialog("Cannot move a piece with no game opened."); // should not be reachable, disable actions!
+		break;
+	case GuiInteractiveController::InteractiveMode::GAME_INTERACTIVE:
 
-	refreshMenuButtonEnable();
+		gameHistory.back().movePiece(selected_piece_id, direction);
 
-	refreshSVG();
+		refreshMenuButtonEnable();
 
-	refreshNumberOfSteps();
+		refreshSVG();
 
+		refreshNumberOfSteps();
+
+		break;
+
+	case GuiInteractiveController::InteractiveMode::SOLVER_INTERACTIVE_STEPS:
+		if ((direction == tobor::v1_0::direction::EAST()) || (direction == tobor::v1_0::direction::WEST())) {
+			moveBySolver(direction == tobor::v1_0::direction::EAST());
+			refreshAll();
+		} // else ignore input
+		break;
+
+	default:
+		showErrorDialog(
+			QString("Undefined piece move for mode ") +
+			QString::number(static_cast<uint64_t>(interactive_mode))
+		);
+		break;
+	}
 }
 
 void GuiInteractiveController::undo() {
+
+	// switch SOLVER_MODE
 
 	gameHistory.back().undo();
 
@@ -173,7 +227,14 @@ void GuiInteractiveController::undo() {
 void GuiInteractiveController::startSolver()
 {
 	gameHistory.back().startSolver();
+	interactive_mode = InteractiveMode::SOLVER_INTERACTIVE_STEPS;
 	viewSolutionPaths();
+}
+
+void GuiInteractiveController::selectSolution(std::size_t index)
+{
+	gameHistory.back().selectSolution(index);
+	gameHistory.back().resetSolverSteps();
 }
 
 void GuiInteractiveController::viewSolutionPaths()
@@ -192,7 +253,7 @@ void GuiInteractiveController::viewSolutionPaths()
 			s = s + "[" + QString::number(goal_counter) + "]     ";
 			s = s + QString::number(i) + ": ";
 			for (const GameController::piece_move_type& m : equivalence_classes[i][0].vector()) {
-				
+
 				std::string color = "RGBY";
 				color = color.substr(m.pid.value, 1); // this is not okay. we need to properly use the coloring array.
 				// please check #69 so that we may include tobor svg in this file's corresponding header to define coloring there....
@@ -221,3 +282,24 @@ void GuiInteractiveController::viewSolutionPaths()
 
 }
 
+void GameController::moveBySolver(bool forward) {
+
+	auto& move_path = get_selected_solution_representant(selected_solution_index);
+
+	qDebug() << "move by solver: path length " << move_path.vector().size();
+
+	const auto index_next_move = path.size() - solver_begin_index;
+
+	qDebug() << "move by solver: index next move " << index_next_move;
+
+	if (forward) {
+		movePiece(move_path.vector()[index_next_move].pid, move_path.vector()[index_next_move].dir);
+	}
+	else { // back
+		if (index_next_move == 0) // already at solver start
+			return;
+		path.pop_back();
+	}
+
+	//selected_solution_index
+}

@@ -4,6 +4,8 @@
 
 #include "world_generator.h"
 
+#include "gui_helper.h"
+
 // #include "tobor_svg.h" produces error
 
 
@@ -47,21 +49,43 @@ public:
 
 	using move_path_type = tobor::v1_0::move_path<piece_move_type>;
 
+
+
 	/* data */
 
 	world_type tobor_world;
 
 	move_one_piece_calculator_type move_one_piece_calculator;
 
+
+
 	std::vector<positions_of_pieces_type> path;
 
 	cell_id_type target_cell;
 
-	std::vector<positions_of_pieces_type>::iterator solver_begin;
+
+
+	std::vector<positions_of_pieces_type>::size_type solver_begin_index;
 
 	std::optional<partial_state_graph_type> optional_solver_state_graph;
-	
+
 	std::optional<std::map<positions_of_pieces_type, std::vector<std::vector<move_path_type>>>> optional_classified_move_paths;
+
+	std::size_t selected_solution_index;
+
+	move_path_type& get_selected_solution_representant(std::size_t index) {
+		for (auto& pair : optional_classified_move_paths.value()) {
+			//for (auto& equi_class : pair.second) {
+			if (index < pair.second.size()) {
+				return pair.second[index].front();
+			}
+			index -= pair.second.size();
+			//}
+
+		}
+		// out of range
+		throw 42;
+	}
 
 	GameController(
 		const world_type& tobor_world,
@@ -72,7 +96,8 @@ public:
 		move_one_piece_calculator(this->tobor_world),
 		path{ initial_state },
 		target_cell(target_cell),
-		solver_begin(path.begin())
+		solver_begin_index(0),
+		selected_solution_index(0)
 	{
 
 	}
@@ -110,17 +135,21 @@ public:
 
 	inline void startSolver() {
 
+		// set solver begin
+		solver_begin_index = path.size();
+
+		// build graph
 		optional_solver_state_graph.emplace(currentState());
-
 		partial_state_graph_type& graph{ optional_solver_state_graph.value() };
-
 		graph.build_state_graph_for_all_optimal_solutions(move_one_piece_calculator, target_cell);
 
+
+		// optimal paths
 		std::map<positions_of_pieces_type, std::vector<move_path_type>> optimal_paths_map{ graph.optimal_paths(target_cell) };
 
+		// classify optimal paths...
 		optional_classified_move_paths.reset();
 		optional_classified_move_paths.emplace();
-
 		auto& classified_move_paths{ optional_classified_move_paths.value() };
 
 		for (const auto& pair : optimal_paths_map) {
@@ -131,8 +160,11 @@ public:
 		}
 	}
 
+	void moveBySolver(bool forward);
+
 	inline void selectSolution(const std::size_t& index) {
-		(void)index;
+		selected_solution_index = index;
+		//(void)index;
 		// selects a solution from the list of solutions
 	}
 
@@ -142,7 +174,8 @@ public:
 	}
 
 	inline void resetSolverSteps() {
-		// go back to solver_init
+		// go back to solver_begin_index
+		path.erase(path.begin() + solver_begin_index, path.end());
 	}
 
 };
@@ -187,16 +220,16 @@ public:
 
 		//originalGenerator.set_counter(distribution_on_uint64(generator));
 
-		originalGenerator.set_counter(72972);
+		originalGenerator.set_counter(73021); // 72972 73021
 	}
 
 	void startGame();
 
 	void stopGame();
 
-	void setPieceId(const tobor::v1_0::default_piece_id& piece_id) {
-		this->selected_piece_id = piece_id;
-	}
+	void moveBySolver(bool forward);
+
+	void setPieceId(const tobor::v1_0::default_piece_id& piece_id);
 
 	void refreshNumberOfSteps();
 
@@ -215,6 +248,8 @@ public:
 	void undo();
 
 	void startSolver();
+
+	void selectSolution(std::size_t index);
 
 	void viewSolutionPaths();
 
