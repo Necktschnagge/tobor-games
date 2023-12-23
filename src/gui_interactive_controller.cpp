@@ -226,7 +226,7 @@ void GuiInteractiveController::undo() {
 
 void GuiInteractiveController::startSolver()
 {
-	gameHistory.back().startSolver();
+	gameHistory.back().startSolver(mainWindow);
 	interactive_mode = InteractiveMode::SOLVER_INTERACTIVE_STEPS;
 	viewSolutionPaths();
 }
@@ -280,6 +280,40 @@ void GuiInteractiveController::viewSolutionPaths()
 
 	mainWindow->ui->listView->setModel(model);
 
+}
+
+void GameController::startSolver(QMainWindow* mw) {
+
+	// set solver begin
+	solver_begin_index = path.size();
+
+	// build graph
+	optional_solver_state_graph.emplace(currentState());
+	partial_state_graph_type& graph{ optional_solver_state_graph.value() };
+	graph.build_state_graph_for_all_optimal_solutions(move_one_piece_calculator, target_cell);
+
+	mw->statusBar()->showMessage("Extracting solution paths...");
+	mw->repaint();
+
+	// optimal paths
+	std::map<positions_of_pieces_type, std::vector<move_path_type>> optimal_paths_map{ graph.optimal_paths(target_cell) };
+
+	mw->statusBar()->showMessage("Classifying solution paths...");
+	mw->repaint();
+
+	// classify optimal paths...
+	optional_classified_move_paths.reset();
+	optional_classified_move_paths.emplace();
+	auto& classified_move_paths{ optional_classified_move_paths.value() };
+
+	for (const auto& pair : optimal_paths_map) {
+		classified_move_paths[pair.first] = move_path_type::interleaving_partitioning(pair.second);
+		for (auto& equivalence_class : classified_move_paths[pair.first]) {
+			std::sort(equivalence_class.begin(), equivalence_class.end(), move_path_type::antiprettiness_relation);
+		}
+	}
+	mw->statusBar()->showMessage("Done");
+	mw->repaint();
 }
 
 void GameController::moveBySolver(bool forward) {

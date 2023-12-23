@@ -133,32 +133,7 @@ public:
 		}
 	}
 
-	inline void startSolver() {
-
-		// set solver begin
-		solver_begin_index = path.size();
-
-		// build graph
-		optional_solver_state_graph.emplace(currentState());
-		partial_state_graph_type& graph{ optional_solver_state_graph.value() };
-		graph.build_state_graph_for_all_optimal_solutions(move_one_piece_calculator, target_cell);
-
-
-		// optimal paths
-		std::map<positions_of_pieces_type, std::vector<move_path_type>> optimal_paths_map{ graph.optimal_paths(target_cell) };
-
-		// classify optimal paths...
-		optional_classified_move_paths.reset();
-		optional_classified_move_paths.emplace();
-		auto& classified_move_paths{ optional_classified_move_paths.value() };
-
-		for (const auto& pair : optimal_paths_map) {
-			classified_move_paths[pair.first] = move_path_type::interleaving_partitioning(pair.second);
-			for (auto& equivalence_class : classified_move_paths[pair.first]) {
-				std::sort(equivalence_class.begin(), equivalence_class.end(), move_path_type::antiprettiness_relation);
-			}
-		}
-	}
+	inline void startSolver(QMainWindow* mw);
 
 	void moveBySolver(bool forward);
 
