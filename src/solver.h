@@ -3,6 +3,7 @@
 #include "models.h"
 
 #include <map>
+#include <unordered_map>
 #include <array>
 #include <algorithm>
 #include <limits>
@@ -400,6 +401,7 @@ namespace tobor {
 
 			using piece_move_type = Piece_Move_Type;
 
+			using pop_hasher_type = typename positions_of_pieces_type::hasher;
 
 
 			/* type consistency */
@@ -413,7 +415,7 @@ namespace tobor {
 
 			/* introduced types... */
 
-			using partial_solutions_map_type = std::map<positions_of_pieces_type, type>;
+			using partial_solutions_map_type = std::unordered_map<positions_of_pieces_type, type, pop_hasher_type>;
 
 			using map_iterator_type = typename partial_solutions_map_type::iterator;
 
@@ -549,8 +551,8 @@ namespace tobor {
 			}
 
 			inline std::map<positions_of_pieces_type, std::vector<move_path_type>> optimal_paths(const cell_id_type& target_cell) {
-				
-				std::map<positions_of_pieces_type,std::vector<move_path_type>> result;
+
+				std::map<positions_of_pieces_type, std::vector<move_path_type>> result;
 
 				//std::vector<positions_of_pieces_type> goal_states;
 

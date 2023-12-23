@@ -588,6 +588,57 @@ namespace tobor {
 				}
 				return false;
 			}
+
+			//friend struct hasher;
+
+			class hasher
+			{
+				static constexpr uint8_t SHIFT{
+					(sizeof(std::size_t) * 8 / COUNT_ALL_PIECES) + (sizeof(std::size_t) * 8 / COUNT_ALL_PIECES == 0)
+				};
+
+				template<class ... T>
+				inline static std::size_t hash_combine(const T& ... values) {
+					return 0; // ((values.get_id() << SHIFT)^...);
+				}
+
+			public:
+				std::size_t operator()(const positions_of_pieces& pop) const noexcept
+				{
+					//std::size_t result = pop.piece_positions[0].get_id();
+					//using sequence = std::make_integer_sequence<pieces_quantity_type::int_type, COUNT_ALL_PIECES>;
+
+					//return std::apply(hash_combine, pop);
+					// 
+					//return hash_combine(pop...);
+
+					//for (pieces_quantity_type::int_type i{ 1 }; i < COUNT_ALL_PIECES; ++i) {
+					//
+					//}
+
+					//pop.piece_positions[0].get_id();
+
+					if constexpr (false) {
+
+					std::size_t result{ 0 };
+					for (std::size_t i = 0; i < COUNT_ALL_PIECES; ++i) {
+						result = (result << SHIFT) ^ pop.piece_positions[i].get_id();
+					}
+					return result;
+					}
+					else {
+						return pop.piece_positions[0].get_id();
+					}
+
+
+					//return result;
+					/*
+					std::size_t h1 = std::hash<std::string>{}(s.first_name);
+					std::size_t h2 = std::hash<std::string>{}(s.last_name);
+					return h1 ^ (h2 << 1); // or use boost::hash_combine
+					*/
+				}
+			};
 		};
 
 		using default_positions_of_pieces = positions_of_pieces<default_pieces_quantity, default_cell_id, false, true>;
