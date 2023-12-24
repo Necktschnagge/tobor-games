@@ -134,6 +134,7 @@ namespace tobor {
 			using positions_of_pieces_type = Position_Of_Pieces_T;
 			using cell_id_type = typename positions_of_pieces_type::cell_id_type;
 			using world_type = typename positions_of_pieces_type::world_type;
+			using cell_id_int_type = typename cell_id_type::int_type;
 
 
 			using quick_move_cache_type = Quick_Move_Cache_T;
@@ -186,7 +187,7 @@ namespace tobor {
 			*	@brief Calculates the successor cell to reach starting at \p start_cell moving west until obstacle.
 			*/
 			inline std::pair<cell_id_type, bool> get_next_cell_on_west_move(const cell_id_type& start_cell, const positions_of_pieces_type& state) {
-				std::size_t next_cell{ cache.get_west(start_cell.get_id()) };
+				cell_id_int_type next_cell{ cache.get_west(start_cell.get_id()) };
 
 				//if (start_cell.get_id() == next_cell) { // no move possible by walls
 				//	return std::make_pair(cell_id_type::create_by_id(next_cell, my_world), false);
@@ -215,7 +216,7 @@ namespace tobor {
 				//decltype(cell_id_type::get_id) cell_id_type::* get_id_type = &cell_id_type::get_id;
 				//decltype(quick_move_cache::get_west) quick_move_cache::* next_cache_direction = &quick_move_cache::get_east;
 
-				std::size_t next_cell{ cache.get_east(start_cell.get_id()) };
+				cell_id_int_type next_cell{ cache.get_east(start_cell.get_id()) };
 
 				//if (start_cell.get_id() == next_cell) { // no move possible by walls
 				//	return std::make_pair(cell_id_type::create_by_id(next_cell, my_world), false);
@@ -240,7 +241,7 @@ namespace tobor {
 			*	@brief Calculates the successor cell to reach starting at \p start_cell moving south until obstacle.
 			*/
 			inline std::pair<cell_id_type, bool> get_next_cell_on_south_move(const cell_id_type& start_cell, const positions_of_pieces_type& state) {
-				std::size_t next_cell{ cache.get_south(start_cell.get_transposed_id()) };
+				cell_id_int_type next_cell{ cache.get_south(start_cell.get_transposed_id()) };
 
 				//if (start_cell.get_transposed_id() == next_cell) { // no move possible by walls
 				//	return std::make_pair(cell_id_type::create_by_transposed_id(next_cell, my_world), false);
@@ -265,7 +266,7 @@ namespace tobor {
 			*	@brief Calculates the successor cell to reach starting at \p start_cell moving north until obstacle.
 			*/
 			inline std::pair<cell_id_type, bool> get_next_cell_on_north_move(const cell_id_type& start_cell, const positions_of_pieces_type& state) {
-				std::size_t next_cell{ cache.get_north(start_cell.get_transposed_id()) };
+				cell_id_int_type next_cell{ cache.get_north(start_cell.get_transposed_id()) };
 
 				//if (start_cell.get_transposed_id() == next_cell) { // no move possible by walls
 				//	return std::make_pair(cell_id_type::create_by_transposed_id(next_cell, my_world), false);

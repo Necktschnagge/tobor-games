@@ -80,15 +80,15 @@ void GuiInteractiveController::startReferenceGame() {
 		world,
 		GameController::positions_of_pieces_type(
 			{
-				tobor::v1_0::default_cell_id::create_by_coordinates(15, 15, world)
+				GameController::cell_id_type::create_by_coordinates(15, 15, world)
 			},
-				{
-					tobor::v1_0::default_cell_id::create_by_coordinates(1,0, world),
-					tobor::v1_0::default_cell_id::create_by_coordinates(12,14, world),
-					tobor::v1_0::default_cell_id::create_by_coordinates(12,15, world)
-				}
+			{
+				GameController::cell_id_type::create_by_coordinates(1,0, world),
+				GameController::cell_id_type::create_by_coordinates(12,14, world),
+				GameController::cell_id_type::create_by_coordinates(12,15, world)
+			}
 		),
-		tobor::v1_0::default_cell_id::create_by_coordinates(9, 3, world)
+		GameController::cell_id_type::create_by_coordinates(9, 3, world)
 	);
 
 	refreshAll();
@@ -126,12 +126,12 @@ void GuiInteractiveController::startGame() {
 		world,
 		GameController::positions_of_pieces_type(
 			{
-				tobor::v1_0::default_cell_id::create_by_coordinates(0, 0, world)
+				GameController::cell_id_type::create_by_coordinates(0, 0, world)
 			},
 				{
-					tobor::v1_0::default_cell_id::create_by_coordinates(0,15, world),
-					tobor::v1_0::default_cell_id::create_by_coordinates(15,15, world),
-					tobor::v1_0::default_cell_id::create_by_coordinates(15,0, world)
+					GameController::cell_id_type::create_by_coordinates(0,15, world),
+					GameController::cell_id_type::create_by_coordinates(15,15, world),
+					GameController::cell_id_type::create_by_coordinates(15,0, world)
 				}
 		),
 		target

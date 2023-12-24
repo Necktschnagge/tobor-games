@@ -171,8 +171,10 @@ namespace tobor {
 				this->x_size = _x_size;
 				this->y_size = _y_size;
 				{
-					h_walls = wall_vector_type(x_size * y_size + 1, false);
-					v_walls = wall_vector_type(x_size * y_size + 1, false);
+					const wall_vector_type::size_type SIZE{ static_cast<std::size_t>(x_size) * y_size + 1 };
+
+					h_walls = wall_vector_type(SIZE, false);
+					v_walls = wall_vector_type(SIZE, false);
 				} // ### check for exception (? heap allocation, should anyway cause the app to terminate, ignore this?)
 
 				for (int_type i = 0; i <= x_size; ++i) { // set north and south walls
@@ -199,15 +201,15 @@ namespace tobor {
 				if (y_blocked_size >= y_size)
 					throw blocked_center_error();
 
-				const std::size_t x_begin{ (x_size - x_blocked_size) / 2 };
-				const std::size_t x_end{ x_begin + x_blocked_size };
-				const std::size_t y_begin{ (y_size - y_blocked_size) / 2 };
-				const std::size_t y_end{ y_begin + y_blocked_size };
+				const int_type x_begin{ static_cast<int_type>((x_size - x_blocked_size) / 2) };
+				const int_type x_end{ static_cast<int_type>(x_begin + x_blocked_size) };
+				const int_type y_begin{ static_cast<int_type>((y_size - y_blocked_size) / 2) };
+				const int_type y_end{ static_cast<int_type>(y_begin + y_blocked_size) };
 
 				for (auto y = y_begin; y != y_end; ++y) {
 					for (auto x = x_begin; x != x_end; ++x) {
-						const std::size_t id = coordinates_to_cell_id(x, y);
-						const std::size_t transposed_id = coordinates_to_transposed_cell_id(x, y);
+						const int_type id = coordinates_to_cell_id(x, y);
+						const int_type transposed_id = coordinates_to_transposed_cell_id(x, y);
 
 						north_wall_by_transposed_id(transposed_id) = true;
 						east_wall_by_id(id) = true;

@@ -33,15 +33,15 @@ public:
 
 	/* Types */
 
-	using world_type = tobor::v1_0::default_world;
+	using world_type = tobor::v1_0::tobor_world<uint16_t>;
 
-	using cell_id_type = tobor::v1_0::default_cell_id;
+	using cell_id_type = tobor::v1_0::universal_cell_id<world_type>;
 
 	using positions_of_pieces_type = tobor::v1_0::positions_of_pieces<tobor::v1_0::default_pieces_quantity, cell_id_type, false, false>;
 
 	using piece_move_type = tobor::v1_0::default_piece_move;
 
-	using move_one_piece_calculator_type = tobor::v1_0::move_one_piece_calculator<positions_of_pieces_type, tobor::v1_0::default_quick_move_cache, piece_move_type>;
+	using move_one_piece_calculator_type = tobor::v1_0::move_one_piece_calculator<positions_of_pieces_type, tobor::v1_0::quick_move_cache<world_type>, piece_move_type>;
 
 	using state_graph_node_type = tobor::v1_0::state_graph_node<positions_of_pieces_type, piece_move_type>;
 
