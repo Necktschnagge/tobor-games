@@ -862,13 +862,13 @@ namespace tobor {
 			inline static std::vector<std::vector<move_path>> interleaving_partitioning_improved(const std::vector<move_path>& paths) {
 				std::vector<std::vector<move_path>> equivalence_classes;
 
-				using pair_type = std::pair<move_path, uint8_t>;
+				using pair_type = std::pair<move_path, uint8_t>; // divide this into two vectors(?)
 
 				using flagged_paths_type = std::vector<pair_type>;
 				using flagged_paths_iterator = typename flagged_paths_type::iterator;
 
 
-				static constexpr uint8_t EXPLORED{ 0b10 };
+				//static constexpr uint8_t EXPLORED{ 0b10 };
 				static constexpr uint8_t REACHED{ 0b01 };
 
 				flagged_paths_type flagged_paths;
