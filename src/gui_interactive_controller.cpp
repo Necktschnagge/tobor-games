@@ -320,6 +320,9 @@ void GuiInteractiveController::startSolver()
 
 void GuiInteractiveController::selectSolution(std::size_t index)
 {
+	if (interactive_mode != InteractiveMode::SOLVER_INTERACTIVE_STEPS) {
+		return showErrorDialog("Cannot select any solver solution when not in solver mode!");
+	}
 	gameHistory.back().selectSolution(index);
 	gameHistory.back().resetSolverSteps();
 }
@@ -414,6 +417,8 @@ void GameController::moveBySolver(bool forward) {
 	qDebug() << "move by solver: index next move " << index_next_move;
 
 	if (forward) {
+		if (isFinal())
+			return;
 		movePiece(move_path.vector()[index_next_move].pid, move_path.vector()[index_next_move].dir);
 	}
 	else { // back

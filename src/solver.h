@@ -438,7 +438,7 @@ namespace tobor {
 
 			/* data... */
 
-			std::vector<predecessor_tuple> optimal_predecessors;
+			std::vector<predecessor_tuple> optimal_predecessors; // ctor: reserve for max number of opt. predecessors. should be 8, each piece can come from two directions max.
 
 			size_type smallest_seen_step_distance_from_initial_state{ MAX };
 
@@ -483,6 +483,8 @@ namespace tobor {
 
 			// all game states that have been found so far,
 			using partial_solutions_map_type = typename state_graph_node_type::partial_solutions_map_type;
+
+			using partial_solutions_map_mapped_type = typename partial_solutions_map_type::mapped_type;
 
 			// to be used as a pointer to a game state
 			using map_iterator = typename state_graph_node_type::map_iterator_type;
@@ -550,8 +552,8 @@ namespace tobor {
 			}
 
 			inline std::map<positions_of_pieces_type, std::vector<move_path_type>> optimal_paths(const cell_id_type& target_cell) {
-				
-				std::map<positions_of_pieces_type,std::vector<move_path_type>> result;
+
+				std::map<positions_of_pieces_type, std::vector<move_path_type>> result;
 
 				//std::vector<positions_of_pieces_type> goal_states;
 
@@ -578,12 +580,25 @@ namespace tobor {
 
 				for (size_type expand_size{ 0 }; expand_size < optimal_solution_size; ++expand_size) {
 
-					visited_game_states.emplace_back(); // possibly invalidates iterators on sub-vectors, but on most compilers it will work anyway.
+					visited_game_states.emplace_back();
+					// possibly invalidates iterators on sub-vectors, but on most compilers it will work anyway.
 					// But please do not rely on this behaviour.
 
-					for (const map_iterator& current_iterator : visited_game_states[expand_size]) {
+					//if (expand_size != 0) {
+						//visited_game_states[expand_size].shrink_to_fit();
+						visited_game_states[expand_size+1].reserve(visited_game_states[expand_size].size() * 3 + 100 * expand_size + 10);
+					//}
 
-						std::vector<move_candidate> candidates_for_successor_states;
+					for (std::size_t iii = 0; iii < visited_game_states[expand_size].size(); ++iii) {
+
+						if (!(iii % 1000)) {
+							auto x = 5;
+							(void)x;
+						}
+
+						const map_iterator& current_iterator{ visited_game_states[expand_size][iii] };
+
+						std::vector<move_candidate> candidates_for_successor_states; // can be array with fixed size(?)
 
 						// compute all successor state candidates:
 						for (typename piece_move_type::piece_id_type::int_type pid = 0; pid < positions_of_pieces_type::COUNT_ALL_PIECES; ++pid) {
@@ -616,7 +631,12 @@ namespace tobor {
 
 								/// check this whole comparison again!
 
-								if (ps_map[new_state_2].smallest_seen_step_distance_from_initial_state > current_iterator->second.smallest_seen_step_distance_from_initial_state + 1) { // check if path to successor state is an optimal one (as far as we have seen)
+								auto [iter_insertion, bool_inserted] = ps_map.insert(std::make_pair(new_state_2, partial_solutions_map_mapped_type()));
+
+								auto& entry_value{ iter_insertion->second };
+								//auto& entry_key{ iter_insertion->first };
+
+								if (entry_value.smallest_seen_step_distance_from_initial_state > current_iterator->second.smallest_seen_step_distance_from_initial_state + 1) { // check if path to successor state is an optimal one (as far as we have seen)
 									/// ?????????????? if improvement.... only occurs as improving from not seen (=MAX) to some finite value for a distance
 
 									// to make it more efficient: use an .insert(...) get the iterator to newly inserted element.
@@ -629,15 +649,21 @@ namespace tobor {
 									//}
 									//solutions_map[new_state].predecessors.clear();
 
-									ps_map[new_state_2].smallest_seen_step_distance_from_initial_state = current_iterator->second.smallest_seen_step_distance_from_initial_state + 1;
-									ps_map[new_state_2].optimal_predecessors.emplace_back(current_iterator, c.move); // why not delete old ones?
-									++(current_iterator->second.count_successors_where_this_is_one_optimal_predecessor);
-									visited_game_states[expand_size + 1].push_back(ps_map.find(new_state_2));
+									entry_value.smallest_seen_step_distance_from_initial_state = current_iterator->second.smallest_seen_step_distance_from_initial_state + 1;
+
+									entry_value.optimal_predecessors.reserve(10);
+
+									entry_value.optimal_predecessors.emplace_back(current_iterator, c.move); // why not delete old ones?
+									auto& c_pred{ current_iterator->second.count_successors_where_this_is_one_optimal_predecessor };
+									++c_pred;
+									visited_game_states[expand_size + 1].push_back(iter_insertion);
 								}
 								else {
-									if (ps_map[new_state_2].smallest_seen_step_distance_from_initial_state == current_iterator->second.smallest_seen_step_distance_from_initial_state + 1) {
-										ps_map[new_state_2].optimal_predecessors.emplace_back(current_iterator, c.move);
-										++(current_iterator->second.count_successors_where_this_is_one_optimal_predecessor);
+									if (entry_value.smallest_seen_step_distance_from_initial_state == current_iterator->second.smallest_seen_step_distance_from_initial_state + 1) {
+										entry_value.optimal_predecessors.emplace_back(current_iterator, c.move); // can grow to size 9 (why???)
+
+										auto& c_pred{ current_iterator->second.count_successors_where_this_is_one_optimal_predecessor };
+										++c_pred;
 										// visited_game_states.push_back(solutions_map.find(new_state)); don't add, already added on first path reaching new_state
 									}
 								}

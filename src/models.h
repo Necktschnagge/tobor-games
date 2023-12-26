@@ -2,6 +2,7 @@
 
 
 #include <map>
+#include <set>
 #include <array>
 #include <vector>
 #include <algorithm>
@@ -646,6 +647,14 @@ namespace tobor {
 
 			piece_move() : pid(0), dir(direction::NORTH()) {}
 
+			piece_move(const piece_move&) = default;
+
+			piece_move& operator=(const piece_move&) = default;
+
+			piece_move(piece_move&&) = default;
+
+			piece_move& operator=(piece_move&&) = default;
+
 			inline bool operator<(const piece_move& another) const {
 				return pid == another.pid ?
 					dir < another.dir :
@@ -741,6 +750,14 @@ namespace tobor {
 
 			move_path(std::size_t n) : move_vector(n, piece_move_type()) {}
 
+			move_path(const move_path&) = default;
+
+			move_path& operator=(const move_path&) = default;
+
+			move_path(move_path&&) = default;
+
+			move_path& operator=(move_path&&) = default;
+
 			vector_type& vector() { return move_vector; }
 
 			const vector_type& vector() const { return move_vector; }
@@ -749,6 +766,32 @@ namespace tobor {
 				move_path copy{ *this };
 				std::copy(another.move_vector.cbegin(), another.move_vector.cend(), std::back_inserter(copy.move_vector));
 				return copy;
+			}
+
+			inline bool operator==(const move_path& another) const {
+				return move_vector == another.move_vector;
+			}
+
+			inline bool operator<(const move_path& another) const {
+				return move_vector < another.move_vector;
+			}
+
+			inline std::vector<move_path> syntactic_interleaving_neighbours() {
+				if (move_vector.size() < 2) {
+					return std::vector<move_path>();
+				}
+
+				auto result = std::vector<move_path>(move_vector.size() - 1, *this);
+				auto iter = result.begin();
+				for (std::size_t i{ 0 }; i + 1 < move_vector.size(); ++i) {
+					if (!(move_vector[i] == move_vector[i + 1])) {
+						std::swap(iter->move_vector[i], iter->move_vector[i + 1]);
+						++iter;
+					}
+				}
+				result.erase(iter, result.end());
+
+				return result;
 			}
 
 			/*
@@ -816,39 +859,135 @@ namespace tobor {
 				return false;
 			}
 
-			inline static std::vector<std::vector<move_path>> interleaving_partitioning(const std::vector<move_path>& paths) {
+			inline static std::vector<std::vector<move_path>> interleaving_partitioning_improved(const std::vector<move_path>& paths) {
 				std::vector<std::vector<move_path>> equivalence_classes;
 
-				for (const auto& p : paths) {
+				using pair_type = std::pair<move_path, uint8_t>;
 
-					std::vector<std::size_t> indices; // all indices of matching equivalence classes
-					for (std::size_t i{ 0 }; i < equivalence_classes.size(); ++i) {
-						auto& ec{ equivalence_classes[i] };
-						for (const auto& el : ec) {
-							if (el.is_interleaving_neighbour(p)) {
-								indices.push_back(i);
+				using flagged_paths_type = std::vector<pair_type>;
+				using flagged_paths_iterator = typename flagged_paths_type::iterator;
+
+
+				static constexpr uint8_t EXPLORED{ 0b10 };
+				static constexpr uint8_t REACHED{ 0b01 };
+
+				flagged_paths_type flagged_paths;
+				flagged_paths.reserve(paths.size());
+				std::transform(paths.cbegin(), paths.cend(), std::back_inserter(flagged_paths), [](const move_path& mp) { return std::make_pair(mp, 0); });
+
+				std::sort(flagged_paths.begin(), flagged_paths.end()); // lexicographical sorting of paths by piece_id, then direction.
+
+				flagged_paths_iterator remaining_end{ flagged_paths.end() };
+
+				while (flagged_paths.begin() != remaining_end) { // while there are path not yet put into some equivalence class
+					std::size_t diff = remaining_end - flagged_paths.begin();
+					(void)diff;
+					equivalence_classes.emplace_back();
+					auto& equiv_class{ equivalence_classes.back() };
+					equiv_class.reserve(remaining_end - flagged_paths.begin());
+
+					flagged_paths.front().second = REACHED;
+					equiv_class.push_back(flagged_paths.front().first);
+
+					std::set<std::size_t> indices_to_explore;
+
+					indices_to_explore.insert(0);
+
+					while (!indices_to_explore.empty()) {
+
+						std::size_t current_exploration_index = *indices_to_explore.cbegin();
+						indices_to_explore.erase(indices_to_explore.cbegin());
+
+						std::vector<move_path> neighbour_candidates = flagged_paths[current_exploration_index].first.syntactic_interleaving_neighbours();
+
+						std::sort(neighbour_candidates.begin(), neighbour_candidates.end()); // lex sorting of move paths.
+
+						flagged_paths_iterator search_begin{ flagged_paths.begin() };
+
+						for (auto& candidate : neighbour_candidates) {
+
+							search_begin = std::lower_bound( // find in sorted vector
+								search_begin,
+								remaining_end,
+								std::make_pair(candidate, std::size_t(0)),
+								[](const auto& l, const auto& r) {
+									return l.first < r.first;
+								}
+							);
+
+							if (search_begin == remaining_end) {
 								break;
+							}
+
+							if (search_begin->first == candidate && !(search_begin->second & REACHED)) {
+								// if found candidate and not reached before
+
+								equiv_class.emplace_back(candidate);
+								search_begin->second |= REACHED;
+								indices_to_explore.insert(search_begin - flagged_paths.begin());
+							}
+
+						}
+					}
+
+					remaining_end = std::remove_if(
+						flagged_paths.begin(),
+						remaining_end,
+						[](const pair_type& pair) {
+							return pair.second & REACHED;
+						}
+					);
+					equiv_class.shrink_to_fit();
+				}
+				if (paths.size() != flagged_paths.size()) {
+					auto x = paths.size() - flagged_paths.size();
+					(void)x;
+				}
+
+				return equivalence_classes;
+			}
+
+			inline static std::vector<std::vector<move_path>> interleaving_partitioning(const std::vector<move_path>& paths) {
+
+				static constexpr bool USE_IMPROVEMENT{ true };
+
+				if constexpr (USE_IMPROVEMENT) {
+					return interleaving_partitioning_improved(paths);
+				}
+				else {
+					std::vector<std::vector<move_path>> equivalence_classes;
+
+					for (const auto& p : paths) {
+
+						std::vector<std::size_t> indices; // all indices of matching equivalence classes
+						for (std::size_t i{ 0 }; i < equivalence_classes.size(); ++i) {
+							auto& ec{ equivalence_classes[i] };
+							for (const auto& el : ec) {
+								if (el.is_interleaving_neighbour(p)) {
+									indices.push_back(i);
+									break;
+								}
+							}
+						}
+
+						if (indices.empty()) {
+							equivalence_classes.emplace_back();
+							equivalence_classes.back().push_back(p);
+						}
+						else {
+							equivalence_classes[indices[0]].emplace_back(p);
+							for (std::size_t j = indices.size() - 1; j != 0; --j) {
+								std::copy(
+									equivalence_classes[indices[j]].cbegin(),
+									equivalence_classes[indices[j]].cend(),
+									std::back_inserter(equivalence_classes[indices[0]])
+								);
+								equivalence_classes.erase(equivalence_classes.begin() + indices[j]);
 							}
 						}
 					}
-
-					if (indices.empty()) {
-						equivalence_classes.emplace_back();
-						equivalence_classes.back().push_back(p);
-					}
-					else {
-						equivalence_classes[indices[0]].emplace_back(p);
-						for (std::size_t j = indices.size() - 1; j != 0; --j) {
-							std::copy(
-								equivalence_classes[indices[j]].cbegin(),
-								equivalence_classes[indices[j]].cend(),
-								std::back_inserter(equivalence_classes[indices[0]])
-							);
-							equivalence_classes.erase(equivalence_classes.begin() + indices[j]);
-						}
-					}
+					return equivalence_classes;
 				}
-				return equivalence_classes;
 			}
 
 			std::size_t changes() const {
