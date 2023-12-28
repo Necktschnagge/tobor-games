@@ -651,7 +651,7 @@ namespace tobor {
 
 									entry_value.smallest_seen_step_distance_from_initial_state = current_iterator->second.smallest_seen_step_distance_from_initial_state + 1;
 
-									entry_value.optimal_predecessors.reserve(10);
+									entry_value.optimal_predecessors.reserve(16);
 
 									entry_value.optimal_predecessors.emplace_back(current_iterator, c.move); // why not delete old ones?
 									auto& c_pred{ current_iterator->second.count_successors_where_this_is_one_optimal_predecessor };

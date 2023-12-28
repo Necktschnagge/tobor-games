@@ -145,7 +145,7 @@ void MainWindow::keyPressEvent(QKeyEvent* e)
 
 void MainWindow::on_actionTest_ListView_triggered()
 {
-	guiInteractiveController.startReferenceGame();
+	guiInteractiveController.startReferenceGame22();
 
 }
 

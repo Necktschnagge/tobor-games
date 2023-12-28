@@ -1,31 +1,24 @@
 #include "predefined.h"
 #include "gui_interactive_controller.h"
 
+#include "gui_helper.h"
+
 #include "mainwindow.h"
 #include "./ui_mainwindow.h"
 
 #include <QStringListModel>
-#include "tobor_svg.h"
+#include "tobor_svg.h" // has to be reordered!
+
+#include <stdexcept>
 
 
-void GuiInteractiveController::startReferenceGame() {
+/**
+*	@brief Starts a reference game where 22 steps are needed until goal
+*	is deprecated, just for development and debugging
+*/
+void GuiInteractiveController::startReferenceGame22() {
 
 	interactive_mode = InteractiveMode::GAME_INTERACTIVE;
-
-	// create a board
-
-	//auto tup = originalGenerator.split_element();
-	//(void)tup;
-	//auto x = std::get<0>(tup);
-	//auto a = x % 4; x /= 4;
-	//auto b = x % 4; x /= 4;
-	//auto c = x % 4; x /= 4;
-	//auto d = x % 4; x /= 4;
-	//auto e = x;
-	//qDebug() << a << "   :   " << b << "   :   " << c << "   :   " << d << "   :   " << e << "   :   " << std::get<1>(tup) << "   :   " << std::get<2>(tup) << "\n";
-	//qDebug() << originalGenerator.get_counter() << "\n";
-	//auto world = originalGenerator.get_tobor_world();
-	//auto target = originalGenerator.get_target_cell();
 
 	auto world = GameController::world_type(16, 16);
 	world.block_center_cells(2, 2);
@@ -72,10 +65,6 @@ void GuiInteractiveController::startReferenceGame() {
 	world.south_wall_by_transposed_id(15 * 16 + 5) = true;
 	world.south_wall_by_transposed_id(15 * 16 + 12) = true;
 
-
-
-
-
 	gameHistory.emplace_back(
 		world,
 		GameController::positions_of_pieces_type(
@@ -98,11 +87,7 @@ void GuiInteractiveController::startReferenceGame() {
 void GuiInteractiveController::startGame() {
 
 	if (interactive_mode != InteractiveMode::NO_GAME) {
-
-		QMessageBox msgBox(QMessageBox::Icon::Critical, QString("GUI ERROR"), "This action should not be available.");
-		msgBox.exec();
-
-		return;
+		return showErrorDialog("This action should not be available.");
 	}
 
 	interactive_mode = InteractiveMode::GAME_INTERACTIVE;
@@ -147,16 +132,11 @@ void GuiInteractiveController::startGame() {
 void GuiInteractiveController::stopGame() {
 
 	if (interactive_mode == InteractiveMode::NO_GAME) {
-
-		QMessageBox msgBox(QMessageBox::Icon::Critical, QString("GUI ERROR"), "This action should not be available.");
-		msgBox.exec();
-
+		return showErrorDialog("This action should not be available.");
 	}
 
 	interactive_mode = InteractiveMode::NO_GAME;
-
 	refreshAll();
-
 }
 
 void GuiInteractiveController::moveBySolver(bool forward)
@@ -245,7 +225,7 @@ void GuiInteractiveController::refreshMenuButtonEnable()
 
 		mainWindow->ui->actionStopGame->setEnabled(true);
 
-		mainWindow->ui->actionStart_Solver->setEnabled(true);
+		mainWindow->ui->actionStart_Solver->setEnabled(false);
 
 		mainWindow->ui->actionMoveBack->setEnabled(!gameHistory.back().isEmptyPath());
 
@@ -299,16 +279,26 @@ void GuiInteractiveController::movePiece(const tobor::v1_0::direction& direction
 
 void GuiInteractiveController::undo() {
 
-	// switch SOLVER_MODE
+	switch (interactive_mode)
+	{
+	case GuiInteractiveController::InteractiveMode::NO_GAME:
+		return showErrorDialog("Cannot undo with no game opened.");
 
-	gameHistory.back().undo();
+	case GuiInteractiveController::InteractiveMode::GAME_INTERACTIVE:
+		gameHistory.back().undo();
+		refreshAll();
+		break;
 
-	refreshSVG();
+	case GuiInteractiveController::InteractiveMode::SOLVER_INTERACTIVE_STEPS:
+		return showErrorDialog("Cannot yet undo in solver mode.");
 
-	refreshNumberOfSteps();
-
-	refreshMenuButtonEnable();
-
+	default:
+		showErrorDialog(
+			QString("Undefined undo for mode ") +
+			QString::number(static_cast<uint64_t>(interactive_mode))
+		);
+		break;
+	}
 }
 
 void GuiInteractiveController::startSolver()
@@ -327,7 +317,7 @@ void GuiInteractiveController::selectSolution(std::size_t index)
 	gameHistory.back().resetSolverSteps();
 }
 
-void GuiInteractiveController::viewSolutionPaths()
+void GuiInteractiveController::viewSolutionPaths() // this has to be improved!!!
 {
 	QStringList qStringList;
 
@@ -370,6 +360,34 @@ void GuiInteractiveController::viewSolutionPaths()
 
 	mainWindow->ui->listView->setModel(model);
 
+}
+
+GameController::move_path_type& GameController::get_selected_solution_representant(std::size_t index) {
+	for (auto& pair : optional_classified_move_paths.value()) {
+		//for (auto& equi_class : pair.second) {
+		if (index < pair.second.size()) {
+			return pair.second[index].front();
+		}
+		index -= pair.second.size();
+		//}
+
+	}
+	// out of range
+	showErrorDialog("selected solution index out of range, try to use teh first solution instead.");
+	if (optional_classified_move_paths.value().empty()) {
+		showErrorDialog("no solution found at all [1]");
+		throw std::runtime_error("should select a solution where there is no solution [1]");
+	}
+
+	if (optional_classified_move_paths.value().begin()->second.empty()) {
+		showErrorDialog("no solution found in first class [2]");
+		throw std::runtime_error("should select a solution where there is no solution [2]");
+	}
+	if (optional_classified_move_paths.value().begin()->second.front().empty()) {
+		showErrorDialog("no solution found in first class [3]");
+		throw std::runtime_error("should select a solution where there is no solution [3]");
+	}
+	return optional_classified_move_paths.value().begin()->second.front().front();
 }
 
 void GameController::startSolver(QMainWindow* mw) {

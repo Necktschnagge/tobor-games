@@ -4,8 +4,6 @@
 
 #include "world_generator.h"
 
-#include "gui_helper.h"
-
 // #include "tobor_svg.h" produces error
 
 
@@ -73,19 +71,7 @@ public:
 
 	std::size_t selected_solution_index;
 
-	move_path_type& get_selected_solution_representant(std::size_t index) {
-		for (auto& pair : optional_classified_move_paths.value()) {
-			//for (auto& equi_class : pair.second) {
-			if (index < pair.second.size()) {
-				return pair.second[index].front();
-			}
-			index -= pair.second.size();
-			//}
-
-		}
-		// out of range
-		throw 42;
-	}
+	move_path_type& get_selected_solution_representant(std::size_t index);
 
 	GameController(
 		const world_type& tobor_world,
@@ -139,11 +125,10 @@ public:
 
 	inline void selectSolution(const std::size_t& index) {
 		selected_solution_index = index;
-		//(void)index;
 		// selects a solution from the list of solutions
 	}
 
-	inline void solverStep() {
+	inline void solverStep() { // unused, moved to "void moveBySolver(bool forward);"
 		// move one step forward according to the current selected solver solution.
 		// disable the ListView... make it gray, cannot click there anymore...
 	}
@@ -182,7 +167,7 @@ class GuiInteractiveController final {
 
 public:
 
-	void startReferenceGame();
+	void startReferenceGame22();
 
 	GuiInteractiveController(MainWindow* mainWindow) :
 		mainWindow(mainWindow),
