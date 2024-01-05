@@ -438,7 +438,7 @@ namespace tobor {
 
 			/* data... */
 
-			std::vector<predecessor_tuple> optimal_predecessors; 
+			std::vector<predecessor_tuple> optimal_predecessors;
 
 			size_type smallest_seen_step_distance_from_initial_state{ MAX };
 
@@ -586,7 +586,7 @@ namespace tobor {
 
 					//if (expand_size != 0) {
 						//visited_game_states[expand_size].shrink_to_fit();
-						visited_game_states[expand_size+1].reserve(visited_game_states[expand_size].size() * 3 + 100 * expand_size + 10);
+					visited_game_states[expand_size + 1].reserve(visited_game_states[expand_size].size() * 3 + 100 * expand_size + 10);
 					//}
 
 					for (std::size_t iii = 0; iii < visited_game_states[expand_size].size(); ++iii) {
