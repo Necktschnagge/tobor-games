@@ -438,7 +438,7 @@ namespace tobor {
 
 			/* data... */
 
-			std::vector<predecessor_tuple> optimal_predecessors; // ctor: reserve for max number of opt. predecessors. should be 8, each piece can come from two directions max.
+			std::vector<predecessor_tuple> optimal_predecessors; 
 
 			size_type smallest_seen_step_distance_from_initial_state{ MAX };
 
