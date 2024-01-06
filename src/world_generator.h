@@ -15,9 +15,9 @@ namespace tobor {
 			class original_4_of_16 {
 			public:
 
-				using world_type = tobor::v1_0::default_world;
+				using world_type = tobor::v1_0::tobor_world<uint16_t>;
 
-				using cell_id_type = tobor::v1_0::default_cell_id;
+				using cell_id_type = tobor::v1_0::universal_cell_id<world_type>;
 
 				constexpr static std::size_t RED_PLANET{ 0 };
 				constexpr static std::size_t GREEN_PLANET{ 1 };
@@ -85,6 +85,10 @@ namespace tobor {
 
 				static world_type get_world(uint64_t select_aligned_world, uint64_t rotation);
 
+				static constexpr uint64_t CYCLIC_GROUP_SIZE{
+					COUNT_ALL_WORLDS_WITH_SELECTED_TARGET
+				};
+
 			private:
 				// standard generator:
 				// 4 times: select a quadrant
@@ -101,7 +105,8 @@ namespace tobor {
 					3 * 4 * 4 +
 					0 * 4 * 4 * 4 +
 					5 * 4 * 4 * 4 * 4 +
-					1 * 4 * 4 * 4 * 4 * 6 * 4
+					0 * 4 * 4 * 4 * 4 * 6 +
+					5 * 4 * 4 * 4 * 4 * 6 * 4
 				};
 
 				static constexpr uint64_t SECOND_GENERATOR{
@@ -112,10 +117,6 @@ namespace tobor {
 					3 * 4 * 4 * 4 * 4 +
 					1 * 4 * 4 * 4 * 4 * 6 +
 					7 * 4 * 4 * 4 * 4 * 6 * 4
-				};
-
-				static constexpr uint64_t CYCLIC_GROUP_SIZE{
-					COUNT_ALL_WORLDS_WITH_SELECTED_TARGET
 				};
 
 				uint64_t generator;
@@ -138,6 +139,7 @@ namespace tobor {
 					return generator;
 				}
 
+			public://remove
 				std::tuple<uint64_t, uint64_t, uint64_t> split_element() const {
 					uint64_t global_select = (counter * generator) % CYCLIC_GROUP_SIZE;
 
@@ -147,7 +149,7 @@ namespace tobor {
 					uint64_t rotation = global_select % COUNT_ROTATIONS;
 					global_select /= COUNT_ROTATIONS;
 
-					uint64_t select_target = global_select / COUNT_TARGET_CELLS;
+					uint64_t select_target = global_select % COUNT_TARGET_CELLS;
 
 					return std::make_tuple(select_aligned_world, rotation, select_target);
 				}
@@ -171,19 +173,23 @@ namespace tobor {
 					return result;
 				}
 
+				inline uint64_t get_counter() {
+					return counter;
+				}
+
 				world_type get_tobor_world() const {
 					auto [select_aligned_world, rotation, select_target] = split_element();
 					return get_world(select_aligned_world, rotation);
 				}
 
-				tobor::v1_0::default_cell_id get_target_cell() const {
+				cell_id_type get_target_cell() const {
 					auto w = get_tobor_world();
-					std::vector<tobor::v1_0::default_cell_id::int_type> cell_ids;
-					const tobor::v1_0::default_cell_id::int_type MIN = 0;
-					const tobor::v1_0::default_cell_id::int_type MAX = 15;
+					std::vector<cell_id_type::int_type> cell_ids;
+					const cell_id_type::int_type MIN = 0;
+					const cell_id_type::int_type MAX = 15;
 
-					for (tobor::v1_0::default_cell_id::int_type i = 0; i < w.count_cells(); ++i) {
-						auto cid = tobor::v1_0::default_cell_id::create_by_id(i, w);
+					for (cell_id_type::int_type i = 0; i < w.count_cells(); ++i) {
+						auto cid = cell_id_type::create_by_id(i, w);
 						if (cid.get_x_coord() == MIN || cid.get_x_coord() == MAX)
 							continue;
 						if (cid.get_y_coord() == MIN || cid.get_y_coord() == MAX)
@@ -195,7 +201,10 @@ namespace tobor {
 							w.south_wall_by_transposed_id(cid.get_transposed_id()) +
 							w.north_wall_by_transposed_id(cid.get_transposed_id());
 
-						if (count_walls > 1 && count_walls < 4) {
+						bool WE = w.west_wall_by_id(i) || w.east_wall_by_id(i);
+						bool SN = w.south_wall_by_transposed_id(cid.get_transposed_id()) || w.north_wall_by_transposed_id(cid.get_transposed_id());
+
+						if (count_walls > 1 && count_walls < 4 && WE && SN) {
 							cell_ids.push_back(i);
 						}
 					}
@@ -205,7 +214,7 @@ namespace tobor {
 					// cell_ids.size() // should always be 17. test this.!!!
 
 					auto index = select_target % cell_ids.size();
-					return tobor::v1_0::default_cell_id::create_by_id(cell_ids[index], w);
+					return cell_id_type::create_by_id(cell_ids[index], w);
 				}
 
 				inline original_4_of_16& operator++() {
@@ -218,6 +227,10 @@ namespace tobor {
 					counter += CYCLIC_GROUP_SIZE - 1;
 					counter %= CYCLIC_GROUP_SIZE;
 					return *this;
+				}
+
+				void set_counter(const uint64_t& counter_p) {
+					counter = counter_p % CYCLIC_GROUP_SIZE;
 				}
 
 			};

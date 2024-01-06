@@ -3,21 +3,49 @@
 #include "mainwindow.h"
 
 #include "./ui_mainwindow.h"
-
-#include "models.h"
+#include "gui_interactive_controller.h"
+#include "solver.h"
 #include "tobor_svg.h"
+#include "spdlog/spdlog.h"
+#include "spdlog/sinks/qt_sinks.h"
 
-
+#include <QStringListModel>
+#include <QMessageBox>
+#include <QDebug>
+#include <QStyle>
 #include <QXmlStreamReader>
 #include <QGraphicsSvgItem>
 #include <QMessageBox>
 
+
+
 MainWindow::MainWindow(QWidget* parent)
 	: QMainWindow(parent)
-	, ui(new Ui::MainWindow)
+	, ui(new Ui::MainWindow),
+	guiInteractiveController(this)
 {
 	ui->setupUi(this);
-	this->setWindowTitle("Awkward Goslings");
+
+	//this->setWindowTitle("Awkward Goslings");
+
+	grabKeyboard(); // https://doc.qt.io/qt-6/qwidget.html#grabKeyboard
+
+	// releaseKeyboard();  when entering main menu
+	// again call grabKeyboard() when exiting main menu (by triggering event or exiting without clicking any menu button)
+
+	// can we check this via some FocusEvent? Just check when the focus is changed?
+	// https://stackoverflow.com/questions/321656/get-a-notification-event-signal-when-a-qt-widget-gets-focus
+	// https://doc.qt.io/qt-6/qfocusevent.html#details
+
+/*    auto log_widget = new QTextEdit();
+	auto logger = spdlog::qt_logger_mt("qt_logger", log_widget);
+	log_widget->setMinimumSize(640, 480);
+	log_widget->setWindowTitle("Debug console");
+	log_widget->show();
+	logger->info("QLocale: " + QLocale().name().toStdString());
+	logger->info("Qt Version: " + std::string(qVersion()));
+*/
+
 }
 
 MainWindow::~MainWindow()
@@ -25,95 +53,10 @@ MainWindow::~MainWindow()
 	delete ui;
 }
 
-
-std::string helper_for_demo_board() {
-
-	auto w = tobor::v1_0::default_world(16, 16);
-
-	w.block_center_cells(2, 2);
-
-	// add vertical walls row by row, starting left
-	w.west_wall_by_id(w.coordinates_to_cell_id(6, 0)) = true;
-	w.west_wall_by_id(w.coordinates_to_cell_id(12, 0)) = true;
-	w.west_wall_by_id(w.coordinates_to_cell_id(2, 1)) = true;
-	w.west_wall_by_id(w.coordinates_to_cell_id(10, 1)) = true;
-	w.west_wall_by_id(w.coordinates_to_cell_id(14, 3)) = true;
-	w.west_wall_by_id(w.coordinates_to_cell_id(1, 4)) = true;
-	w.west_wall_by_id(w.coordinates_to_cell_id(11, 4)) = true;
-	w.west_wall_by_id(w.coordinates_to_cell_id(13, 5)) = true;
-	w.west_wall_by_id(w.coordinates_to_cell_id(4, 6)) = true;
-	w.west_wall_by_id(w.coordinates_to_cell_id(12, 9)) = true;
-	w.west_wall_by_id(w.coordinates_to_cell_id(7, 10)) = true;
-	w.west_wall_by_id(w.coordinates_to_cell_id(14, 10)) = true;
-	w.west_wall_by_id(w.coordinates_to_cell_id(3, 11)) = true;
-	w.west_wall_by_id(w.coordinates_to_cell_id(7, 13)) = true;
-	w.west_wall_by_id(w.coordinates_to_cell_id(10, 13)) = true;
-	w.west_wall_by_id(w.coordinates_to_cell_id(1, 14)) = true;
-	w.west_wall_by_id(w.coordinates_to_cell_id(13, 14)) = true;
-	w.west_wall_by_id(w.coordinates_to_cell_id(4, 15)) = true;
-	w.west_wall_by_id(w.coordinates_to_cell_id(12, 15)) = true;
-
-	w.south_wall_by_transposed_id(w.coordinates_to_transposed_cell_id(0, 2)) = true;
-	w.south_wall_by_transposed_id(w.coordinates_to_transposed_cell_id(0, 10)) = true;
-	w.south_wall_by_transposed_id(w.coordinates_to_transposed_cell_id(1, 4)) = true;
-	w.south_wall_by_transposed_id(w.coordinates_to_transposed_cell_id(1, 14)) = true;
-	w.south_wall_by_transposed_id(w.coordinates_to_transposed_cell_id(2, 2)) = true;
-	w.south_wall_by_transposed_id(w.coordinates_to_transposed_cell_id(2, 11)) = true;
-	w.south_wall_by_transposed_id(w.coordinates_to_transposed_cell_id(3, 7)) = true;
-	w.south_wall_by_transposed_id(w.coordinates_to_transposed_cell_id(6, 3)) = true;
-	w.south_wall_by_transposed_id(w.coordinates_to_transposed_cell_id(6, 14)) = true;
-	w.south_wall_by_transposed_id(w.coordinates_to_transposed_cell_id(7, 11)) = true;
-	w.south_wall_by_transposed_id(w.coordinates_to_transposed_cell_id(9, 2)) = true;
-	w.south_wall_by_transposed_id(w.coordinates_to_transposed_cell_id(9, 13)) = true;
-	w.south_wall_by_transposed_id(w.coordinates_to_transposed_cell_id(10, 4)) = true;
-	w.south_wall_by_transposed_id(w.coordinates_to_transposed_cell_id(11, 10)) = true;
-	w.south_wall_by_transposed_id(w.coordinates_to_transposed_cell_id(13, 6)) = true;
-	w.south_wall_by_transposed_id(w.coordinates_to_transposed_cell_id(13, 15)) = true;
-	w.south_wall_by_transposed_id(w.coordinates_to_transposed_cell_id(14, 3)) = true;
-	w.south_wall_by_transposed_id(w.coordinates_to_transposed_cell_id(14, 10)) = true;
-	w.south_wall_by_transposed_id(w.coordinates_to_transposed_cell_id(15, 7)) = true;
-	w.south_wall_by_transposed_id(w.coordinates_to_transposed_cell_id(15, 12)) = true;
-
-	// specify initial state
-	auto target_piece = tobor::v1_0::default_cell_id::create_by_coordinates(6, 9, w);
-	auto green_robot = tobor::v1_0::default_cell_id::create_by_coordinates(12, 7, w);
-	auto red_robot = tobor::v1_0::default_cell_id::create_by_coordinates(12, 12, w);
-	auto yellow_robot = tobor::v1_0::default_cell_id::create_by_coordinates(6, 14, w);
-
-	std::array<tobor::v1_0::default_cell_id, 3> other_robots{ green_robot, red_robot, yellow_robot };
-	std::array<tobor::v1_0::default_cell_id, 1> target_robots{ target_piece };
-
-	//auto initial_state = tobor::v1_0::positions_of_pieces<3>(target_piece, std::move(other_robots));
-
-	// specify target field
-	auto target = tobor::v1_0::default_cell_id::create_by_coordinates(9, 1, w);
-
-	using pop_type = tobor::v1_0::positions_of_pieces<tobor::v1_0::default_pieces_quantity, tobor::v1_0::default_cell_id, false, false>;
-
-	auto svg_string = tobor::v1_0::tobor_graphics<pop_type>::draw_tobor_world(
-		w,
-		pop_type(
-			target_robots,
-			other_robots
-		),
-		target,
-		tobor::v1_0::tobor_graphics<pop_type>::coloring("red", "green", "blue", "yellow")
-	);
-
-	return (svg_string);
-}
-
 void MainWindow::on_actionshowSVG_triggered()
 {
-	if constexpr (true) {
-		viewSvgInMainView(QString::fromStdString(helper_for_demo_board()));
-
-	}
-	else {
-
-
-		const QString example_svg_string{
-		R"xxx(<?xml version="1.0" ?>
+	const QString example_svg_string{
+	  R"xxx(<?xml version="1.0" ?>
 <!DOCTYPE svg  PUBLIC '-//W3C//DTD SVG 1.1//EN'  'http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd'>
 <svg enable-background="new 0 0 512 512.068" height="512.068px" id="Layer_1" version="1.1" viewBox="0 0 512 512.068" width="512px" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
 <g id="meanicons_x5F_23">
@@ -122,19 +65,20 @@ void MainWindow::on_actionshowSVG_triggered()
 <g id="Layer_1_1_"/>
 </svg>
 )xxx"
-		};
-		viewSvgInMainView(example_svg_string);
+	};
 
-	}
+	viewSvgInMainView(example_svg_string);
 }
-
 
 void MainWindow::on_actionAbout_triggered()
 {
+	qDebug() << "QLocale: " << QLocale().name();
+
 	QMessageBox msgBox;
 	msgBox.setText(QString("Qt Version used:   ") + qVersion());
 	msgBox.exec();
 }
+
 
 void MainWindow::viewSvgInMainView(const QString& svg_string)
 {
@@ -156,5 +100,136 @@ void MainWindow::viewSvgInMainView(const QString& svg_string)
 	ui->graphicsView->show();
 
 	svgViewToolchain = std::move(new_chain); // then destroy old objects in reverse order compared to construction...
+}
+
+void MainWindow::on_actionNewGame_triggered() {
+	guiInteractiveController.startGame();
+	statusBar()->showMessage("Game started.");
+}
+
+void MainWindow::on_actionStopGame_triggered() {
+	guiInteractiveController.stopGame();
+	statusBar()->showMessage("Game stopped.");
+}
+
+void MainWindow::on_actionMoveBack_triggered()
+{
+	guiInteractiveController.undo();
+}
+
+void MainWindow::keyPressEvent(QKeyEvent* e)
+{
+	// see: https://doc.qt.io/qt-6/qt.html#Key-enum
+
+	switch (e->key()) {
+
+	case Qt::Key_Alt:
+		releaseKeyboard();
+		break;
+
+	case Qt::Key_Up:
+		on_actionNORTH_triggered();
+		break;
+
+	case Qt::Key_Down:
+		on_actionSOUTH_triggered();
+		break;
+
+	case Qt::Key_Left:
+		on_actionWEST_triggered();
+		break;
+
+	case Qt::Key_Right:
+		on_actionEAST_triggered();
+		break;
+	}
+	qDebug() << "catch keyboard";
+}
+
+
+void MainWindow::on_actionTest_ListView_triggered()
+{
+	guiInteractiveController.startReferenceGame22();
+
+}
+
+
+void MainWindow::on_actionRED_triggered()
+{
+	statusBar()->showMessage("RED selected.");
+	guiInteractiveController.setPieceId(0);
+}
+
+
+void MainWindow::on_actionYELLOW_triggered()
+{
+	statusBar()->showMessage("YELLOW selected.");
+	guiInteractiveController.setPieceId(3);
+}
+
+
+void MainWindow::on_actionGREEN_triggered()
+{
+	statusBar()->showMessage("GREEN selected.");
+	guiInteractiveController.setPieceId(1);
+}
+
+
+void MainWindow::on_actionBLUE_triggered()
+{
+	statusBar()->showMessage("BLUE selected.");
+	guiInteractiveController.setPieceId(2);
+}
+
+
+void MainWindow::on_actionNORTH_triggered()
+{
+	statusBar()->showMessage("Went north.");
+	guiInteractiveController.movePiece(tobor::v1_0::direction::NORTH());
+}
+
+
+void MainWindow::on_actionEAST_triggered()
+{
+	statusBar()->showMessage("Went east.");
+	guiInteractiveController.movePiece(tobor::v1_0::direction::EAST());
+
+}
+
+
+void MainWindow::on_actionSOUTH_triggered()
+{
+	statusBar()->showMessage("Went south.");
+	guiInteractiveController.movePiece(tobor::v1_0::direction::SOUTH());
+
+}
+
+
+void MainWindow::on_actionWEST_triggered()
+{
+	statusBar()->showMessage("Went west.");
+	guiInteractiveController.movePiece(tobor::v1_0::direction::WEST());
+
+}
+
+
+void MainWindow::on_actionStart_Solver_triggered()
+{
+    ui->statusbar->showMessage("starting solver...");
+	//update(); //repaint();
+	//ui->statusbar->update();
+	repaint();
+    guiInteractiveController.startSolver();
+}
+
+
+void MainWindow::on_listView_doubleClicked(const QModelIndex &index)
+{
+    //QString m{"double-clicked ListView on" };
+    //m+=QString::number(index.row());
+    //ui->statusbar->showMessage(m);
+
+	guiInteractiveController.selectSolution(index.row());
+	guiInteractiveController.refreshAll();
 }
 
