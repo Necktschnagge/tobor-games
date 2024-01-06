@@ -145,22 +145,7 @@ void MainWindow::keyPressEvent(QKeyEvent* e)
 
 void MainWindow::on_actionTest_ListView_triggered()
 {
-	static QStringListModel* model{ nullptr };
-
-	if (model == nullptr) {
-		model = new QStringListModel();
-	}
-	QStringList list;
-	list << "a" << "b" << "c";
-	list << "a" << "b" << "c";
-	list << "a" << "b" << "c";
-	list << "a" << "b" << "c";
-	list << "a" << "b" << "c";
-	list << "a" << "b" << "c";
-	list << "a" << "b" << "c";
-	model->setStringList(list);
-
-	ui->listView->setModel(model);
+	guiInteractiveController.startReferenceGame22();
 
 }
 
@@ -175,24 +160,21 @@ void MainWindow::on_actionRED_triggered()
 void MainWindow::on_actionYELLOW_triggered()
 {
 	statusBar()->showMessage("YELLOW selected.");
-	guiInteractiveController.setPieceId(1);
-
+	guiInteractiveController.setPieceId(3);
 }
 
 
 void MainWindow::on_actionGREEN_triggered()
 {
 	statusBar()->showMessage("GREEN selected.");
-	guiInteractiveController.setPieceId(2);
-
+	guiInteractiveController.setPieceId(1);
 }
 
 
 void MainWindow::on_actionBLUE_triggered()
 {
 	statusBar()->showMessage("BLUE selected.");
-	guiInteractiveController.setPieceId(3);
-
+	guiInteractiveController.setPieceId(2);
 }
 
 
@@ -224,5 +206,26 @@ void MainWindow::on_actionWEST_triggered()
 	statusBar()->showMessage("Went west.");
 	guiInteractiveController.movePiece(tobor::v1_0::direction::WEST());
 
+}
+
+
+void MainWindow::on_actionStart_Solver_triggered()
+{
+    ui->statusbar->showMessage("starting solver...");
+	//update(); //repaint();
+	//ui->statusbar->update();
+	repaint();
+    guiInteractiveController.startSolver();
+}
+
+
+void MainWindow::on_listView_doubleClicked(const QModelIndex &index)
+{
+    //QString m{"double-clicked ListView on" };
+    //m+=QString::number(index.row());
+    //ui->statusbar->showMessage(m);
+
+	guiInteractiveController.selectSolution(index.row());
+	guiInteractiveController.refreshAll();
 }
 

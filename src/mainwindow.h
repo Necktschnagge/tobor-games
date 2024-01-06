@@ -30,7 +30,7 @@ public:
 		std::unique_ptr<QGraphicsScene> q_graphics_scene;
 		/*
 		*/
-		inline SvgViewToolchain& operator =(SvgViewToolchain&& another) {
+		inline SvgViewToolchain& operator =(SvgViewToolchain&& another) noexcept {
 			q_graphics_scene = std::move(another.q_graphics_scene);
 			q_svg_renderer = std::move(another.q_svg_renderer);
 
@@ -74,6 +74,10 @@ private slots:
 	void on_actionSOUTH_triggered();
 
 	void on_actionWEST_triggered();
+
+    void on_actionStart_Solver_triggered();
+
+    void on_listView_doubleClicked(const QModelIndex &index);
 
 private:
 	Ui::MainWindow* ui;
