@@ -75,6 +75,10 @@ private slots:
 
 	void on_actionWEST_triggered();
 
+	void on_actionForward_triggered();
+
+	void on_actionBack_triggered();
+
     void on_actionStart_Solver_triggered();
 
     void on_listView_doubleClicked(const QModelIndex &index);

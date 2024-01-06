@@ -131,6 +131,13 @@
           <addaction name="actionSOUTH"/>
           <addaction name="actionWEST"/>
         </widget>
+        <widget class="QMenu" name="menuPlaySolver">
+          <property name="title">
+            <string>&amp;Play...</string>
+          </property>
+          <addaction name="actionForward"/>
+          <addaction name="actionBack"/>
+        </widget>
         <addaction name="actionNewGame"/>
         <addaction name="actionStopGame"/>
         <addaction name="separator"/>
@@ -139,6 +146,7 @@
         <addaction name="actionMoveBack"/>
         <addaction name="separator"/>
         <addaction name="actionStart_Solver"/>
+        <addaction name="menuPlaySolver"/>
         <addaction name="actionSolver_Configuration"/>
       </widget>
       <widget class="QMenu" name="menuEdit">
@@ -246,6 +254,22 @@
       </property>
       <property name="shortcut">
         <string>Ctrl+Up</string>
+      </property>
+    </action>
+    <action name="actionForward">
+      <property name="text">
+        <string>&amp;Forward</string>
+      </property>
+      <property name="shortcut">
+        <string>Ctrl+Right</string>
+      </property>
+    </action>
+    <action name="actionBack">
+      <property name="text">
+        <string>&amp;Back</string>
+      </property>
+      <property name="shortcut">
+        <string>Ctrl+Left</string>
       </property>
     </action>
     <action name="actionEAST">

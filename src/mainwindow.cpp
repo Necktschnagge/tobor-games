@@ -25,6 +25,8 @@ MainWindow::MainWindow(QWidget* parent)
 	guiInteractiveController(this)
 {
 	ui->setupUi(this);
+	guiInteractiveController.refreshAll();
+
 	grabKeyboard(); // https://doc.qt.io/qt-6/qwidget.html#grabKeyboard
 
 	// releaseKeyboard();  when entering main menu
@@ -208,6 +210,16 @@ void MainWindow::on_actionWEST_triggered()
 
 }
 
+void MainWindow::on_actionForward_triggered()
+{
+	on_actionEAST_triggered(); // change this
+}
+
+
+void MainWindow::on_actionBack_triggered()
+{
+	on_actionWEST_triggered(); // change this
+}
 
 void MainWindow::on_actionStart_Solver_triggered()
 {
