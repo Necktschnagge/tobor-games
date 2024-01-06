@@ -25,6 +25,9 @@ MainWindow::MainWindow(QWidget* parent)
 	guiInteractiveController(this)
 {
 	ui->setupUi(this);
+
+	//this->setWindowTitle("Awkward Goslings");
+
 	grabKeyboard(); // https://doc.qt.io/qt-6/qwidget.html#grabKeyboard
 
 	// releaseKeyboard();  when entering main menu
@@ -42,6 +45,7 @@ MainWindow::MainWindow(QWidget* parent)
 	logger->info("QLocale: " + QLocale().name().toStdString());
 	logger->info("Qt Version: " + std::string(qVersion()));
 */
+
 }
 
 MainWindow::~MainWindow()
