@@ -671,10 +671,11 @@ namespace tobor {
 			const drawing_style_sheet& dss
 		) {
 			using cell_id_type = tobor::v1_0::universal_cell_id<tobor::v1_0::tobor_world<T...>>;
+			using cell_id_int_type = typename cell_id_type::int_type;
 
 			auto blocked_cells = std::make_unique<svg::svg_compound>();
 
-			for (std::size_t cell_id{ 0 }; cell_id < tobor_world.count_cells(); ++cell_id) {
+			for (cell_id_int_type cell_id{ 0 }; cell_id < tobor_world.count_cells(); ++cell_id) {
 				const auto universal_cell_id = cell_id_type::create_by_id(cell_id, tobor_world);
 
 				if (
@@ -703,9 +704,13 @@ namespace tobor {
 		inline std::unique_ptr<svg::svg_generator> draw_walls(const tobor::v1_0::tobor_world<T...>& tobor_world, const drawing_style_sheet& dss) {
 			auto svg_walls = std::make_unique<svg::svg_compound>();
 
+			using world_type  = tobor::v1_0::tobor_world<T...>;
+			using cell_id_type  = tobor::v1_0::universal_cell_id<world_type>;
+			using int_type = typename cell_id_type::int_type;
+
 			// horizontal walls:
-			for (std::size_t x = 0; x < tobor_world.get_horizontal_size(); ++x) {
-				for (std::size_t y = 0; y <= tobor_world.get_vertical_size(); ++y) {
+			for (int_type x = 0; x < tobor_world.get_horizontal_size(); ++x) {
+				for (int_type y = 0; y <= tobor_world.get_vertical_size(); ++y) {
 					if (
 						tobor_world.south_wall_by_transposed_id(tobor::v1_0::universal_cell_id< tobor::v1_0::tobor_world<T...>>::create_by_coordinates(x, y, tobor_world).get_transposed_id())
 						) {
@@ -716,8 +721,8 @@ namespace tobor {
 			}
 
 			// vertical walls:
-			for (std::size_t x = 0; x <= tobor_world.get_horizontal_size(); ++x) {
-				for (std::size_t y = 0; y < tobor_world.get_vertical_size(); ++y) {
+			for (int_type x = 0; x <= tobor_world.get_horizontal_size(); ++x) {
+				for (int_type y = 0; y < tobor_world.get_vertical_size(); ++y) {
 					if (
 						tobor_world.west_wall_by_id(tobor::v1_0::universal_cell_id< tobor::v1_0::tobor_world<T...>>::create_by_coordinates(x, y, tobor_world).get_id())
 						) {
