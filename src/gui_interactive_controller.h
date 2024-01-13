@@ -48,6 +48,8 @@ public:
 	using move_path_type = tobor::v1_0::move_path<piece_move_type>;
 
 
+private:
+	friend class GuiInteractiveController; // remove this!!!
 
 	/* data */
 
@@ -57,7 +59,7 @@ public:
 
 
 
-	std::vector<positions_of_pieces_type> path;
+	std::vector<positions_of_pieces_type> path; // state - path
 
 	cell_id_type target_cell;
 
@@ -67,11 +69,18 @@ public:
 
 	std::optional<partial_state_graph_type> optional_solver_state_graph;
 
-	std::optional<std::map<positions_of_pieces_type, std::vector<std::vector<move_path_type>>>> optional_classified_move_paths;
+	std::optional<
+		std::map<
+			positions_of_pieces_type,
+			std::vector<
+				std::vector<move_path_type>
+			>
+		>
+	> optional_classified_move_paths;
 
 	std::size_t selected_solution_index;
 
-	move_path_type& get_selected_solution_representant(std::size_t index);
+public:
 
 	GameController(
 		const world_type& tobor_world,
@@ -83,9 +92,19 @@ public:
 		path{ initial_state },
 		target_cell(target_cell),
 		solver_begin_index(0),
+		optional_solver_state_graph(),
+		optional_classified_move_paths(),
 		selected_solution_index(0)
 	{
 
+	}
+
+
+
+	/* non-modifying */
+
+	const positions_of_pieces_type& currentState() const {
+		return path.back();
 	}
 
 	inline bool isFinal() const {
@@ -96,9 +115,9 @@ public:
 		return path.size() == 1;
 	}
 
-	const positions_of_pieces_type& currentState() const {
-		return path.back();
-	}
+
+
+	/* modifying */
 
 	inline void movePiece(const tobor::v1_0::default_piece_id& piece_id, const tobor::v1_0::direction& direction) {
 		if (isFinal()) {
@@ -119,18 +138,27 @@ public:
 		}
 	}
 
-	inline void startSolver(QMainWindow* mw);
+
+	move_path_type& get_selected_solution_representant(std::size_t index);
+
+	void startSolver(QMainWindow* mw);
+
+	void stopSolver() {
+		solver_begin_index = 0;
+		std::optional<partial_state_graph_type> graph_sink;
+
+		std::swap(optional_solver_state_graph, graph_sink); // for debug mode: need async map destruction
+
+		optional_solver_state_graph.reset();
+		optional_classified_move_paths.reset();
+		selected_solution_index = 0;
+	}
 
 	void moveBySolver(bool forward);
 
 	inline void selectSolution(const std::size_t& index) {
 		selected_solution_index = index;
 		// selects a solution from the list of solutions
-	}
-
-	inline void solverStep() { // unused, moved to "void moveBySolver(bool forward);"
-		// move one step forward according to the current selected solver solution.
-		// disable the ListView... make it gray, cannot click there anymore...
 	}
 
 	inline void resetSolverSteps() {
@@ -203,6 +231,7 @@ public:
 		refreshSVG();
 		refreshNumberOfSteps();
 		refreshMenuButtonEnable();
+		viewSolutionPaths();
 	}
 
 	void movePiece(const tobor::v1_0::direction& direction);
@@ -210,6 +239,8 @@ public:
 	void undo();
 
 	void startSolver();
+
+	void stopSolver();
 
 	void selectSolution(std::size_t index);
 

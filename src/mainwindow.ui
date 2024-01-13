@@ -109,6 +109,12 @@
         </property>
         <addaction name="actionshowSVG"/>
       </widget>
+      <widget class="QMenu" name="menuEdit">
+        <property name="title">
+          <string>&amp;Edit</string>
+        </property>
+        <addaction name="actionTest_ListView"/>
+      </widget>
       <widget class="QMenu" name="menuGame">
         <property name="title">
           <string>&amp;Game</string>
@@ -146,14 +152,14 @@
         <addaction name="actionMoveBack"/>
         <addaction name="separator"/>
         <addaction name="actionStart_Solver"/>
+        <addaction name="actionStop_Solver"/>
         <addaction name="menuPlaySolver"/>
         <addaction name="actionSolver_Configuration"/>
       </widget>
-      <widget class="QMenu" name="menuEdit">
+      <widget class="QMenu" name="menuDeveloper">
         <property name="title">
-          <string>&amp;Edit</string>
+          <string>&amp;Developer</string>
         </property>
-        <addaction name="actionTest_ListView"/>
       </widget>
       <widget class="QMenu" name="menuHelp">
         <property name="title">
@@ -211,7 +217,7 @@
     </action>
     <action name="actionAbout">
       <property name="enabled">
-        <bool>false</bool>
+        <bool>true</bool>
       </property>
       <property name="text">
         <string>About</string>
@@ -227,7 +233,7 @@
     </action>
     <action name="actionRED">
       <property name="enabled">
-        <bool>false</bool>
+        <bool>true</bool>
       </property>
       <property name="text">
         <string>&amp;RED</string>
@@ -238,7 +244,7 @@
     </action>
     <action name="actionYELLOW">
       <property name="enabled">
-        <bool>false</bool>
+        <bool>true</bool>
       </property>
       <property name="text">
         <string>&amp;YELLOW</string>
@@ -249,7 +255,7 @@
     </action>
     <action name="actionGREEN">
       <property name="enabled">
-        <bool>false</bool>
+        <bool>true</bool>
       </property>
       <property name="text">
         <string>&amp;GREEN</string>
@@ -260,7 +266,7 @@
     </action>
     <action name="actionBLUE">
       <property name="enabled">
-        <bool>false</bool>
+        <bool>true</bool>
       </property>
       <property name="text">
         <string>&amp;BLUE</string>
@@ -271,7 +277,7 @@
     </action>
     <action name="actionNORTH">
       <property name="enabled">
-        <bool>false</bool>
+        <bool>true</bool>
       </property>
       <property name="text">
         <string>&amp;NORTH</string>
@@ -282,7 +288,7 @@
     </action>
     <action name="actionEAST">
       <property name="enabled">
-        <bool>false</bool>
+        <bool>true</bool>
       </property>
       <property name="text">
         <string>&amp;EAST</string>
@@ -293,7 +299,7 @@
     </action>
     <action name="actionSOUTH">
       <property name="enabled">
-        <bool>false</bool>
+        <bool>true</bool>
       </property>
       <property name="text">
         <string>&amp;SOUTH</string>
@@ -304,7 +310,7 @@
     </action>
     <action name="actionWEST">
       <property name="enabled">
-        <bool>false</bool>
+        <bool>true</bool>
       </property>
       <property name="text">
         <string>&amp;WEST</string>
@@ -324,9 +330,20 @@
         <string>F9</string>
       </property>
     </action>
-    <action name="actionForward">
+    <action name="actionStop_Solver">
       <property name="enabled">
         <bool>false</bool>
+      </property>
+      <property name="text">
+        <string>Stop Solve&amp;r</string>
+      </property>
+      <property name="shortcut">
+        <string>F10</string>
+      </property>
+    </action>
+    <action name="actionForward">
+      <property name="enabled">
+        <bool>true</bool>
       </property>
       <property name="text">
         <string>&amp;Forward</string>
@@ -337,7 +354,7 @@
     </action>
     <action name="actionBack">
       <property name="enabled">
-        <bool>false</bool>
+        <bool>true</bool>
       </property>
       <property name="text">
         <string>&amp;Back</string>
@@ -359,7 +376,7 @@
     </action>
     <action name="actionLicense_Information">
       <property name="enabled">
-        <bool>false</bool>
+        <bool>true</bool>
       </property>
       <property name="text">
         <string>License Information</string>

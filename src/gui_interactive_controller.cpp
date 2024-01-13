@@ -207,6 +207,8 @@ void GuiInteractiveController::refreshMenuButtonEnable()
 
 		mainWindow->ui->actionStart_Solver->setEnabled(true);
 
+		mainWindow->ui->actionStop_Solver->setEnabled(false);
+
 		mainWindow->ui->actionMoveBack->setEnabled(!gameHistory.back().isEmptyPath());
 
 		mainWindow->ui->menuSelect_Piece->setEnabled(true);
@@ -224,6 +226,8 @@ void GuiInteractiveController::refreshMenuButtonEnable()
 
 		mainWindow->ui->actionStart_Solver->setEnabled(false);
 
+		mainWindow->ui->actionStop_Solver->setEnabled(false);
+
 		mainWindow->ui->actionMoveBack->setEnabled(false);
 
 		mainWindow->ui->menuSelect_Piece->setEnabled(false);
@@ -240,6 +244,8 @@ void GuiInteractiveController::refreshMenuButtonEnable()
 		mainWindow->ui->actionStopGame->setEnabled(true);
 
 		mainWindow->ui->actionStart_Solver->setEnabled(false);
+
+		mainWindow->ui->actionStop_Solver->setEnabled(true);
 
 		mainWindow->ui->actionMoveBack->setEnabled(!gameHistory.back().isEmptyPath());
 
@@ -330,6 +336,14 @@ void GuiInteractiveController::startSolver()
 	refreshAll();
 }
 
+void GuiInteractiveController::stopSolver()
+{
+	interactive_mode = InteractiveMode::GAME_INTERACTIVE;
+	gameHistory.back().stopSolver();
+	viewSolutionPaths();
+	refreshAll();
+}
+
 void GuiInteractiveController::selectSolution(std::size_t index)
 {
 	if (interactive_mode != InteractiveMode::SOLVER_INTERACTIVE_STEPS) {
@@ -341,6 +355,22 @@ void GuiInteractiveController::selectSolution(std::size_t index)
 
 void GuiInteractiveController::viewSolutionPaths() // this has to be improved!!!
 {
+	static QStringListModel* model{ nullptr };
+
+	if (model == nullptr) {
+		model = new QStringListModel();
+	}
+
+	if (interactive_mode == InteractiveMode::GAME_INTERACTIVE) {
+
+		QStringList emptyStringList;
+
+		model->setStringList(emptyStringList);
+		mainWindow->ui->listView->setModel(model);
+		return;
+	}
+
+
 	QStringList qStringList;
 
 
@@ -372,11 +402,7 @@ void GuiInteractiveController::viewSolutionPaths() // this has to be improved!!!
 		++goal_counter;
 	}
 
-	static QStringListModel* model{ nullptr };
-
-	if (model == nullptr) {
-		model = new QStringListModel();
-	}
+	
 
 	model->setStringList(qStringList);
 

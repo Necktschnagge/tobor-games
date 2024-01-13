@@ -230,6 +230,11 @@ void MainWindow::on_actionStart_Solver_triggered()
     guiInteractiveController.startSolver();
 }
 
+void MainWindow::on_actionStop_Solver_triggered()
+{
+	guiInteractiveController.stopSolver();
+}
+
 
 void MainWindow::on_listView_doubleClicked(const QModelIndex &index)
 {
