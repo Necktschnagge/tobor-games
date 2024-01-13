@@ -361,7 +361,7 @@ void GuiInteractiveController::viewSolutionPaths() // this has to be improved!!!
 		model = new QStringListModel();
 	}
 
-	if (interactive_mode == InteractiveMode::GAME_INTERACTIVE) {
+	if (interactive_mode != InteractiveMode::SOLVER_INTERACTIVE_STEPS) {
 
 		QStringList emptyStringList;
 
