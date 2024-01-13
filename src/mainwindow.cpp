@@ -2,6 +2,8 @@
 
 #include "mainwindow.h"
 
+#include "gui_helper.h"
+
 #include "./ui_mainwindow.h"
 #include "gui_interactive_controller.h"
 #include "solver.h"
@@ -233,6 +235,11 @@ void MainWindow::on_actionStart_Solver_triggered()
 void MainWindow::on_actionStop_Solver_triggered()
 {
 	guiInteractiveController.stopSolver();
+}
+
+void MainWindow::on_actionLicense_Information_triggered()
+{
+	showErrorDialog("Not yet implemented.");
 }
 
 
