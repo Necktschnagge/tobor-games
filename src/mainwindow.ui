@@ -160,6 +160,7 @@
         <property name="title">
           <string>&amp;Developer</string>
         </property>
+        <addaction name="actionAbout"/>
       </widget>
       <widget class="QMenu" name="menuHelp">
         <property name="title">
@@ -170,6 +171,7 @@
       </widget>
       <addaction name="menuFile"/>
       <addaction name="menuEdit"/>
+      <addaction name="menuDeveloper"/>
       <addaction name="menuGame"/>
       <addaction name="menuHelp"/>
     </widget>
