@@ -11,7 +11,6 @@
 
 #include <stdexcept>
 
-
 /**
 *	@brief Starts a reference game where 22 steps are needed until goal
 *	is deprecated, just for development and debugging
@@ -135,6 +134,8 @@ void GuiInteractiveController::stopGame() {
 		return showErrorDialog("This action should not be available.");
 	}
 
+	gameHistory.back().lazyFreeSolverData();
+
 	interactive_mode = InteractiveMode::NO_GAME;
 	refreshAll();
 }
@@ -197,6 +198,8 @@ void GuiInteractiveController::refreshSVG()
 
 void GuiInteractiveController::refreshMenuButtonEnable()
 {
+
+
 	if (interactive_mode == InteractiveMode::GAME_INTERACTIVE) {
 
 		mainWindow->ui->actionNewGame->setEnabled(false);
@@ -205,7 +208,15 @@ void GuiInteractiveController::refreshMenuButtonEnable()
 
 		mainWindow->ui->actionStart_Solver->setEnabled(true);
 
+		mainWindow->ui->actionStop_Solver->setEnabled(false);
+
 		mainWindow->ui->actionMoveBack->setEnabled(!gameHistory.back().isEmptyPath());
+
+		mainWindow->ui->menuSelect_Piece->setEnabled(true);
+		
+		mainWindow->ui->menuMove->setEnabled(true);
+
+		mainWindow->ui->menuPlaySolver->setEnabled(false);
 
 	}
 	else if (interactive_mode == InteractiveMode::NO_GAME) {
@@ -216,7 +227,15 @@ void GuiInteractiveController::refreshMenuButtonEnable()
 
 		mainWindow->ui->actionStart_Solver->setEnabled(false);
 
+		mainWindow->ui->actionStop_Solver->setEnabled(false);
+
 		mainWindow->ui->actionMoveBack->setEnabled(false);
+
+		mainWindow->ui->menuSelect_Piece->setEnabled(false);
+
+		mainWindow->ui->menuMove->setEnabled(false);
+
+		mainWindow->ui->menuPlaySolver->setEnabled(false);
 
 	}
 	else if (interactive_mode == InteractiveMode::SOLVER_INTERACTIVE_STEPS) {
@@ -227,8 +246,15 @@ void GuiInteractiveController::refreshMenuButtonEnable()
 
 		mainWindow->ui->actionStart_Solver->setEnabled(false);
 
+		mainWindow->ui->actionStop_Solver->setEnabled(true);
+
 		mainWindow->ui->actionMoveBack->setEnabled(!gameHistory.back().isEmptyPath());
 
+		mainWindow->ui->menuSelect_Piece->setEnabled(false);
+
+		mainWindow->ui->menuMove->setEnabled(false);
+
+		mainWindow->ui->menuPlaySolver->setEnabled(true);
 	}
 
 
@@ -236,7 +262,13 @@ void GuiInteractiveController::refreshMenuButtonEnable()
 
 void GuiInteractiveController::refreshNumberOfSteps() {
 
-	QString number_of_steps = QString::number(gameHistory.back().path.size() - 1);
+	QString number_of_steps;
+
+	if (interactive_mode == InteractiveMode::GAME_INTERACTIVE || interactive_mode == InteractiveMode::SOLVER_INTERACTIVE_STEPS) {
+
+		number_of_steps = QString::number(gameHistory.back().path.size() - 1);
+
+	}
 
 	mainWindow->setWindowTitle(number_of_steps);
 
@@ -253,11 +285,7 @@ void GuiInteractiveController::movePiece(const tobor::v1_0::direction& direction
 
 		gameHistory.back().movePiece(selected_piece_id, direction);
 
-		refreshMenuButtonEnable();
-
-		refreshSVG();
-
-		refreshNumberOfSteps();
+		refreshAll();
 
 		break;
 
@@ -306,6 +334,15 @@ void GuiInteractiveController::startSolver()
 	gameHistory.back().startSolver(mainWindow);
 	interactive_mode = InteractiveMode::SOLVER_INTERACTIVE_STEPS;
 	viewSolutionPaths();
+	refreshAll();
+}
+
+void GuiInteractiveController::stopSolver()
+{
+	interactive_mode = InteractiveMode::GAME_INTERACTIVE;
+	gameHistory.back().stopSolver();
+	viewSolutionPaths();
+	refreshAll();
 }
 
 void GuiInteractiveController::selectSolution(std::size_t index)
@@ -319,6 +356,22 @@ void GuiInteractiveController::selectSolution(std::size_t index)
 
 void GuiInteractiveController::viewSolutionPaths() // this has to be improved!!!
 {
+	static QStringListModel* model{ nullptr };
+
+	if (model == nullptr) {
+		model = new QStringListModel();
+	}
+
+	if (interactive_mode != InteractiveMode::SOLVER_INTERACTIVE_STEPS) {
+
+		QStringList emptyStringList;
+
+		model->setStringList(emptyStringList);
+		mainWindow->ui->listView->setModel(model);
+		return;
+	}
+
+
 	QStringList qStringList;
 
 
@@ -350,11 +403,7 @@ void GuiInteractiveController::viewSolutionPaths() // this has to be improved!!!
 		++goal_counter;
 	}
 
-	static QStringListModel* model{ nullptr };
-
-	if (model == nullptr) {
-		model = new QStringListModel();
-	}
+	
 
 	model->setStringList(qStringList);
 

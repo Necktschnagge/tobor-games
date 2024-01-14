@@ -2,6 +2,8 @@
 
 #include "mainwindow.h"
 
+#include "gui_helper.h"
+
 #include "./ui_mainwindow.h"
 #include "gui_interactive_controller.h"
 #include "solver.h"
@@ -25,6 +27,8 @@ MainWindow::MainWindow(QWidget* parent)
 	guiInteractiveController(this)
 {
 	ui->setupUi(this);
+	guiInteractiveController.refreshAll();
+
 	grabKeyboard(); // https://doc.qt.io/qt-6/qwidget.html#grabKeyboard
 
 	// releaseKeyboard();  when entering main menu
@@ -208,22 +212,42 @@ void MainWindow::on_actionWEST_triggered()
 
 }
 
-
-void MainWindow::on_actionStart_Solver_triggered()
+void MainWindow::on_actionForward_triggered()
 {
-    ui->statusbar->showMessage("starting solver...");
-	//update(); //repaint();
-	//ui->statusbar->update();
-	repaint();
-    guiInteractiveController.startSolver();
+	on_actionEAST_triggered(); // change this
 }
 
 
-void MainWindow::on_listView_doubleClicked(const QModelIndex &index)
+void MainWindow::on_actionBack_triggered()
 {
-    //QString m{"double-clicked ListView on" };
-    //m+=QString::number(index.row());
-    //ui->statusbar->showMessage(m);
+	on_actionWEST_triggered(); // change this
+}
+
+void MainWindow::on_actionStart_Solver_triggered()
+{
+	ui->statusbar->showMessage("starting solver...");
+	//update(); //repaint();
+	//ui->statusbar->update();
+	repaint();
+	guiInteractiveController.startSolver();
+}
+
+void MainWindow::on_actionStop_Solver_triggered()
+{
+	guiInteractiveController.stopSolver();
+}
+
+void MainWindow::on_actionLicense_Information_triggered()
+{
+	showErrorDialog("Not yet implemented.");
+}
+
+
+void MainWindow::on_listView_doubleClicked(const QModelIndex& index)
+{
+	//QString m{"double-clicked ListView on" };
+	//m+=QString::number(index.row());
+	//ui->statusbar->showMessage(m);
 
 	guiInteractiveController.selectSolution(index.row());
 	guiInteractiveController.refreshAll();
