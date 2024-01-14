@@ -225,11 +225,11 @@ void MainWindow::on_actionBack_triggered()
 
 void MainWindow::on_actionStart_Solver_triggered()
 {
-    ui->statusbar->showMessage("starting solver...");
+	ui->statusbar->showMessage("starting solver...");
 	//update(); //repaint();
 	//ui->statusbar->update();
 	repaint();
-    guiInteractiveController.startSolver();
+	guiInteractiveController.startSolver();
 }
 
 void MainWindow::on_actionStop_Solver_triggered()
@@ -243,11 +243,11 @@ void MainWindow::on_actionLicense_Information_triggered()
 }
 
 
-void MainWindow::on_listView_doubleClicked(const QModelIndex &index)
+void MainWindow::on_listView_doubleClicked(const QModelIndex& index)
 {
-    //QString m{"double-clicked ListView on" };
-    //m+=QString::number(index.row());
-    //ui->statusbar->showMessage(m);
+	//QString m{"double-clicked ListView on" };
+	//m+=QString::number(index.row());
+	//ui->statusbar->showMessage(m);
 
 	guiInteractiveController.selectSolution(index.row());
 	guiInteractiveController.refreshAll();
