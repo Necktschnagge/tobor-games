@@ -1,5 +1,7 @@
 #pragma once
 
+class GameController;
+
 #include "solver.h" // ..., tobor::v1_0::tobor_world
 
 #include "world_generator.h"
@@ -19,6 +21,8 @@
 
 #include <memory>
 #include <random>
+#include <thread>
+
 
 class MainWindow;
 
@@ -26,7 +30,7 @@ class MainWindow;
 * @brief Keeps track of the path of states visited so far
 *
 */
-struct GameController {
+class GameController {
 public:
 
 	/* Types */
@@ -71,14 +75,84 @@ private:
 
 	std::optional<
 		std::map<
-			positions_of_pieces_type,
-			std::vector<
-				std::vector<move_path_type>
-			>
+		positions_of_pieces_type,
+		std::vector<
+		std::vector<move_path_type>
+		>
 		>
 	> optional_classified_move_paths;
 
 	std::size_t selected_solution_index;
+
+	static constexpr bool DEFAULT_DO_NOT_WAIT_ON_LAZY_FREE{
+#ifdef _DEBUG 
+		false
+#else
+		true
+#endif
+	};
+
+	bool do_not_wait_on_lazy_free{ DEFAULT_DO_NOT_WAIT_ON_LAZY_FREE };
+
+	std::shared_ptr<
+		std::tuple<
+		std::thread,
+		decltype(optional_solver_state_graph),
+		decltype(optional_classified_move_paths)
+		>
+	> lazy_free_worker;
+
+	void lazyFreeSolverData() {
+
+		if (lazy_free_worker && std::get<0>(*lazy_free_worker).joinable()) {
+			do_not_wait_on_lazy_free = true;
+			std::get<0>(*lazy_free_worker).join();
+			do_not_wait_on_lazy_free = DEFAULT_DO_NOT_WAIT_ON_LAZY_FREE;
+		}
+
+		lazy_free_worker = std::make_shared<std::tuple<
+			std::thread,
+			decltype(optional_solver_state_graph),
+			decltype(optional_classified_move_paths)
+			>>();
+
+		std::swap(std::get<1>(*lazy_free_worker), optional_solver_state_graph);
+
+		std::swap(std::get<2>(*lazy_free_worker), optional_classified_move_paths);
+
+		auto routine = [&](
+			std::shared_ptr<
+			std::tuple<
+			std::thread,
+			decltype(optional_solver_state_graph),
+			decltype(optional_classified_move_paths)
+			>
+			> sptr) {
+
+				auto& sink_optional_solver_state_graph{ std::get<1>(*sptr) };
+				auto& sink_optional_classified_move_paths{ std::get<2>(*sptr) };
+
+				if (sink_optional_solver_state_graph.has_value()) {
+					while (!sink_optional_solver_state_graph.value().ps_map.empty()) {
+						sink_optional_solver_state_graph.value().ps_map.erase(sink_optional_solver_state_graph.value().ps_map.begin());
+						if (!do_not_wait_on_lazy_free) {
+							std::this_thread::sleep_for(std::chrono::milliseconds(10));
+						}
+					}
+				}
+
+				if (sink_optional_classified_move_paths.has_value()) {
+					while (!sink_optional_classified_move_paths.value().empty()) {
+						sink_optional_classified_move_paths.value().erase(sink_optional_classified_move_paths.value().begin());
+						if (!do_not_wait_on_lazy_free) {
+							std::this_thread::sleep_for(std::chrono::milliseconds(10));
+						}
+					}
+				}
+			};
+
+		std::get<0>(*lazy_free_worker) = std::thread(routine, lazy_free_worker);
+	}
 
 public:
 
@@ -144,10 +218,14 @@ public:
 	void startSolver(QMainWindow* mw);
 
 	void stopSolver() {
-		solver_begin_index = 0;
-		std::optional<partial_state_graph_type> graph_sink;
 
-		std::swap(optional_solver_state_graph, graph_sink); // for debug mode: need async map destruction
+		lazyFreeSolverData();
+
+		solver_begin_index = 0;
+
+		//std::optional<partial_state_graph_type> graph_sink;
+
+		//std::swap(optional_solver_state_graph, graph_sink); // for debug mode: need async map destruction
 
 		optional_solver_state_graph.reset();
 		optional_classified_move_paths.reset();
@@ -166,6 +244,14 @@ public:
 		path.erase(path.begin() + solver_begin_index, path.end());
 	}
 
+	~GameController() {
+		do_not_wait_on_lazy_free = true;
+		if (lazy_free_worker && std::get<0>(*lazy_free_worker).joinable()) {
+			std::get<0>(*lazy_free_worker).join();
+		}
+	}
+
+	// must implement copy / move ctor and operator=
 };
 
 class GuiInteractiveController final {
@@ -182,7 +268,7 @@ class GuiInteractiveController final {
 
 	InteractiveMode interactive_mode;
 
-	std::vector<GameController> gameHistory;
+	std::list<GameController> gameHistory;
 
 	tobor::v1_0::default_piece_id selected_piece_id{ 0 };
 

@@ -83,6 +83,8 @@ private slots:
 
     void on_actionStop_Solver_triggered();
 
+	void on_actionLicense_Information_triggered();
+
     void on_listView_doubleClicked(const QModelIndex &index);
 
 private:

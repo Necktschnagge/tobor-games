@@ -11,7 +11,6 @@
 
 #include <stdexcept>
 
-
 /**
 *	@brief Starts a reference game where 22 steps are needed until goal
 *	is deprecated, just for development and debugging
@@ -134,6 +133,8 @@ void GuiInteractiveController::stopGame() {
 	if (interactive_mode == InteractiveMode::NO_GAME) {
 		return showErrorDialog("This action should not be available.");
 	}
+
+	gameHistory.back().lazyFreeSolverData();
 
 	interactive_mode = InteractiveMode::NO_GAME;
 	refreshAll();
