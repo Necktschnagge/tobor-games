@@ -1,5 +1,7 @@
 #pragma once
 
+class GameController; // to be removed! ps_map is private, this is needed for friend class to work. Find another solution.
+
 #include "solver.h" // ..., tobor::v1_0::tobor_world
 
 #include "world_generator.h"
