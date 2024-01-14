@@ -497,7 +497,10 @@ namespace tobor {
 			friend class GameController; // remove this! is bad design.
 		private:
 
-			partial_solutions_map_type ps_map;
+		public:
+			partial_solutions_map_type ps_map; // should not be public anymore!
+		private:
+
 
 			// number of steps needed by any optimal solution
 			size_type optimal_solution_size;
