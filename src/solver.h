@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <limits>
 
+class GameController; // for friend class declaration, to be removed
 
 namespace tobor {
 
