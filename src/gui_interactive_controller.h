@@ -1,7 +1,5 @@
 #pragma once
 
-class GameController;
-
 #include "solver.h" // ..., tobor::v1_0::tobor_world
 
 #include "world_generator.h"
