@@ -182,8 +182,7 @@ namespace tobor {
 					return get_world(select_aligned_world, rotation);
 				}
 
-				cell_id_type get_target_cell() const {
-					auto w = get_tobor_world();
+				inline static std::vector<cell_id_type::int_type> get_target_cell_id_vector(const world_type& w) {
 					std::vector<cell_id_type::int_type> cell_ids;
 					const cell_id_type::int_type MIN = 0;
 					const cell_id_type::int_type MAX = 15;
@@ -209,6 +208,14 @@ namespace tobor {
 						}
 					}
 
+
+					return cell_ids;
+				}
+
+
+				cell_id_type get_target_cell() const {
+					auto w = get_tobor_world();
+					const std::vector<cell_id_type::int_type> cell_ids{ get_target_cell_id_vector(w) };
 					auto [select_aligned_world, rotation, select_target] = split_element();
 
 					// cell_ids.size() // should always be 17. test this.!!!
@@ -233,6 +240,12 @@ namespace tobor {
 					counter = counter_p % CYCLIC_GROUP_SIZE;
 				}
 
+				void set_generator(const uint64_t& generator_p) {
+					generator = generator_p % CYCLIC_GROUP_SIZE;
+					increment_generator_until_gcd_1();
+				}
+
+		};
 			};
 
 			class initial_state_generator {
@@ -248,7 +261,7 @@ namespace tobor {
 				// side Group generator size N
 
 				// generator standard 1
-				
+
 				// counter k in 0..M*N
 
 				// in main group select k mod M
