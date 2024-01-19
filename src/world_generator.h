@@ -246,7 +246,7 @@ namespace tobor {
 				}
 
 			};
-		};
+		}
 
 		class initial_state_generator {
 			// statically by size of cells, #target cells, #non-target cells
