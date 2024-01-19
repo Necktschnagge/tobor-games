@@ -245,37 +245,37 @@ namespace tobor {
 					increment_generator_until_gcd_1();
 				}
 
+			};
 		};
-			};
 
-			class initial_state_generator {
-				// statically by size of cells, #target cells, #non-target cells
+		class initial_state_generator {
+			// statically by size of cells, #target cells, #non-target cells
 
-				// by some reference board?
-			};
+			// by some reference board?
+		};
 
-			class product_group_generator {
+		class product_group_generator {
 
-				// main Group generator size M
+			// main Group generator size M
 
-				// side Group generator size N
+			// side Group generator size N
 
-				// generator standard 1
+			// generator standard 1
 
-				// counter k in 0..M*N
+			// counter k in 0..M*N
 
-				// in main group select k mod M
+			// in main group select k mod M
 
-				// in side group select (k mode M + k div M ) mod N
+			// in side group select (k mode M + k div M ) mod N
 
-			};
+		};
 
-			class dynamic_generator {
-				// select a generator, an input, give generated board as output.
-			};
+		class dynamic_generator {
+			// select a generator, an input, give generated board as output.
+		};
 
-		}
 	}
 }
+
 
 
