@@ -208,6 +208,36 @@ namespace tobor {
 						}
 					}
 
+					// check for mis-recognized cells:
+					auto weak_neighbour = [&](cell_id_type::int_type l, cell_id_type::int_type r) -> bool {
+						auto [lx, ly] = w.cell_id_to_coordinates(l);
+						auto [rx, ry] = w.cell_id_to_coordinates(r);
+
+						return (lx == rx && (ly == ry + 1 || ly + 1 == ry)) || (ly == ry && (lx == rx + 1 || lx + 1 == rx));
+						};
+
+					std::vector<cell_id_type::int_type> neighbor_counter(cell_ids.size(), 0);
+
+					for (std::size_t i{ 0 }; i < cell_ids.size(); ++i) {
+						for (std::size_t j{ 0 }; j < cell_ids.size(); ++j) {
+							if (weak_neighbour(cell_ids[i], cell_ids[j])) {
+								++neighbor_counter[i];
+							}
+						}
+					}
+
+					std::size_t count_shrink{ 0 };
+					for (std::size_t i{ 0 }; i < cell_ids.size(); ++i) {
+						auto reverse = cell_ids.size() - 1 - i;
+						if (neighbor_counter[reverse] > 1) {
+							++count_shrink;
+							//this element has to be reased.
+							for (std::size_t j{ reverse }; j + 1 < cell_ids.size(); ++j) {
+								cell_ids[j] = cell_ids[j + 1];
+							}
+						}
+					}
+					cell_ids.erase(cell_ids.begin() + (cell_ids.size() - count_shrink), cell_ids.end());
 
 					return cell_ids;
 				}
