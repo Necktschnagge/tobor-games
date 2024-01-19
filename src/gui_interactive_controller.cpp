@@ -213,7 +213,7 @@ void GuiInteractiveController::refreshMenuButtonEnable()
 		mainWindow->ui->actionMoveBack->setEnabled(!gameHistory.back().isEmptyPath());
 
 		mainWindow->ui->menuSelect_Piece->setEnabled(true);
-		
+
 		mainWindow->ui->menuMove->setEnabled(true);
 
 		mainWindow->ui->menuPlaySolver->setEnabled(false);
@@ -403,11 +403,62 @@ void GuiInteractiveController::viewSolutionPaths() // this has to be improved!!!
 		++goal_counter;
 	}
 
-	
+
 
 	model->setStringList(qStringList);
 
 	mainWindow->ui->listView->setModel(model);
+
+}
+
+void GuiInteractiveController::highlightGeneratedTargetCells()
+{
+	refreshSVG(); // to be replaced!
+
+	if (interactive_mode == InteractiveMode::NO_GAME) {
+		showErrorDialog("not supported without running a game");
+	}
+
+	if (interactive_mode == InteractiveMode::GAME_INTERACTIVE || interactive_mode == InteractiveMode::SOLVER_INTERACTIVE_STEPS) {
+
+
+		//auto coloring = tobor::v1_0::tobor_graphics<GameController::positions_of_pieces_type>::coloring("red", "green", "blue", "yellow");
+
+		// coloring = originalGenerator.obtain_standard_4_coloring_permutation(coloring.colors);
+		// we also have to permutate the selected (user input) color!
+		// Otherwise choosing the yellow duck e.g. moves the blue duck.
+
+		auto& world{ gameHistory.back().tobor_world };
+
+		auto raw_cell_id_vector = originalGenerator.get_target_cell_id_vector(world);
+
+		std::vector<GameController::cell_id_type> comfort_cell_id_vector;
+
+		std::transform(raw_cell_id_vector.cbegin(), raw_cell_id_vector.cend(), std::back_inserter(comfort_cell_id_vector),
+			[&](const auto& raw_cell_id) {
+				return GameController::cell_id_type::create_by_id(raw_cell_id, world);
+			}
+		);
+
+		std::string example_svg_string =
+			tobor::v1_0::tobor_graphics<GameController::positions_of_pieces_type>::draw_tobor_world_with_cell_markers(
+				world,
+				comfort_cell_id_vector
+
+				/*
+				gameHistory.back().path.back(),
+				gameHistory.back().target_cell,
+				coloring
+				*/
+			);
+
+		mainWindow->viewSvgInMainView(example_svg_string);
+
+		QString m{ "Number of generator target cells:   " };
+		m += QString::number(comfort_cell_id_vector.size());
+		mainWindow->ui->statusbar->showMessage(m);
+
+	}
 
 }
 

@@ -289,6 +289,70 @@ namespace tobor {
 				};
 
 				template <class Number>
+				class C : public svg_path_element {
+
+					friend class svg_path;
+
+					std::vector<std::array<Number, 6>> coordinates;
+
+				public:
+
+					C(const Number& control1_x,
+						const Number& control1_y,
+						const Number& control2_x,
+						const Number& control2_y,
+						const Number& destination_x,
+						const Number& destination_y) :
+						coordinates({ { control1_x, control1_y, control2_x ,control2_y , destination_x, destination_y } })
+					{
+					}
+
+					inline void add_coordinates() const noexcept {}
+
+					template<class... _Rest>
+					void add_coordinates(const Number& control1_x,
+						const Number& control1_y,
+						const Number& control2_x,
+						const Number& control2_y,
+						const Number& destination_x,
+						const Number& destination_y, _Rest&& ... others) {
+						coordinates.emplace_back({ control1_x, control1_y, control2_x ,control2_y , destination_x, destination_y });
+						add_coordinates(std::forward<_Rest>(others) ...);
+					}
+
+
+					template<class... _Rest>
+					C(const Number& control1_x,
+						const Number& control1_y,
+						const Number& control2_x,
+						const Number& control2_y,
+						const Number& destination_x,
+						const Number& destination_y, _Rest&& ... others) :
+						coordinates({ control1_x, control1_y, control2_x ,control2_y , destination_x, destination_y })
+					{
+						add_coordinates(std::forward<_Rest>(others) ...);
+					}
+
+					virtual std::string str() const override {
+						return std::accumulate(coordinates.cbegin(), coordinates.cend(), std::string("C"),
+							[](const std::string& acc, const std::array<Number, 6>& el) -> std::string {
+								std::string result = acc;
+								for (std::size_t i = 0; i < 6; ++i) {
+									result += " " + std::to_string(el[i]);
+								}
+								return result;
+							}
+						);
+					}
+
+					virtual std::shared_ptr<svg_path_element> clone() const override {
+						return std::make_shared<C>(*this);
+					}
+
+					virtual ~C() override {}
+				};
+
+				template <class Number>
 				class a : public svg_path_element {
 
 					friend class svg_path;
@@ -704,8 +768,8 @@ namespace tobor {
 		inline std::unique_ptr<svg::svg_generator> draw_walls(const tobor::v1_0::tobor_world<T...>& tobor_world, const drawing_style_sheet& dss) {
 			auto svg_walls = std::make_unique<svg::svg_compound>();
 
-			using world_type  = tobor::v1_0::tobor_world<T...>;
-			using cell_id_type  = tobor::v1_0::universal_cell_id<world_type>;
+			using world_type = tobor::v1_0::tobor_world<T...>;
+			using cell_id_type = tobor::v1_0::universal_cell_id<world_type>;
 			using int_type = typename cell_id_type::int_type;
 
 			// horizontal walls:
@@ -834,6 +898,117 @@ namespace tobor {
 
 		}
 
+
+		template<class ...T>
+		inline std::unique_ptr<svg::svg_generator> draw_star_marker(
+			const tobor::v1_0::tobor_world<T...>& tobor_world,
+			const drawing_style_sheet& dss,
+			const tobor::v1_0::universal_cell_id<tobor::v1_0::tobor_world<T...>>& cell,
+			const std::string& color
+		) {
+
+			auto marker = std::make_unique<svg::svg_path>();
+
+			marker->fill() = color;
+			marker->stroke() = "black";
+			marker->stroke_width() = std::to_string(dss.PIECE_LINE_WIDTH);
+
+			const auto CELL_CORNER_SOUTH_WEST_x = dss.LEFT_PADDING + dss.CELL_WIDTH * cell.get_x_coord();
+			const auto CELL_CORNER_SOUTH_WEST_y = dss.TOP_PADDING + dss.CELL_HEIGHT * (tobor_world.get_vertical_size() - cell.get_y_coord());
+
+			const auto CANVAS_X_SIZE = dss.CELL_WIDTH - 2 * dss.HORIZONTAL_PIECE_PADDING;
+			const auto CANVAS_Y_SIZE = dss.CELL_HEIGHT - 2 * dss.VERTICAL_PIECE_PADDING;
+
+			const auto HALF_CANVAS_X_SIZE = CANVAS_X_SIZE / 2;
+			const auto HALF_CANVAS_Y_SIZE = CANVAS_Y_SIZE / 2;
+
+			//const auto MINIMUM_CANVAS_SIZE = std::min(CANVAS_X_SIZE, CANVAS_Y_SIZE);
+
+			//const auto FOOT_THICKNESS_RIGHT = CANVAS_Y_SIZE * dss.PIECE_FOOT_THICKNESS_FACTOR;
+
+
+			const auto CENTER_X{ CELL_CORNER_SOUTH_WEST_x + dss.CELL_WIDTH / 2 };
+			const auto CENTER_Y{ CELL_CORNER_SOUTH_WEST_y - dss.CELL_HEIGHT / 2 };
+
+			//const auto TOP_Y{ dss.TOP_PADDING + dss.CELL_HEIGHT * (tobor_world.get_vertical_size() - cell.get_y_coord() - 1) + dss.VERTICAL_PIECE_PADDING };
+			//const auto BOTTOM_Y{ CELL_CORNER_SOUTH_WEST_y - dss.VERTICAL_PIECE_PADDING };
+
+			const double SINCOS45{ 0.7071 };
+
+			const auto COORD_DISTANCE_CORNER{ (CANVAS_X_SIZE / 2) * SINCOS45 };
+
+			marker->path_elements.push_back(
+				std::make_shared<svg::svg_path_elements::M<double>>(
+					CENTER_X,
+					CENTER_Y + HALF_CANVAS_Y_SIZE
+				)
+			);
+
+			// remove unused consts in this function!
+
+			marker->path_elements.push_back(
+				std::make_shared<svg::svg_path_elements::C<double>>(
+					CENTER_X, CENTER_Y,
+					CENTER_X, CENTER_Y,
+					CENTER_X + COORD_DISTANCE_CORNER, CENTER_Y + COORD_DISTANCE_CORNER
+				)
+			);
+			marker->path_elements.push_back(
+				std::make_shared<svg::svg_path_elements::C<double>>(
+					CENTER_X, CENTER_Y,
+					CENTER_X, CENTER_Y,
+					CENTER_X + HALF_CANVAS_X_SIZE, CENTER_Y
+				)
+			);
+			marker->path_elements.push_back(
+				std::make_shared<svg::svg_path_elements::C<double>>(
+					CENTER_X, CENTER_Y,
+					CENTER_X, CENTER_Y,
+					CENTER_X + COORD_DISTANCE_CORNER, CENTER_Y - COORD_DISTANCE_CORNER
+				)
+			);
+			marker->path_elements.push_back(
+				std::make_shared<svg::svg_path_elements::C<double>>(
+					CENTER_X, CENTER_Y,
+					CENTER_X, CENTER_Y,
+					CENTER_X, CENTER_Y - HALF_CANVAS_Y_SIZE
+				)
+			);
+			marker->path_elements.push_back(
+				std::make_shared<svg::svg_path_elements::C<double>>(
+					CENTER_X, CENTER_Y,
+					CENTER_X, CENTER_Y,
+					CENTER_X - COORD_DISTANCE_CORNER, CENTER_Y - COORD_DISTANCE_CORNER
+				)
+			);
+			marker->path_elements.push_back(
+				std::make_shared<svg::svg_path_elements::C<double>>(
+					CENTER_X, CENTER_Y,
+					CENTER_X, CENTER_Y,
+					CENTER_X - HALF_CANVAS_X_SIZE, CENTER_Y
+				)
+			);
+			marker->path_elements.push_back(
+				std::make_shared<svg::svg_path_elements::C<double>>(
+					CENTER_X, CENTER_Y,
+					CENTER_X, CENTER_Y,
+					CENTER_X - COORD_DISTANCE_CORNER, CENTER_Y + COORD_DISTANCE_CORNER
+				)
+			);
+			marker->path_elements.push_back(
+				std::make_shared<svg::svg_path_elements::C<double>>(
+					CENTER_X, CENTER_Y,
+					CENTER_X, CENTER_Y,
+					CENTER_X, CENTER_Y + HALF_CANVAS_Y_SIZE
+				)
+			);
+
+			marker->path_elements.push_back(std::make_shared<svg::svg_path_elements::Z>());
+
+			return marker;
+
+		}
+
 		template<class Positions_Of_Pieces_Type_T = tobor::v1_0::default_positions_of_pieces>
 		class tobor_graphics {
 		public:
@@ -888,6 +1063,73 @@ namespace tobor {
 					draw_tobor_grid(tw, dss),
 					draw_walls(tw, dss),
 					std::move(svg_pieces)
+				);
+				/* ORDER REQUIREMENTS
+
+					background is behind everything else					// otherwise cannot see anything
+					grid is behind walls									// walls should cover grid of cause
+
+					grid is in front of target								// otherwise grid would be covered partially
+					walls are in front of target							// since walls partially covered otherwise
+
+					target is in front of blocked							// if by error, target is blocked, we still see target, we also indirectly see it is blocked by seeing walls all around
+
+					pieces are in front of tagert							// since piece covered otherwise when in target cell
+
+					background   <---   blocked   <---   target   <---   grid   <---   walls
+														   |
+														   |
+
+															<---   pieces
+
+					By now there are three variants to place pieces behind/in front of  ...  grid / walls
+				*/
+
+
+
+				const std::string svg_root_height = std::to_string(dss.CELL_HEIGHT * tw.get_vertical_size() + dss.TOP_PADDING + dss.BOTTOM_PADDING);
+				const std::string svg_root_width = std::to_string(dss.CELL_WIDTH * tw.get_vertical_size() + dss.LEFT_PADDING + dss.RIGHT_PADDING);
+				auto svg_root = std::make_unique<svg::svg_environment>(svg_root_height, svg_root_width, std::make_unique<svg::xml_version>(), std::move(svg_body));
+
+				return svg_root->get_svg();
+			}
+
+
+			template<class ... T>
+			inline static std::string draw_tobor_world_with_cell_markers(
+				const tobor::v1_0::tobor_world<T...>& tw,
+				const std::vector<cell_id_type>& markers
+				/*, coloring*/
+			) {
+
+				drawing_style_sheet dss;
+
+				auto svg_cell_markers = std::make_unique<svg::svg_compound>();
+
+				for (const cell_id_type& marker_position : markers) {
+					svg_cell_markers->elements.push_back(
+						draw_star_marker(tw, dss, marker_position, "red")
+					);
+				}
+
+				//auto svg_target = fill_whole_cell(tw, dss, target_cell, c.colors[0]);
+
+				//auto svg_pieces = std::make_unique<svg::svg_compound>();
+
+				//for (pq_size_type pid = 0; pid < pieces_quantity_type::COUNT_ALL_PIECES; ++pid) {
+				//	svg_pieces->elements.push_back(draw_duck_piece(tw, dss, pop.piece_positions[pid], true, c.colors[pid]));
+				//
+				//}
+
+				// The following order is final:
+				auto svg_body = std::make_unique<svg::svg_compound>(
+					draw_tobor_background(tw, dss),
+					draw_blocked_cells(tw, dss),
+					//std::move(svg_target),
+					draw_tobor_grid(tw, dss),
+					draw_walls(tw, dss),
+					std::move(svg_cell_markers)
+					//std::move(svg_pieces)
 				);
 				/* ORDER REQUIREMENTS
 

@@ -183,6 +183,7 @@ namespace tobor {
 				}
 
 				inline static std::vector<cell_id_type::int_type> get_target_cell_id_vector(const world_type& w) {
+					//auto w = get_tobor_world();
 					std::vector<cell_id_type::int_type> cell_ids;
 					const cell_id_type::int_type MIN = 0;
 					const cell_id_type::int_type MAX = 15;
@@ -246,6 +247,31 @@ namespace tobor {
 				cell_id_type get_target_cell() const {
 					auto w = get_tobor_world();
 					const std::vector<cell_id_type::int_type> cell_ids{ get_target_cell_id_vector(w) };
+#if false
+					const cell_id_type::int_type MIN = 0;
+					const cell_id_type::int_type MAX = 15;
+
+					for (cell_id_type::int_type i = 0; i < w.count_cells(); ++i) {
+						auto cid = cell_id_type::create_by_id(i, w);
+						if (cid.get_x_coord() == MIN || cid.get_x_coord() == MAX)
+							continue;
+						if (cid.get_y_coord() == MIN || cid.get_y_coord() == MAX)
+							continue;
+
+						uint8_t count_walls =
+							w.west_wall_by_id(i) +
+							w.east_wall_by_id(i) +
+							w.south_wall_by_transposed_id(cid.get_transposed_id()) +
+							w.north_wall_by_transposed_id(cid.get_transposed_id());
+
+						bool WE = w.west_wall_by_id(i) || w.east_wall_by_id(i);
+						bool SN = w.south_wall_by_transposed_id(cid.get_transposed_id()) || w.north_wall_by_transposed_id(cid.get_transposed_id());
+
+						if (count_walls > 1 && count_walls < 4 && WE && SN) {
+							cell_ids.push_back(i);
+						}
+					}
+#endif
 					auto [select_aligned_world, rotation, select_target] = split_element();
 
 					// cell_ids.size() // should always be 17. test this.!!!
@@ -277,10 +303,223 @@ namespace tobor {
 
 			};
 
-			class initial_state_generator {
-				// statically by size of cells, #target cells, #non-target cells
+			class board_size_condition_violation : public std::logic_error {
+			public:
 
-				// by some reference board?
+				enum class reason_code : int {
+					BOARD_SIZE = 0,
+					BLOCKED_CELLS_COUNT = 1,
+
+					UNDEFINED = -1
+				};
+
+			private:
+
+				reason_code r{ reason_code::UNDEFINED };
+
+				inline std::string make_message() {
+					return std::string("board size condition error, code = ") + std::to_string(static_cast<int>(r));
+				}
+
+			public:
+
+				inline board_size_condition_violation(reason_code reason) : r(reason), std::logic_error(make_message()) {
+					// please test if this is working!
+				}
+
+				inline reason_code reason() const { return r; }
+			};
+
+			template<class Positions_Of_Pieces_Type, uint64_t _BOARD_SIZE, uint64_t _COUNT_TARGET_ROBOTS, uint64_t _COUNT_NON_TARGET_ROBOTS, uint64_t _BLOCKED_CELLS>
+			class initial_state_generator {
+			public:
+
+				/* types */
+
+				using positions_of_pieces_type = Positions_Of_Pieces_Type;
+
+				using cell_id_type = typename positions_of_pieces_type::cell_id_type;
+
+				using world_type = typename positions_of_pieces_type::world_type;
+
+				/* integer constants */
+
+				constexpr static uint64_t BOARD_SIZE{ _BOARD_SIZE };
+				constexpr static uint64_t COUNT_TARGET_ROBOTS{ _COUNT_TARGET_ROBOTS };
+				constexpr static uint64_t COUNT_NON_TARGET_ROBOTS{ _COUNT_NON_TARGET_ROBOTS };
+				constexpr static uint64_t BLOCKED_CELLS{ _BLOCKED_CELLS };
+				//constexpr static uint64_t GOAL_CELLS{ _GOAL_CELLS };
+
+				constexpr static uint64_t NON_BLOCKED_CELLS{ BOARD_SIZE - BLOCKED_CELLS };
+				//constexpr static uint64_t NON_TARGET_FREE_CELLS{ NON_BLOCKED_CELLS - GOAL_CELLS };
+
+				static constexpr uint64_t combinations(const uint64_t& max_factor, const uint64_t& count) {
+					if (count == 0) {
+						return 1;
+					}
+					return (max_factor * combinations(max_factor - 1, count - 1)) / count; // check overflow here!!!
+				}
+
+				static constexpr uint64_t TARGET_COMBINATIONS{
+					combinations(NON_BLOCKED_CELLS, COUNT_TARGET_ROBOTS)
+				};
+				static constexpr uint64_t NON_TARGET_COMBINATIONS{
+					combinations(NON_BLOCKED_CELLS - COUNT_TARGET_ROBOTS, COUNT_NON_TARGET_ROBOTS)
+				};
+				static constexpr uint64_t CYCLIC_GROUP_SIZE{
+					TARGET_COMBINATIONS * NON_TARGET_COMBINATIONS
+				}; // counting combinations. We are color-agnostic. We do not distinguish among different non-target pieces. We do not distinguish among different target pieces.
+
+
+				static constexpr uint64_t STANDARD_GENERATOR_SEED{
+					0x1357'9BDF'0246'8ACE
+				};
+
+				static constexpr uint64_t gcd(uint64_t x, uint64_t y) {
+					if (x == 0)
+						return y;
+					return gcd(y % x, x);
+				}
+
+				static constexpr uint64_t make_generator(uint64_t seed) {
+
+					seed %= CYCLIC_GROUP_SIZE;
+
+					if (gcd(seed, CYCLIC_GROUP_SIZE) == 1) {
+						return seed;
+					}
+
+					return make_generator(seed + 1);
+				}
+
+				static constexpr uint64_t STANDARD_GENERATOR{
+					make_generator(STANDARD_GENERATOR_SEED)
+				};
+
+				static_assert(gcd(STANDARD_GENERATOR, CYCLIC_GROUP_SIZE) == 1, "check generator");
+
+			private:
+
+				uint64_t generator;
+				uint64_t counter;
+
+				std::tuple<uint64_t, uint64_t> split_element() const {
+					uint64_t global_select = (counter * generator) % CYCLIC_GROUP_SIZE;
+
+					uint64_t select_target_pieces = global_select % TARGET_COMBINATIONS;
+
+					global_select /= TARGET_COMBINATIONS;
+
+					uint64_t select_non_target_pieces = global_select % NON_TARGET_COMBINATIONS;
+
+					/*
+					global_select /= NON_TARGET_COMBINATIONS;
+					here global_select == 0
+					*/
+
+					return std::make_tuple(select_target_pieces, select_non_target_pieces);
+				}
+
+				inline uint64_t& increment_generator_until_gcd_1() {
+					while (gcd(generator, CYCLIC_GROUP_SIZE) != 1) {
+						++generator;
+						generator %= CYCLIC_GROUP_SIZE;
+					}
+					return generator;
+				}
+
+			public:
+
+				initial_state_generator(const std::size_t& counter_p = 0, const std::size_t& generator_p = STANDARD_GENERATOR) {
+					counter = counter_p % CYCLIC_GROUP_SIZE;
+					generator = generator_p % CYCLIC_GROUP_SIZE;
+					increment_generator_until_gcd_1();
+				}
+
+
+				inline uint64_t get_counter() {
+					return counter;
+				}
+
+				// need to define these types, where is the dependency map?
+				positions_of_pieces_type get_positions_of_pieces(const world_type& world, const cell_id_type& target_cell) {
+
+					if (world.count_cells() != BOARD_SIZE) {
+						throw board_size_condition_violation(board_size_condition_violation::reason_code::BOARD_SIZE);
+					}
+
+					if (world.blocked_cells() != BLOCKED_CELLS) {
+						throw board_size_condition_violation(board_size_condition_violation::reason_code::BLOCKED_CELLS_COUNT);
+					}
+
+
+					// write a test for board generator to always fulfill the conditions
+
+					auto [select_target_pieces, select_non_target_pieces] = split_element();
+
+					// first place all target pieces:
+
+
+
+
+				}
+
+				/*
+
+					cell_id_type get_target_cell() const {
+						auto w = get_tobor_world();
+						std::vector<cell_id_type::int_type> cell_ids;
+						const cell_id_type::int_type MIN = 0;
+						const cell_id_type::int_type MAX = 15;
+
+						for (cell_id_type::int_type i = 0; i < w.count_cells(); ++i) {
+							auto cid = cell_id_type::create_by_id(i, w);
+							if (cid.get_x_coord() == MIN || cid.get_x_coord() == MAX)
+								continue;
+							if (cid.get_y_coord() == MIN || cid.get_y_coord() == MAX)
+								continue;
+
+							uint8_t count_walls =
+								w.west_wall_by_id(i) +
+								w.east_wall_by_id(i) +
+								w.south_wall_by_transposed_id(cid.get_transposed_id()) +
+								w.north_wall_by_transposed_id(cid.get_transposed_id());
+
+							bool WE = w.west_wall_by_id(i) || w.east_wall_by_id(i);
+							bool SN = w.south_wall_by_transposed_id(cid.get_transposed_id()) || w.north_wall_by_transposed_id(cid.get_transposed_id());
+
+							if (count_walls > 1 && count_walls < 4 && WE && SN) {
+								cell_ids.push_back(i);
+							}
+						}
+
+						auto [select_aligned_world, rotation, select_target] = split_element();
+
+						// cell_ids.size() // should always be 17. test this.!!!
+
+						auto index = select_target % cell_ids.size();
+						return cell_id_type::create_by_id(cell_ids[index], w);
+					}
+
+					inline original_4_of_16& operator++() {
+						++counter;
+						counter %= CYCLIC_GROUP_SIZE;
+						return *this;
+					}
+
+					inline original_4_of_16& operator--() {
+						counter += CYCLIC_GROUP_SIZE - 1;
+						counter %= CYCLIC_GROUP_SIZE;
+						return *this;
+					}
+
+					void set_counter(const uint64_t& counter_p) {
+						counter = counter_p % CYCLIC_GROUP_SIZE;
+					}
+					// statically by size of cells, #target cells, #non-target cells
+
+					// by some reference board?
+					*/
 			};
 
 			class product_group_generator {
@@ -290,7 +529,7 @@ namespace tobor {
 				// side Group generator size N
 
 				// generator standard 1
-				
+
 				// counter k in 0..M*N
 
 				// in main group select k mod M

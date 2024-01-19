@@ -296,7 +296,10 @@ public:
 
 		//originalGenerator.set_counter(distribution_on_uint64(generator));
 
-		originalGenerator.set_counter(73021); // 72972 73021
+		//originalGenerator.set_counter(73021); // 72972 73021
+		
+		originalGenerator.set_generator(1);
+		originalGenerator.set_counter(3223);
 	}
 
 	void startGame();
@@ -331,6 +334,8 @@ public:
 	void selectSolution(std::size_t index);
 
 	void viewSolutionPaths();
+
+	void highlightGeneratedTargetCells();
 
 };
 
