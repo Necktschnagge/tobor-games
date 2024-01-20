@@ -265,7 +265,7 @@ class GuiInteractiveController final {
 	};
 
 	using board_generator_type = tobor::v1_0::world_generator::original_4_of_16;
-	using state_generator_type = tobor::v1_0::world_generator::initial_state_generator<GameController::positions_of_pieces_type,256,1,3,4>;
+	using state_generator_type = tobor::v1_0::world_generator::initial_state_generator<GameController::positions_of_pieces_type, 256, 1, 3, 4>;
 
 
 	using product_generator_type = tobor::v1_0::world_generator::product_group_generator< board_generator_type, state_generator_type>;
@@ -295,20 +295,24 @@ public:
 		originalGenerator(),
 		productWorldGenerator()
 	{
-		//std::random_device rd;
+		std::random_device rd;
 
-		//generator.seed(rd());
+		generator.seed(rd());
 
-		//std::uniform_int_distribution<uint64_t> distribution_on_uint64(0, board_generator_type::CYCLIC_GROUP_SIZE);
+		std::uniform_int_distribution<uint64_t> distribution_on_uint64_board(0, board_generator_type::CYCLIC_GROUP_SIZE);
+		std::uniform_int_distribution<uint64_t> distribution_on_uint64_pieces(0, product_generator_type::side_group_generator_type::CYCLIC_GROUP_SIZE);
+
+		productWorldGenerator.main().set_counter(distribution_on_uint64_board(generator));
+		productWorldGenerator.side().set_counter(distribution_on_uint64_pieces(generator));
 
 		//originalGenerator.set_counter(distribution_on_uint64(generator));
 
 		//originalGenerator.set_counter(73021); // 72972 73021
-		
+
 		//originalGenerator.set_generator(1);
 		//originalGenerator.set_counter(3223);
 
-		productWorldGenerator.main().set_counter(73021);
+		//productWorldGenerator.main().set_counter(73021);
 	}
 
 	void startGame();

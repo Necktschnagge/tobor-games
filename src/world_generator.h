@@ -554,6 +554,10 @@ namespace tobor {
 
 			public:
 
+				using main_group_generator_type = Main_Group_Generator_Type;
+
+				using side_group_generator_type = Side_Group_Generator_Type;
+
 				product_group_generator() {
 				}
 
