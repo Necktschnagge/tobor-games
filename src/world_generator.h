@@ -5,6 +5,7 @@
 #include <vector>
 #include <array>
 #include <optional>
+#include <algorithm>
 
 namespace tobor {
 
@@ -353,6 +354,10 @@ namespace tobor {
 				constexpr static uint64_t NON_BLOCKED_CELLS{ BOARD_SIZE - BLOCKED_CELLS };
 				//constexpr static uint64_t NON_TARGET_FREE_CELLS{ NON_BLOCKED_CELLS - GOAL_CELLS };
 
+				/**
+				*	@brief The number of combinations to select \p count cells out of \p max_factor cells
+				*	max_factor * (max_factor-1) * ... * (max_factor - count + 1)
+				*/
 				static constexpr uint64_t combinations(const uint64_t& max_factor, const uint64_t& count) {
 					if (count == 0) {
 						return 1;
@@ -428,6 +433,26 @@ namespace tobor {
 					return generator;
 				}
 
+				std::vector<uint64_t> get_selected_indices(const uint64_t& count_pieces, const uint64_t& count_cells, const uint64_t& selector) {
+					std::vector<uint64_t> selected_indices;
+					uint64_t cell_index = 0;
+					for (uint64_t piece_id = 0; piece_id < count_pieces; ++piece_id) { // rename ROBOTS!!
+						for (; cell_index < count_cells; ++cell_index) {
+							const auto SUB_COMBINATIONS{ combinations(count_cells - cell_index - 1, count_pieces - piece_id - 1) };
+							if (selector < SUB_COMBINATIONS) {
+								selected_indices.push_back(cell_index); // set current piece_id |-> current cell_index
+								break; // from inner loop
+							}
+							else {
+								selector -= SUB_COMBINATIONS;
+							}
+						}
+					}
+					// check that selected_indices has count_pieces elements!
+
+					return selected_indices;
+				}
+
 			public:
 
 				initial_state_generator(const std::size_t& counter_p = 0, const std::size_t& generator_p = STANDARD_GENERATOR) {
@@ -445,84 +470,103 @@ namespace tobor {
 				positions_of_pieces_type get_positions_of_pieces(const world_type& world, const cell_id_type& target_cell) {
 
 					if (world.count_cells() != BOARD_SIZE) {
-						throw board_size_condition_violation(board_size_condition_violation::reason_code::BOARD_SIZE);
+						throw board_size_condition_violation(board_size_condition_violation::reason_code::BOARD_SIZE); 	// write a test for board generator to always fulfill the condition !
 					}
 
 					if (world.blocked_cells() != BLOCKED_CELLS) {
 						throw board_size_condition_violation(board_size_condition_violation::reason_code::BLOCKED_CELLS_COUNT);
 					}
 
-
-					// write a test for board generator to always fulfill the conditions
-
 					auto [select_target_pieces, select_non_target_pieces] = split_element();
 
-					// first place all target pieces:
+					std::vector<uint64_t> selected_indices_target = get_selected_indices(COUNT_TARGET_ROBOTS, NON_BLOCKED_CELLS, select_target_pieces);
+					std::vector<uint64_t> selected_indices_non_target = get_selected_indices(COUNT_NON_TARGET_ROBOTS, NON_BLOCKED_CELLS - COUNT_TARGET_ROBOTS, select_non_target_pieces);
 
-
-
-
-				}
-
-				/*
-
-					cell_id_type get_target_cell() const {
-						auto w = get_tobor_world();
-						std::vector<cell_id_type::int_type> cell_ids;
-						const cell_id_type::int_type MIN = 0;
-						const cell_id_type::int_type MAX = 15;
-
-						for (cell_id_type::int_type i = 0; i < w.count_cells(); ++i) {
-							auto cid = cell_id_type::create_by_id(i, w);
-							if (cid.get_x_coord() == MIN || cid.get_x_coord() == MAX)
-								continue;
-							if (cid.get_y_coord() == MIN || cid.get_y_coord() == MAX)
-								continue;
-
-							uint8_t count_walls =
-								w.west_wall_by_id(i) +
-								w.east_wall_by_id(i) +
-								w.south_wall_by_transposed_id(cid.get_transposed_id()) +
-								w.north_wall_by_transposed_id(cid.get_transposed_id());
-
-							bool WE = w.west_wall_by_id(i) || w.east_wall_by_id(i);
-							bool SN = w.south_wall_by_transposed_id(cid.get_transposed_id()) || w.north_wall_by_transposed_id(cid.get_transposed_id());
-
-							if (count_walls > 1 && count_walls < 4 && WE && SN) {
-								cell_ids.push_back(i);
+					//shift indices where cells are blocked!
+					for (typename world_type::int_type cell_id = 0; cell_id < BOARD_SIZE; ++cell_id) {
+						for (auto& selected_index : selected_indices_target) {
+							if (world.blocked(cell_id) && (selected_index >= cell_id)) {
+								++selected_index;
 							}
 						}
-
-						auto [select_aligned_world, rotation, select_target] = split_element();
-
-						// cell_ids.size() // should always be 17. test this.!!!
-
-						auto index = select_target % cell_ids.size();
-						return cell_id_type::create_by_id(cell_ids[index], w);
 					}
 
-					inline original_4_of_16& operator++() {
-						++counter;
-						counter %= CYCLIC_GROUP_SIZE;
-						return *this;
+					for (typename world_type::int_type cell_id = 0; cell_id < BOARD_SIZE; ++cell_id) {
+						for (auto& selected_index : selected_indices_non_target) {
+							bool is_blocked =
+								world.blocked(cell_id)
+								||
+								std::find(selected_indices_target.cbegin(), selected_indices_target.cend(), cell_id) != selected_indices_target.cend();
+
+							if (is_blocked && (selected_index >= cell_id)) {
+								++selected_index;
+							}
+						}
 					}
 
-					inline original_4_of_16& operator--() {
-						counter += CYCLIC_GROUP_SIZE - 1;
-						counter %= CYCLIC_GROUP_SIZE;
-						return *this;
+					using target_pieces_array_type = typename positions_of_pieces_type::positions_of_pieces_type;
+					using non_target_pieces_array_type = typename positions_of_pieces_type::non_target_pieces_array_type;
+
+					target_pieces_array_type target_positioning;
+					for (std::size_t i = 0; i < selected_indices_target.size(); ++i) {
+						target_positioning[i] = cell_id_type::create_by_id(selected_indices_target[i], world);
 					}
 
-					void set_counter(const uint64_t& counter_p) {
-						counter = counter_p % CYCLIC_GROUP_SIZE;
+					non_target_pieces_array_type non_target_positioning;
+					for (std::size_t i = 0; i < selected_indices_non_target.size(); ++i) {
+						non_target_positioning[i] = cell_id_type::create_by_id(selected_indices_non_target[i], world);
 					}
-					// statically by size of cells, #target cells, #non-target cells
 
-					// by some reference board?
-					*/
+					auto result = positions_of_pieces_type(target_positioning, non_target_positioning);
+
+					return result;
+				}
+
+
+				inline initial_state_generator& operator++() {
+					++counter;
+					counter %= CYCLIC_GROUP_SIZE;
+					return *this;
+				}
+
+				inline initial_state_generator& operator--() {
+					counter += CYCLIC_GROUP_SIZE - 1; // check overflow (?)
+					counter %= CYCLIC_GROUP_SIZE;
+					return *this;
+				}
+
+				void set_counter(const uint64_t& counter_p) {
+					counter = counter_p % CYCLIC_GROUP_SIZE;
+				}
 			};
 
+			template<class Main_Group_Generator_Type, class Side_Group_Generator_Type>
+
 			class product_group_generator {
+
+			private:
+
+				static constexpr decltype(Side_Group_Generator_Type::CYCLIC_GROUP_SIZE)
+					MAIN_OVERFLOW_SIDE_DIFFERENCE{ Main_Group_Generator_Type::CYCLIC_GROUP_SIZE % Side_Group_Generator_Type::CYCLIC_GROUP_SIZE };
+
+				Main_Group_Generator_Type main_generator;
+				Side_Group_Generator_Type side_generator;
+
+			public:
+
+				product_group_generator() {
+				}
+
+				Main_Group_Generator_Type& main() {
+					return main_generator;
+				}
+
+				Side_Group_Generator_Type& side() {
+					return side_generator;
+				}
+
+				// add counter / generator here if wanted. for random access
+
 
 				// main Group generator size M
 
@@ -534,7 +578,46 @@ namespace tobor {
 
 				// in main group select k mod M
 
-				// in side group select (k mode M + k div M ) mod N
+				// in side group select (k mod M + k div M ) mod N
+
+
+				/* types */
+
+
+				inline product_group_generator& operator++() {
+
+					++main_generator;
+					++side_generator;
+
+					if (main_generator.get_counter() == 0) { // OV
+						auto old_incremented_side_counter = side_generator.get_counter();
+						auto new_side_counter = old_incremented_side_counter
+							+ Side_Group_Generator_Type::CYCLIC_GROUP_SIZE // anti overflow
+							- MAIN_OVERFLOW_SIDE_DIFFERENCE // difference jump
+							+ 1; // additional overflow inc
+
+						side_generator.set_counter(new_side_counter);
+					}
+
+					return *this;
+				}
+
+				inline product_group_generator& operator--() {
+					if (main_generator.get_counter() == 0) { // UNDERFLOW
+						--main_generator;
+						auto old_side_counter = side_generator.get_counter();
+						auto new_side_counter = old_side_counter
+							+ Side_Group_Generator_Type::CYCLIC_GROUP_SIZE // anti overflow
+							+ MAIN_OVERFLOW_SIDE_DIFFERENCE // difference jump
+							- 1 // additional overflow decrement
+							- 1; // regular dec
+						side_generator.set_counter(new_side_counter);
+						return;
+					}
+					--main_generator;
+					--side_generator;
+					return *this;
+				}
 
 			};
 
