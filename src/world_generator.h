@@ -433,7 +433,7 @@ namespace tobor {
 					return generator;
 				}
 
-				std::vector<uint64_t> get_selected_indices(const uint64_t& count_pieces, const uint64_t& count_cells, const uint64_t& selector) {
+				std::vector<uint64_t> get_selected_indices(const uint64_t& count_pieces, const uint64_t& count_cells, uint64_t selector) {
 					std::vector<uint64_t> selected_indices;
 					uint64_t cell_index = 0;
 					for (uint64_t piece_id = 0; piece_id < count_pieces; ++piece_id) { // rename ROBOTS!!
@@ -441,6 +441,7 @@ namespace tobor {
 							const auto SUB_COMBINATIONS{ combinations(count_cells - cell_index - 1, count_pieces - piece_id - 1) };
 							if (selector < SUB_COMBINATIONS) {
 								selected_indices.push_back(cell_index); // set current piece_id |-> current cell_index
+								++cell_index;
 								break; // from inner loop
 							}
 							else {
@@ -467,7 +468,7 @@ namespace tobor {
 				}
 
 				// need to define these types, where is the dependency map?
-				positions_of_pieces_type get_positions_of_pieces(const world_type& world, const cell_id_type& target_cell) {
+				positions_of_pieces_type get_positions_of_pieces(const world_type& world) {
 
 					if (world.count_cells() != BOARD_SIZE) {
 						throw board_size_condition_violation(board_size_condition_violation::reason_code::BOARD_SIZE); 	// write a test for board generator to always fulfill the condition !
@@ -504,7 +505,7 @@ namespace tobor {
 						}
 					}
 
-					using target_pieces_array_type = typename positions_of_pieces_type::positions_of_pieces_type;
+					using target_pieces_array_type = typename positions_of_pieces_type::target_pieces_array_type;
 					using non_target_pieces_array_type = typename positions_of_pieces_type::non_target_pieces_array_type;
 
 					target_pieces_array_type target_positioning;

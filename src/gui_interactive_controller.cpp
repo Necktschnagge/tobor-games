@@ -93,7 +93,10 @@ void GuiInteractiveController::startGame() {
 
 	// create a board
 
-	auto tup = originalGenerator.split_element();
+	auto& LOCALoriginalGenerator = productWorldGenerator.main();
+	//auto& LOCALoriginalGenerator = originalGenerator;
+
+	auto tup = LOCALoriginalGenerator.split_element();
 	(void)tup;
 	auto x = std::get<0>(tup);
 	auto a = x % 4; x /= 4;
@@ -102,12 +105,14 @@ void GuiInteractiveController::startGame() {
 	auto d = x % 4; x /= 4;
 	auto e = x;
 	qDebug() << a << "   :   " << b << "   :   " << c << "   :   " << d << "   :   " << e << "   :   " << std::get<1>(tup) << "   :   " << std::get<2>(tup) << "\n";
-	qDebug() << originalGenerator.get_counter() << "\n";
-	auto world = originalGenerator.get_tobor_world();
-	auto target = originalGenerator.get_target_cell();
+	qDebug() << LOCALoriginalGenerator.get_counter() << "\n";
+	auto world = LOCALoriginalGenerator.get_tobor_world();
+	auto target = LOCALoriginalGenerator.get_target_cell();
 
 	gameHistory.emplace_back(
 		world,
+		productWorldGenerator.side().get_positions_of_pieces(world),
+		/*
 		GameController::positions_of_pieces_type(
 			{
 				GameController::cell_id_type::create_by_coordinates(0, 0, world)
@@ -118,12 +123,11 @@ void GuiInteractiveController::startGame() {
 					GameController::cell_id_type::create_by_coordinates(15,0, world)
 				}
 		),
+		*/
 		target
 	);
 
-	++originalGenerator;
-
-
+	++productWorldGenerator;
 
 	refreshAll();
 }
@@ -430,7 +434,7 @@ void GuiInteractiveController::highlightGeneratedTargetCells()
 
 		auto& world{ gameHistory.back().tobor_world };
 
-		auto raw_cell_id_vector = originalGenerator.get_target_cell_id_vector(world);
+		auto raw_cell_id_vector = productWorldGenerator.main().get_target_cell_id_vector(world);
 
 		std::vector<GameController::cell_id_type> comfort_cell_id_vector;
 

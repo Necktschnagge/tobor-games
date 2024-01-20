@@ -265,6 +265,10 @@ class GuiInteractiveController final {
 	};
 
 	using board_generator_type = tobor::v1_0::world_generator::original_4_of_16;
+	using state_generator_type = tobor::v1_0::world_generator::initial_state_generator<GameController::positions_of_pieces_type,256,1,3,4>;
+
+
+	using product_generator_type = tobor::v1_0::world_generator::product_group_generator< board_generator_type, state_generator_type>;
 
 	InteractiveMode interactive_mode;
 
@@ -273,6 +277,8 @@ class GuiInteractiveController final {
 	tobor::v1_0::default_piece_id selected_piece_id{ 0 };
 
 	board_generator_type originalGenerator;
+
+	product_generator_type productWorldGenerator;
 
 	std::mt19937 generator;
 
@@ -286,7 +292,8 @@ public:
 	GuiInteractiveController(MainWindow* mainWindow) :
 		mainWindow(mainWindow),
 		interactive_mode(InteractiveMode::NO_GAME),
-		originalGenerator()
+		originalGenerator(),
+		productWorldGenerator()
 	{
 		//std::random_device rd;
 
@@ -298,8 +305,10 @@ public:
 
 		//originalGenerator.set_counter(73021); // 72972 73021
 		
-		originalGenerator.set_generator(1);
-		originalGenerator.set_counter(3223);
+		//originalGenerator.set_generator(1);
+		//originalGenerator.set_counter(3223);
+
+		productWorldGenerator.main().set_counter(73021);
 	}
 
 	void startGame();
