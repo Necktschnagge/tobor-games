@@ -602,7 +602,6 @@ namespace tobor {
 
 						side_generator.set_counter(new_side_counter);
 					}
-
 					return *this;
 				}
 
@@ -616,7 +615,7 @@ namespace tobor {
 							- 1 // additional overflow decrement
 							- 1; // regular dec
 						side_generator.set_counter(new_side_counter);
-						return;
+						return *this;
 					}
 					--main_generator;
 					--side_generator;
