@@ -318,14 +318,13 @@ namespace tobor {
 
 				reason_code r{ reason_code::UNDEFINED };
 
-				inline std::string make_message() {
-					return std::string("board size condition error, code = ") + std::to_string(static_cast<int>(r));
+				inline static std::string make_message(reason_code rc) {
+					return std::string("board size condition error, code = ") + std::to_string(static_cast<int>(rc));
 				}
 
 			public:
 
-				inline board_size_condition_violation(reason_code reason) : r(reason), std::logic_error(make_message()) {
-					// please test if this is working!
+				inline board_size_condition_violation(reason_code reason) : std::logic_error(make_message(reason)), r(reason) {
 				}
 
 				inline reason_code reason() const { return r; }
