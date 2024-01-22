@@ -509,7 +509,7 @@ namespace tobor {
 		struct drawing_style_sheet {
 			double HALF_GRID_LINE_WIDTH{ 1.5 };
 
-			double HALF_WALL_LINE_WIDTH{ 5 };
+			double HALF_WALL_LINE_WIDTH{ 8 };
 			double WALL_CORNER_STRETCH{ 0.6 };
 
 

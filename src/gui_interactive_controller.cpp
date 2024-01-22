@@ -275,6 +275,7 @@ void GuiInteractiveController::refreshNumberOfSteps() {
 	}
 
 	mainWindow->setWindowTitle(number_of_steps);
+	mainWindow->ui->statusbar->showMessage(number_of_steps);
 
 }
 

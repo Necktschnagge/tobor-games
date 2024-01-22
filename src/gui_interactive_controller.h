@@ -334,6 +334,7 @@ public:
 		refreshNumberOfSteps();
 		refreshMenuButtonEnable();
 		viewSolutionPaths();
+		refreshNumberOfSteps();
 	}
 
 	void movePiece(const tobor::v1_0::direction& direction);
