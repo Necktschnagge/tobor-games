@@ -410,7 +410,7 @@ void GuiInteractiveController::highlightGeneratedTargetCells()
 	const bool STATE_OK{ interactive_mode == InteractiveMode::GAME_INTERACTIVE || interactive_mode == InteractiveMode::SOLVER_INTERACTIVE_STEPS };
 
 	if (!STATE_OK) {
-		return showErrorDialog("not supported without running a game");
+		return showErrorDialog("Target cell markers not supported without running a game");
 	}
 
 	auto& world{ gameHistory.back().tobor_world };
@@ -425,18 +425,16 @@ void GuiInteractiveController::highlightGeneratedTargetCells()
 		}
 	);
 
-	std::string example_svg_string =
-		tobor::v1_0::tobor_graphics<GameController::positions_of_pieces_type>::draw_tobor_world_with_cell_markers(
-			world,
-			comfort_cell_id_vector
-		);
+	std::string svg_string = tobor::v1_0::tobor_graphics<GameController::positions_of_pieces_type>::draw_tobor_world_with_cell_markers(
+		world,
+		comfort_cell_id_vector
+	);
 
-	mainWindow->viewSvgInMainView(example_svg_string);
+	mainWindow->viewSvgInMainView(svg_string);
 
 	QString m{ "Number of generator target cells:   " };
 	m += QString::number(comfort_cell_id_vector.size());
 	mainWindow->ui->statusbar->showMessage(m);
-
 }
 
 GameController::move_path_type& GameController::get_selected_solution_representant(std::size_t index) {
