@@ -1112,47 +1112,13 @@ namespace tobor {
 					);
 				}
 
-				//auto svg_target = fill_whole_cell(tw, dss, target_cell, c.colors[0]);
-
-				//auto svg_pieces = std::make_unique<svg::svg_compound>();
-
-				//for (pq_size_type pid = 0; pid < pieces_quantity_type::COUNT_ALL_PIECES; ++pid) {
-				//	svg_pieces->elements.push_back(draw_duck_piece(tw, dss, pop.piece_positions[pid], true, c.colors[pid]));
-				//
-				//}
-
-				// The following order is final:
 				auto svg_body = std::make_unique<svg::svg_compound>(
 					draw_tobor_background(tw, dss),
 					draw_blocked_cells(tw, dss),
-					//std::move(svg_target),
 					draw_tobor_grid(tw, dss),
 					draw_walls(tw, dss),
 					std::move(svg_cell_markers)
-					//std::move(svg_pieces)
 				);
-				/* ORDER REQUIREMENTS
-
-					background is behind everything else					// otherwise cannot see anything
-					grid is behind walls									// walls should cover grid of cause
-
-					grid is in front of target								// otherwise grid would be covered partially
-					walls are in front of target							// since walls partially covered otherwise
-
-					target is in front of blocked							// if by error, target is blocked, we still see target, we also indirectly see it is blocked by seeing walls all around
-
-					pieces are in front of tagert							// since piece covered otherwise when in target cell
-
-					background   <---   blocked   <---   target   <---   grid   <---   walls
-														   |
-														   |
-
-															<---   pieces
-
-					By now there are three variants to place pieces behind/in front of  ...  grid / walls
-				*/
-
-
 
 				const std::string svg_root_height = std::to_string(dss.CELL_HEIGHT * tw.get_vertical_size() + dss.TOP_PADDING + dss.BOTTOM_PADDING);
 				const std::string svg_root_width = std::to_string(dss.CELL_WIDTH * tw.get_vertical_size() + dss.LEFT_PADDING + dss.RIGHT_PADDING);
