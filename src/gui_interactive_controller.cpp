@@ -91,9 +91,10 @@ void GuiInteractiveController::startGame() {
 
 	interactive_mode = InteractiveMode::GAME_INTERACTIVE;
 
-	// create a board
 
-	auto& boardGenerator = productWorldGenerator.main();
+	auto& boardGenerator{ productWorldGenerator.main() };
+
+	auto& initialStateGenerator{ productWorldGenerator.side() };
 
 	auto tup = boardGenerator.split_element();
 	(void)tup;
@@ -105,24 +106,14 @@ void GuiInteractiveController::startGame() {
 	auto e = x;
 	qDebug() << a << "   :   " << b << "   :   " << c << "   :   " << d << "   :   " << e << "   :   " << std::get<1>(tup) << "   :   " << std::get<2>(tup) << "\n";
 	qDebug() << boardGenerator.get_counter() << "\n";
+
 	auto world = boardGenerator.get_tobor_world();
+
 	auto target = boardGenerator.get_target_cell();
 
 	gameHistory.emplace_back(
 		world,
-		productWorldGenerator.side().get_positions_of_pieces(world),
-		/*
-		GameController::positions_of_pieces_type(
-			{
-				GameController::cell_id_type::create_by_coordinates(0, 0, world)
-			},
-				{
-					GameController::cell_id_type::create_by_coordinates(0,15, world),
-					GameController::cell_id_type::create_by_coordinates(15,15, world),
-					GameController::cell_id_type::create_by_coordinates(15,0, world)
-				}
-		),
-		*/
+		initialStateGenerator.get_positions_of_pieces(world),
 		target
 	);
 
