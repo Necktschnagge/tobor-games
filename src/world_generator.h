@@ -184,8 +184,10 @@ namespace tobor {
 				}
 
 				inline static std::vector<cell_id_type::int_type> get_target_cell_id_vector(const world_type& w) {
-					//auto w = get_tobor_world();
+
 					std::vector<cell_id_type::int_type> cell_ids;
+					cell_ids.reserve(17);
+
 					const cell_id_type::int_type MIN = 0;
 					const cell_id_type::int_type MAX = 15;
 
@@ -248,31 +250,6 @@ namespace tobor {
 				cell_id_type get_target_cell() const {
 					auto w = get_tobor_world();
 					const std::vector<cell_id_type::int_type> cell_ids{ get_target_cell_id_vector(w) };
-#if false
-					const cell_id_type::int_type MIN = 0;
-					const cell_id_type::int_type MAX = 15;
-
-					for (cell_id_type::int_type i = 0; i < w.count_cells(); ++i) {
-						auto cid = cell_id_type::create_by_id(i, w);
-						if (cid.get_x_coord() == MIN || cid.get_x_coord() == MAX)
-							continue;
-						if (cid.get_y_coord() == MIN || cid.get_y_coord() == MAX)
-							continue;
-
-						uint8_t count_walls =
-							w.west_wall_by_id(i) +
-							w.east_wall_by_id(i) +
-							w.south_wall_by_transposed_id(cid.get_transposed_id()) +
-							w.north_wall_by_transposed_id(cid.get_transposed_id());
-
-						bool WE = w.west_wall_by_id(i) || w.east_wall_by_id(i);
-						bool SN = w.south_wall_by_transposed_id(cid.get_transposed_id()) || w.north_wall_by_transposed_id(cid.get_transposed_id());
-
-						if (count_walls > 1 && count_walls < 4 && WE && SN) {
-							cell_ids.push_back(i);
-						}
-					}
-#endif
 					auto [select_aligned_world, rotation, select_target] = split_element();
 
 					// cell_ids.size() // should always be 17. test this.!!!
