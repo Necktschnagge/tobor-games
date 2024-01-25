@@ -93,10 +93,9 @@ void GuiInteractiveController::startGame() {
 
 	// create a board
 
-	auto& LOCALoriginalGenerator = productWorldGenerator.main();
-	//auto& LOCALoriginalGenerator = originalGenerator;
+	auto& boardGenerator = productWorldGenerator.main();
 
-	auto tup = LOCALoriginalGenerator.split_element();
+	auto tup = boardGenerator.split_element();
 	(void)tup;
 	auto x = std::get<0>(tup);
 	auto a = x % 4; x /= 4;
@@ -105,9 +104,9 @@ void GuiInteractiveController::startGame() {
 	auto d = x % 4; x /= 4;
 	auto e = x;
 	qDebug() << a << "   :   " << b << "   :   " << c << "   :   " << d << "   :   " << e << "   :   " << std::get<1>(tup) << "   :   " << std::get<2>(tup) << "\n";
-	qDebug() << LOCALoriginalGenerator.get_counter() << "\n";
-	auto world = LOCALoriginalGenerator.get_tobor_world();
-	auto target = LOCALoriginalGenerator.get_target_cell();
+	qDebug() << boardGenerator.get_counter() << "\n";
+	auto world = boardGenerator.get_tobor_world();
+	auto target = boardGenerator.get_target_cell();
 
 	gameHistory.emplace_back(
 		world,
