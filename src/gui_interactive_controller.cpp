@@ -264,12 +264,7 @@ void GuiInteractiveController::refreshNumberOfSteps() {
 
 	}
 
-	mainWindow->setWindowTitle(number_of_steps);
-
-void GuiInteractiveController::viewNumberOfSteps() {
-	QString number_of_steps = QString::number(gameHistory.back().path.size() - 1);
-//	mainWindow->setWindowTitle(number_of_steps);
-    mainWindow->setNumberOfSteps(number_of_steps);
+	mainWindow->setNumberOfSteps(number_of_steps);
 }
 
 void GuiInteractiveController::movePiece(const tobor::v1_0::direction& direction) {
