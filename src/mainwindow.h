@@ -69,6 +69,8 @@ public:
 
 private slots:
 	void on_actionshowSVG_triggered();
+	
+	void on_actionHighlightGeneratedTargetCells_triggered();
 
 	void on_actionAbout_triggered();
 
@@ -95,6 +97,18 @@ private slots:
 	void on_actionSOUTH_triggered();
 
 	void on_actionWEST_triggered();
+
+	void on_actionForward_triggered();
+
+	void on_actionBack_triggered();
+
+	void on_actionStart_Solver_triggered();
+
+	void on_actionStop_Solver_triggered();
+
+	void on_actionLicense_Information_triggered();
+
+	void on_listView_doubleClicked(const QModelIndex& index);
 
 	void setNumberOfSteps(QString& c);
 

@@ -2,6 +2,8 @@
 
 #include "mainwindow.h"
 
+#include "gui_helper.h"
+
 #include "./ui_mainwindow.h"
 #include "gui_interactive_controller.h"
 #include "solver.h"
@@ -27,6 +29,8 @@ MainWindow::MainWindow(QWidget* parent)
 	ui->setupUi(this);
 	statusbarItems.init(ui->statusbar);
 	getColorBall();
+
+	guiInteractiveController.refreshAll();
 
 	grabKeyboard(); // https://doc.qt.io/qt-6/qwidget.html#grabKeyboard
 
@@ -67,6 +71,10 @@ void MainWindow::on_actionshowSVG_triggered()
 	};
 
 	viewSvgInMainView(example_svg_string);
+}
+
+void MainWindow::on_actionHighlightGeneratedTargetCells_triggered() {
+	guiInteractiveController.highlightGeneratedTargetCells();
 }
 
 void MainWindow::on_actionAbout_triggered()
@@ -153,22 +161,7 @@ void MainWindow::keyPressEvent(QKeyEvent* e)
 
 void MainWindow::on_actionTest_ListView_triggered()
 {
-	static QStringListModel* model{ nullptr };
-
-	if (model == nullptr) {
-		model = new QStringListModel();
-	}
-	QStringList list;
-	list << "a" << "b" << "c";
-	list << "a" << "b" << "c";
-	list << "a" << "b" << "c";
-	list << "a" << "b" << "c";
-	list << "a" << "b" << "c";
-	list << "a" << "b" << "c";
-	list << "a" << "b" << "c";
-	model->setStringList(list);
-
-	ui->listView->setModel(model);
+	guiInteractiveController.startReferenceGame22();
 
 }
 
@@ -183,24 +176,21 @@ void MainWindow::on_actionRED_triggered()
 void MainWindow::on_actionYELLOW_triggered()
 {
 	statusBar()->showMessage("YELLOW selected.");
-	guiInteractiveController.setPieceId(1);
-
+	guiInteractiveController.setPieceId(3);
 }
 
 
 void MainWindow::on_actionGREEN_triggered()
 {
 	statusBar()->showMessage("GREEN selected.");
-	guiInteractiveController.setPieceId(2);
-
+	guiInteractiveController.setPieceId(1);
 }
 
 
 void MainWindow::on_actionBLUE_triggered()
 {
 	statusBar()->showMessage("BLUE selected.");
-	guiInteractiveController.setPieceId(3);
-
+	guiInteractiveController.setPieceId(2);
 }
 
 
@@ -232,6 +222,47 @@ void MainWindow::on_actionWEST_triggered()
 	statusBar()->showMessage("Went west.");
 	guiInteractiveController.movePiece(tobor::v1_0::direction::WEST());
 
+}
+
+void MainWindow::on_actionForward_triggered()
+{
+	on_actionEAST_triggered(); // change this
+}
+
+
+void MainWindow::on_actionBack_triggered()
+{
+	on_actionWEST_triggered(); // change this
+}
+
+void MainWindow::on_actionStart_Solver_triggered()
+{
+	ui->statusbar->showMessage("starting solver...");
+	//update(); //repaint();
+	//ui->statusbar->update();
+	repaint();
+	guiInteractiveController.startSolver();
+}
+
+void MainWindow::on_actionStop_Solver_triggered()
+{
+	guiInteractiveController.stopSolver();
+}
+
+void MainWindow::on_actionLicense_Information_triggered()
+{
+	showErrorDialog("Not yet implemented.");
+}
+
+
+void MainWindow::on_listView_doubleClicked(const QModelIndex& index)
+{
+	//QString m{"double-clicked ListView on" };
+	//m+=QString::number(index.row());
+	//ui->statusbar->showMessage(m);
+
+	guiInteractiveController.selectSolution(index.row());
+	guiInteractiveController.refreshAll();
 }
 
 void MainWindow::setNumberOfSteps(QString& c)

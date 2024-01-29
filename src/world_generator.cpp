@@ -30,12 +30,12 @@ void tobor::v1_0::world_generator::original_4_of_16::set_wall_corners(world_type
 
 void tobor::v1_0::world_generator::original_4_of_16::set_red_planet_0(world_type& world) {
 	world.block_center_cells(2, 2);
-	auto bottom = tobor::v1_0::default_cell_id::create_by_coordinates(0, 4, world);
-	auto left = tobor::v1_0::default_cell_id::create_by_coordinates(4, 0, world);
-	auto moon = tobor::v1_0::default_cell_id::create_by_coordinates(4, 6, world);
-	auto cross = tobor::v1_0::default_cell_id::create_by_coordinates(1, 5, world);
-	auto gear = tobor::v1_0::default_cell_id::create_by_coordinates(6, 2, world);
-	auto planet = tobor::v1_0::default_cell_id::create_by_coordinates(2, 1, world);
+	auto bottom = cell_id_type::create_by_coordinates(0, 4, world);
+	auto left = cell_id_type::create_by_coordinates(4, 0, world);
+	auto moon = cell_id_type::create_by_coordinates(4, 6, world);
+	auto cross = cell_id_type::create_by_coordinates(1, 5, world);
+	auto gear = cell_id_type::create_by_coordinates(6, 2, world);
+	auto planet = cell_id_type::create_by_coordinates(2, 1, world);
 	set_wall_corners(
 		world,
 		{ left },
@@ -49,12 +49,12 @@ void tobor::v1_0::world_generator::original_4_of_16::set_red_planet_0(world_type
 
 void tobor::v1_0::world_generator::original_4_of_16::set_red_planet_1(world_type& world) {
 	world.block_center_cells(2, 2);
-	auto left = tobor::v1_0::default_cell_id::create_by_coordinates(5, 0, world);
-	auto bottom = tobor::v1_0::default_cell_id::create_by_coordinates(0, 5, world);
-	auto moon = tobor::v1_0::default_cell_id::create_by_coordinates(1, 2, world);
-	auto cross = tobor::v1_0::default_cell_id::create_by_coordinates(6, 1, world);
-	auto gear = tobor::v1_0::default_cell_id::create_by_coordinates(3, 6, world);
-	auto planet = tobor::v1_0::default_cell_id::create_by_coordinates(5, 4, world);
+	auto left = cell_id_type::create_by_coordinates(5, 0, world);
+	auto bottom = cell_id_type::create_by_coordinates(0, 5, world);
+	auto moon = cell_id_type::create_by_coordinates(1, 2, world);
+	auto cross = cell_id_type::create_by_coordinates(6, 1, world);
+	auto gear = cell_id_type::create_by_coordinates(3, 6, world);
+	auto planet = cell_id_type::create_by_coordinates(5, 4, world);
 	set_wall_corners(
 		world,
 		{ left },
@@ -68,12 +68,12 @@ void tobor::v1_0::world_generator::original_4_of_16::set_red_planet_1(world_type
 
 void tobor::v1_0::world_generator::original_4_of_16::set_red_planet_2(world_type& world) {
 	world.block_center_cells(2, 2);
-	auto bottom = tobor::v1_0::default_cell_id::create_by_coordinates(0, 6, world);
-	auto left = tobor::v1_0::default_cell_id::create_by_coordinates(4, 0, world);
-	auto moon = tobor::v1_0::default_cell_id::create_by_coordinates(2, 3, world);
-	auto cross = tobor::v1_0::default_cell_id::create_by_coordinates(5, 4, world);
-	auto gear = tobor::v1_0::default_cell_id::create_by_coordinates(3, 5, world);
-	auto planet = tobor::v1_0::default_cell_id::create_by_coordinates(4, 2, world);
+	auto bottom = cell_id_type::create_by_coordinates(0, 6, world);
+	auto left = cell_id_type::create_by_coordinates(4, 0, world);
+	auto moon = cell_id_type::create_by_coordinates(2, 3, world);
+	auto cross = cell_id_type::create_by_coordinates(5, 4, world);
+	auto gear = cell_id_type::create_by_coordinates(3, 5, world);
+	auto planet = cell_id_type::create_by_coordinates(4, 2, world);
 	set_wall_corners(
 		world,
 		{ left },
@@ -87,12 +87,12 @@ void tobor::v1_0::world_generator::original_4_of_16::set_red_planet_2(world_type
 
 void tobor::v1_0::world_generator::original_4_of_16::set_red_planet_3(world_type& world) {
 	world.block_center_cells(2, 2);
-	auto left = tobor::v1_0::default_cell_id::create_by_coordinates(7, 0, world);
-	auto bottom = tobor::v1_0::default_cell_id::create_by_coordinates(0, 3, world);
-	auto moon = tobor::v1_0::default_cell_id::create_by_coordinates(2, 6, world);
-	auto cross = tobor::v1_0::default_cell_id::create_by_coordinates(2, 5, world);
-	auto gear = tobor::v1_0::default_cell_id::create_by_coordinates(7, 4, world);
-	auto planet = tobor::v1_0::default_cell_id::create_by_coordinates(5, 1, world);
+	auto left = cell_id_type::create_by_coordinates(7, 0, world);
+	auto bottom = cell_id_type::create_by_coordinates(0, 3, world);
+	auto moon = cell_id_type::create_by_coordinates(2, 6, world);
+	auto cross = cell_id_type::create_by_coordinates(2, 5, world);
+	auto gear = cell_id_type::create_by_coordinates(7, 4, world);
+	auto planet = cell_id_type::create_by_coordinates(5, 1, world);
 	set_wall_corners(
 		world,
 		{ left },
@@ -105,13 +105,13 @@ void tobor::v1_0::world_generator::original_4_of_16::set_red_planet_3(world_type
 }
 
 void tobor::v1_0::world_generator::original_4_of_16::set_green_planet_0(world_type& world) {
-	auto left = tobor::v1_0::default_cell_id::create_by_coordinates(5, 0, world);
-	auto bottom = tobor::v1_0::default_cell_id::create_by_coordinates(0, 5, world);
-	auto moon = tobor::v1_0::default_cell_id::create_by_coordinates(6, 5, world);
-	auto cross = tobor::v1_0::default_cell_id::create_by_coordinates(1, 2, world);
-	auto gear = tobor::v1_0::default_cell_id::create_by_coordinates(4, 6, world);
-	auto planet = tobor::v1_0::default_cell_id::create_by_coordinates(3, 1, world);
-	auto swirl = tobor::v1_0::default_cell_id::create_by_coordinates(7, 3, world);
+	auto left = cell_id_type::create_by_coordinates(5, 0, world);
+	auto bottom = cell_id_type::create_by_coordinates(0, 5, world);
+	auto moon = cell_id_type::create_by_coordinates(6, 5, world);
+	auto cross = cell_id_type::create_by_coordinates(1, 2, world);
+	auto gear = cell_id_type::create_by_coordinates(4, 6, world);
+	auto planet = cell_id_type::create_by_coordinates(3, 1, world);
+	auto swirl = cell_id_type::create_by_coordinates(7, 3, world);
 	set_wall_corners(
 		world,
 		{ left },
@@ -124,13 +124,13 @@ void tobor::v1_0::world_generator::original_4_of_16::set_green_planet_0(world_ty
 }
 
 void tobor::v1_0::world_generator::original_4_of_16::set_green_planet_1(world_type& world) {
-	auto left = tobor::v1_0::default_cell_id::create_by_coordinates(7, 0, world);
-	auto bottom = tobor::v1_0::default_cell_id::create_by_coordinates(0, 4, world);
-	auto moon = tobor::v1_0::default_cell_id::create_by_coordinates(1, 6, world);
-	auto cross = tobor::v1_0::default_cell_id::create_by_coordinates(5, 2, world);
-	auto gear = tobor::v1_0::default_cell_id::create_by_coordinates(3, 1, world);
-	auto planet = tobor::v1_0::default_cell_id::create_by_coordinates(4, 5, world);
-	auto swirl = tobor::v1_0::default_cell_id::create_by_coordinates(5, 7, world);
+	auto left = cell_id_type::create_by_coordinates(7, 0, world);
+	auto bottom = cell_id_type::create_by_coordinates(0, 4, world);
+	auto moon = cell_id_type::create_by_coordinates(1, 6, world);
+	auto cross = cell_id_type::create_by_coordinates(5, 2, world);
+	auto gear = cell_id_type::create_by_coordinates(3, 1, world);
+	auto planet = cell_id_type::create_by_coordinates(4, 5, world);
+	auto swirl = cell_id_type::create_by_coordinates(5, 7, world);
 	set_wall_corners(
 		world,
 		{ left },
@@ -143,13 +143,13 @@ void tobor::v1_0::world_generator::original_4_of_16::set_green_planet_1(world_ty
 }
 
 void tobor::v1_0::world_generator::original_4_of_16::set_green_planet_2(world_type& world) {
-	auto left = tobor::v1_0::default_cell_id::create_by_coordinates(7, 0, world);
-	auto bottom = tobor::v1_0::default_cell_id::create_by_coordinates(0, 5, world);
-	auto moon = tobor::v1_0::default_cell_id::create_by_coordinates(3, 2, world);
-	auto cross = tobor::v1_0::default_cell_id::create_by_coordinates(5, 1, world);
-	auto gear = tobor::v1_0::default_cell_id::create_by_coordinates(2, 6, world);
-	auto planet = tobor::v1_0::default_cell_id::create_by_coordinates(3, 3, world);
-	auto swirl = tobor::v1_0::default_cell_id::create_by_coordinates(7, 5, world);
+	auto left = cell_id_type::create_by_coordinates(7, 0, world);
+	auto bottom = cell_id_type::create_by_coordinates(0, 5, world);
+	auto moon = cell_id_type::create_by_coordinates(3, 2, world);
+	auto cross = cell_id_type::create_by_coordinates(5, 1, world);
+	auto gear = cell_id_type::create_by_coordinates(2, 6, world);
+	auto planet = cell_id_type::create_by_coordinates(3, 3, world);
+	auto swirl = cell_id_type::create_by_coordinates(7, 5, world);
 	set_wall_corners(
 		world,
 		{ left },
@@ -162,13 +162,13 @@ void tobor::v1_0::world_generator::original_4_of_16::set_green_planet_2(world_ty
 }
 
 void tobor::v1_0::world_generator::original_4_of_16::set_green_planet_3(world_type& world) {
-	auto left = tobor::v1_0::default_cell_id::create_by_coordinates(4, 0, world);
-	auto bottom = tobor::v1_0::default_cell_id::create_by_coordinates(0, 3, world);
-	auto moon = tobor::v1_0::default_cell_id::create_by_coordinates(1, 5, world);
-	auto cross = tobor::v1_0::default_cell_id::create_by_coordinates(4, 3, world);
-	auto gear = tobor::v1_0::default_cell_id::create_by_coordinates(6, 1, world);
-	auto planet = tobor::v1_0::default_cell_id::create_by_coordinates(5, 6, world);
-	auto swirl = tobor::v1_0::default_cell_id::create_by_coordinates(2, 7, world);
+	auto left = cell_id_type::create_by_coordinates(4, 0, world);
+	auto bottom = cell_id_type::create_by_coordinates(0, 3, world);
+	auto moon = cell_id_type::create_by_coordinates(1, 5, world);
+	auto cross = cell_id_type::create_by_coordinates(4, 3, world);
+	auto gear = cell_id_type::create_by_coordinates(6, 1, world);
+	auto planet = cell_id_type::create_by_coordinates(5, 6, world);
+	auto swirl = cell_id_type::create_by_coordinates(2, 7, world);
 	set_wall_corners(
 		world,
 		{ left },
@@ -181,12 +181,12 @@ void tobor::v1_0::world_generator::original_4_of_16::set_green_planet_3(world_ty
 }
 
 void tobor::v1_0::world_generator::original_4_of_16::set_blue_planet_0(world_type& world) {
-	auto bottom = tobor::v1_0::default_cell_id::create_by_coordinates(0, 5, world);
-	auto left = tobor::v1_0::default_cell_id::create_by_coordinates(6, 0, world);
-	auto moon = tobor::v1_0::default_cell_id::create_by_coordinates(6, 3, world);
-	auto cross = tobor::v1_0::default_cell_id::create_by_coordinates(1, 6, world);
-	auto gear = tobor::v1_0::default_cell_id::create_by_coordinates(2, 1, world);
-	auto planet = tobor::v1_0::default_cell_id::create_by_coordinates(5, 6, world);
+	auto bottom = cell_id_type::create_by_coordinates(0, 5, world);
+	auto left = cell_id_type::create_by_coordinates(6, 0, world);
+	auto moon = cell_id_type::create_by_coordinates(6, 3, world);
+	auto cross = cell_id_type::create_by_coordinates(1, 6, world);
+	auto gear = cell_id_type::create_by_coordinates(2, 1, world);
+	auto planet = cell_id_type::create_by_coordinates(5, 6, world);
 	set_wall_corners(
 		world,
 		{ left },
@@ -200,12 +200,12 @@ void tobor::v1_0::world_generator::original_4_of_16::set_blue_planet_0(world_typ
 
 void tobor::v1_0::world_generator::original_4_of_16::set_blue_planet_1(world_type& world)
 {
-	auto bottom = tobor::v1_0::default_cell_id::create_by_coordinates(0, 2, world);
-	auto left = tobor::v1_0::default_cell_id::create_by_coordinates(6, 0, world);
-	auto moon = tobor::v1_0::default_cell_id::create_by_coordinates(1, 4, world);
-	auto cross = tobor::v1_0::default_cell_id::create_by_coordinates(3, 6, world);
-	auto gear = tobor::v1_0::default_cell_id::create_by_coordinates(2, 1, world);
-	auto planet = tobor::v1_0::default_cell_id::create_by_coordinates(6, 3, world);
+	auto bottom = cell_id_type::create_by_coordinates(0, 2, world);
+	auto left = cell_id_type::create_by_coordinates(6, 0, world);
+	auto moon = cell_id_type::create_by_coordinates(1, 4, world);
+	auto cross = cell_id_type::create_by_coordinates(3, 6, world);
+	auto gear = cell_id_type::create_by_coordinates(2, 1, world);
+	auto planet = cell_id_type::create_by_coordinates(6, 3, world);
 	set_wall_corners(
 		world,
 		{ left },
@@ -218,12 +218,12 @@ void tobor::v1_0::world_generator::original_4_of_16::set_blue_planet_1(world_typ
 }
 
 void tobor::v1_0::world_generator::original_4_of_16::set_blue_planet_2(world_type& world) {
-	auto bottom = tobor::v1_0::default_cell_id::create_by_coordinates(0, 6, world);
-	auto left = tobor::v1_0::default_cell_id::create_by_coordinates(6, 0, world);
-	auto moon = tobor::v1_0::default_cell_id::create_by_coordinates(3, 1, world);
-	auto cross = tobor::v1_0::default_cell_id::create_by_coordinates(4, 6, world);
-	auto gear = tobor::v1_0::default_cell_id::create_by_coordinates(6, 2, world);
-	auto planet = tobor::v1_0::default_cell_id::create_by_coordinates(6, 3, world);
+	auto bottom = cell_id_type::create_by_coordinates(0, 6, world);
+	auto left = cell_id_type::create_by_coordinates(6, 0, world);
+	auto moon = cell_id_type::create_by_coordinates(3, 1, world);
+	auto cross = cell_id_type::create_by_coordinates(4, 6, world);
+	auto gear = cell_id_type::create_by_coordinates(6, 2, world);
+	auto planet = cell_id_type::create_by_coordinates(6, 3, world);
 	set_wall_corners(
 		world,
 		{ left },
@@ -236,12 +236,12 @@ void tobor::v1_0::world_generator::original_4_of_16::set_blue_planet_2(world_typ
 }
 
 void tobor::v1_0::world_generator::original_4_of_16::set_blue_planet_3(world_type& world) {
-	auto bottom = tobor::v1_0::default_cell_id::create_by_coordinates(0, 2, world);
-	auto left = tobor::v1_0::default_cell_id::create_by_coordinates(7, 0, world);
-	auto moon = tobor::v1_0::default_cell_id::create_by_coordinates(4, 1, world);
-	auto cross = tobor::v1_0::default_cell_id::create_by_coordinates(3, 6, world);
-	auto gear = tobor::v1_0::default_cell_id::create_by_coordinates(1, 3, world);
-	auto planet = tobor::v1_0::default_cell_id::create_by_coordinates(6, 4, world);
+	auto bottom = cell_id_type::create_by_coordinates(0, 2, world);
+	auto left = cell_id_type::create_by_coordinates(7, 0, world);
+	auto moon = cell_id_type::create_by_coordinates(4, 1, world);
+	auto cross = cell_id_type::create_by_coordinates(3, 6, world);
+	auto gear = cell_id_type::create_by_coordinates(1, 3, world);
+	auto planet = cell_id_type::create_by_coordinates(6, 4, world);
 	set_wall_corners(
 		world,
 		{ left },
@@ -254,12 +254,12 @@ void tobor::v1_0::world_generator::original_4_of_16::set_blue_planet_3(world_typ
 }
 
 void tobor::v1_0::world_generator::original_4_of_16::set_yellow_planet_0(world_type& world) {
-	auto bottom = tobor::v1_0::default_cell_id::create_by_coordinates(0, 5, world);
-	auto left = tobor::v1_0::default_cell_id::create_by_coordinates(3, 0, world);
-	auto moon = tobor::v1_0::default_cell_id::create_by_coordinates(4, 2, world);
-	auto cross = tobor::v1_0::default_cell_id::create_by_coordinates(2, 6, world);
-	auto gear = tobor::v1_0::default_cell_id::create_by_coordinates(4, 3, world);
-	auto planet = tobor::v1_0::default_cell_id::create_by_coordinates(6, 5, world);
+	auto bottom = cell_id_type::create_by_coordinates(0, 5, world);
+	auto left = cell_id_type::create_by_coordinates(3, 0, world);
+	auto moon = cell_id_type::create_by_coordinates(4, 2, world);
+	auto cross = cell_id_type::create_by_coordinates(2, 6, world);
+	auto gear = cell_id_type::create_by_coordinates(4, 3, world);
+	auto planet = cell_id_type::create_by_coordinates(6, 5, world);
 	set_wall_corners(
 		world,
 		{ left },
@@ -272,12 +272,12 @@ void tobor::v1_0::world_generator::original_4_of_16::set_yellow_planet_0(world_t
 }
 
 void tobor::v1_0::world_generator::original_4_of_16::set_yellow_planet_1(world_type& world) {
-	auto bottom = tobor::v1_0::default_cell_id::create_by_coordinates(0, 2, world);
-	auto left = tobor::v1_0::default_cell_id::create_by_coordinates(6, 0, world);
-	auto moon = tobor::v1_0::default_cell_id::create_by_coordinates(1, 4, world);
-	auto cross = tobor::v1_0::default_cell_id::create_by_coordinates(6, 3, world);
-	auto gear = tobor::v1_0::default_cell_id::create_by_coordinates(3, 1, world);
-	auto planet = tobor::v1_0::default_cell_id::create_by_coordinates(5, 5, world);
+	auto bottom = cell_id_type::create_by_coordinates(0, 2, world);
+	auto left = cell_id_type::create_by_coordinates(6, 0, world);
+	auto moon = cell_id_type::create_by_coordinates(1, 4, world);
+	auto cross = cell_id_type::create_by_coordinates(6, 3, world);
+	auto gear = cell_id_type::create_by_coordinates(3, 1, world);
+	auto planet = cell_id_type::create_by_coordinates(5, 5, world);
 	set_wall_corners(
 		world,
 		{ left },
@@ -290,12 +290,12 @@ void tobor::v1_0::world_generator::original_4_of_16::set_yellow_planet_1(world_t
 }
 
 void tobor::v1_0::world_generator::original_4_of_16::set_yellow_planet_2(world_type& world) {
-	auto bottom = tobor::v1_0::default_cell_id::create_by_coordinates(0, 4, world);
-	auto left = tobor::v1_0::default_cell_id::create_by_coordinates(5, 0, world);
-	auto moon = tobor::v1_0::default_cell_id::create_by_coordinates(4, 2, world);
-	auto cross = tobor::v1_0::default_cell_id::create_by_coordinates(2, 5, world);
-	auto gear = tobor::v1_0::default_cell_id::create_by_coordinates(5, 7, world);
-	auto planet = tobor::v1_0::default_cell_id::create_by_coordinates(6, 1, world);
+	auto bottom = cell_id_type::create_by_coordinates(0, 4, world);
+	auto left = cell_id_type::create_by_coordinates(5, 0, world);
+	auto moon = cell_id_type::create_by_coordinates(4, 2, world);
+	auto cross = cell_id_type::create_by_coordinates(2, 5, world);
+	auto gear = cell_id_type::create_by_coordinates(5, 7, world);
+	auto planet = cell_id_type::create_by_coordinates(6, 1, world);
 	set_wall_corners(
 		world,
 		{ left },
@@ -308,12 +308,12 @@ void tobor::v1_0::world_generator::original_4_of_16::set_yellow_planet_2(world_t
 }
 
 void tobor::v1_0::world_generator::original_4_of_16::set_yellow_planet_3(world_type& world) {
-	auto bottom = tobor::v1_0::default_cell_id::create_by_coordinates(0, 4, world);
-	auto left = tobor::v1_0::default_cell_id::create_by_coordinates(6, 0, world);
-	auto moon = tobor::v1_0::default_cell_id::create_by_coordinates(2, 6, world);
-	auto cross = tobor::v1_0::default_cell_id::create_by_coordinates(4, 2, world);
-	auto gear = tobor::v1_0::default_cell_id::create_by_coordinates(1, 1, world);
-	auto planet = tobor::v1_0::default_cell_id::create_by_coordinates(5, 7, world);
+	auto bottom = cell_id_type::create_by_coordinates(0, 4, world);
+	auto left = cell_id_type::create_by_coordinates(6, 0, world);
+	auto moon = cell_id_type::create_by_coordinates(2, 6, world);
+	auto cross = cell_id_type::create_by_coordinates(4, 2, world);
+	auto gear = cell_id_type::create_by_coordinates(1, 1, world);
+	auto planet = cell_id_type::create_by_coordinates(5, 7, world);
 	set_wall_corners(
 		world,
 		{ left },
