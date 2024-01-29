@@ -26,13 +26,20 @@ class MainWindow : public QMainWindow
 	Q_OBJECT
 
 private:
-	struct StatusbarItems {
+	class StatusbarItems {
+	public:
+
 		QLabel* stepsKey;
 		QLabel* stepsValue;
 
-		// add more labels: "BoardId:" "702563:378 // 3:0:2:3:5:2:7 " hint: redPlanetQuadrant, .., .., .., permutation, board rotation, target cell
-		// add more labels: "Solver:" "RUNNING / OFF / AUTO-PLAY / STEP-MODE"
-		// add more labels: "Color: " "[colored square]" current selected piece's color
+		QLabel* boardIdKey;
+		QLabel* boardIdValue; // two modes? "702563:378 // 3:0:2:3:5:2:7 " hint: redPlanetQuadrant, .., .., .., permutation, board rotation, target cell
+
+		QLabel* solverKey; // "RUNNING / OFF / AUTO-PLAY / STEP-MODE"
+		QLabel* solverValue;
+
+		QLabel* pieceSelectedKey; // "[colored square]" current selected piece's color
+		QLabel* pieceSelectedValue;
 
 		void init(QStatusBar* statusbar);
 	};
@@ -91,7 +98,7 @@ private slots:
 
 	void setNumberOfSteps(QString& c);
 
-    void getColorBall();
+	void getColorBall();
 
 private:
 	Ui::MainWindow* ui;

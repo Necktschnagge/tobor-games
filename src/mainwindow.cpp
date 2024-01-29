@@ -26,7 +26,7 @@ MainWindow::MainWindow(QWidget* parent)
 {
 	ui->setupUi(this);
 	statusbarItems.init(ui->statusbar);
-    getColorBall();
+	getColorBall();
 
 	grabKeyboard(); // https://doc.qt.io/qt-6/qwidget.html#grabKeyboard
 
@@ -243,27 +243,54 @@ void MainWindow::StatusbarItems::init(QStatusBar* statusbar) {
 	stepsKey = new QLabel(statusbar); // parent takes ownership
 	stepsValue = new QLabel(statusbar); // parent takes ownership
 
+	boardIdKey = new QLabel(statusbar);
+	boardIdValue = new QLabel(statusbar);
+
+	solverKey = new QLabel(statusbar);
+	solverValue = new QLabel(statusbar);
+
+	pieceSelectedKey = new QLabel(statusbar);
+	pieceSelectedValue = new QLabel(statusbar);
+
+	/* label order */
+
+	statusbar->addPermanentWidget(solverKey);
+	statusbar->addPermanentWidget(solverValue);
+
+	statusbar->addPermanentWidget(boardIdKey);
+	statusbar->addPermanentWidget(boardIdValue);
+
+	statusbar->addPermanentWidget(pieceSelectedKey);
+	statusbar->addPermanentWidget(pieceSelectedValue);
+
 	statusbar->addPermanentWidget(stepsKey); // parent is replaced?
 	statusbar->addPermanentWidget(stepsValue); // parent is replaced?
+
 
 	stepsKey->setText("Steps:");
 
 	QString number_of_steps = QString::number(0);
 	stepsValue->setText(number_of_steps);
 
-	stepsKey->hide();
-	stepsValue->hide();
+	//stepsKey->hide();
+	//stepsValue->hide();
+
+	boardIdKey->setText("Board:");
+
+	solverKey->setText("Solver:");
+
+	pieceSelectedKey->setText("Piece:");
 }
 
 void MainWindow::getColorBall()
 {
-    QString blue   = QColor( 66, 133, 244).name();
-    QString green  = QColor( 52, 168,  83).name();
-    QString red    = QColor(234,  67,  53).name();
-    QString yellow = QColor(251, 188,   5).name();
+	QString blue = QColor(66, 133, 244).name();
+	QString green = QColor(52, 168, 83).name();
+	QString red = QColor(234, 67, 53).name();
+	QString yellow = QColor(251, 188, 5).name();
 
-    QString color_ball
-(R"---(<svg id="emoji" viewBox="0 0 72 72" xmlns="http://www.w3.org/2000/svg">
+	QString color_ball
+	(R"---(<svg id="emoji" viewBox="0 0 72 72" xmlns="http://www.w3.org/2000/svg">
 <g id="color">
 <circle cx="36" cy="36.0001" r="28" fill="#RRGGBB"/>
 </g>
@@ -272,7 +299,7 @@ void MainWindow::getColorBall()
 </g>
 </svg>)---");
 
-    QString placeholder("#RRGGBB");
-    QString blue_ball = color_ball.replace(color_ball.indexOf(placeholder), placeholder.size(), blue);
-    qDebug() << blue_ball;
+	QString placeholder("#RRGGBB");
+	QString blue_ball = color_ball.replace(color_ball.indexOf(placeholder), placeholder.size(), blue);
+	qDebug() << blue_ball;
 }
