@@ -25,17 +25,8 @@ MainWindow::MainWindow(QWidget* parent)
 	guiInteractiveController(this)
 {
 	ui->setupUi(this);
-
-    labelNumberOfSteps = new QLabel(this);
-    countNumberOfSteps = new QLabel(this);
-    labelNumberOfSteps->setText("Steps:");
-    ui->statusbar->addPermanentWidget(labelNumberOfSteps);
-    ui->statusbar->addPermanentWidget(countNumberOfSteps);
-    QString number_of_steps = QString::number(0);
-    countNumberOfSteps->setText(number_of_steps);
-    labelNumberOfSteps->hide();
-    countNumberOfSteps->hide();
-
+	statusbarItems.init(ui->statusbar);
+	getColorBall();
 
 	grabKeyboard(); // https://doc.qt.io/qt-6/qwidget.html#grabKeyboard
 
@@ -80,10 +71,10 @@ void MainWindow::on_actionshowSVG_triggered()
 
 void MainWindow::on_actionAbout_triggered()
 {
-	qDebug() << "QLocale: " << QLocale().name();
+	qDebug() << "QLocale:" << QLocale().name();
 
 	QMessageBox msgBox;
-	msgBox.setText(QString("Qt Version used:   ") + qVersion());
+	msgBox.setText(QString("Qt Version used: ") + qVersion());
 	msgBox.exec();
 }
 
@@ -112,17 +103,17 @@ void MainWindow::viewSvgInMainView(const QString& svg_string)
 
 void MainWindow::on_actionNewGame_triggered() {
 	guiInteractiveController.startGame();
-    statusBar()->showMessage("Game started.");
-    labelNumberOfSteps->show();
-    countNumberOfSteps->show();
+	statusBar()->showMessage("Game started.");
+	statusbarItems.stepsKey->show();
+	statusbarItems.stepsValue->show();
 }
 
 void MainWindow::on_actionStopGame_triggered() {
 	guiInteractiveController.stopGame();
-    statusBar()->showMessage("Game stopped.");
-    countNumberOfSteps->setText(QString::number(0));
-    labelNumberOfSteps->hide();
-    countNumberOfSteps->hide();
+	statusBar()->showMessage("Game stopped.");
+	statusbarItems.stepsValue->setText(QString::number(0)); // remove this line here. There should be some refresh called when displaying the new board.
+	statusbarItems.stepsKey->hide();
+	statusbarItems.stepsValue->hide();
 }
 
 void MainWindow::on_actionMoveBack_triggered()
@@ -245,5 +236,70 @@ void MainWindow::on_actionWEST_triggered()
 
 void MainWindow::setNumberOfSteps(QString& c)
 {
-    countNumberOfSteps->setText(c);
+	statusbarItems.stepsValue->setText(c);
+}
+
+void MainWindow::StatusbarItems::init(QStatusBar* statusbar) {
+	stepsKey = new QLabel(statusbar); // parent takes ownership
+	stepsValue = new QLabel(statusbar); // parent takes ownership
+
+	boardIdKey = new QLabel(statusbar);
+	boardIdValue = new QLabel(statusbar);
+
+	solverKey = new QLabel(statusbar);
+	solverValue = new QLabel(statusbar);
+
+	pieceSelectedKey = new QLabel(statusbar);
+	pieceSelectedValue = new QLabel(statusbar);
+
+	/* label order */
+
+	statusbar->addPermanentWidget(solverKey);
+	statusbar->addPermanentWidget(solverValue);
+
+	statusbar->addPermanentWidget(boardIdKey);
+	statusbar->addPermanentWidget(boardIdValue);
+
+	statusbar->addPermanentWidget(pieceSelectedKey);
+	statusbar->addPermanentWidget(pieceSelectedValue);
+
+	statusbar->addPermanentWidget(stepsKey); // parent is replaced?
+	statusbar->addPermanentWidget(stepsValue); // parent is replaced?
+
+
+	stepsKey->setText("Steps:");
+
+	QString number_of_steps = QString::number(0);
+	stepsValue->setText(number_of_steps);
+
+	//stepsKey->hide();
+	//stepsValue->hide();
+
+	boardIdKey->setText("Board:");
+
+	solverKey->setText("Solver:");
+
+	pieceSelectedKey->setText("Piece:");
+}
+
+void MainWindow::getColorBall()
+{
+	QString blue = QColor(66, 133, 244).name();
+	QString green = QColor(52, 168, 83).name();
+	QString red = QColor(234, 67, 53).name();
+	QString yellow = QColor(251, 188, 5).name();
+
+	QString color_ball
+	(R"---(<svg id="emoji" viewBox="0 0 72 72" xmlns="http://www.w3.org/2000/svg">
+<g id="color">
+<circle cx="36" cy="36.0001" r="28" fill="#RRGGBB"/>
+</g>
+<g id="line">
+<circle cx="36" cy="36.0001" r="28" fill="none" stroke="#000" stroke-linejoin="round" stroke-width="2"/>
+</g>
+</svg>)---");
+
+	QString placeholder("#RRGGBB");
+	QString blue_ball = color_ball.replace(color_ball.indexOf(placeholder), placeholder.size(), blue);
+	qDebug() << blue_ball;
 }

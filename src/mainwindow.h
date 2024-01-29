@@ -11,6 +11,7 @@
 #include <QKeyEvent>
 #include <QGraphicsScene>
 #include <QLabel>
+#include <QColor>
 
 #include <memory>
 
@@ -24,6 +25,25 @@ class MainWindow : public QMainWindow
 {
 	Q_OBJECT
 
+private:
+	class StatusbarItems {
+	public:
+
+		QLabel* stepsKey;
+		QLabel* stepsValue;
+
+		QLabel* boardIdKey;
+		QLabel* boardIdValue; // two modes? "702563:378 // 3:0:2:3:5:2:7 " hint: redPlanetQuadrant, .., .., .., permutation, board rotation, target cell
+
+		QLabel* solverKey; // "RUNNING / OFF / AUTO-PLAY / STEP-MODE"
+		QLabel* solverValue;
+
+		QLabel* pieceSelectedKey; // "[colored square]" current selected piece's color
+		QLabel* pieceSelectedValue;
+
+		void init(QStatusBar* statusbar);
+	};
+
 public:
 
 	struct SvgViewToolchain {
@@ -31,7 +51,7 @@ public:
 		std::unique_ptr<QGraphicsScene> q_graphics_scene;
 		/*
 		*/
-		inline SvgViewToolchain& operator =(SvgViewToolchain&& another) {
+		inline SvgViewToolchain& operator =(SvgViewToolchain&& another) noexcept {
 			q_graphics_scene = std::move(another.q_graphics_scene);
 			q_svg_renderer = std::move(another.q_svg_renderer);
 
@@ -76,7 +96,9 @@ private slots:
 
 	void on_actionWEST_triggered();
 
-    void setNumberOfSteps(QString& c);
+	void setNumberOfSteps(QString& c);
+
+	void getColorBall();
 
 private:
 	Ui::MainWindow* ui;
@@ -85,8 +107,7 @@ private:
 
 	SvgViewToolchain svgViewToolchain;
 
-    QLabel* labelNumberOfSteps;
-    QLabel* countNumberOfSteps;
+	StatusbarItems statusbarItems;
 
 	void viewSvgInMainView(const QString& svg_string);
 
