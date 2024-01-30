@@ -37,7 +37,7 @@ else()
 endif()
 if(LINUX)
 	target_link_libraries(${PROJECT_NAME} PUBLIC
-		pthread
+		Threads::Threads
 	)
 endif()
 
@@ -92,7 +92,7 @@ else()
 endif()
 if(LINUX)
 	target_link_libraries(${PROJECT_NAME_LIB} PUBLIC
-		pthread
+		Threads::Threads
 	)
 endif()
 
