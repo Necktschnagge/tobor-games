@@ -81,6 +81,8 @@ void MainWindow::on_actionAbout_triggered()
 {
 	qDebug() << "QLocale:" << QLocale().name();
 
+	getColorBall();
+
 	QMessageBox msgBox;
 	msgBox.setText(QString("Qt Version used: ") + qVersion());
 	msgBox.exec();
@@ -333,4 +335,6 @@ void MainWindow::getColorBall()
 	QString placeholder("#RRGGBB");
 	QString blue_ball = color_ball.replace(color_ball.indexOf(placeholder), placeholder.size(), blue);
 	qDebug() << blue_ball;
+
+	viewSvgInMainView(blue_ball);
 }
