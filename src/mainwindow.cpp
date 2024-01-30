@@ -19,6 +19,7 @@
 #include <QGraphicsSvgItem>
 #include <QMessageBox>
 
+#include <QSizePolicy>
 
 
 MainWindow::MainWindow(QWidget* parent)
@@ -28,7 +29,7 @@ MainWindow::MainWindow(QWidget* parent)
 {
 	ui->setupUi(this);
 	statusbarItems.init(ui->statusbar);
-	getColorBall();
+	//getColorBall();
 
 	guiInteractiveController.refreshAll();
 
@@ -74,6 +75,8 @@ void MainWindow::on_actionshowSVG_triggered()
 }
 
 void MainWindow::on_actionHighlightGeneratedTargetCells_triggered() {
+	setStatusbarColor();
+
 	guiInteractiveController.highlightGeneratedTargetCells();
 }
 
@@ -81,7 +84,6 @@ void MainWindow::on_actionAbout_triggered()
 {
 	qDebug() << "QLocale:" << QLocale().name();
 
-	getColorBall();
 
 	QMessageBox msgBox;
 	msgBox.setText(QString("Qt Version used: ") + qVersion());
@@ -285,6 +287,13 @@ void MainWindow::StatusbarItems::init(QStatusBar* statusbar) {
 	pieceSelectedKey = new QLabel(statusbar);
 	pieceSelectedValue = new QLabel(statusbar);
 
+	colorSquare = new QGraphicsView(statusbar);
+
+	colorSquare->setMinimumSize(15, 15);
+	colorSquare->setMaximumSize(15, 15);
+	
+
+
 	/* label order */
 
 	statusbar->addPermanentWidget(solverKey);
@@ -295,9 +304,11 @@ void MainWindow::StatusbarItems::init(QStatusBar* statusbar) {
 
 	statusbar->addPermanentWidget(pieceSelectedKey);
 	statusbar->addPermanentWidget(pieceSelectedValue);
+	statusbar->addPermanentWidget(colorSquare);
 
 	statusbar->addPermanentWidget(stepsKey); // parent is replaced?
 	statusbar->addPermanentWidget(stepsValue); // parent is replaced?
+
 
 
 	stepsKey->setText("Steps:");
@@ -315,7 +326,7 @@ void MainWindow::StatusbarItems::init(QStatusBar* statusbar) {
 	pieceSelectedKey->setText("Piece:");
 }
 
-void MainWindow::getColorBall()
+void MainWindow::setStatusbarColor()
 {
 	QString blue = QColor(66, 133, 244).name();
 	QString green = QColor(52, 168, 83).name();
@@ -323,18 +334,49 @@ void MainWindow::getColorBall()
 	QString yellow = QColor(251, 188, 5).name();
 
 	QString color_ball
-	(R"---(<svg id="emoji" viewBox="0 0 72 72" xmlns="http://www.w3.org/2000/svg">
-<g id="color">
-<circle cx="36" cy="36.0001" r="28" fill="#RRGGBB"/>
-</g>
-<g id="line">
-<circle cx="36" cy="36.0001" r="28" fill="none" stroke="#000" stroke-linejoin="round" stroke-width="2"/>
-</g>
-</svg>)---");
+	(R"---(
+<svg version="1.1"
+     width="100" height="100"
+     xmlns="http://www.w3.org/2000/svg">
+	<path stroke="#000000" stroke-width="1" fill="#FF0000" d="M 0 0 h 100 v 100 h -100 Z"/>
+	<g id="inner" fill="#RRGGBB">
+		<circle cx="50" cy="50" r="45" />
+	</g>
+	<g id="border">
+		<circle cx="50" cy="50" r="45" fill="none" stroke="#000000" stroke-linejoin="round" stroke-width="5"/>
+	</g>
+</svg>
+)---");
 
 	QString placeholder("#RRGGBB");
 	QString blue_ball = color_ball.replace(color_ball.indexOf(placeholder), placeholder.size(), blue);
 	qDebug() << blue_ball;
 
-	viewSvgInMainView(blue_ball);
+	//viewSvgInMainView(blue_ball);
+
+
+	QXmlStreamReader xml;
+	xml.addData(blue_ball);
+
+	SvgViewToolchain new_chain;
+
+	new_chain.q_svg_renderer = std::make_unique<QSvgRenderer>(&xml); // doc does not require argument to be valid for duration of renderer
+
+	auto local_q_graphics_svg_item = new QGraphicsSvgItem();
+	local_q_graphics_svg_item->setSharedRenderer(new_chain.q_svg_renderer.get()); // does not take ownership
+
+	new_chain.q_graphics_scene = std::make_unique<QGraphicsScene>();
+	new_chain.q_graphics_scene->addItem(local_q_graphics_svg_item); // takes ownership
+
+
+	// currently we do not show the SVG:
+
+	statusbarItems.colorSquare->setScene(new_chain.q_graphics_scene.get()); // does not take ownership
+	statusbarItems.colorSquare->fitInView(new_chain.q_graphics_scene.get()->sceneRect(), Qt::IgnoreAspectRatio);
+	statusbarItems.colorSquare->show();
+
+	statusbarItems.svgC = std::move(new_chain); // then destroy old objects in reverse order compared to construction...
+
+	statusbarItems.colorSquare->setBackgroundBrush(Qt::yellow);
+
 }
