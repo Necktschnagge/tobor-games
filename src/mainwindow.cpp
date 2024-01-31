@@ -72,8 +72,6 @@ void MainWindow::on_actionshowSVG_triggered()
 }
 
 void MainWindow::on_actionHighlightGeneratedTargetCells_triggered() {
-	setStatusbarColor();
-
 	guiInteractiveController.highlightGeneratedTargetCells();
 }
 
@@ -323,19 +321,5 @@ void MainWindow::StatusbarItems::init(QStatusBar* statusbar) {
 	pieceSelectedKey->setText("Piece:");
 }
 
-void MainWindow::setStatusbarColor()
-{
-	SvgViewToolchain new_chain;
 
-	new_chain.q_graphics_scene = std::make_unique<QGraphicsScene>();
-	// currently we do not show the SVG inside the graphicsScene
 
-	statusbarItems.colorSquare->setScene(new_chain.q_graphics_scene.get()); // does not take ownership
-	statusbarItems.colorSquare->fitInView(new_chain.q_graphics_scene.get()->sceneRect(), Qt::IgnoreAspectRatio);
-	statusbarItems.colorSquare->show();
-
-	statusbarItems.svgC = std::move(new_chain); // then destroy old objects in reverse order compared to construction...
-
-	statusbarItems.colorSquare->setBackgroundBrush(Qt::yellow);
-
-}

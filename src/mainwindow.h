@@ -119,8 +119,6 @@ private slots:
 
 	void setNumberOfSteps(QString& c);
 
-	void setStatusbarColor();
-
 private:
 	Ui::MainWindow* ui;
 	GuiInteractiveController guiInteractiveController;
