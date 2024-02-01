@@ -49,6 +49,9 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS False)
+
+set(THREADS_PREFER_PTHREAD_FLAG ON)
+
 if (WIN32 AND NOT (MSYS OR MINGW))
         set(CMAKE_CXX_FLAGS_RELEASE "/MT /O2 /Ob2 /DNDEBUG") #what do all these flags mean?
         set(CMAKE_CXX_FLAGS_DEBUG "/MTd /Zi /Ob0 /Od /RTC1")
@@ -58,10 +61,9 @@ endif()
 if(MSVC)
   add_compile_options(/W4 /WX)
 else()
-  add_compile_options(-Wall -Wextra -pedantic -Werror -pthread)
+  add_compile_options(-Wall -Wextra -pedantic -Werror)
 endif()
 
-SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -pthread")
 
 
 
@@ -72,6 +74,8 @@ include_directories(SYSTEM extern/json/include)
 
 
 ############### Libraries via find_package ###############
+find_package(Threads REQUIRED)
+
 if(USE_QT6)
 	find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets Svg SvgWidgets)
 	find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets Svg SvgWidgets)
