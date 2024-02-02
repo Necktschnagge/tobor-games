@@ -70,6 +70,10 @@ void MainWindow::on_actionshowSVG_triggered()
 	viewSvgInMainView(example_svg_string);
 }
 
+void MainWindow::on_actionHighlightGeneratedTargetCells_triggered() {
+	guiInteractiveController.highlightGeneratedTargetCells();
+}
+
 void MainWindow::on_actionAbout_triggered()
 {
 	qDebug() << "QLocale: " << QLocale().name();

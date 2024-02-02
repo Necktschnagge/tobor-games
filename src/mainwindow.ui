@@ -161,6 +161,7 @@
           <string>&amp;Developer</string>
         </property>
         <addaction name="actionAbout"/>
+        <addaction name="actionHighlightGeneratedTargetCells"/>
       </widget>
       <widget class="QMenu" name="menuHelp">
         <property name="title">
@@ -223,6 +224,14 @@
       </property>
       <property name="text">
         <string>About</string>
+      </property>
+    </action>
+    <action name="actionHighlightGeneratedTargetCells">
+      <property name="enabled">
+        <bool>true</bool>
+      </property>
+      <property name="text">
+        <string>&amp;Highlight generated target cells</string>
       </property>
     </action>
     <action name="actionTest_ListView">
