@@ -35,11 +35,7 @@ else()
 	Qt${QT_VERSION_MAJOR}::Svg
 	)
 endif()
-if(LINUX)
-	target_link_libraries(${PROJECT_NAME} PUBLIC
-		pthread
-	)
-endif()
+target_link_libraries(${PROJECT_NAME} PRIVATE Threads::Threads)
 
 
 
@@ -90,11 +86,7 @@ else()
 	Qt${QT_VERSION_MAJOR}::Svg
 	)
 endif()
-if(LINUX)
-	target_link_libraries(${PROJECT_NAME_LIB} PUBLIC
-		pthread
-	)
-endif()
+target_link_libraries(${PROJECT_NAME_LIB} PRIVATE Threads::Threads)
 
 
 
