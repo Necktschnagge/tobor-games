@@ -26,7 +26,7 @@ else()
 	message("Tobor:  Parameters:  assuming USE_QT6 = TRUE")
 	set(USE_QT6 TRUE)
 endif()
-message("Tobor:  Parameters:  USE_QT6 set to:  ${USE_QT6}")	
+message("Tobor:  Parameters:  USE_QT6 set to:  ${USE_QT6}")
 
 
 
@@ -58,7 +58,7 @@ endif()
 if(MSVC)
   add_compile_options(/W4 /WX)
 else()
-  add_compile_options(-Wall -Wextra -pedantic -Werror -pthread)
+  add_compile_options(-Wall -Wextra -pedantic -Werror)
 endif()
 
 SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -pthread")
