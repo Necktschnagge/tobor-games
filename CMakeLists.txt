@@ -66,7 +66,6 @@ endif()
 
 
 
-
 ############### Libraries via include_directories ###############
 include_directories(SYSTEM extern/spdlog/include)
 include_directories(SYSTEM extern/json/include)
