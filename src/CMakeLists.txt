@@ -88,6 +88,8 @@ else()
 	)
 endif()
 
+target_link_libraries(${PROJECT_NAME_LIB} PRIVATE ${CMAKE_THREAD_LIBS_INIT})
+
 
 
 ############### Target Properties ###############
