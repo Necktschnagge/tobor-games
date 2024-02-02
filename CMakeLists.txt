@@ -31,7 +31,7 @@ message("Tobor:  Parameters:  USE_QT6 set to:  ${USE_QT6}")
 
 
 ############### Preprocessor Macros ###############
-add_compile_definitions(GIT_REPOSITORY_URL="https://github.com/Necktschnagge/cmake-qt-prototype")
+add_compile_definitions(GIT_REPOSITORY_URL="https://github.com/Necktschnagge/tobor-games")
 
 
 
