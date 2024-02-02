@@ -30,12 +30,14 @@ if(USE_QT6)
 	Qt${QT_VERSION_MAJOR}::SvgWidgets
 	)
 else()
-    target_link_libraries(${PROJECT_NAME} PRIVATE 
+    target_link_libraries(${PROJECT_NAME} PRIVATE
 	Qt${QT_VERSION_MAJOR}::Widgets
 	Qt${QT_VERSION_MAJOR}::Svg
 	)
 endif()
-target_link_libraries(${PROJECT_NAME} PRIVATE Threads::Threads)
+
+#target_link_libraries(${PROJECT_NAME} PRIVATE Threads::Threads)
+target_link_libraries(${PROJECT_NAME} PRIVATE ${CMAKE_THREAD_LIBS_INIT})
 
 
 
@@ -81,12 +83,13 @@ if(USE_QT6)
 	Qt${QT_VERSION_MAJOR}::SvgWidgets
 	)
 else()
-    target_link_libraries(${PROJECT_NAME_LIB} PRIVATE 
+    target_link_libraries(${PROJECT_NAME_LIB} PRIVATE
 	Qt${QT_VERSION_MAJOR}::Widgets
 	Qt${QT_VERSION_MAJOR}::Svg
 	)
 endif()
-target_link_libraries(${PROJECT_NAME_LIB} PRIVATE Threads::Threads)
+
+#target_link_libraries(${PROJECT_NAME_LIB} PRIVATE Threads::Threads)
 
 
 
