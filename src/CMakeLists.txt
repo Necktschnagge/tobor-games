@@ -36,7 +36,6 @@ else()
 	)
 endif()
 
-#target_link_libraries(${PROJECT_NAME} PRIVATE Threads::Threads)
 target_link_libraries(${PROJECT_NAME} PRIVATE ${CMAKE_THREAD_LIBS_INIT})
 
 
@@ -88,8 +87,6 @@ else()
 	Qt${QT_VERSION_MAJOR}::Svg
 	)
 endif()
-
-#target_link_libraries(${PROJECT_NAME_LIB} PRIVATE Threads::Threads)
 
 
 
