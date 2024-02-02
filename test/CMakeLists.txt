@@ -13,5 +13,5 @@ add_test(NAME ${TEST_PROJECT_NAME} COMMAND ${TEST_PROJECT_NAME}) # what does com
 
 
 ############### Libraries via target_link_libraries ###############
-target_link_libraries(${TEST_PROJECT_NAME} PRIVATE ${CMAKE_THREAD_LIBS_INIT})
+target_link_libraries(${TEST_PROJECT_NAME} PRIVATE Threads::Threads)
 target_link_libraries(${TEST_PROJECT_NAME} PUBLIC ${PROJECT_NAME_LIB} gtest)

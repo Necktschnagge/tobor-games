@@ -36,7 +36,7 @@ else()
 	)
 endif()
 
-target_link_libraries(${PROJECT_NAME} PRIVATE ${CMAKE_THREAD_LIBS_INIT})
+target_link_libraries(${PROJECT_NAME} PRIVATE Threads::Threads)
 
 
 
@@ -88,7 +88,7 @@ else()
 	)
 endif()
 
-target_link_libraries(${PROJECT_NAME_LIB} PRIVATE ${CMAKE_THREAD_LIBS_INIT})
+target_link_libraries(${PROJECT_NAME_LIB} PRIVATE Threads::Threads)
 
 
 
