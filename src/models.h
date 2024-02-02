@@ -5,7 +5,9 @@
 #include <set>
 #include <array>
 #include <vector>
+
 #include <algorithm>
+
 #include <stdexcept>
 #include <iterator>
 #include <string>
@@ -22,7 +24,7 @@ namespace tobor {
 		};
 
 		class blocked_center_error : public std::logic_error { // OK
-			inline static const char MESSAGE[]{ "Blocking too many fields." };
+			inline static const char MESSAGE[]{ "Blocking too many cells." };
 		public:
 			blocked_center_error() : std::logic_error(MESSAGE) {}
 		};
@@ -298,6 +300,26 @@ namespace tobor {
 			*/
 			inline int_type count_cells() const noexcept {
 				return x_size * y_size;
+			}
+
+			/**
+			*	@brief Return true if and only if given cell is blocked.
+			*	@details cell_id must be a non-negative integer less than \a count_cells(). Otherwise behaviour is undefined.
+			*/
+			inline bool blocked(int_type cell_id) const {
+				auto transposed_id = id_to_transposed_id(cell_id);
+				return west_wall_by_id(cell_id) && east_wall_by_id(cell_id) && south_wall_by_transposed_id(transposed_id) && north_wall_by_transposed_id(transposed_id);
+			}
+
+			/**
+			*	@brief Returns the board's number of blocked cells
+			*/
+			inline int_type blocked_cells() const noexcept {
+				int_type counter{ 0 };
+				for (int_type cell_id = 0; cell_id < count_cells(); ++cell_id) {
+					counter += blocked(cell_id);
+				}
+				return counter;
 			}
 
 			/**

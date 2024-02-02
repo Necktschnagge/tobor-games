@@ -48,6 +48,8 @@ public:
 
 private slots:
 	void on_actionshowSVG_triggered();
+	
+	void on_actionHighlightGeneratedTargetCells_triggered();
 
 	void on_actionAbout_triggered();
 
