@@ -26,7 +26,7 @@ else()
 	message("Tobor:  Parameters:  assuming USE_QT6 = TRUE")
 	set(USE_QT6 TRUE)
 endif()
-message("Tobor:  Parameters:  USE_QT6 set to:  ${USE_QT6}")	
+message("Tobor:  Parameters:  USE_QT6 set to:  ${USE_QT6}")
 
 
 
