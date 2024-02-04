@@ -258,7 +258,7 @@ void GuiInteractiveController::refreshStatusbar() {
 
 	// may be initial, not updated everytime:
 
-	MainWindow::SvgViewToolchain new_chain;
+	MainWindow::SvgViewToolchain new_chain; // this data type aggregates more member data than enough.
 
 	new_chain.q_graphics_scene = std::make_unique<QGraphicsScene>();
 	// currently we do not show the SVG inside the graphicsScene
@@ -285,8 +285,10 @@ void GuiInteractiveController::refreshStatusbar() {
 	else {
 
 		mainWindow->statusbarItems.colorSquare->setBackgroundBrush(Qt::white);
-
 	}
+
+	refreshNumberOfSteps();
+
 }
 
 void GuiInteractiveController::refreshNumberOfSteps() {

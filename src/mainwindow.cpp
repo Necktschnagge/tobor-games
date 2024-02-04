@@ -118,7 +118,6 @@ void MainWindow::on_actionNewGame_triggered() {
 void MainWindow::on_actionStopGame_triggered() {
 	guiInteractiveController.stopGame();
 	statusBar()->showMessage("Game stopped.");
-	statusbarItems.stepsValue->setText(QString::number(0)); // remove this line here. There should be some refresh called when displaying the new board.
 	//statusbarItems.stepsKey->hide();
 	//statusbarItems.stepsValue->hide();
 }

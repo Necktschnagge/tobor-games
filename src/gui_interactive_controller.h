@@ -331,7 +331,6 @@ public:
 	inline void refreshAll() {
 		refreshSVG();
 		refreshStatusbar();
-		refreshNumberOfSteps();
 		refreshMenuButtonEnable();
 		viewSolutionPaths();
 	}
