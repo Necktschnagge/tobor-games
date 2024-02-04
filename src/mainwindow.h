@@ -11,7 +11,6 @@
 #include <QKeyEvent>
 #include <QGraphicsScene>
 #include <QLabel>
-#include <QColor>
 
 #include <memory>
 

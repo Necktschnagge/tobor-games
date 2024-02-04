@@ -302,8 +302,8 @@ void MainWindow::StatusbarItems::init(QStatusBar* statusbar) {
 
 	stepsKey->setText("Steps:");
 
-	QString number_of_steps = QString::number(0);
-	stepsValue->setText(number_of_steps);
+	//QString number_of_steps = QString::number(0);
+	//stepsValue->setText(number_of_steps);
 
 	//stepsKey->hide();
 	//stepsValue->hide();
