@@ -10,6 +10,7 @@
 #include <QGraphicsSvgItem>
 #include <QKeyEvent>
 #include <QGraphicsScene>
+#include <QLabel>
 
 #include <memory>
 
@@ -43,12 +44,38 @@ public:
 		}
 	};
 
+
+private:
+	class StatusbarItems {
+	public:
+
+		QLabel* stepsKey;
+		QLabel* stepsValue;
+
+		QLabel* boardIdKey;
+		QLabel* boardIdValue; // two modes? "702563:378 // 3:0:2:3:5:2:7 " hint: redPlanetQuadrant, .., .., .., permutation, board rotation, target cell
+
+		QLabel* solverKey; // "RUNNING / OFF / AUTO-PLAY / STEP-MODE"
+		QLabel* solverValue;
+
+		QLabel* pieceSelectedKey; // "[colored square]" current selected piece's color
+		QLabel* pieceSelectedValue;
+
+		QGraphicsView* colorSquare;
+
+		SvgViewToolchain svgC;
+
+		void init(QStatusBar* statusbar);
+	};
+
+public:
+
 	MainWindow(QWidget* parent = nullptr);
 	~MainWindow();
 
 private slots:
 	void on_actionshowSVG_triggered();
-	
+
 	void on_actionHighlightGeneratedTargetCells_triggered();
 
 	void on_actionAbout_triggered();
@@ -95,6 +122,8 @@ private:
 	friend class GuiInteractiveController;
 
 	SvgViewToolchain svgViewToolchain;
+
+	StatusbarItems statusbarItems;
 
 	void viewSvgInMainView(const QString& svg_string);
 

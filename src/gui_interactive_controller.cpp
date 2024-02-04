@@ -254,6 +254,43 @@ void GuiInteractiveController::refreshMenuButtonEnable()
 
 }
 
+void GuiInteractiveController::refreshStatusbar() {
+
+	// may be initial, not updated everytime:
+
+	MainWindow::SvgViewToolchain new_chain; // this data type aggregates more member data than enough.
+
+	new_chain.q_graphics_scene = std::make_unique<QGraphicsScene>();
+	// currently we do not show the SVG inside the graphicsScene
+
+	mainWindow->statusbarItems.colorSquare->setScene(new_chain.q_graphics_scene.get()); // does not take ownership
+	mainWindow->statusbarItems.colorSquare->fitInView(new_chain.q_graphics_scene.get()->sceneRect(), Qt::IgnoreAspectRatio);
+	mainWindow->statusbarItems.colorSquare->show();
+
+	mainWindow->statusbarItems.svgC = std::move(new_chain); // then destroy old objects in reverse order compared to construction...
+
+	if (interactive_mode == InteractiveMode::GAME_INTERACTIVE || interactive_mode == InteractiveMode::SOLVER_INTERACTIVE_STEPS) {
+
+		int r{ 240 };
+		int g{ 20 };
+		int b{ 50 };
+
+		auto color = QColor(r, g, b);
+
+		auto brush = QBrush(color);
+
+		mainWindow->statusbarItems.colorSquare->setBackgroundBrush(brush);
+
+	}
+	else {
+
+		mainWindow->statusbarItems.colorSquare->setBackgroundBrush(Qt::white);
+	}
+
+	refreshNumberOfSteps();
+
+}
+
 void GuiInteractiveController::refreshNumberOfSteps() {
 
 	QString number_of_steps;
@@ -264,8 +301,7 @@ void GuiInteractiveController::refreshNumberOfSteps() {
 
 	}
 
-	mainWindow->setWindowTitle(number_of_steps);
-
+	mainWindow->statusbarItems.stepsValue->setText(number_of_steps);
 }
 
 void GuiInteractiveController::movePiece(const tobor::v1_0::direction& direction) {
