@@ -263,11 +263,6 @@ void MainWindow::on_listView_doubleClicked(const QModelIndex& index)
 	guiInteractiveController.refreshAll();
 }
 
-void MainWindow::setNumberOfSteps(QString& c)
-{
-	statusbarItems.stepsValue->setText(c);
-}
-
 void MainWindow::StatusbarItems::init(QStatusBar* statusbar) {
 	stepsKey = new QLabel(statusbar); // parent takes ownership
 	stepsValue = new QLabel(statusbar); // parent takes ownership

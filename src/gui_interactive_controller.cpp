@@ -301,7 +301,7 @@ void GuiInteractiveController::refreshNumberOfSteps() {
 
 	}
 
-	mainWindow->setNumberOfSteps(number_of_steps);
+	mainWindow->statusbarItems.stepsValue->setText(number_of_steps);
 }
 
 void GuiInteractiveController::movePiece(const tobor::v1_0::direction& direction) {

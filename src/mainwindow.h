@@ -117,8 +117,6 @@ private slots:
 
 	void on_listView_doubleClicked(const QModelIndex& index);
 
-	void setNumberOfSteps(QString& c);
-
 private:
 	Ui::MainWindow* ui;
 	GuiInteractiveController guiInteractiveController;
