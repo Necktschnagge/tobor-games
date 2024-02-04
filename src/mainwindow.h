@@ -11,6 +11,7 @@
 #include <QKeyEvent>
 #include <QGraphicsScene>
 #include <QLabel>
+#include <QColor>
 
 #include <memory>
 
@@ -115,6 +116,9 @@ private slots:
 	void on_actionLicense_Information_triggered();
 
 	void on_listView_doubleClicked(const QModelIndex& index);
+
+
+	void setStatusbarColor();
 
 private:
 	Ui::MainWindow* ui;
