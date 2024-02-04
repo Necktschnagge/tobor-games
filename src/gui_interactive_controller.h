@@ -326,9 +326,11 @@ public:
 
 	void refreshMenuButtonEnable();
 
+	void refreshStatusbar();
+
 	inline void refreshAll() {
 		refreshSVG();
-		refreshNumberOfSteps();
+		refreshStatusbar();
 		refreshMenuButtonEnable();
 		viewSolutionPaths();
 	}
