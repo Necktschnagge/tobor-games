@@ -4,6 +4,8 @@
 
 #include "gui_helper.h"
 
+#include "color_generator.h"
+
 #include "./ui_mainwindow.h"
 #include "gui_interactive_controller.h"
 #include "solver.h"
@@ -73,6 +75,8 @@ void MainWindow::on_actionshowSVG_triggered()
 
 void MainWindow::on_actionHighlightGeneratedTargetCells_triggered() {
 	guiInteractiveController.highlightGeneratedTargetCells();
+
+	tobor::v1_0::color_vector::test(ui->menubar);
 }
 
 void MainWindow::on_actionAbout_triggered()
