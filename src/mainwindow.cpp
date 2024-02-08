@@ -177,7 +177,7 @@ void MainWindow::getTypes(QObject* object, bool in) {
 
 	try {
 		auto x = object->metaObject()->className();
-		qWarning(x);
+		qDebug() << x;
 		if (in)
 			ui->statusbar->showMessage(x);
 	}
