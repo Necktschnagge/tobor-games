@@ -65,7 +65,14 @@ private:
 
 		SvgViewToolchain svgC;
 
+		QGraphicsView* keyboardCaptureIcon;
+		QLabel* kci;
+
+		SvgViewToolchain keyboardCapture;
+
 		void init(QStatusBar* statusbar);
+
+		void setKciColor(const QColor& c);
 	};
 
 public:
@@ -131,9 +138,15 @@ private:
 		return viewSvgInMainView(QString::fromStdString(svg_string));
 	}
 
+	void getTypes(QObject* object, bool in = false);
 
 protected:
 	void keyPressEvent(QKeyEvent* e);
+
+
+public:
+	bool eventFilter(QObject* object, QEvent* event);
+
 
 };
 

@@ -34,6 +34,8 @@ MainWindow::MainWindow(QWidget* parent)
 
 	grabKeyboard(); // https://doc.qt.io/qt-6/qwidget.html#grabKeyboard
 
+	//ui->menubar->installEventFilter(this); // this -> bool eventFilter(QObject* object, QEvent* event)
+
 	// releaseKeyboard();  when entering main menu
 	// again call grabKeyboard() when exiting main menu (by triggering event or exiting without clicking any menu button)
 
@@ -160,6 +162,106 @@ void MainWindow::keyPressEvent(QKeyEvent* e)
 	qDebug() << "catch keyboard";
 }
 
+void MainWindow::getTypes(QObject* object, bool in) {
+	/*
+	if (dynamic_cast<QMenuBar*>(object) != nullptr) {
+		qWarning("QMenuBar");
+	}
+	if (dynamic_cast<QMenu*>(object) != nullptr) {
+		qWarning("QMenu");
+	}
+	if (dynamic_cast<QAction*>(object) != nullptr) {
+		qWarning("QAction");
+	}
+	*/
+
+	try {
+		auto x = object->metaObject()->className();
+		qWarning(x);
+		if (in)
+			ui->statusbar->showMessage(x);
+	}
+	catch (...) {
+		//QString x = QString(typeid(object).name());
+		QString x = QString::number(typeid(object).hash_code());
+		qDebug() << x;
+		if (in)
+			ui->statusbar->showMessage(x);
+	}
+
+}
+
+bool MainWindow::eventFilter(QObject* object, QEvent* e)
+{
+	QString event_name = typeid(*e).name();
+
+
+
+	if (
+		dynamic_cast<QGraphicsView*>(object) != nullptr ||
+		dynamic_cast<QGraphicsScene*>(object) != nullptr ||
+		dynamic_cast<QListView*>(object) != nullptr ||
+		dynamic_cast<QTreeView*>(object) != nullptr ||
+		false
+		) {
+		if (e->type() == QEvent::FocusIn) {
+			//MainWindow::setWindowTitle("++++++++++++++++");
+			statusbarItems.setKciColor(Qt::green);
+			qDebug() << "green";
+		}
+	}
+
+	if (
+		dynamic_cast<QMenuBar*>(object) != nullptr ||
+		dynamic_cast<QMenu*>(object) != nullptr ||
+		//dynamic_cast<QMenuBar*>(object) != nullptr ||
+		false
+		) {
+		if (e->type() == QEvent::FocusIn || e->type() == QEvent::MouseButtonPress) {
+			//MainWindow::setWindowTitle("----------------");
+			statusbarItems.setKciColor(Qt::red);
+			qDebug() << "red";
+		}
+	}
+
+	//if (e->type() != QEvent::FocusIn && e->type() != QEvent::FocusOut) {
+	//	return false;
+	//}
+
+	try {
+		QString x = object->metaObject()->className();
+		qDebug() << event_name << " " << x;
+		//if (in) ui->statusbar->showMessage(x);
+	}
+	catch (...) {
+		//QString x = QString(typeid(object).name());
+		QString x = QString::number(typeid(*object).hash_code());
+		qDebug() << event_name << " " << x;
+		//if (in) ui->statusbar->showMessage(x);
+	}
+
+	/*
+
+	if (e->type() == QEvent::FocusOut)
+	{
+
+
+		qWarning("Focus Out");
+		//qWarning(object->objectName().toLatin1().data());
+		getTypes(object);
+
+	}
+	if (e->type() == QEvent::FocusIn)
+	{
+		qWarning("Focus In");
+		//qWarning(object->objectName().toLatin1().data());
+		getTypes(object, true);
+
+	}
+	*/
+	return false;
+}
+
 
 void MainWindow::on_actionTest_ListView_triggered()
 {
@@ -281,10 +383,18 @@ void MainWindow::StatusbarItems::init(QStatusBar* statusbar) {
 	pieceSelectedValue = new QLabel(statusbar);
 
 	colorSquare = new QGraphicsView(statusbar);
-
 	colorSquare->setMinimumSize(15, 15);
 	colorSquare->setMaximumSize(15, 15);
-	
+
+	keyboardCaptureIcon = new QGraphicsView(statusbar);
+	keyboardCaptureIcon->setMinimumSize(15, 15);
+	keyboardCaptureIcon->setMaximumSize(15, 15);
+
+	kci = new QLabel(statusbar);
+	kci->setMinimumSize(15, 15);
+	kci->setMaximumSize(15, 15);
+
+
 
 
 	/* label order */
@@ -302,7 +412,11 @@ void MainWindow::StatusbarItems::init(QStatusBar* statusbar) {
 	statusbar->addPermanentWidget(stepsKey); // parent is replaced?
 	statusbar->addPermanentWidget(stepsValue); // parent is replaced?
 
+	statusbar->addPermanentWidget(keyboardCaptureIcon);
+	statusbar->addPermanentWidget(kci);
 
+
+	setKciColor(Qt::darkYellow);
 
 	stepsKey->setText("Steps:");
 
@@ -317,6 +431,16 @@ void MainWindow::StatusbarItems::init(QStatusBar* statusbar) {
 	solverKey->setText("Solver:");
 
 	pieceSelectedKey->setText("Piece:");
+}
+
+void MainWindow::StatusbarItems::setKciColor(const QColor& c)
+{
+	QPixmap pm(1, 1);
+
+	pm.fill(c);
+
+	//keyboardCaptureIcon->
+	kci->setPixmap(pm.scaled(kci->size(), Qt::KeepAspectRatio));
 }
 
 

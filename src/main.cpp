@@ -29,5 +29,7 @@ int main(int argc, char* argv[])
 	std::setlocale(LC_NUMERIC, "C");
 	MainWindow main_window;
 	main_window.show();
+	qt_app.installEventFilter(&main_window);
+
 	return qt_app.exec();
 }
