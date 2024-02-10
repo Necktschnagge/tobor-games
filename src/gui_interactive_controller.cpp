@@ -255,7 +255,7 @@ void GuiInteractiveController::refreshMenuButtonEnable()
 }
 
 void GuiInteractiveController::refreshStatusbar() {
-
+	/*
 	// may be initial, not updated everytime:
 
 	MainWindow::SvgViewToolchain new_chain; // this data type aggregates more member data than enough.
@@ -288,7 +288,9 @@ void GuiInteractiveController::refreshStatusbar() {
 	}
 
 	refreshNumberOfSteps();
+	*/
 
+	mainWindow->setStatusbarColor();
 }
 
 void GuiInteractiveController::refreshNumberOfSteps() {

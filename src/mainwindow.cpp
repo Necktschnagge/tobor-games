@@ -19,6 +19,8 @@
 #include <QGraphicsSvgItem>
 #include <QMessageBox>
 
+#include <QSizePolicy>
+
 
 MainWindow::MainWindow(QWidget* parent)
 	: QMainWindow(parent)
@@ -315,5 +317,57 @@ void MainWindow::StatusbarItems::init(QStatusBar* statusbar) {
 	pieceSelectedKey->setText("Piece:");
 }
 
+void MainWindow::setStatusbarColor()
+{
+	QString blue = QColor(66, 133, 244).name();
+	QString green = QColor(52, 168, 83).name();
+	QString red = QColor(234, 67, 53).name();
+	QString yellow = QColor(251, 188, 5).name();
+
+	QString color_ball
+	(R"---(
+<svg version="1.1"
+     width="100" height="100"
+     xmlns="http://www.w3.org/2000/svg">
+	<path stroke="#000000" stroke-width="1" fill="#FF0000" d="M 0 0 h 100 v 100 h -100 Z"/>
+	<g id="inner" fill="#RRGGBB">
+		<circle cx="50" cy="50" r="45" />
+	</g>
+	<g id="border">
+		<circle cx="50" cy="50" r="45" fill="none" stroke="#000000" stroke-linejoin="round" stroke-width="5"/>
+	</g>
+</svg>
+)---");
+
+	QString placeholder("#RRGGBB");
+	QString blue_ball = color_ball.replace(color_ball.indexOf(placeholder), placeholder.size(), blue);
+	qDebug() << blue_ball;
+
+	//viewSvgInMainView(blue_ball);
 
 
+	QXmlStreamReader xml;
+	xml.addData(blue_ball);
+
+	SvgViewToolchain new_chain;
+
+	new_chain.q_svg_renderer = std::make_unique<QSvgRenderer>(&xml); // doc does not require argument to be valid for duration of renderer
+
+	auto local_q_graphics_svg_item = new QGraphicsSvgItem();
+	local_q_graphics_svg_item->setSharedRenderer(new_chain.q_svg_renderer.get()); // does not take ownership
+
+	new_chain.q_graphics_scene = std::make_unique<QGraphicsScene>();
+	new_chain.q_graphics_scene->addItem(local_q_graphics_svg_item); // takes ownership
+
+
+	// currently we do not show the SVG:
+
+	statusbarItems.colorSquare->setScene(new_chain.q_graphics_scene.get()); // does not take ownership
+	statusbarItems.colorSquare->fitInView(new_chain.q_graphics_scene.get()->sceneRect(), Qt::IgnoreAspectRatio);
+	statusbarItems.colorSquare->show();
+
+	statusbarItems.svgC = std::move(new_chain); // then destroy old objects in reverse order compared to construction...
+
+	statusbarItems.colorSquare->setBackgroundBrush(Qt::yellow);
+
+}
