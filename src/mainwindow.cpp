@@ -193,73 +193,82 @@ void MainWindow::getTypes(QObject* object, bool in) {
 
 bool MainWindow::eventFilter(QObject* object, QEvent* e)
 {
-	QString event_name = typeid(*e).name();
+	static constexpr bool SKIP{ false };
+
+	if constexpr (SKIP) {
+		return false;
+	}
+	else {
+
+
+		QString event_name = typeid(*e).name();
 
 
 
-	if (
-		dynamic_cast<QGraphicsView*>(object) != nullptr ||
-		dynamic_cast<QGraphicsScene*>(object) != nullptr ||
-		dynamic_cast<QListView*>(object) != nullptr ||
-		dynamic_cast<QTreeView*>(object) != nullptr ||
-		false
-		) {
-		if (e->type() == QEvent::FocusIn) {
-			//MainWindow::setWindowTitle("++++++++++++++++");
-			statusbarItems.setKciColor(Qt::green);
-			qDebug() << "green";
+		if (
+			dynamic_cast<QGraphicsView*>(object) != nullptr ||
+			dynamic_cast<QGraphicsScene*>(object) != nullptr ||
+			dynamic_cast<QListView*>(object) != nullptr ||
+			dynamic_cast<QTreeView*>(object) != nullptr ||
+			false
+			) {
+			if (e->type() == QEvent::FocusIn) {
+				//MainWindow::setWindowTitle("++++++++++++++++");
+				statusbarItems.setKciColor(Qt::green);
+				qDebug() << "green";
+			}
 		}
-	}
 
-	if (
-		dynamic_cast<QMenuBar*>(object) != nullptr ||
-		dynamic_cast<QMenu*>(object) != nullptr ||
-		//dynamic_cast<QMenuBar*>(object) != nullptr ||
-		false
-		) {
-		if (e->type() == QEvent::FocusIn || e->type() == QEvent::MouseButtonPress) {
-			//MainWindow::setWindowTitle("----------------");
-			statusbarItems.setKciColor(Qt::red);
-			qDebug() << "red";
+		if (
+			dynamic_cast<QMenuBar*>(object) != nullptr ||
+			dynamic_cast<QMenu*>(object) != nullptr ||
+			//dynamic_cast<QMenuBar*>(object) != nullptr ||
+			false
+			) {
+			if (e->type() == QEvent::FocusIn || e->type() == QEvent::MouseButtonPress) {
+				//MainWindow::setWindowTitle("----------------");
+				statusbarItems.setKciColor(Qt::red);
+				qDebug() << "red";
+			}
 		}
+
+		//if (e->type() != QEvent::FocusIn && e->type() != QEvent::FocusOut) {
+		//	return false;
+		//}
+
+		try {
+			QString x = object->metaObject()->className();
+			qDebug() << event_name << " " << x;
+			//if (in) ui->statusbar->showMessage(x);
+		}
+		catch (...) {
+			//QString x = QString(typeid(object).name());
+			QString x = QString::number(typeid(*object).hash_code());
+			qDebug() << event_name << " " << x;
+			//if (in) ui->statusbar->showMessage(x);
+		}
+
+		/*
+
+		if (e->type() == QEvent::FocusOut)
+		{
+
+
+			qWarning("Focus Out");
+			//qWarning(object->objectName().toLatin1().data());
+			getTypes(object);
+
+		}
+		if (e->type() == QEvent::FocusIn)
+		{
+			qWarning("Focus In");
+			//qWarning(object->objectName().toLatin1().data());
+			getTypes(object, true);
+
+		}
+		*/
+		return false;
 	}
-
-	//if (e->type() != QEvent::FocusIn && e->type() != QEvent::FocusOut) {
-	//	return false;
-	//}
-
-	try {
-		QString x = object->metaObject()->className();
-		qDebug() << event_name << " " << x;
-		//if (in) ui->statusbar->showMessage(x);
-	}
-	catch (...) {
-		//QString x = QString(typeid(object).name());
-		QString x = QString::number(typeid(*object).hash_code());
-		qDebug() << event_name << " " << x;
-		//if (in) ui->statusbar->showMessage(x);
-	}
-
-	/*
-
-	if (e->type() == QEvent::FocusOut)
-	{
-
-
-		qWarning("Focus Out");
-		//qWarning(object->objectName().toLatin1().data());
-		getTypes(object);
-
-	}
-	if (e->type() == QEvent::FocusIn)
-	{
-		qWarning("Focus In");
-		//qWarning(object->objectName().toLatin1().data());
-		getTypes(object, true);
-
-	}
-	*/
-	return false;
 }
 
 

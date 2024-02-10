@@ -3,6 +3,43 @@
 #include <vector>
 #include <QColor>
 #include <QMenuBar>
+#include <QAction>
+#include <QEvent>
+
+
+
+class QActionExtend : public QAction {
+
+public:
+	bool eventFilter(QObject* object, QEvent* event) override;
+
+protected:
+	bool event(QEvent* e) override;
+};
+
+
+class Counter : public QObject
+{
+	Q_OBJECT
+
+public:
+	Counter() { m_value = 0; }
+
+	int value() const { return m_value; }
+
+public slots:
+	void gotClicked(bool a) {
+		(void)a;
+		qDebug() << "clicked";
+	}
+
+public:
+signals:
+	void valueChanged(int newValue);
+
+private:
+	int m_value;
+};
 
 
 namespace tobor {
@@ -54,6 +91,11 @@ namespace tobor {
 			}
 
 			static void test(QMenuBar* mm) {
+
+				static QActionExtend qae;
+
+				static Counter ccc;
+
 				for (QAction* item : mm->actions()) {
 					qDebug() << item->text();
 					if (item->isSeparator()) {
@@ -64,7 +106,17 @@ namespace tobor {
 
 						QMenu* sub = item->menu();
 						if (sub->title().replace('&', "").toLower() == "developer") {
-							sub->addAction(QString::fromStdString(x.colors[0].display_string_with_underscore));
+
+							//auto a2 = new QActionExtend();
+
+
+							auto action = sub->addAction(QString::fromStdString(x.colors[0].display_string_with_underscore));
+
+							//action->installEventFilter(&qae);
+							//action->activate(QAction::Trigger);
+
+							QObject::connect(action, &QAction::triggered, &ccc, &Counter::gotClicked, Qt::AutoConnection);
+							//QObject::connect(action, SIGNAL(triggered()), &ccc, SLOT(gotClicked()));
 						}
 					}
 					else {
