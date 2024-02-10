@@ -15,8 +15,8 @@ public:
 	PieceColorSelector(){}
 
 public slots:
-	void gotClicked(bool a) {
-		(void)a;
+	void gotClicked() {
+		//(void)a;
 		qDebug() << "clicked";
 	}
 
