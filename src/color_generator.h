@@ -5,6 +5,7 @@
 #include <QMenuBar>
 #include <QAction>
 #include <QEvent>
+#include <QDebug>
 
 
 class PieceColorSelector : public QObject
