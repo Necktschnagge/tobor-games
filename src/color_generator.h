@@ -7,25 +7,12 @@
 #include <QEvent>
 
 
-
-class QActionExtend : public QAction {
-
-public:
-	bool eventFilter(QObject* object, QEvent* event) override;
-
-protected:
-	bool event(QEvent* e) override;
-};
-
-
-class Counter : public QObject
+class PieceColorSelector : public QObject
 {
 	Q_OBJECT
 
 public:
-	Counter() { m_value = 0; }
-
-	int value() const { return m_value; }
+	PieceColorSelector(){}
 
 public slots:
 	void gotClicked(bool a) {
@@ -34,11 +21,7 @@ public slots:
 	}
 
 public:
-signals:
-	void valueChanged(int newValue);
 
-private:
-	int m_value;
 };
 
 
@@ -92,9 +75,7 @@ namespace tobor {
 
 			static void test(QMenuBar* mm) {
 
-				static QActionExtend qae;
-
-				static Counter ccc;
+				static PieceColorSelector ccc;
 
 				for (QAction* item : mm->actions()) {
 					qDebug() << item->text();
@@ -115,7 +96,7 @@ namespace tobor {
 							//action->installEventFilter(&qae);
 							//action->activate(QAction::Trigger);
 
-							QObject::connect(action, &QAction::triggered, &ccc, &Counter::gotClicked, Qt::AutoConnection);
+							QObject::connect(action, &QAction::triggered, &ccc, &PieceColorSelector::gotClicked, Qt::AutoConnection);
 							//QObject::connect(action, SIGNAL(triggered()), &ccc, SLOT(gotClicked()));
 						}
 					}
