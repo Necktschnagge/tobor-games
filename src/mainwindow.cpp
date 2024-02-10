@@ -444,9 +444,21 @@ void MainWindow::StatusbarItems::init(QStatusBar* statusbar) {
 
 void MainWindow::StatusbarItems::setKciColor(const QColor& c)
 {
-	QPixmap pm(1, 1);
+	constexpr int SIZE{ 15 }; // match with size of label.
+
+	QPixmap pm(SIZE, SIZE);
 
 	pm.fill(c);
+
+	QImage img = pm.toImage();
+	for (int i = 0; i < SIZE; ++i) {
+		img.setPixelColor(0, i, Qt::black);
+		img.setPixelColor(SIZE-1, i, Qt::black);
+		img.setPixelColor(i, 0, Qt::black);
+		img.setPixelColor(i, SIZE-1, Qt::black);
+	}
+
+	pm = QPixmap::fromImage(img);
 
 	//keyboardCaptureIcon->
 	kci->setPixmap(pm.scaled(kci->size(), Qt::KeepAspectRatio));
