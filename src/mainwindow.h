@@ -109,6 +109,8 @@ private slots:
 
 	void on_actionHighlightGeneratedTargetCells_triggered();
 
+	void on_actionEnableAllMenuBarItems_triggered();
+
 	void on_actionAbout_triggered();
 
 	void on_actionNewGame_triggered();

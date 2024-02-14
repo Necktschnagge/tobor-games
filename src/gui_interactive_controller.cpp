@@ -164,6 +164,8 @@ void GuiInteractiveController::createColorActions()
 void GuiInteractiveController::stopGame() {
 
 	mainWindow->disconnectInputConnections();
+	mainWindow->getSelectPieceSubMenu()->clear();
+
 
 	if (interactive_mode == InteractiveMode::NO_GAME) {
 		return showErrorDialog("This action should not be available.");

@@ -475,5 +475,36 @@ QMenu* MainWindow::getSelectPieceSubMenu() {
 void MainWindow::selectPieceByColor(int index) {
 	qDebug() << "selectPieceByColor  " << index;
 	guiInteractiveController.setPieceId(index); // where to check range correctness?
-	
+
+}
+
+
+template<class QMenu_OR_QMenuBar>
+inline void menu_recursion(QMenu_OR_QMenuBar* m) {
+
+	m->setEnabled(true);
+
+	for (QAction* item : m->actions()) {
+
+		qDebug() << item->text();
+		item->setEnabled(true);
+
+		if (item->isSeparator()) {
+		}
+		else if (item->menu()) {
+
+			QMenu* sub = item->menu();
+			menu_recursion(sub);
+
+		}
+		else /* normal action */ {
+		}
+
+	}
+}
+
+
+void MainWindow::on_actionEnableAllMenuBarItems_triggered()
+{
+	menu_recursion(ui->menubar);
 }
