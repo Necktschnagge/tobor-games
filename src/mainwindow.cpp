@@ -37,7 +37,7 @@ MainWindow::MainWindow(QWidget* parent)
 
 	signalMapper = new QSignalMapper(this);
 
-	QObject::connect(signalMapper, &QSignalMapper::mappedInt, this, &MainWindow::selectPieceByColor, Qt::AutoConnection);
+	QObject::connect(signalMapper, QOverload<int>::of(&QSignalMapper::mapped), this, &MainWindow::selectPieceByColor, Qt::AutoConnection);
 
 	//ui->menubar->installEventFilter(this); // this -> bool eventFilter(QObject* object, QEvent* event)
 
