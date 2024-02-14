@@ -140,7 +140,7 @@ void GuiInteractiveController::createColorActions()
 	// according to QSignalMapper's docs, the map entries for these objects will be deleted on their destruction.
 
 
-	for (int i = 0; i < current_color_vector.colors.size(); ++i) {
+	for (std::size_t i = 0; i < current_color_vector.colors.size(); ++i) {
 
 		auto action = sub->addAction(
 			QString::fromStdString(
@@ -153,7 +153,7 @@ void GuiInteractiveController::createColorActions()
 		);
 		//QObject::connect(action, &QAction::triggered, mainWindow->signalMapper, static_cast<void (QSignalMapper::*)()>(&QSignalMapper::map), Qt::AutoConnection);
 
-		mainWindow->signalMapper->setMapping(action, i);
+		mainWindow->signalMapper->setMapping(action, static_cast<int>(i));
 
 		//qDebug() << "added  " << current_color_vector.colors[i].display_string_with_underscore;
 	}
