@@ -76,22 +76,7 @@ private:
 		void setKciColor(const QColor& c);
 	};
 
-	class InputCapture {
-
-		std::vector<QMetaObject::Connection> input_connections;
-
-
-
-		void init() {
-			/* create all actions*/
-			/* connect signals */
-			/* set mapping into QSignalMapper */
-			/* connect Mapper to guiInteractiveController */
-
-			//grab keyboard?? emit signal?
-		}
-	};
-
+	
 public:
 
 	MainWindow(QWidget* parent = nullptr);
