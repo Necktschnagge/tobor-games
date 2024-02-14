@@ -131,6 +131,9 @@ private:
 		return viewSvgInMainView(QString::fromStdString(svg_string));
 	}
 
+	static const char* qtVersion() {
+		return qVersion();
+	}
 
 protected:
 	void keyPressEvent(QKeyEvent* e);
