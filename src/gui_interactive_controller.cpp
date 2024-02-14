@@ -136,6 +136,9 @@ void GuiInteractiveController::createColorActions()
 	QMenu* sub = mainWindow->getSelectPieceSubMenu();
 
 	sub->clear();
+	// actions are deleted,
+	// according to QSignalMapper's docs, the map entries for these objects will be deleted on their destruction.
+
 
 	for (int i = 0; i < current_color_vector.colors.size(); ++i) {
 
@@ -152,7 +155,7 @@ void GuiInteractiveController::createColorActions()
 
 		mainWindow->signalMapper->setMapping(action, i);
 
-		qDebug() << "added  " << current_color_vector.colors[i].display_string_with_underscore;
+		//qDebug() << "added  " << current_color_vector.colors[i].display_string_with_underscore;
 	}
 
 	

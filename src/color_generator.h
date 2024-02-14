@@ -24,7 +24,7 @@ public:
 public slots:
 	void select() {
 		//(void)a;
-		qDebug() << "clicked";
+		qDebug() << "clicked" << number_of_pieces;
 	}
 
 public:
