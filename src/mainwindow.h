@@ -11,6 +11,7 @@
 #include <QKeyEvent>
 #include <QGraphicsScene>
 #include <QLabel>
+#include <QSignalMapper>
 
 #include <memory>
 
@@ -75,15 +76,25 @@ private:
 		void setKciColor(const QColor& c);
 	};
 
+	
 public:
 
 	MainWindow(QWidget* parent = nullptr);
 	~MainWindow();
 
+public slots:
+	void select() {
+		//(void)a;
+		qDebug() << "clicked";
+	}
+
+
 private slots:
 	void on_actionshowSVG_triggered();
 
 	void on_actionHighlightGeneratedTargetCells_triggered();
+
+	void on_actionEnableAllMenuBarItems_triggered();
 
 	void on_actionAbout_triggered();
 
@@ -132,6 +143,10 @@ private:
 
 	StatusbarItems statusbarItems;
 
+	std::vector<QMetaObject::Connection> inputConnections;
+
+	QSignalMapper* signalMapper;
+
 	void viewSvgInMainView(const QString& svg_string);
 
 	inline void viewSvgInMainView(const std::string& svg_string) {
@@ -140,12 +155,28 @@ private:
 
 	void getTypes(QObject* object, bool in = false);
 
+
+
+	QMenu* getSelectPieceSubMenu();
+
+	void disconnectInputConnections() {
+		for (QMetaObject::Connection& c : inputConnections) {
+			QObject::disconnect(c);
+		}
+		inputConnections.clear();
+	}
+
+private slots:
+
+	void selectPieceByColor(int index);
+	
+
 protected:
-	void keyPressEvent(QKeyEvent* e);
+	void keyPressEvent(QKeyEvent* e) override;
 
 
 public:
-	bool eventFilter(QObject* object, QEvent* event);
+	bool eventFilter(QObject* object, QEvent* event) override;
 
 
 };

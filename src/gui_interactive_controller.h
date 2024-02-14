@@ -5,6 +5,7 @@ class GameController; // to be removed! ps_map is private, this is needed for fr
 #include "solver.h" // ..., tobor::v1_0::tobor_world
 
 #include "world_generator.h"
+#include "color_generator.h"
 
 // #include "tobor_svg.h" produces error
 
@@ -280,6 +281,8 @@ class GuiInteractiveController final {
 
 	std::mt19937 generator;
 
+	tobor::v1_0::color_vector current_color_vector;
+
 	//tobor::v1_0::tobor_graphics<GameController::positions_of_pieces_type>::coloring coloring = tobor::v1_0::tobor_graphics<GameController::positions_of_pieces_type>::coloring("red", "yellow", "green", "blue");
 	// needs tobor svg include which brings errors...
 
@@ -313,6 +316,8 @@ public:
 	}
 
 	void startGame();
+
+	void createColorActions();
 
 	void stopGame();
 

@@ -21,6 +21,7 @@
 #include <QGraphicsSvgItem>
 #include <QMessageBox>
 
+// please add a enable all actions in menu to developer menu!
 
 MainWindow::MainWindow(QWidget* parent)
 	: QMainWindow(parent)
@@ -33,6 +34,10 @@ MainWindow::MainWindow(QWidget* parent)
 	guiInteractiveController.refreshAll();
 
 	grabKeyboard(); // https://doc.qt.io/qt-6/qwidget.html#grabKeyboard
+
+	signalMapper = new QSignalMapper(this);
+
+	QObject::connect(signalMapper, &QSignalMapper::mappedInt, this, &MainWindow::selectPieceByColor, Qt::AutoConnection);
 
 	//ui->menubar->installEventFilter(this); // this -> bool eventFilter(QObject* object, QEvent* event)
 
@@ -77,8 +82,6 @@ void MainWindow::on_actionshowSVG_triggered()
 
 void MainWindow::on_actionHighlightGeneratedTargetCells_triggered() {
 	guiInteractiveController.highlightGeneratedTargetCells();
-
-	tobor::v1_0::color_vector::test(ui->menubar);
 }
 
 void MainWindow::on_actionAbout_triggered()
@@ -193,73 +196,82 @@ void MainWindow::getTypes(QObject* object, bool in) {
 
 bool MainWindow::eventFilter(QObject* object, QEvent* e)
 {
-	QString event_name = typeid(*e).name();
+	static constexpr bool SKIP{ true };
+
+	if constexpr (SKIP) {
+		return false;
+	}
+	else {
+
+
+		QString event_name = typeid(*e).name();
 
 
 
-	if (
-		dynamic_cast<QGraphicsView*>(object) != nullptr ||
-		dynamic_cast<QGraphicsScene*>(object) != nullptr ||
-		dynamic_cast<QListView*>(object) != nullptr ||
-		dynamic_cast<QTreeView*>(object) != nullptr ||
-		false
-		) {
-		if (e->type() == QEvent::FocusIn) {
-			//MainWindow::setWindowTitle("++++++++++++++++");
-			statusbarItems.setKciColor(Qt::green);
-			qDebug() << "green";
+		if (
+			dynamic_cast<QGraphicsView*>(object) != nullptr ||
+			dynamic_cast<QGraphicsScene*>(object) != nullptr ||
+			dynamic_cast<QListView*>(object) != nullptr ||
+			dynamic_cast<QTreeView*>(object) != nullptr ||
+			false
+			) {
+			if (e->type() == QEvent::FocusIn) {
+				//MainWindow::setWindowTitle("++++++++++++++++");
+				statusbarItems.setKciColor(Qt::green);
+				qDebug() << "green";
+			}
 		}
-	}
 
-	if (
-		dynamic_cast<QMenuBar*>(object) != nullptr ||
-		dynamic_cast<QMenu*>(object) != nullptr ||
-		//dynamic_cast<QMenuBar*>(object) != nullptr ||
-		false
-		) {
-		if (e->type() == QEvent::FocusIn || e->type() == QEvent::MouseButtonPress) {
-			//MainWindow::setWindowTitle("----------------");
-			statusbarItems.setKciColor(Qt::red);
-			qDebug() << "red";
+		if (
+			dynamic_cast<QMenuBar*>(object) != nullptr ||
+			dynamic_cast<QMenu*>(object) != nullptr ||
+			//dynamic_cast<QMenuBar*>(object) != nullptr ||
+			false
+			) {
+			if (e->type() == QEvent::FocusIn || e->type() == QEvent::MouseButtonPress) {
+				//MainWindow::setWindowTitle("----------------");
+				statusbarItems.setKciColor(Qt::red);
+				qDebug() << "red";
+			}
 		}
+
+		//if (e->type() != QEvent::FocusIn && e->type() != QEvent::FocusOut) {
+		//	return false;
+		//}
+
+		try {
+			QString x = object->metaObject()->className();
+			qDebug() << event_name << " " << x;
+			//if (in) ui->statusbar->showMessage(x);
+		}
+		catch (...) {
+			//QString x = QString(typeid(object).name());
+			QString x = QString::number(typeid(*object).hash_code());
+			qDebug() << event_name << " " << x;
+			//if (in) ui->statusbar->showMessage(x);
+		}
+
+		/*
+
+		if (e->type() == QEvent::FocusOut)
+		{
+
+
+			qWarning("Focus Out");
+			//qWarning(object->objectName().toLatin1().data());
+			getTypes(object);
+
+		}
+		if (e->type() == QEvent::FocusIn)
+		{
+			qWarning("Focus In");
+			//qWarning(object->objectName().toLatin1().data());
+			getTypes(object, true);
+
+		}
+		*/
+		return false;
 	}
-
-	//if (e->type() != QEvent::FocusIn && e->type() != QEvent::FocusOut) {
-	//	return false;
-	//}
-
-	try {
-		QString x = object->metaObject()->className();
-		qDebug() << event_name << " " << x;
-		//if (in) ui->statusbar->showMessage(x);
-	}
-	catch (...) {
-		//QString x = QString(typeid(object).name());
-		QString x = QString::number(typeid(*object).hash_code());
-		qDebug() << event_name << " " << x;
-		//if (in) ui->statusbar->showMessage(x);
-	}
-
-	/*
-
-	if (e->type() == QEvent::FocusOut)
-	{
-
-
-		qWarning("Focus Out");
-		//qWarning(object->objectName().toLatin1().data());
-		getTypes(object);
-
-	}
-	if (e->type() == QEvent::FocusIn)
-	{
-		qWarning("Focus In");
-		//qWarning(object->objectName().toLatin1().data());
-		getTypes(object, true);
-
-	}
-	*/
-	return false;
 }
 
 
@@ -435,13 +447,64 @@ void MainWindow::StatusbarItems::init(QStatusBar* statusbar) {
 
 void MainWindow::StatusbarItems::setKciColor(const QColor& c)
 {
-	QPixmap pm(1, 1);
+	constexpr int SIZE{ 15 }; // match with size of label.
+
+	QPixmap pm(SIZE, SIZE);
 
 	pm.fill(c);
+
+	QImage img = pm.toImage();
+	for (int i = 0; i < SIZE; ++i) {
+		img.setPixelColor(0, i, Qt::black);
+		img.setPixelColor(SIZE - 1, i, Qt::black);
+		img.setPixelColor(i, 0, Qt::black);
+		img.setPixelColor(i, SIZE - 1, Qt::black);
+	}
+
+	pm = QPixmap::fromImage(img);
 
 	//keyboardCaptureIcon->
 	kci->setPixmap(pm.scaled(kci->size(), Qt::KeepAspectRatio));
 }
 
+QMenu* MainWindow::getSelectPieceSubMenu() {
+
+	return ui->menuSelect_Piece;
+
+}
+void MainWindow::selectPieceByColor(int index) {
+	qDebug() << "selectPieceByColor  " << index;
+	guiInteractiveController.setPieceId(index); // where to check range correctness?
+
+}
 
 
+template<class QMenu_OR_QMenuBar>
+inline void menu_recursion(QMenu_OR_QMenuBar* m) {
+
+	m->setEnabled(true);
+
+	for (QAction* item : m->actions()) {
+
+		qDebug() << item->text();
+		item->setEnabled(true);
+
+		if (item->isSeparator()) {
+		}
+		else if (item->menu()) {
+
+			QMenu* sub = item->menu();
+			menu_recursion(sub);
+
+		}
+		else /* normal action */ {
+		}
+
+	}
+}
+
+
+void MainWindow::on_actionEnableAllMenuBarItems_triggered()
+{
+	menu_recursion(ui->menubar);
+}

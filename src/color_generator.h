@@ -3,6 +3,10 @@
 #include <vector>
 #include <QColor>
 #include <QMenuBar>
+#include <QAction>
+#include <QEvent>
+#include <QDebug>
+#include <QSignalMapper>
 
 
 namespace tobor {
@@ -36,11 +40,10 @@ namespace tobor {
 
 		private:
 
-			std::vector<color_item> colors;
-
+		public:
 			color_vector() {}
 
-		public:
+			std::vector<color_item> colors; // make it private!
 
 			static color_vector get_standard_coloring() {
 				color_vector v;
@@ -51,26 +54,6 @@ namespace tobor {
 				v.colors.emplace_back(0x00, 0xFF, 0xFF, "yellow", "&yellow", "y");
 
 				return v;
-			}
-
-			static void test(QMenuBar* mm) {
-				for (QAction* item : mm->actions()) {
-					qDebug() << item->text();
-					if (item->isSeparator()) {
-
-					}
-					else if (item->menu()) {
-						color_vector x = get_standard_coloring();
-
-						QMenu* sub = item->menu();
-						if (sub->title().replace('&', "").toLower() == "developer") {
-							sub->addAction(QString::fromStdString(x.colors[0].display_string_with_underscore));
-						}
-					}
-					else {
-
-					}
-				}
 			}
 
 		};

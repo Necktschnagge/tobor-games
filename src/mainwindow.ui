@@ -162,6 +162,7 @@
         </property>
         <addaction name="actionAbout"/>
         <addaction name="actionHighlightGeneratedTargetCells"/>
+        <addaction name="actionEnableAllMenuBarItems"/>
       </widget>
       <widget class="QMenu" name="menuHelp">
         <property name="title">
@@ -232,6 +233,14 @@
       </property>
       <property name="text">
         <string>&amp;Highlight generated target cells</string>
+      </property>
+    </action>
+    <action name="actionEnableAllMenuBarItems">
+      <property name="enabled">
+        <bool>true</bool>
+      </property>
+      <property name="text">
+        <string>&amp;Enable all MenuBar items</string>
       </property>
     </action>
     <action name="actionTest_ListView">
