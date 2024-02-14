@@ -9,29 +9,6 @@
 #include <QSignalMapper>
 
 
-class PieceColorSelector : public QObject
-{
-	Q_OBJECT
-
-		uint16_t number_of_pieces;
-
-public:
-
-	PieceColorSelector(uint16_t number_of_pieces) : number_of_pieces(number_of_pieces)
-	{}
-
-
-public slots:
-	void select() {
-		//(void)a;
-		qDebug() << "clicked" << number_of_pieces;
-	}
-
-public:
-
-};
-
-
 namespace tobor {
 
 	namespace v1_0 {
@@ -77,44 +54,6 @@ namespace tobor {
 				v.colors.emplace_back(0x00, 0xFF, 0xFF, "yellow", "&yellow", "y");
 
 				return v;
-			}
-
-
-
-			static void test(QMenuBar* mm) {
-
-				static PieceColorSelector ccc(4);
-
-				for (QAction* item : mm->actions()) {
-					qDebug() << item->text();
-					if (item->isSeparator()) {
-
-					}
-					else if (item->menu()) {
-						color_vector x = get_standard_coloring();
-
-						QMenu* sub = item->menu();
-						if (sub->title().replace('&', "").toLower() == "developer") {
-
-							auto action = sub->addAction(QString::fromStdString(x.colors[0].display_string_with_underscore));
-
-							QSignalMapper* sm = new QSignalMapper();
-
-							QMetaObject::Connection c_old = QObject::connect(action, &QAction::triggered, &ccc, &PieceColorSelector::select, Qt::AutoConnection);
-
-							//QObject::connect(action, &QAction::triggered, sm, static_cast<void (QSignalMapper::*)()>(&QSignalMapper::map), Qt::AutoConnection);
-
-							QMetaObject::Connection c1 = QObject::connect(action, SIGNAL(triggered()), sm, SLOT(map()), Qt::AutoConnection);
-
-							sm->setMapping(action, 0);
-
-							QObject::disconnect(c1);
-						}
-					}
-					else {
-
-					}
-				}
 			}
 
 		};

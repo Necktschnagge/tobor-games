@@ -82,8 +82,6 @@ void MainWindow::on_actionshowSVG_triggered()
 
 void MainWindow::on_actionHighlightGeneratedTargetCells_triggered() {
 	guiInteractiveController.highlightGeneratedTargetCells();
-
-	tobor::v1_0::color_vector::test(ui->menubar);
 }
 
 void MainWindow::on_actionAbout_triggered()
@@ -458,9 +456,9 @@ void MainWindow::StatusbarItems::setKciColor(const QColor& c)
 	QImage img = pm.toImage();
 	for (int i = 0; i < SIZE; ++i) {
 		img.setPixelColor(0, i, Qt::black);
-		img.setPixelColor(SIZE-1, i, Qt::black);
+		img.setPixelColor(SIZE - 1, i, Qt::black);
 		img.setPixelColor(i, 0, Qt::black);
-		img.setPixelColor(i, SIZE-1, Qt::black);
+		img.setPixelColor(i, SIZE - 1, Qt::black);
 	}
 
 	pm = QPixmap::fromImage(img);
