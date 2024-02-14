@@ -7,6 +7,8 @@
 #include "./ui_mainwindow.h"
 
 #include <QStringListModel>
+#include <QSignalMapper>
+
 #include "tobor_svg.h" // has to be reordered!
 
 #include <stdexcept>
@@ -120,9 +122,45 @@ void GuiInteractiveController::startGame() {
 	++productWorldGenerator;
 
 	refreshAll();
+
+	current_color_vector = tobor::v1_0::color_vector::get_standard_coloring(); // giva a size, how many colors!
+
+	createColorActions();
+
+}
+
+
+void GuiInteractiveController::createColorActions()
+{
+
+	QMenu* sub = mainWindow->getSelectPieceSubMenu();
+
+	sub->clear();
+
+	for (int i = 0; i < current_color_vector.colors.size(); ++i) {
+
+		auto action = sub->addAction(
+			QString::fromStdString(
+				current_color_vector.colors[i].display_string_with_underscore
+			)
+		);
+
+		mainWindow->inputConnections.push_back(
+			QObject::connect(action, &QAction::triggered, mainWindow->signalMapper, qOverload<>(&QSignalMapper::map), Qt::AutoConnection)
+		);
+		//QObject::connect(action, &QAction::triggered, mainWindow->signalMapper, static_cast<void (QSignalMapper::*)()>(&QSignalMapper::map), Qt::AutoConnection);
+
+		mainWindow->signalMapper->setMapping(action, i);
+
+		qDebug() << "added  " << current_color_vector.colors[i].display_string_with_underscore;
+	}
+
+	
 }
 
 void GuiInteractiveController::stopGame() {
+
+	mainWindow->disconnectInputConnections();
 
 	if (interactive_mode == InteractiveMode::NO_GAME) {
 		return showErrorDialog("This action should not be available.");

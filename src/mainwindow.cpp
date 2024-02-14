@@ -21,6 +21,7 @@
 #include <QGraphicsSvgItem>
 #include <QMessageBox>
 
+// please add a enable all actions in menu to developer menu!
 
 MainWindow::MainWindow(QWidget* parent)
 	: QMainWindow(parent)
@@ -33,6 +34,10 @@ MainWindow::MainWindow(QWidget* parent)
 	guiInteractiveController.refreshAll();
 
 	grabKeyboard(); // https://doc.qt.io/qt-6/qwidget.html#grabKeyboard
+
+	signalMapper = new QSignalMapper(this);
+
+	QObject::connect(signalMapper, &QSignalMapper::mappedInt, this, &MainWindow::selectPieceByColor, Qt::AutoConnection);
 
 	//ui->menubar->installEventFilter(this); // this -> bool eventFilter(QObject* object, QEvent* event)
 
@@ -193,7 +198,7 @@ void MainWindow::getTypes(QObject* object, bool in) {
 
 bool MainWindow::eventFilter(QObject* object, QEvent* e)
 {
-	static constexpr bool SKIP{ false };
+	static constexpr bool SKIP{ true };
 
 	if constexpr (SKIP) {
 		return false;
@@ -464,5 +469,13 @@ void MainWindow::StatusbarItems::setKciColor(const QColor& c)
 	kci->setPixmap(pm.scaled(kci->size(), Qt::KeepAspectRatio));
 }
 
+QMenu* MainWindow::getSelectPieceSubMenu() {
 
+	return ui->menuSelect_Piece;
 
+}
+void MainWindow::selectPieceByColor(int index) {
+	qDebug() << "selectPieceByColor  " << index;
+	guiInteractiveController.setPieceId(index); // where to check range correctness?
+	
+}

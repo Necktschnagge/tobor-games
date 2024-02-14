@@ -6,17 +6,23 @@
 #include <QAction>
 #include <QEvent>
 #include <QDebug>
+#include <QSignalMapper>
 
 
 class PieceColorSelector : public QObject
 {
 	Q_OBJECT
 
+		uint16_t number_of_pieces;
+
 public:
-	PieceColorSelector(){}
+
+	PieceColorSelector(uint16_t number_of_pieces) : number_of_pieces(number_of_pieces)
+	{}
+
 
 public slots:
-	void gotClicked() {
+	void select() {
 		//(void)a;
 		qDebug() << "clicked";
 	}
@@ -57,11 +63,10 @@ namespace tobor {
 
 		private:
 
-			std::vector<color_item> colors;
-
+		public:
 			color_vector() {}
 
-		public:
+			std::vector<color_item> colors; // make it private!
 
 			static color_vector get_standard_coloring() {
 				color_vector v;
@@ -74,9 +79,11 @@ namespace tobor {
 				return v;
 			}
 
+
+
 			static void test(QMenuBar* mm) {
 
-				static PieceColorSelector ccc;
+				static PieceColorSelector ccc(4);
 
 				for (QAction* item : mm->actions()) {
 					qDebug() << item->text();
@@ -89,16 +96,19 @@ namespace tobor {
 						QMenu* sub = item->menu();
 						if (sub->title().replace('&', "").toLower() == "developer") {
 
-							//auto a2 = new QActionExtend();
-
-
 							auto action = sub->addAction(QString::fromStdString(x.colors[0].display_string_with_underscore));
 
-							//action->installEventFilter(&qae);
-							//action->activate(QAction::Trigger);
+							QSignalMapper* sm = new QSignalMapper();
 
-							QObject::connect(action, &QAction::triggered, &ccc, &PieceColorSelector::gotClicked, Qt::AutoConnection);
-							//QObject::connect(action, SIGNAL(triggered()), &ccc, SLOT(gotClicked()));
+							QMetaObject::Connection c_old = QObject::connect(action, &QAction::triggered, &ccc, &PieceColorSelector::select, Qt::AutoConnection);
+
+							//QObject::connect(action, &QAction::triggered, sm, static_cast<void (QSignalMapper::*)()>(&QSignalMapper::map), Qt::AutoConnection);
+
+							QMetaObject::Connection c1 = QObject::connect(action, SIGNAL(triggered()), sm, SLOT(map()), Qt::AutoConnection);
+
+							sm->setMapping(action, 0);
+
+							QObject::disconnect(c1);
 						}
 					}
 					else {
