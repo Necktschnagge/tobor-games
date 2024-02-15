@@ -9,7 +9,7 @@ namespace _Internal_Implementation_Tobor_Traits
 	template <class T>
 	struct member_function_user {
 		using function_return_type = decltype(
-			std::declval(T).mappedInt()
+			std::declval<T>().mappedInt()
 			);
 	};
 
