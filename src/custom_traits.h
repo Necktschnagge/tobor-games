@@ -13,16 +13,20 @@ namespace _Internal_Implementation_Tobor_Traits
 			);
 	};
 
-	template <class T, class Dummy>
-	struct get_mapped_ptr {
-		inline static const auto mappetPtr{ nullptr };
-	};
-
+	template <class T, bool HAS_mappedInt>
+	struct get_mapped_ptr;
+	
 	template <class T>
-	struct get_mapped_ptr<T, void> {
-		static const auto mappetPtr{ QOverload<int>::of(&T::mapped) };
+	struct get_mapped_ptr<T, false> {
+		inline static const auto mappetPtr{ QOverload<int>::of(&T::mapped) };
+	};
+	
+	template <class T>
+	struct get_mapped_ptr<T, true> {
+		inline static const auto mappetPtr{ &T::mappedInt };
 	};
 
+	/*
 	template <class T>
 	struct get_mapped_int_ptr {
 		inline static const auto mappetIntPtr{ &T::mappedInt };
@@ -32,6 +36,7 @@ namespace _Internal_Implementation_Tobor_Traits
 	struct get_mapped_int_ptr<QSignalMapper> {
 		inline static const auto mappetIntPtr{ nullptr };
 	};
+	*/
 
 	template <class T, template <typename TU> class Function_User, class Dummy>
 	struct select_member_function : public std::false_type {
@@ -44,6 +49,7 @@ namespace _Internal_Implementation_Tobor_Traits
 		//inline static const auto mappetIntPtr{ get_mapped_int_ptr<QSignalMapper>::mappetIntPtr };
 	};
 
+	
 } // namespace detail
 
 static constexpr bool QSignalMapper_HAS_mappedInt{
@@ -54,18 +60,9 @@ static constexpr bool QSignalMapper_HAS_mappedInt{
    ::value
 };
 
-/*
-static const auto QSignalMapper__mappetIntPtr{
-	_Internal_Implementation_Tobor_Traits::select_member_function<
-		QSignalMapper,
-		_Internal_Implementation_Tobor_Traits::member_function_user,
-		void
-	>::mappetIntPtr
+inline static auto mapped_ptr{
+	_Internal_Implementation_Tobor_Traits::get_mapped_ptr<QSignalMapper, QSignalMapper_HAS_mappedInt>::mappetPtr
 };
-*/
-
-//template<template<class...> class Op, class... Args>
-//using is_detected = typename detail::detector<nonesuch, void, Op, Args...>::value_t;
 
 static_assert(
 	_Internal_Implementation_Tobor_Traits::select_member_function<
