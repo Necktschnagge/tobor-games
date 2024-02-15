@@ -8,9 +8,11 @@ namespace _Internal_Implementation_Tobor_Traits
 {
 	template <class T>
 	struct member_function_user {
-		using function_return_type = decltype(
-			std::declval<T>().mappedInt()
-			);
+		static void test(T& t) {
+			t.mappedInt(5);
+
+		}
+		
 	};
 
 	template <class T, bool HAS_mappedInt>
@@ -70,7 +72,7 @@ static_assert(
 	_Internal_Implementation_Tobor_Traits::member_function_user,
 	void>
 	::value,
-	"test member function prescence");
+	"test member function prescence"); // does not work
 
 namespace {
 	struct example {
