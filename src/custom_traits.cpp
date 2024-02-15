@@ -1,7 +1,10 @@
 #include "custom_traits.h"
 
 namespace {
-	
-	(void)mapped_ptr; // get rid of the unused warning
-	
+	struct example {
+
+		static void test() {
+			(void)mapped_ptr; // get rid of the unused warning
+		}
+	};
 }
