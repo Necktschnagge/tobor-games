@@ -63,11 +63,11 @@ inline static const auto QSignalMapper__mappedInt__OR__mapped__PTR{
 	_Internal_Implementation_Tobor_Traits::_Wrapper_mappedInt_member_function<QSignalMapper, QSignalMapper_HAS_mappedInt>::mappetPtr
 };
 
-namespace {
-	struct example {
-
-		static void test() {
-			(void)QSignalMapper__mappedInt__OR__mapped__PTR; // get rid of the unused warning
-		}
-	};
-}
+//namespace {
+//	struct example {
+//
+//		static void test() {
+//			(void)QSignalMapper__mappedInt__OR__mapped__PTR; // get rid of the unused warning
+//		}
+//	};
+//}
