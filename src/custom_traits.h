@@ -62,19 +62,15 @@ static constexpr bool QSignalMapper_HAS_mappedInt{
 	_Internal_Implementation_Tobor_Traits::has_m<QSignalMapper, void(int)>::value
 };
 
-inline static auto mapped_ptr{
+inline static const auto QSignalMapper__mappedInt__OR__mapped__PTR{
 	_Internal_Implementation_Tobor_Traits::get_mapped_ptr<QSignalMapper, QSignalMapper_HAS_mappedInt>::mappetPtr
 };
-
-static_assert(
-	!_Internal_Implementation_Tobor_Traits::has_m<QSignalMapper, void(int)>::value,
-	"2nd try to check"); // does not work
 
 namespace {
 	struct example {
 
 		static void test() {
-			(void)mapped_ptr; // get rid of the unused warning
+			(void)QSignalMapper__mappedInt__OR__mapped__PTR; // get rid of the unused warning
 		}
 	};
 }
