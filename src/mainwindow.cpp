@@ -5,13 +5,16 @@
 #include "gui_helper.h"
 
 #include "color_generator.h"
+#include "custom_traits.h"
 
 #include "./ui_mainwindow.h"
 #include "gui_interactive_controller.h"
 #include "solver.h"
 #include "tobor_svg.h"
+
 #include "spdlog/spdlog.h"
 #include "spdlog/sinks/qt_sinks.h"
+
 
 #include <QStringListModel>
 #include <QMessageBox>
@@ -20,8 +23,6 @@
 #include <QXmlStreamReader>
 #include <QGraphicsSvgItem>
 #include <QMessageBox>
-
-#include "custom_traits.h"
 
 // please add a enable all actions in menu to developer menu!
 
