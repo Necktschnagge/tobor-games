@@ -4,6 +4,8 @@
 
 bool ControlKeyEventAgent::eventFilter(QObject* object, QEvent* e)
 {
+	(void)object;
+
 	QKeyEvent* keyEvent = dynamic_cast<QKeyEvent*>(e);
 
 	if (keyEvent == nullptr)
