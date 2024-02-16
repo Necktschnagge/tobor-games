@@ -5,13 +5,16 @@
 #include "gui_helper.h"
 
 #include "color_generator.h"
+#include "custom_traits.h"
 
 #include "./ui_mainwindow.h"
 #include "gui_interactive_controller.h"
 #include "solver.h"
 #include "tobor_svg.h"
+
 #include "spdlog/spdlog.h"
 #include "spdlog/sinks/qt_sinks.h"
+
 
 #include <QStringListModel>
 #include <QMessageBox>
@@ -37,7 +40,7 @@ MainWindow::MainWindow(QWidget* parent)
 
 	signalMapper = new QSignalMapper(this);
 
-	QObject::connect(signalMapper, &QSignalMapper::mappedInt, this, &MainWindow::selectPieceByColor, Qt::AutoConnection);
+	QObject::connect(signalMapper, QSignalMapper__mappedInt__OR__mapped__PTR, this, &MainWindow::selectPieceByColor, Qt::AutoConnection);
 
 	//ui->menubar->installEventFilter(this); // this -> bool eventFilter(QObject* object, QEvent* event)
 
