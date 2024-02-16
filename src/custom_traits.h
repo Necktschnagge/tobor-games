@@ -95,12 +95,15 @@ namespace _Internal_Implementation_Tobor_Traits
 	
 } // namespace detail
 
+//static constexpr bool QSignalMapper_HAS_mappedInt{
+//	   _Internal_Implementation_Tobor_Traits::select_member_function<
+//   QSignalMapper,
+//   _Internal_Implementation_Tobor_Traits::member_function_user,
+//   void>
+//   ::value
+//};
 static constexpr bool QSignalMapper_HAS_mappedInt{
-	   _Internal_Implementation_Tobor_Traits::select_member_function<
-   QSignalMapper,
-   _Internal_Implementation_Tobor_Traits::member_function_user,
-   void>
-   ::value
+	_Internal_Implementation_Tobor_Traits::has_m<QSignalMapper, void(int)>::value
 };
 
 inline static auto mapped_ptr{
