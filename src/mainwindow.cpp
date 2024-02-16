@@ -39,16 +39,6 @@ MainWindow::MainWindow(QWidget* parent)
 
 	signalMapper = new QSignalMapper(this);
 
-	static constexpr bool HAS_MAPPED_INT{
-		true
-	};
-
-	if constexpr (HAS_MAPPED_INT) { /* MODERN Qt versions */
-		//QObject::connect(signalMapper, &QSignalMapper::mappedInt, this, &MainWindow::selectPieceByColor, Qt::AutoConnection);
-	}
-	else { /* OLD Qt versions */
-		//QObject::connect(signalMapper, QOverload<int>::of(&QSignalMapper::mapped), this, &MainWindow::selectPieceByColor, Qt::AutoConnection);
-	}
 	QObject::connect(signalMapper, QSignalMapper__mappedInt__OR__mapped__PTR, this, &MainWindow::selectPieceByColor, Qt::AutoConnection);
 
 	//ui->menubar->installEventFilter(this); // this -> bool eventFilter(QObject* object, QEvent* event)
