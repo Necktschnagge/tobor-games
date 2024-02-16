@@ -199,7 +199,7 @@ void MainWindow::getTypes(QObject* object, bool in) {
 
 bool MainWindow::eventFilter(QObject* object, QEvent* e)
 {
-	static constexpr bool SKIP{ true };
+	static constexpr bool SKIP{ false };
 
 	if constexpr (SKIP) {
 		return false;
@@ -242,16 +242,19 @@ bool MainWindow::eventFilter(QObject* object, QEvent* e)
 		//	return false;
 		//}
 
-		try {
-			QString x = object->metaObject()->className();
-			qDebug() << event_name << " " << x;
-			//if (in) ui->statusbar->showMessage(x);
-		}
-		catch (...) {
-			//QString x = QString(typeid(object).name());
-			QString x = QString::number(typeid(*object).hash_code());
-			qDebug() << event_name << " " << x;
-			//if (in) ui->statusbar->showMessage(x);
+		if (dynamic_cast<QKeyEvent*>(e) != nullptr) {
+
+			try {
+				QString x = object->metaObject()->className();
+				qDebug() << event_name << " " << x;
+				//if (in) ui->statusbar->showMessage(x);
+			}
+			catch (...) {
+				//QString x = QString(typeid(object).name());
+				QString x = QString::number(typeid(*object).hash_code());
+				qDebug() << event_name << " " << x;
+				//if (in) ui->statusbar->showMessage(x);
+			}
 		}
 
 		/*
