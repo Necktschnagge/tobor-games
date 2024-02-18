@@ -144,6 +144,7 @@ void GuiInteractiveController::createColorActions()
 		auto action = sub->addAction(
 			current_color_vector.colors[i].UPPERCASE_display_string_with_underscore()
 		);
+		// TODO need to add shortcuts (?) STRG+R ...
 
 		mainWindow->inputConnections.push_back(
 			QObject::connect(action, &QAction::triggered, mainWindow->signalMapper, qOverload<>(&QSignalMapper::map), Qt::AutoConnection)
@@ -151,11 +152,7 @@ void GuiInteractiveController::createColorActions()
 		//QObject::connect(action, &QAction::triggered, mainWindow->signalMapper, static_cast<void (QSignalMapper::*)()>(&QSignalMapper::map), Qt::AutoConnection);
 
 		mainWindow->signalMapper->setMapping(action, static_cast<int>(i));
-
-		//qDebug() << "added  " << current_color_vector.colors[i].display_string_with_underscore;
 	}
-
-
 }
 
 void GuiInteractiveController::stopGame() {
