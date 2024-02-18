@@ -77,7 +77,8 @@ void GuiInteractiveController::startReferenceGame22() {
 				GameController::cell_id_type::create_by_coordinates(12,15, world)
 			}
 		),
-		GameController::cell_id_type::create_by_coordinates(9, 3, world)
+		GameController::cell_id_type::create_by_coordinates(9, 3, world),
+		std::vector<uint8_t>{ 0, 1, 2, 3 }
 	);
 
 	refreshAll();
@@ -112,17 +113,22 @@ void GuiInteractiveController::startGame() {
 
 	auto target = boardGenerator.get_target_cell();
 
+	std::vector<uint8_t> colorPermutation{ 0,1,2,3 };
+
+	colorPermutation = boardGenerator.obtain_standard_4_coloring_permutation(colorPermutation);
+
 	gameHistory.emplace_back(
 		world,
 		initialStateGenerator.get_positions_of_pieces(world),
-		target
+		target,
+		colorPermutation
 	);
 
 	++productWorldGenerator;
 
-	refreshAll();
-
 	current_color_vector = tobor::v1_0::color_vector::get_standard_coloring(4);
+	
+	refreshAll();
 
 	createColorActions();
 
@@ -200,11 +206,38 @@ void GuiInteractiveController::setPieceId(const tobor::v1_0::default_piece_id& p
 
 }
 
+void GuiInteractiveController::selectPieceByColorId(const std::size_t& color_id)
+{
+	auto iter = std::find(
+		gameHistory.back().colorPermutation.cbegin(),
+		gameHistory.back().colorPermutation.cend(),
+		color_id
+	);
+
+	const typename decltype(iter)::difference_type index{ iter - gameHistory.back().colorPermutation.cbegin() };
+
+	if (iter == gameHistory.back().colorPermutation.cend())
+		throw std::logic_error("Illegal color_id.");
+
+	setPieceId(index);
+}
+
 void GuiInteractiveController::refreshSVG()
 {
 	if (interactive_mode == InteractiveMode::GAME_INTERACTIVE || interactive_mode == InteractiveMode::SOLVER_INTERACTIVE_STEPS) {
 
-		auto coloring = tobor::v1_0::tobor_graphics<GameController::positions_of_pieces_type>::coloring("red", "green", "blue", "yellow");
+		auto permutated_color_vector = current_color_vector;
+		
+		for (std::size_t i{ 0 }; i< current_color_vector.colors.size(); ++i) {
+			permutated_color_vector.colors[i] = current_color_vector.colors[gameHistory.back().colorPermutation[i]];
+		}
+
+		auto coloring = tobor::v1_0::tobor_graphics<GameController::positions_of_pieces_type>::coloring(
+			permutated_color_vector.colors[0].getSVGColorString(),
+			permutated_color_vector.colors[1].getSVGColorString(),
+			permutated_color_vector.colors[2].getSVGColorString(),
+			permutated_color_vector.colors[3].getSVGColorString()
+		);
 
 		// coloring = originalGenerator.obtain_standard_4_coloring_permutation(coloring.colors);
 		// we also have to permutate the selected (user input) color!

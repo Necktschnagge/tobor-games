@@ -2,10 +2,13 @@
 
 #include "models.h"
 
+//#include <qdebug.h>
+
 #include <vector>
 #include <array>
 #include <optional>
 #include <algorithm>
+
 
 namespace tobor {
 
@@ -163,16 +166,7 @@ namespace tobor {
 				}
 
 				template<class Aggregation_Type>
-				Aggregation_Type obtain_standard_4_coloring_permutation(const Aggregation_Type& original_ordered_colors) {
-					Aggregation_Type result = original_ordered_colors;
-					auto permutation = (counter * SECOND_GENERATOR % CYCLIC_GROUP_SIZE) / (CYCLIC_GROUP_SIZE / (4 * 3 * 2));
-					std::swap(result[0], result[permutation % 4]);
-					permutation /= 4;
-					std::swap(result[1], result[1 + permutation % 3]);
-					permutation /= 3;
-					std::swap(result[2], result[2 + permutation % 2]);
-					return result;
-				}
+				Aggregation_Type obtain_standard_4_coloring_permutation(const Aggregation_Type& original_ordered_colors);
 
 				inline uint64_t get_counter() {
 					return counter;
@@ -605,7 +599,26 @@ namespace tobor {
 				// select a generator, an input, give generated board as output.
 			};
 
-		}
+			template<class Aggregation_Type>
+			inline Aggregation_Type original_4_of_16::obtain_standard_4_coloring_permutation(const Aggregation_Type& original_ordered_colors) {
+				Aggregation_Type result = original_ordered_colors;
+
+				const auto mult = (counter * SECOND_GENERATOR);
+				const auto generated_value{ (mult % CYCLIC_GROUP_SIZE) };
+				const auto divisor{ (CYCLIC_GROUP_SIZE / (4 * 3 * 2)) };
+
+				//qDebug() << mult << "   " << generated_value << "   " << divisor;
+
+				auto permutation = generated_value / divisor;
+				std::swap(result[0], result[permutation % 4]);
+				permutation /= 4;
+				std::swap(result[1], result[1 + permutation % 3]);
+				permutation /= 3;
+				std::swap(result[2], result[2 + permutation % 2]);
+				return result;
+			}
+
+}
 	}
 }
 

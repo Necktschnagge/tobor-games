@@ -22,9 +22,10 @@ bool ControlKeyEventAgent::eventFilter(QObject* object, QEvent* e)
 
 	if (mainWindow->guiInteractiveController.interactiveMode() == GuiInteractiveController::InteractiveMode::GAME_INTERACTIVE) {
 
+		const int key{ keyEvent->key() };
 
 		// check for all arrow keys
-		switch (keyEvent->key()) {
+		switch (key) {
 		case Qt::Key_Up:
 			mainWindow->guiInteractiveController.movePiece(tobor::v1_0::direction::NORTH());
 			return true; //absorbing eventcase
@@ -41,15 +42,35 @@ bool ControlKeyEventAgent::eventFilter(QObject* object, QEvent* e)
 			break;
 		}
 
-		// obtain a coloring vector from the current game
+		static_assert(std::is_same<decltype(keyEvent->key()), int>::value, "implementation probably ill");
 
-		// check if key is a character and check if it contained in color vector.
+		const auto& raw_color_vector{ mainWindow->guiInteractiveController.current_color_vector.colors };
 
-		// also select color by 1 2 3 4 5 ...
+		if (Qt::Key_A <= key && key <= Qt::Key_Z) {
+			for (std::size_t i = 0; i < raw_color_vector.size(); ++i) {
+
+				const char color_char_distance{ raw_color_vector[i].UPPERCASE_shortcut_letter() - 'A' };
+				const int input_char_distance{ key - Qt::Key_A };
+
+				if (color_char_distance == input_char_distance) {
+					mainWindow->guiInteractiveController.selectPieceByColorId(i);
+					return true; //absorbing event
+				}
+			}
+		}
+
+		if (Qt::Key_1 <= key && key <= Qt::Key_9) {
+			const int input_char_distance{ key - Qt::Key_1 };
+
+			if (input_char_distance < raw_color_vector.size()) {
+				mainWindow->guiInteractiveController.selectPieceByColorId(static_cast<std::size_t>(input_char_distance));
+				return true; //absorbing event
+			}
+		}
 
 		// backspace still caught in MenuBar?
 
-		return true; //absorbing event
+		return false; //pass-through
 	}
 
 	if (mainWindow->guiInteractiveController.interactiveMode() == GuiInteractiveController::InteractiveMode::SOLVER_INTERACTIVE_STEPS) {

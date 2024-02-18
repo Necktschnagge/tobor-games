@@ -85,6 +85,8 @@ private:
 
 	std::size_t selected_solution_index;
 
+	std::vector<uint8_t> colorPermutation;
+
 	static constexpr bool DEFAULT_DO_NOT_WAIT_ON_LAZY_FREE{
 #ifdef _DEBUG 
 		false
@@ -160,7 +162,8 @@ public:
 	GameController(
 		const world_type& tobor_world,
 		const positions_of_pieces_type& initial_state,
-		const cell_id_type& target_cell
+		const cell_id_type& target_cell,
+		const std::vector<uint8_t>& colorPermutation
 	) :
 		tobor_world(tobor_world),
 		move_one_piece_calculator(this->tobor_world),
@@ -169,7 +172,8 @@ public:
 		solver_begin_index(0),
 		optional_solver_state_graph(),
 		optional_classified_move_paths(),
-		selected_solution_index(0)
+		selected_solution_index(0),
+		colorPermutation(colorPermutation)
 	{
 
 	}
@@ -283,12 +287,13 @@ private:
 
 	std::mt19937 generator;
 
-	tobor::v1_0::color_vector current_color_vector;
 
 	//tobor::v1_0::tobor_graphics<GameController::positions_of_pieces_type>::coloring coloring = tobor::v1_0::tobor_graphics<GameController::positions_of_pieces_type>::coloring("red", "yellow", "green", "blue");
 	// needs tobor svg include which brings errors...
 
 public:
+
+	tobor::v1_0::color_vector current_color_vector;
 
 	void startReferenceGame22();
 
@@ -330,6 +335,8 @@ public:
 	void moveBySolver(bool forward);
 
 	void setPieceId(const tobor::v1_0::default_piece_id& piece_id);
+
+	void selectPieceByColorId(const std::size_t& color_id);
 
 	void refreshNumberOfSteps();
 

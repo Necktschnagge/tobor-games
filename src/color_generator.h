@@ -42,6 +42,20 @@ namespace tobor {
 					return std::tolower(shortcut_letter);
 				}
 
+				std::string getSVGColorString() const {
+					static const char lookup_table[16]{ '0','1','2','3','4','5','6','7','8','9','a','b','c','d','e','f' };
+
+					std::string result(7, '#');
+					result[1] = lookup_table[(r / 16) % 16];
+					result[2] = lookup_table[r % 16];
+					result[3] = lookup_table[(g / 16) % 16];
+					result[4] = lookup_table[g % 16];
+					result[5] = lookup_table[(b / 16) % 16];
+					result[6] = lookup_table[b % 16];
+
+					return result;
+				}
+
 				color_item(int r, int g, int b, std::string display_string, std::string display_string_with_underscore, char shortcut_letter) :
 					r(r),
 					g(g),
