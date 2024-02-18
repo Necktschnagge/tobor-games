@@ -127,7 +127,7 @@ void GuiInteractiveController::startGame() {
 	++productWorldGenerator;
 
 	current_color_vector = tobor::v1_0::color_vector::get_standard_coloring(4);
-	
+
 	createColorActions();
 
 	refreshAll();
@@ -226,8 +226,8 @@ void GuiInteractiveController::refreshSVG()
 	if (interactive_mode == InteractiveMode::GAME_INTERACTIVE || interactive_mode == InteractiveMode::SOLVER_INTERACTIVE_STEPS) {
 
 		auto permutated_color_vector = current_color_vector;
-		
-		for (std::size_t i{ 0 }; i< current_color_vector.colors.size(); ++i) {
+
+		for (std::size_t i{ 0 }; i < current_color_vector.colors.size(); ++i) {
 			permutated_color_vector.colors[i] = current_color_vector.colors[gameHistory.back().colorPermutation[i]];
 		}
 
@@ -476,6 +476,12 @@ void GuiInteractiveController::viewSolutionPaths() // this has to be improved!!!
 
 	std::size_t goal_counter{ 0 };
 
+	auto permutated_color_vector = current_color_vector;
+
+	for (std::size_t i{ 0 }; i < current_color_vector.colors.size(); ++i) {
+		permutated_color_vector.colors[i] = current_color_vector.colors[gameHistory.back().colorPermutation[i]];
+	}
+
 	for (const auto& pair : gameHistory.back().optional_classified_move_paths.value()) {
 		//const auto& goal_state{ pair.first };
 		const auto& equivalence_classes{ pair.second };
@@ -486,8 +492,11 @@ void GuiInteractiveController::viewSolutionPaths() // this has to be improved!!!
 			s = s + QString::number(i) + ": ";
 			for (const GameController::piece_move_type& m : equivalence_classes[i][0].vector()) {
 
-				std::string color = "RGBY";
-				color = color.substr(m.pid.value, 1); // this is not okay. we need to properly use the coloring array.
+				const char letter { permutated_color_vector.colors[m.pid.value].UPPERCASE_shortcut_letter() };
+
+
+				std::string color = std::string(1, letter);
+				//color = color.substr(m.pid.value, 1); // this is not okay. we need to properly use the coloring array.
 				// please check #69 so that we may include tobor svg in this file's corresponding header to define coloring there....
 
 				// the solution might be a "global" fixed coloring with full words and with Letter, 
