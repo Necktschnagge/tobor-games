@@ -7,7 +7,6 @@
 #include "./ui_mainwindow.h"
 
 #include <QStringListModel>
-#include <QSignalMapper>
 
 #include "tobor_svg.h" // has to be reordered!
 
