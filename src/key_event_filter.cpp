@@ -49,7 +49,7 @@ bool ControlKeyEventAgent::eventFilter(QObject* object, QEvent* e)
 		if (Qt::Key_A <= key && key <= Qt::Key_Z) {
 			for (std::size_t i = 0; i < raw_color_vector.size(); ++i) {
 
-				const char color_char_distance{ raw_color_vector[i].UPPERCASE_shortcut_letter() - 'A' };
+				const int color_char_distance{ raw_color_vector[i].UPPERCASE_shortcut_letter() - 'A' };
 				const int input_char_distance{ key - Qt::Key_A };
 
 				if (color_char_distance == input_char_distance) {
