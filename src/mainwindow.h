@@ -3,6 +3,8 @@
 #define MAINWINDOW_H
 
 #include "gui_interactive_controller.h"
+#include "key_event_filter.h"
+
 
 
 #include <QMainWindow>
@@ -138,6 +140,7 @@ private:
 	Ui::MainWindow* ui;
 	GuiInteractiveController guiInteractiveController;
 	friend class GuiInteractiveController;
+	friend class ControlKeyEventAgent;
 
 	SvgViewToolchain svgViewToolchain;
 
@@ -146,6 +149,8 @@ private:
 	std::vector<QMetaObject::Connection> inputConnections;
 
 	QSignalMapper* signalMapper;
+
+	ControlKeyEventAgent controlKeyEventAgent;
 
 	void viewSvgInMainView(const QString& svg_string);
 
@@ -172,12 +177,10 @@ private slots:
 	
 
 protected:
-	void keyPressEvent(QKeyEvent* e) override;
-
 
 public:
-	bool eventFilter(QObject* object, QEvent* event) override;
 
+	bool eventFilter(QObject* object, QEvent* event) override; // for debugging, put it somewhere in a debug_utils.h
 
 };
 

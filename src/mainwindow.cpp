@@ -29,27 +29,22 @@
 MainWindow::MainWindow(QWidget* parent)
 	: QMainWindow(parent)
 	, ui(new Ui::MainWindow),
-	guiInteractiveController(this)
+	guiInteractiveController(this),
+	controlKeyEventAgent(this)
 {
 	ui->setupUi(this);
 	statusbarItems.init(ui->statusbar);
 
 	guiInteractiveController.refreshAll();
 
-	grabKeyboard(); // https://doc.qt.io/qt-6/qwidget.html#grabKeyboard
-
 	signalMapper = new QSignalMapper(this);
 
 	QObject::connect(signalMapper, QSignalMapper__mappedInt__OR__mapped__PTR, this, &MainWindow::selectPieceByColor, Qt::AutoConnection);
 
-	//ui->menubar->installEventFilter(this); // this -> bool eventFilter(QObject* object, QEvent* event)
-
-	// releaseKeyboard();  when entering main menu
-	// again call grabKeyboard() when exiting main menu (by triggering event or exiting without clicking any menu button)
-
-	// can we check this via some FocusEvent? Just check when the focus is changed?
-	// https://stackoverflow.com/questions/321656/get-a-notification-event-signal-when-a-qt-widget-gets-focus
-	// https://doc.qt.io/qt-6/qfocusevent.html#details
+	// in-game navigation input:
+	ui->graphicsView->installEventFilter(&controlKeyEventAgent);
+	ui->listView->installEventFilter(&controlKeyEventAgent);
+	ui->treeView->installEventFilter(&controlKeyEventAgent);
 
 /*    auto log_widget = new QTextEdit();
 	auto logger = spdlog::qt_logger_mt("qt_logger", log_widget);
@@ -137,35 +132,6 @@ void MainWindow::on_actionStopGame_triggered() {
 void MainWindow::on_actionMoveBack_triggered()
 {
 	guiInteractiveController.undo();
-}
-
-void MainWindow::keyPressEvent(QKeyEvent* e)
-{
-	// see: https://doc.qt.io/qt-6/qt.html#Key-enum
-
-	switch (e->key()) {
-
-	case Qt::Key_Alt:
-		releaseKeyboard();
-		break;
-
-	case Qt::Key_Up:
-		on_actionNORTH_triggered();
-		break;
-
-	case Qt::Key_Down:
-		on_actionSOUTH_triggered();
-		break;
-
-	case Qt::Key_Left:
-		on_actionWEST_triggered();
-		break;
-
-	case Qt::Key_Right:
-		on_actionEAST_triggered();
-		break;
-	}
-	qDebug() << "catch keyboard";
 }
 
 void MainWindow::getTypes(QObject* object, bool in) {

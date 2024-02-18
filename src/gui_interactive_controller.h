@@ -257,8 +257,7 @@ public:
 
 class GuiInteractiveController final {
 
-	MainWindow* mainWindow;
-
+public:
 	enum class InteractiveMode {
 		NO_GAME,
 		GAME_INTERACTIVE,
@@ -266,10 +265,13 @@ class GuiInteractiveController final {
 	};
 
 	using board_generator_type = tobor::v1_0::world_generator::original_4_of_16;
+
 	using state_generator_type = tobor::v1_0::world_generator::initial_state_generator<GameController::positions_of_pieces_type, 256, 1, 3, 4>;
 
-
 	using product_generator_type = tobor::v1_0::world_generator::product_group_generator<board_generator_type, state_generator_type>;
+
+private:
+	MainWindow* mainWindow;
 
 	InteractiveMode interactive_mode;
 
@@ -313,6 +315,10 @@ public:
 		//originalGenerator.set_counter(3223);
 
 		//productWorldGenerator.main().set_counter(73021);
+	}
+
+	inline InteractiveMode interactiveMode() const {
+		return interactive_mode;
 	}
 
 	void startGame();
