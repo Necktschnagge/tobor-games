@@ -62,7 +62,7 @@ bool ControlKeyEventAgent::eventFilter(QObject* object, QEvent* e)
 		if (Qt::Key_1 <= key && key <= Qt::Key_9) {
 			const int input_char_distance{ key - Qt::Key_1 };
 
-			if (input_char_distance < raw_color_vector.size()) {
+			if (static_cast<std::size_t>(input_char_distance) < raw_color_vector.size()) {
 				mainWindow->guiInteractiveController.selectPieceByColorId(static_cast<std::size_t>(input_char_distance));
 				return true; //absorbing event
 			}
