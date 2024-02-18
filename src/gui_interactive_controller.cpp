@@ -122,7 +122,7 @@ void GuiInteractiveController::startGame() {
 
 	refreshAll();
 
-	current_color_vector = tobor::v1_0::color_vector::get_standard_coloring(4); 
+	current_color_vector = tobor::v1_0::color_vector::get_standard_coloring(4);
 
 	createColorActions();
 
@@ -142,9 +142,7 @@ void GuiInteractiveController::createColorActions()
 	for (std::size_t i = 0; i < current_color_vector.colors.size(); ++i) {
 
 		auto action = sub->addAction(
-			QString::fromStdString(
-				current_color_vector.colors[i].display_string_with_underscore
-			)
+			current_color_vector.colors[i].UPPERCASE_display_string_with_underscore()
 		);
 
 		mainWindow->inputConnections.push_back(
@@ -157,7 +155,7 @@ void GuiInteractiveController::createColorActions()
 		//qDebug() << "added  " << current_color_vector.colors[i].display_string_with_underscore;
 	}
 
-	
+
 }
 
 void GuiInteractiveController::stopGame() {
