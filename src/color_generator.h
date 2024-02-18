@@ -1,6 +1,5 @@
 #pragma once
 
-#include <vector>
 #include <QColor>
 #include <QMenuBar>
 #include <QAction>
@@ -8,12 +7,14 @@
 #include <QDebug>
 #include <QSignalMapper>
 
+#include <vector>
+#include <stdexcept>
 
-namespace tobor {
+namespace tobor { 
 
 	namespace v1_0 {
 
-		class color_vector {
+		class color_vector { // TODO: this class is ok, but should be enhanced later.
 
 		public:
 
