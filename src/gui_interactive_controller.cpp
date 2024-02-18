@@ -123,7 +123,7 @@ void GuiInteractiveController::startGame() {
 
 	refreshAll();
 
-	current_color_vector = tobor::v1_0::color_vector::get_standard_coloring(); // giva a size, how many colors!
+	current_color_vector = tobor::v1_0::color_vector::get_standard_coloring(4); 
 
 	createColorActions();
 
