@@ -144,10 +144,6 @@ private:
 		return viewSvgInMainView(QString::fromStdString(svg_string));
 	}
 
-	void getTypes(QObject* object, bool in = false);
-
-
-
 	QMenu* getSelectPieceSubMenu();
 
 	void disconnectInputConnections() {
@@ -160,13 +156,6 @@ private:
 private slots:
 
 	void selectPieceByColor(int index);
-
-
-protected:
-
-public:
-
-	bool eventFilter(QObject* object, QEvent* event) override; // for debugging, put it somewhere in a debug_utils.h
 
 };
 

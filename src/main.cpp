@@ -3,6 +3,9 @@
 
 
 #include "mainwindow.h"
+#include "debug_utils.h"
+
+
 
 #include <QApplication>
 
@@ -29,7 +32,13 @@ int main(int argc, char* argv[])
 	std::setlocale(LC_NUMERIC, "C");
 	MainWindow main_window;
 	main_window.show();
-	qt_app.installEventFilter(&main_window);
+
+#ifdef DEBUG_EVENT_LOGGER_ENABLE
+
+	DebugEventLogger del(&main_window);
+	qt_app.installEventFilter(&del);
+
+#endif // DEBUG_EVENT_LOGGER_ENABLE
 
 	return qt_app.exec();
 }
