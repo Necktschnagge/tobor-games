@@ -10,6 +10,7 @@
 #include <QGraphicsSvgItem>
 #include <QKeyEvent>
 #include <QGraphicsScene>
+#include <QLabel>
 
 #include <memory>
 
@@ -43,11 +44,39 @@ public:
 		}
 	};
 
+
+private:
+	class StatusbarItems {
+	public:
+
+		QLabel* stepsKey;
+		QLabel* stepsValue;
+
+		QLabel* boardIdKey;
+		QLabel* boardIdValue; // two modes? "702563:378 // 3:0:2:3:5:2:7 " hint: redPlanetQuadrant, .., .., .., permutation, board rotation, target cell
+
+		QLabel* solverKey; // "RUNNING / OFF / AUTO-PLAY / STEP-MODE"
+		QLabel* solverValue;
+
+		QLabel* pieceSelectedKey; // "[colored square]" current selected piece's color
+		QLabel* pieceSelectedValue;
+
+		QGraphicsView* colorSquare;
+
+		SvgViewToolchain svgC;
+
+		void init(QStatusBar* statusbar);
+	};
+
+public:
+
 	MainWindow(QWidget* parent = nullptr);
 	~MainWindow();
 
 private slots:
 	void on_actionshowSVG_triggered();
+
+	void on_actionHighlightGeneratedTargetCells_triggered();
 
 	void on_actionAbout_triggered();
 
@@ -75,9 +104,17 @@ private slots:
 
 	void on_actionWEST_triggered();
 
-    void on_actionStart_Solver_triggered();
+	void on_actionForward_triggered();
 
-    void on_listView_doubleClicked(const QModelIndex &index);
+	void on_actionBack_triggered();
+
+	void on_actionStart_Solver_triggered();
+
+	void on_actionStop_Solver_triggered();
+
+	void on_actionLicense_Information_triggered();
+
+	void on_listView_doubleClicked(const QModelIndex& index);
 
 private:
 	Ui::MainWindow* ui;
@@ -85,6 +122,8 @@ private:
 	friend class GuiInteractiveController;
 
 	SvgViewToolchain svgViewToolchain;
+
+	StatusbarItems statusbarItems;
 
 	void viewSvgInMainView(const QString& svg_string);
 

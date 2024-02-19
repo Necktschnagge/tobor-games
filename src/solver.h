@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <limits>
 
+class GameController; // for friend class declaration, to be removed
 
 namespace tobor {
 
@@ -493,9 +494,13 @@ namespace tobor {
 
 			using move_path_type = move_path<piece_move_type>;
 
+			friend class GameController; // remove this! is bad design.
 		private:
 
-			partial_solutions_map_type ps_map;
+		public:
+			partial_solutions_map_type ps_map; // should not be public anymore!
+		private:
+
 
 			// number of steps needed by any optimal solution
 			size_type optimal_solution_size;

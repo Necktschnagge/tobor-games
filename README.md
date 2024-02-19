@@ -1,4 +1,4 @@
-# cmake-qt-prototype
+# Tobor
 
 ## Get Started For Development
 ### Install Dependencies

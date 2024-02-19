@@ -26,12 +26,12 @@ else()
 	message("Tobor:  Parameters:  assuming USE_QT6 = TRUE")
 	set(USE_QT6 TRUE)
 endif()
-message("Tobor:  Parameters:  USE_QT6 set to:  ${USE_QT6}")	
+message("Tobor:  Parameters:  USE_QT6 set to:  ${USE_QT6}")
 
 
 
 ############### Preprocessor Macros ###############
-add_compile_definitions(GIT_REPOSITORY_URL="https://github.com/Necktschnagge/cmake-qt-prototype")
+add_compile_definitions(GIT_REPOSITORY_URL="https://github.com/Necktschnagge/tobor-games")
 
 
 
@@ -49,6 +49,9 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS False)
+
+set(THREADS_PREFER_PTHREAD_FLAG ON)
+
 if (WIN32 AND NOT (MSYS OR MINGW))
         set(CMAKE_CXX_FLAGS_RELEASE "/MT /O2 /Ob2 /DNDEBUG") #what do all these flags mean?
         set(CMAKE_CXX_FLAGS_DEBUG "/MTd /Zi /Ob0 /Od /RTC1")
@@ -65,10 +68,13 @@ endif()
 
 ############### Libraries via include_directories ###############
 include_directories(SYSTEM extern/spdlog/include)
+include_directories(SYSTEM extern/json/include)
 
 
 
 ############### Libraries via find_package ###############
+find_package(Threads REQUIRED)
+
 if(USE_QT6)
 	find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets Svg SvgWidgets)
 	find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets Svg SvgWidgets)

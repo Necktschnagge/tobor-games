@@ -11,7 +11,6 @@
 
 #include <stdexcept>
 
-
 /**
 *	@brief Starts a reference game where 22 steps are needed until goal
 *	is deprecated, just for development and debugging
@@ -92,9 +91,12 @@ void GuiInteractiveController::startGame() {
 
 	interactive_mode = InteractiveMode::GAME_INTERACTIVE;
 
-	// create a board
 
-	auto tup = originalGenerator.split_element();
+	auto& boardGenerator{ productWorldGenerator.main() };
+
+	auto& initialStateGenerator{ productWorldGenerator.side() };
+
+	auto tup = boardGenerator.split_element();
 	(void)tup;
 	auto x = std::get<0>(tup);
 	auto a = x % 4; x /= 4;
@@ -103,28 +105,19 @@ void GuiInteractiveController::startGame() {
 	auto d = x % 4; x /= 4;
 	auto e = x;
 	qDebug() << a << "   :   " << b << "   :   " << c << "   :   " << d << "   :   " << e << "   :   " << std::get<1>(tup) << "   :   " << std::get<2>(tup) << "\n";
-	qDebug() << originalGenerator.get_counter() << "\n";
-	auto world = originalGenerator.get_tobor_world();
-	auto target = originalGenerator.get_target_cell();
+	qDebug() << boardGenerator.get_counter() << "\n";
+
+	auto world = boardGenerator.get_tobor_world();
+
+	auto target = boardGenerator.get_target_cell();
 
 	gameHistory.emplace_back(
 		world,
-		GameController::positions_of_pieces_type(
-			{
-				GameController::cell_id_type::create_by_coordinates(0, 0, world)
-			},
-				{
-					GameController::cell_id_type::create_by_coordinates(0,15, world),
-					GameController::cell_id_type::create_by_coordinates(15,15, world),
-					GameController::cell_id_type::create_by_coordinates(15,0, world)
-				}
-		),
+		initialStateGenerator.get_positions_of_pieces(world),
 		target
 	);
 
-	++originalGenerator;
-
-
+	++productWorldGenerator;
 
 	refreshAll();
 }
@@ -134,6 +127,8 @@ void GuiInteractiveController::stopGame() {
 	if (interactive_mode == InteractiveMode::NO_GAME) {
 		return showErrorDialog("This action should not be available.");
 	}
+
+	gameHistory.back().lazyFreeSolverData();
 
 	interactive_mode = InteractiveMode::NO_GAME;
 	refreshAll();
@@ -197,6 +192,8 @@ void GuiInteractiveController::refreshSVG()
 
 void GuiInteractiveController::refreshMenuButtonEnable()
 {
+
+
 	if (interactive_mode == InteractiveMode::GAME_INTERACTIVE) {
 
 		mainWindow->ui->actionNewGame->setEnabled(false);
@@ -205,7 +202,15 @@ void GuiInteractiveController::refreshMenuButtonEnable()
 
 		mainWindow->ui->actionStart_Solver->setEnabled(true);
 
+		mainWindow->ui->actionStop_Solver->setEnabled(false);
+
 		mainWindow->ui->actionMoveBack->setEnabled(!gameHistory.back().isEmptyPath());
+
+		mainWindow->ui->menuSelect_Piece->setEnabled(true);
+
+		mainWindow->ui->menuMove->setEnabled(true);
+
+		mainWindow->ui->menuPlaySolver->setEnabled(false);
 
 	}
 	else if (interactive_mode == InteractiveMode::NO_GAME) {
@@ -216,7 +221,15 @@ void GuiInteractiveController::refreshMenuButtonEnable()
 
 		mainWindow->ui->actionStart_Solver->setEnabled(false);
 
+		mainWindow->ui->actionStop_Solver->setEnabled(false);
+
 		mainWindow->ui->actionMoveBack->setEnabled(false);
+
+		mainWindow->ui->menuSelect_Piece->setEnabled(false);
+
+		mainWindow->ui->menuMove->setEnabled(false);
+
+		mainWindow->ui->menuPlaySolver->setEnabled(false);
 
 	}
 	else if (interactive_mode == InteractiveMode::SOLVER_INTERACTIVE_STEPS) {
@@ -227,19 +240,68 @@ void GuiInteractiveController::refreshMenuButtonEnable()
 
 		mainWindow->ui->actionStart_Solver->setEnabled(false);
 
+		mainWindow->ui->actionStop_Solver->setEnabled(true);
+
 		mainWindow->ui->actionMoveBack->setEnabled(!gameHistory.back().isEmptyPath());
 
+		mainWindow->ui->menuSelect_Piece->setEnabled(false);
+
+		mainWindow->ui->menuMove->setEnabled(false);
+
+		mainWindow->ui->menuPlaySolver->setEnabled(true);
 	}
 
 
 }
 
+void GuiInteractiveController::refreshStatusbar() {
+
+	// may be initial, not updated everytime:
+
+	MainWindow::SvgViewToolchain new_chain; // this data type aggregates more member data than enough.
+
+	new_chain.q_graphics_scene = std::make_unique<QGraphicsScene>();
+	// currently we do not show the SVG inside the graphicsScene
+
+	mainWindow->statusbarItems.colorSquare->setScene(new_chain.q_graphics_scene.get()); // does not take ownership
+	mainWindow->statusbarItems.colorSquare->fitInView(new_chain.q_graphics_scene.get()->sceneRect(), Qt::IgnoreAspectRatio);
+	mainWindow->statusbarItems.colorSquare->show();
+
+	mainWindow->statusbarItems.svgC = std::move(new_chain); // then destroy old objects in reverse order compared to construction...
+
+	if (interactive_mode == InteractiveMode::GAME_INTERACTIVE || interactive_mode == InteractiveMode::SOLVER_INTERACTIVE_STEPS) {
+
+		int r{ 240 };
+		int g{ 20 };
+		int b{ 50 };
+
+		auto color = QColor(r, g, b);
+
+		auto brush = QBrush(color);
+
+		mainWindow->statusbarItems.colorSquare->setBackgroundBrush(brush);
+
+	}
+	else {
+
+		mainWindow->statusbarItems.colorSquare->setBackgroundBrush(Qt::white);
+	}
+
+	refreshNumberOfSteps();
+
+}
+
 void GuiInteractiveController::refreshNumberOfSteps() {
 
-	QString number_of_steps = QString::number(gameHistory.back().path.size() - 1);
+	QString number_of_steps;
 
-	mainWindow->setWindowTitle(number_of_steps);
+	if (interactive_mode == InteractiveMode::GAME_INTERACTIVE || interactive_mode == InteractiveMode::SOLVER_INTERACTIVE_STEPS) {
 
+		number_of_steps = QString::number(gameHistory.back().path.size() - 1);
+
+	}
+
+	mainWindow->statusbarItems.stepsValue->setText(number_of_steps);
 }
 
 void GuiInteractiveController::movePiece(const tobor::v1_0::direction& direction) {
@@ -253,11 +315,7 @@ void GuiInteractiveController::movePiece(const tobor::v1_0::direction& direction
 
 		gameHistory.back().movePiece(selected_piece_id, direction);
 
-		refreshMenuButtonEnable();
-
-		refreshSVG();
-
-		refreshNumberOfSteps();
+		refreshAll();
 
 		break;
 
@@ -306,6 +364,15 @@ void GuiInteractiveController::startSolver()
 	gameHistory.back().startSolver(mainWindow);
 	interactive_mode = InteractiveMode::SOLVER_INTERACTIVE_STEPS;
 	viewSolutionPaths();
+	refreshAll();
+}
+
+void GuiInteractiveController::stopSolver()
+{
+	interactive_mode = InteractiveMode::GAME_INTERACTIVE;
+	gameHistory.back().stopSolver();
+	viewSolutionPaths();
+	refreshAll();
 }
 
 void GuiInteractiveController::selectSolution(std::size_t index)
@@ -319,6 +386,22 @@ void GuiInteractiveController::selectSolution(std::size_t index)
 
 void GuiInteractiveController::viewSolutionPaths() // this has to be improved!!!
 {
+	static QStringListModel* model{ nullptr };
+
+	if (model == nullptr) {
+		model = new QStringListModel();
+	}
+
+	if (interactive_mode != InteractiveMode::SOLVER_INTERACTIVE_STEPS) {
+
+		QStringList emptyStringList;
+
+		model->setStringList(emptyStringList);
+		mainWindow->ui->listView->setModel(model);
+		return;
+	}
+
+
 	QStringList qStringList;
 
 
@@ -350,16 +433,44 @@ void GuiInteractiveController::viewSolutionPaths() // this has to be improved!!!
 		++goal_counter;
 	}
 
-	static QStringListModel* model{ nullptr };
 
-	if (model == nullptr) {
-		model = new QStringListModel();
-	}
 
 	model->setStringList(qStringList);
 
 	mainWindow->ui->listView->setModel(model);
 
+}
+
+void GuiInteractiveController::highlightGeneratedTargetCells()
+{
+	const bool STATE_OK{ interactive_mode == InteractiveMode::GAME_INTERACTIVE || interactive_mode == InteractiveMode::SOLVER_INTERACTIVE_STEPS };
+
+	if (!STATE_OK) {
+		return showErrorDialog("Target cell markers not supported without running a game");
+	}
+
+	auto& world{ gameHistory.back().tobor_world };
+
+	auto raw_cell_id_vector = productWorldGenerator.main().get_target_cell_id_vector(world);
+
+	std::vector<GameController::cell_id_type> comfort_cell_id_vector;
+
+	std::transform(raw_cell_id_vector.cbegin(), raw_cell_id_vector.cend(), std::back_inserter(comfort_cell_id_vector),
+		[&](const auto& raw_cell_id) {
+			return GameController::cell_id_type::create_by_id(raw_cell_id, world);
+		}
+	);
+
+	std::string svg_string = tobor::v1_0::tobor_graphics<GameController::positions_of_pieces_type>::draw_tobor_world_with_cell_markers(
+		world,
+		comfort_cell_id_vector
+	);
+
+	mainWindow->viewSvgInMainView(svg_string);
+
+	QString m{ "Number of generator target cells:   " };
+	m += QString::number(comfort_cell_id_vector.size());
+	mainWindow->ui->statusbar->showMessage(m);
 }
 
 GameController::move_path_type& GameController::get_selected_solution_representant(std::size_t index) {

@@ -2,6 +2,8 @@
 
 #include "mainwindow.h"
 
+#include "gui_helper.h"
+
 #include "./ui_mainwindow.h"
 #include "gui_interactive_controller.h"
 #include "solver.h"
@@ -18,13 +20,16 @@
 #include <QMessageBox>
 
 
-
 MainWindow::MainWindow(QWidget* parent)
 	: QMainWindow(parent)
 	, ui(new Ui::MainWindow),
 	guiInteractiveController(this)
 {
 	ui->setupUi(this);
+	statusbarItems.init(ui->statusbar);
+
+	guiInteractiveController.refreshAll();
+
 	grabKeyboard(); // https://doc.qt.io/qt-6/qwidget.html#grabKeyboard
 
 	// releaseKeyboard();  when entering main menu
@@ -66,12 +71,17 @@ void MainWindow::on_actionshowSVG_triggered()
 	viewSvgInMainView(example_svg_string);
 }
 
+void MainWindow::on_actionHighlightGeneratedTargetCells_triggered() {
+	guiInteractiveController.highlightGeneratedTargetCells();
+}
+
 void MainWindow::on_actionAbout_triggered()
 {
-	qDebug() << "QLocale: " << QLocale().name();
+	qDebug() << "QLocale:" << QLocale().name();
+
 
 	QMessageBox msgBox;
-	msgBox.setText(QString("Qt Version used:   ") + qVersion());
+	msgBox.setText(QString("Qt Version used: ") + qVersion());
 	msgBox.exec();
 }
 
@@ -101,11 +111,15 @@ void MainWindow::viewSvgInMainView(const QString& svg_string)
 void MainWindow::on_actionNewGame_triggered() {
 	guiInteractiveController.startGame();
 	statusBar()->showMessage("Game started.");
+	//statusbarItems.stepsKey->show();
+	//statusbarItems.stepsValue->show();
 }
 
 void MainWindow::on_actionStopGame_triggered() {
 	guiInteractiveController.stopGame();
 	statusBar()->showMessage("Game stopped.");
+	//statusbarItems.stepsKey->hide();
+	//statusbarItems.stepsValue->hide();
 }
 
 void MainWindow::on_actionMoveBack_triggered()
@@ -208,24 +222,98 @@ void MainWindow::on_actionWEST_triggered()
 
 }
 
-
-void MainWindow::on_actionStart_Solver_triggered()
+void MainWindow::on_actionForward_triggered()
 {
-    ui->statusbar->showMessage("starting solver...");
-	//update(); //repaint();
-	//ui->statusbar->update();
-	repaint();
-    guiInteractiveController.startSolver();
+	on_actionEAST_triggered(); // change this
 }
 
 
-void MainWindow::on_listView_doubleClicked(const QModelIndex &index)
+void MainWindow::on_actionBack_triggered()
 {
-    //QString m{"double-clicked ListView on" };
-    //m+=QString::number(index.row());
-    //ui->statusbar->showMessage(m);
+	on_actionWEST_triggered(); // change this
+}
+
+void MainWindow::on_actionStart_Solver_triggered()
+{
+	ui->statusbar->showMessage("starting solver...");
+	//update(); //repaint();
+	//ui->statusbar->update();
+	repaint();
+	guiInteractiveController.startSolver();
+}
+
+void MainWindow::on_actionStop_Solver_triggered()
+{
+	guiInteractiveController.stopSolver();
+}
+
+void MainWindow::on_actionLicense_Information_triggered()
+{
+	showErrorDialog("Not yet implemented.");
+}
+
+
+void MainWindow::on_listView_doubleClicked(const QModelIndex& index)
+{
+	//QString m{"double-clicked ListView on" };
+	//m+=QString::number(index.row());
+	//ui->statusbar->showMessage(m);
 
 	guiInteractiveController.selectSolution(index.row());
 	guiInteractiveController.refreshAll();
 }
+
+void MainWindow::StatusbarItems::init(QStatusBar* statusbar) {
+	stepsKey = new QLabel(statusbar); // parent takes ownership
+	stepsValue = new QLabel(statusbar); // parent takes ownership
+
+	boardIdKey = new QLabel(statusbar);
+	boardIdValue = new QLabel(statusbar);
+
+	solverKey = new QLabel(statusbar);
+	solverValue = new QLabel(statusbar);
+
+	pieceSelectedKey = new QLabel(statusbar);
+	pieceSelectedValue = new QLabel(statusbar);
+
+	colorSquare = new QGraphicsView(statusbar);
+
+	colorSquare->setMinimumSize(15, 15);
+	colorSquare->setMaximumSize(15, 15);
+	
+
+
+	/* label order */
+
+	statusbar->addPermanentWidget(solverKey);
+	statusbar->addPermanentWidget(solverValue);
+
+	statusbar->addPermanentWidget(boardIdKey);
+	statusbar->addPermanentWidget(boardIdValue);
+
+	statusbar->addPermanentWidget(pieceSelectedKey);
+	statusbar->addPermanentWidget(pieceSelectedValue);
+	statusbar->addPermanentWidget(colorSquare);
+
+	statusbar->addPermanentWidget(stepsKey); // parent is replaced?
+	statusbar->addPermanentWidget(stepsValue); // parent is replaced?
+
+
+
+	stepsKey->setText("Steps:");
+
+	//QString number_of_steps = QString::number(0);
+	//stepsValue->setText(number_of_steps);
+
+	//stepsKey->hide();
+	//stepsValue->hide();
+
+	boardIdKey->setText("Board:");
+
+	solverKey->setText("Solver:");
+
+	pieceSelectedKey->setText("Piece:");
+}
+
+
 
