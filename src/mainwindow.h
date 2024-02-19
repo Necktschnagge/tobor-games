@@ -83,13 +83,6 @@ public:
 	MainWindow(QWidget* parent = nullptr);
 	~MainWindow();
 
-public slots:
-	void select() {
-		//(void)a;
-		qDebug() << "clicked";
-	}
-
-
 private slots:
 	void on_actionshowSVG_triggered();
 
