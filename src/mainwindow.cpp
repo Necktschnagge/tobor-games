@@ -310,7 +310,7 @@ QMenu* MainWindow::getSelectPieceSubMenu() {
 }
 
 void MainWindow::selectPieceByColor(int index) {
-	guiInteractiveController.setPieceId(index); // where to check range correctness?
+	guiInteractiveController.selectPieceByColorId(index); // where to check range correctness? SignalMapper should not fire an int greater than color vector, make some additional check here (or somewhere else?)
 }
 
 
