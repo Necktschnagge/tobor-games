@@ -13,7 +13,6 @@
 #include <QKeyEvent>
 #include <QGraphicsScene>
 #include <QLabel>
-#include <QSignalMapper>
 
 #include <memory>
 
