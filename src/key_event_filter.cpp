@@ -17,9 +17,8 @@ bool ControlKeyEventAgent::eventFilter(QObject* object, QEvent* e)
 		return false; //pass-through
 	}
 
-	//qDebug() << "key    " << static_cast<int64_t>(keyEvent->type());
-
 	// see https://doc.qt.io/qt-6/qevent.html for event types
+	
 	if (keyEvent->type() == QEvent::KeyRelease) {
 		return false; //pass-through
 	}
@@ -36,7 +35,6 @@ bool ControlKeyEventAgent::eventFilter(QObject* object, QEvent* e)
 	const int key{ keyEvent->key() };
 
 	if (mainWindow->guiInteractiveController.interactiveMode() == GuiInteractiveController::InteractiveMode::GAME_INTERACTIVE) {
-		qDebug() << "key in user mode " << object->metaObject()->className();
 
 		// check for all arrow keys
 		switch (key) {
@@ -88,7 +86,6 @@ bool ControlKeyEventAgent::eventFilter(QObject* object, QEvent* e)
 	}
 
 	if (mainWindow->guiInteractiveController.interactiveMode() == GuiInteractiveController::InteractiveMode::SOLVER_INTERACTIVE_STEPS) {
-		qDebug() << "key in solver mode " << object->metaObject()->className();
 
 		// check for all arrow keys
 		switch (key) {
