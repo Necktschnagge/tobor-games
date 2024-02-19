@@ -165,7 +165,7 @@ void MainWindow::getTypes(QObject* object, bool in) {
 
 bool MainWindow::eventFilter(QObject* object, QEvent* e)
 {
-	static constexpr bool SKIP{ false };
+	static constexpr bool SKIP{ true };
 
 	if constexpr (SKIP) {
 		return false;
