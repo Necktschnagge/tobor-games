@@ -46,14 +46,14 @@ MainWindow::MainWindow(QWidget* parent)
 	ui->listView->installEventFilter(&controlKeyEventAgent);
 	ui->treeView->installEventFilter(&controlKeyEventAgent);
 
-/*    auto log_widget = new QTextEdit();
-	auto logger = spdlog::qt_logger_mt("qt_logger", log_widget);
-	log_widget->setMinimumSize(640, 480);
-	log_widget->setWindowTitle("Debug console");
-	log_widget->show();
-	logger->info("QLocale: " + QLocale().name().toStdString());
-	logger->info("Qt Version: " + std::string(qVersion()));
-*/
+	/*    auto log_widget = new QTextEdit();
+		auto logger = spdlog::qt_logger_mt("qt_logger", log_widget);
+		log_widget->setMinimumSize(640, 480);
+		log_widget->setWindowTitle("Debug console");
+		log_widget->show();
+		logger->info("QLocale: " + QLocale().name().toStdString());
+		logger->info("Qt Version: " + std::string(qVersion()));
+	*/
 }
 
 MainWindow::~MainWindow()
@@ -440,38 +440,29 @@ void MainWindow::StatusbarItems::setKciColor(const QColor& c)
 }
 
 QMenu* MainWindow::getSelectPieceSubMenu() {
-
 	return ui->menuSelect_Piece;
-
 }
-void MainWindow::selectPieceByColor(int index) {
-	qDebug() << "selectPieceByColor  " << index;
-	guiInteractiveController.setPieceId(index); // where to check range correctness?
 
+void MainWindow::selectPieceByColor(int index) {
+	guiInteractiveController.setPieceId(index); // where to check range correctness?
 }
 
 
 template<class QMenu_OR_QMenuBar>
 inline void menu_recursion(QMenu_OR_QMenuBar* m) {
-
 	m->setEnabled(true);
-
 	for (QAction* item : m->actions()) {
-
 		qDebug() << item->text();
 		item->setEnabled(true);
 
 		if (item->isSeparator()) {
 		}
 		else if (item->menu()) {
-
 			QMenu* sub = item->menu();
 			menu_recursion(sub);
-
 		}
 		else /* normal action */ {
 		}
-
 	}
 }
 
