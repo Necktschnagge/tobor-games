@@ -56,6 +56,10 @@ namespace tobor {
 					return result;
 				}
 
+				QColor getQColor() const {
+					return QColor(r, g, b);
+				}
+
 				color_item(int r, int g, int b, std::string display_string, std::string display_string_with_underscore, char shortcut_letter) :
 					r(r),
 					g(g),

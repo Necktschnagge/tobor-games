@@ -160,7 +160,10 @@ void GuiInteractiveController::createColorActions()
 
 void GuiInteractiveController::stopGame() {
 
+	mainWindow->statusbarItems.setSelectedPiece(Qt::darkGray);
+
 	mainWindow->disconnectInputConnections();
+
 	mainWindow->getSelectPieceSubMenu()->clear();
 
 
@@ -201,6 +204,7 @@ void GuiInteractiveController::setPieceId(const tobor::v1_0::default_piece_id& p
 		break;
 	}
 
+	refreshStatusbar();
 }
 
 void GuiInteractiveController::selectPieceByColorId(const std::size_t& color_id)
@@ -319,35 +323,19 @@ void GuiInteractiveController::refreshMenuButtonEnable()
 
 void GuiInteractiveController::refreshStatusbar() {
 
-	// may be initial, not updated everytime:
-
-	MainWindow::SvgViewToolchain new_chain; // this data type aggregates more member data than enough.
-
-	new_chain.q_graphics_scene = std::make_unique<QGraphicsScene>();
-	// currently we do not show the SVG inside the graphicsScene
-
-	mainWindow->statusbarItems.colorSquare->setScene(new_chain.q_graphics_scene.get()); // does not take ownership
-	mainWindow->statusbarItems.colorSquare->fitInView(new_chain.q_graphics_scene.get()->sceneRect(), Qt::IgnoreAspectRatio);
-	mainWindow->statusbarItems.colorSquare->show();
-
-	mainWindow->statusbarItems.svgC = std::move(new_chain); // then destroy old objects in reverse order compared to construction...
-
 	if (interactive_mode == InteractiveMode::GAME_INTERACTIVE || interactive_mode == InteractiveMode::SOLVER_INTERACTIVE_STEPS) {
 
-		int r{ 240 };
-		int g{ 20 };
-		int b{ 50 };
+		auto current_color = current_color_vector.colors[
+			gameHistory.back().colorPermutation[
+				selected_piece_id.value
+			]
+		].getQColor();
 
-		auto color = QColor(r, g, b);
-
-		auto brush = QBrush(color);
-
-		mainWindow->statusbarItems.colorSquare->setBackgroundBrush(brush);
+		mainWindow->statusbarItems.setSelectedPiece(current_color);
 
 	}
 	else {
-
-		mainWindow->statusbarItems.colorSquare->setBackgroundBrush(Qt::white);
+		mainWindow->statusbarItems.setSelectedPiece(Qt::darkGray);
 	}
 
 	refreshNumberOfSteps();

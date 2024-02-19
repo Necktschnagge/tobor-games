@@ -186,8 +186,9 @@ bool MainWindow::eventFilter(QObject* object, QEvent* e)
 			) {
 			if (e->type() == QEvent::FocusIn) {
 				//MainWindow::setWindowTitle("++++++++++++++++");
-				statusbarItems.setKciColor(Qt::green);
-				qDebug() << "green";
+				//statusbarItems.setSelectedPiece(Qt::green);
+				//qDebug() << "green";
+				// exited MenuBar
 			}
 		}
 
@@ -199,8 +200,10 @@ bool MainWindow::eventFilter(QObject* object, QEvent* e)
 			) {
 			if (e->type() == QEvent::FocusIn || e->type() == QEvent::MouseButtonPress) {
 				//MainWindow::setWindowTitle("----------------");
-				statusbarItems.setKciColor(Qt::red);
-				qDebug() << "red";
+				//statusbarItems.setSelectedPiece(Qt::red);
+				//qDebug() << "red";
+				// entered MenuBar
+
 			}
 		}
 
@@ -365,21 +368,8 @@ void MainWindow::StatusbarItems::init(QStatusBar* statusbar) {
 
 	pieceSelectedKey = new QLabel(statusbar);
 	pieceSelectedValue = new QLabel(statusbar);
-
-	colorSquare = new QGraphicsView(statusbar);
-	colorSquare->setMinimumSize(15, 15);
-	colorSquare->setMaximumSize(15, 15);
-
-	keyboardCaptureIcon = new QGraphicsView(statusbar);
-	keyboardCaptureIcon->setMinimumSize(15, 15);
-	keyboardCaptureIcon->setMaximumSize(15, 15);
-
-	kci = new QLabel(statusbar);
-	kci->setMinimumSize(15, 15);
-	kci->setMaximumSize(15, 15);
-
-
-
+	pieceSelectedValue->setMinimumSize(15, 15);
+	pieceSelectedValue->setMaximumSize(15, 15);
 
 	/* label order */
 
@@ -391,16 +381,11 @@ void MainWindow::StatusbarItems::init(QStatusBar* statusbar) {
 
 	statusbar->addPermanentWidget(pieceSelectedKey);
 	statusbar->addPermanentWidget(pieceSelectedValue);
-	statusbar->addPermanentWidget(colorSquare);
 
 	statusbar->addPermanentWidget(stepsKey); // parent is replaced?
 	statusbar->addPermanentWidget(stepsValue); // parent is replaced?
 
-	statusbar->addPermanentWidget(keyboardCaptureIcon);
-	statusbar->addPermanentWidget(kci);
-
-
-	setKciColor(Qt::darkYellow);
+	setSelectedPiece(Qt::darkGray);
 
 	stepsKey->setText("Steps:");
 
@@ -417,26 +402,23 @@ void MainWindow::StatusbarItems::init(QStatusBar* statusbar) {
 	pieceSelectedKey->setText("Piece:");
 }
 
-void MainWindow::StatusbarItems::setKciColor(const QColor& c)
+void MainWindow::StatusbarItems::setSelectedPiece(const QColor& c)
 {
-	constexpr int SIZE{ 15 }; // match with size of label.
-
-	QPixmap pm(SIZE, SIZE);
+	QPixmap pm(QUADRATIC_COLOR_LABEL_SIZE, QUADRATIC_COLOR_LABEL_SIZE);
 
 	pm.fill(c);
 
 	QImage img = pm.toImage();
-	for (int i = 0; i < SIZE; ++i) {
+	for (int i = 0; i < QUADRATIC_COLOR_LABEL_SIZE; ++i) {
 		img.setPixelColor(0, i, Qt::black);
-		img.setPixelColor(SIZE - 1, i, Qt::black);
+		img.setPixelColor(QUADRATIC_COLOR_LABEL_SIZE - 1, i, Qt::black);
 		img.setPixelColor(i, 0, Qt::black);
-		img.setPixelColor(i, SIZE - 1, Qt::black);
+		img.setPixelColor(i, QUADRATIC_COLOR_LABEL_SIZE - 1, Qt::black);
 	}
 
 	pm = QPixmap::fromImage(img);
 
-	//keyboardCaptureIcon->
-	kci->setPixmap(pm.scaled(kci->size(), Qt::KeepAspectRatio));
+	pieceSelectedValue->setPixmap(pm.scaled(pieceSelectedValue->size(), Qt::KeepAspectRatio));
 }
 
 QMenu* MainWindow::getSelectPieceSubMenu() {

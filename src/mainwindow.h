@@ -52,6 +52,8 @@ private:
 	class StatusbarItems {
 	public:
 
+		static constexpr int QUADRATIC_COLOR_LABEL_SIZE{ 15 };
+
 		QLabel* stepsKey;
 		QLabel* stepsValue;
 
@@ -64,21 +66,12 @@ private:
 		QLabel* pieceSelectedKey; // "[colored square]" current selected piece's color
 		QLabel* pieceSelectedValue;
 
-		QGraphicsView* colorSquare;
-
-		SvgViewToolchain svgC;
-
-		QGraphicsView* keyboardCaptureIcon;
-		QLabel* kci;
-
-		SvgViewToolchain keyboardCapture;
-
 		void init(QStatusBar* statusbar);
 
-		void setKciColor(const QColor& c);
+		void setSelectedPiece(const QColor& c);
 	};
 
-	
+
 public:
 
 	MainWindow(QWidget* parent = nullptr);
@@ -167,7 +160,7 @@ private:
 private slots:
 
 	void selectPieceByColor(int index);
-	
+
 
 protected:
 
