@@ -113,9 +113,7 @@ void GuiInteractiveController::startGame() {
 
 	auto target = boardGenerator.get_target_cell();
 
-	std::vector<uint8_t> colorPermutation{ 0,1,2,3 };
-
-	colorPermutation = boardGenerator.obtain_standard_4_coloring_permutation(colorPermutation);
+	std::vector<uint8_t> colorPermutation = boardGenerator.obtain_standard_4_coloring_permutation(std::vector<uint8_t>{ 0, 1, 2, 3 });
 
 	gameHistory.emplace_back(
 		world,
@@ -492,7 +490,7 @@ void GuiInteractiveController::viewSolutionPaths() // this has to be improved!!!
 			s = s + QString::number(i) + ": ";
 			for (const GameController::piece_move_type& m : equivalence_classes[i][0].vector()) {
 
-				const char letter { permutated_color_vector.colors[m.pid.value].UPPERCASE_shortcut_letter() };
+				const char letter{ permutated_color_vector.colors[m.pid.value].UPPERCASE_shortcut_letter() };
 
 
 				std::string color = std::string(1, letter);
