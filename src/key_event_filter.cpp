@@ -14,15 +14,29 @@ bool ControlKeyEventAgent::eventFilter(QObject* object, QEvent* e)
 	QKeyEvent* keyEvent = dynamic_cast<QKeyEvent*>(e);
 
 	if (keyEvent == nullptr) {
+		return false; //pass-through
+	}
 
+	//qDebug() << "key    " << static_cast<int64_t>(keyEvent->type());
+
+	// see https://doc.qt.io/qt-6/qevent.html for event types
+	if (keyEvent->type() == QEvent::KeyRelease) {
+		return false; //pass-through
+	}
+
+	if (keyEvent->type() == QEvent::ShortcutOverride) {
+		return false; //pass-through
+	}
+
+	if (keyEvent->type() != QEvent::KeyPress) {
 		return false; //pass-through
 	}
 
 	// found a keyEvent
+	const int key{ keyEvent->key() };
 
 	if (mainWindow->guiInteractiveController.interactiveMode() == GuiInteractiveController::InteractiveMode::GAME_INTERACTIVE) {
-
-		const int key{ keyEvent->key() };
+		qDebug() << "key in user mode " << object->metaObject()->className();
 
 		// check for all arrow keys
 		switch (key) {
@@ -74,13 +88,24 @@ bool ControlKeyEventAgent::eventFilter(QObject* object, QEvent* e)
 	}
 
 	if (mainWindow->guiInteractiveController.interactiveMode() == GuiInteractiveController::InteractiveMode::SOLVER_INTERACTIVE_STEPS) {
+		qDebug() << "key in solver mode " << object->metaObject()->className();
 
-		return true; //absorbing event
+		// check for all arrow keys
+		switch (key) {
+		case Qt::Key_Right:
+			mainWindow->guiInteractiveController.moveBySolver(true);
+			mainWindow->guiInteractiveController.refreshAll();
+			return true; //absorbing eventcase
+		case Qt::Key_Left:
+			mainWindow->guiInteractiveController.moveBySolver(false);
+			mainWindow->guiInteractiveController.refreshAll();
+			return true; //absorbing event
+		default:
+			break;
+		}
+
+		return false; //pass-through
 	}
-
-	//switch (keyEvent->key()) {
-	//	
-	//}
 
 	return false; //pass-through
 }
