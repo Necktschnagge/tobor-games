@@ -236,10 +236,6 @@ void GuiInteractiveController::refreshSVG()
 			permutated_color_vector.colors[3].getSVGColorString()
 		);
 
-		// coloring = originalGenerator.obtain_standard_4_coloring_permutation(coloring.colors);
-		// we also have to permutate the selected (user input) color!
-		// Otherwise choosing the yellow duck e.g. moves the blue duck.
-
 		std::string example_svg_string =
 			tobor::v1_0::tobor_graphics<GameController::positions_of_pieces_type>::draw_tobor_world(
 				gameHistory.back().tobor_world,
