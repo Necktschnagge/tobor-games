@@ -123,10 +123,6 @@
           <property name="title">
             <string>Select &amp;Piece...</string>
           </property>
-          <addaction name="actionRED"/>
-          <addaction name="actionYELLOW"/>
-          <addaction name="actionGREEN"/>
-          <addaction name="actionBLUE"/>
         </widget>
         <widget class="QMenu" name="menuMove">
           <property name="title">
@@ -249,50 +245,6 @@
       </property>
       <property name="text">
         <string>Test ListView</string>
-      </property>
-    </action>
-    <action name="actionRED">
-      <property name="enabled">
-        <bool>true</bool>
-      </property>
-      <property name="text">
-        <string>&amp;RED</string>
-      </property>
-      <property name="shortcut">
-        <string>Ctrl+R</string>
-      </property>
-    </action>
-    <action name="actionYELLOW">
-      <property name="enabled">
-        <bool>true</bool>
-      </property>
-      <property name="text">
-        <string>&amp;YELLOW</string>
-      </property>
-      <property name="shortcut">
-        <string>Ctrl+Y</string>
-      </property>
-    </action>
-    <action name="actionGREEN">
-      <property name="enabled">
-        <bool>true</bool>
-      </property>
-      <property name="text">
-        <string>&amp;GREEN</string>
-      </property>
-      <property name="shortcut">
-        <string>Ctrl+G</string>
-      </property>
-    </action>
-    <action name="actionBLUE">
-      <property name="enabled">
-        <bool>true</bool>
-      </property>
-      <property name="text">
-        <string>&amp;BLUE</string>
-      </property>
-      <property name="shortcut">
-        <string>Ctrl+B</string>
       </property>
     </action>
     <action name="actionNORTH">
