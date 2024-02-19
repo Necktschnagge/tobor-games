@@ -490,7 +490,6 @@ void GuiInteractiveController::viewSolutionPaths() // this has to be improved!!!
 
 
 				std::string color = std::string(1, letter);
-				//color = color.substr(m.pid.value, 1); // this is not okay. we need to properly use the coloring array.
 				// please check #69 so that we may include tobor svg in this file's corresponding header to define coloring there....
 
 				// the solution might be a "global" fixed coloring with full words and with Letter, 
