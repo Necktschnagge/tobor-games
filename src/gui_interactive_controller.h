@@ -5,6 +5,7 @@ class GameController; // to be removed! ps_map is private, this is needed for fr
 #include "solver.h" // ..., tobor::v1_0::tobor_world
 
 #include "world_generator.h"
+#include "color_generator.h"
 
 // #include "tobor_svg.h" produces error
 
@@ -84,6 +85,8 @@ private:
 
 	std::size_t selected_solution_index;
 
+	std::vector<uint8_t> colorPermutation;
+
 	static constexpr bool DEFAULT_DO_NOT_WAIT_ON_LAZY_FREE{
 #ifdef _DEBUG 
 		false
@@ -159,7 +162,8 @@ public:
 	GameController(
 		const world_type& tobor_world,
 		const positions_of_pieces_type& initial_state,
-		const cell_id_type& target_cell
+		const cell_id_type& target_cell,
+		const std::vector<uint8_t>& colorPermutation
 	) :
 		tobor_world(tobor_world),
 		move_one_piece_calculator(this->tobor_world),
@@ -168,7 +172,8 @@ public:
 		solver_begin_index(0),
 		optional_solver_state_graph(),
 		optional_classified_move_paths(),
-		selected_solution_index(0)
+		selected_solution_index(0),
+		colorPermutation(colorPermutation)
 	{
 
 	}
@@ -256,8 +261,7 @@ public:
 
 class GuiInteractiveController final {
 
-	MainWindow* mainWindow;
-
+public:
 	enum class InteractiveMode {
 		NO_GAME,
 		GAME_INTERACTIVE,
@@ -265,10 +269,13 @@ class GuiInteractiveController final {
 	};
 
 	using board_generator_type = tobor::v1_0::world_generator::original_4_of_16;
+
 	using state_generator_type = tobor::v1_0::world_generator::initial_state_generator<GameController::positions_of_pieces_type, 256, 1, 3, 4>;
 
-
 	using product_generator_type = tobor::v1_0::world_generator::product_group_generator<board_generator_type, state_generator_type>;
+
+private:
+	MainWindow* mainWindow;
 
 	InteractiveMode interactive_mode;
 
@@ -280,10 +287,13 @@ class GuiInteractiveController final {
 
 	std::mt19937 generator;
 
+
 	//tobor::v1_0::tobor_graphics<GameController::positions_of_pieces_type>::coloring coloring = tobor::v1_0::tobor_graphics<GameController::positions_of_pieces_type>::coloring("red", "yellow", "green", "blue");
 	// needs tobor svg include which brings errors...
 
 public:
+
+	tobor::v1_0::color_vector current_color_vector;
 
 	void startReferenceGame22();
 
@@ -312,13 +322,21 @@ public:
 		//productWorldGenerator.main().set_counter(73021);
 	}
 
+	inline InteractiveMode interactiveMode() const {
+		return interactive_mode;
+	}
+
 	void startGame();
+
+	void createColorActions();
 
 	void stopGame();
 
 	void moveBySolver(bool forward);
 
 	void setPieceId(const tobor::v1_0::default_piece_id& piece_id);
+
+	void selectPieceByColorId(const std::size_t& color_id);
 
 	void refreshNumberOfSteps();
 

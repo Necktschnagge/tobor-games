@@ -4,12 +4,17 @@
 
 #include "gui_helper.h"
 
+#include "color_generator.h"
+#include "custom_traits.h"
+
 #include "./ui_mainwindow.h"
 #include "gui_interactive_controller.h"
 #include "solver.h"
 #include "tobor_svg.h"
+
 #include "spdlog/spdlog.h"
 #include "spdlog/sinks/qt_sinks.h"
+
 
 #include <QStringListModel>
 #include <QMessageBox>
@@ -19,34 +24,36 @@
 #include <QGraphicsSvgItem>
 #include <QMessageBox>
 
+// please add a enable all actions in menu to developer menu!
 
 MainWindow::MainWindow(QWidget* parent)
 	: QMainWindow(parent)
 	, ui(new Ui::MainWindow),
-	guiInteractiveController(this)
+	guiInteractiveController(this),
+	controlKeyEventAgent(this)
 {
 	ui->setupUi(this);
 	statusbarItems.init(ui->statusbar);
 
 	guiInteractiveController.refreshAll();
 
-	grabKeyboard(); // https://doc.qt.io/qt-6/qwidget.html#grabKeyboard
+	signalMapper = new QSignalMapper(this);
 
-	// releaseKeyboard();  when entering main menu
-	// again call grabKeyboard() when exiting main menu (by triggering event or exiting without clicking any menu button)
+	QObject::connect(signalMapper, QSignalMapper__mappedInt__OR__mapped__PTR, this, &MainWindow::selectPieceByColor, Qt::AutoConnection);
 
-	// can we check this via some FocusEvent? Just check when the focus is changed?
-	// https://stackoverflow.com/questions/321656/get-a-notification-event-signal-when-a-qt-widget-gets-focus
-	// https://doc.qt.io/qt-6/qfocusevent.html#details
+	// in-game navigation input:
+	ui->graphicsView->installEventFilter(&controlKeyEventAgent);
+	ui->listView->installEventFilter(&controlKeyEventAgent);
+	ui->treeView->installEventFilter(&controlKeyEventAgent);
 
-/*    auto log_widget = new QTextEdit();
-	auto logger = spdlog::qt_logger_mt("qt_logger", log_widget);
-	log_widget->setMinimumSize(640, 480);
-	log_widget->setWindowTitle("Debug console");
-	log_widget->show();
-	logger->info("QLocale: " + QLocale().name().toStdString());
-	logger->info("Qt Version: " + std::string(qVersion()));
-*/
+	/*    auto log_widget = new QTextEdit();
+		auto logger = spdlog::qt_logger_mt("qt_logger", log_widget);
+		log_widget->setMinimumSize(640, 480);
+		log_widget->setWindowTitle("Debug console");
+		log_widget->show();
+		logger->info("QLocale: " + QLocale().name().toStdString());
+		logger->info("Qt Version: " + std::string(qVersion()));
+	*/
 }
 
 MainWindow::~MainWindow()
@@ -126,36 +133,6 @@ void MainWindow::on_actionMoveBack_triggered()
 {
 	guiInteractiveController.undo();
 }
-
-void MainWindow::keyPressEvent(QKeyEvent* e)
-{
-	// see: https://doc.qt.io/qt-6/qt.html#Key-enum
-
-	switch (e->key()) {
-
-	case Qt::Key_Alt:
-		releaseKeyboard();
-		break;
-
-	case Qt::Key_Up:
-		on_actionNORTH_triggered();
-		break;
-
-	case Qt::Key_Down:
-		on_actionSOUTH_triggered();
-		break;
-
-	case Qt::Key_Left:
-		on_actionWEST_triggered();
-		break;
-
-	case Qt::Key_Right:
-		on_actionEAST_triggered();
-		break;
-	}
-	qDebug() << "catch keyboard";
-}
-
 
 void MainWindow::on_actionTest_ListView_triggered()
 {
@@ -275,13 +252,8 @@ void MainWindow::StatusbarItems::init(QStatusBar* statusbar) {
 
 	pieceSelectedKey = new QLabel(statusbar);
 	pieceSelectedValue = new QLabel(statusbar);
-
-	colorSquare = new QGraphicsView(statusbar);
-
-	colorSquare->setMinimumSize(15, 15);
-	colorSquare->setMaximumSize(15, 15);
-	
-
+	pieceSelectedValue->setMinimumSize(15, 15);
+	pieceSelectedValue->setMaximumSize(15, 15);
 
 	/* label order */
 
@@ -293,12 +265,11 @@ void MainWindow::StatusbarItems::init(QStatusBar* statusbar) {
 
 	statusbar->addPermanentWidget(pieceSelectedKey);
 	statusbar->addPermanentWidget(pieceSelectedValue);
-	statusbar->addPermanentWidget(colorSquare);
 
 	statusbar->addPermanentWidget(stepsKey); // parent is replaced?
 	statusbar->addPermanentWidget(stepsValue); // parent is replaced?
 
-
+	setSelectedPiece(Qt::darkGray);
 
 	stepsKey->setText("Steps:");
 
@@ -315,5 +286,54 @@ void MainWindow::StatusbarItems::init(QStatusBar* statusbar) {
 	pieceSelectedKey->setText("Piece:");
 }
 
+void MainWindow::StatusbarItems::setSelectedPiece(const QColor& c)
+{
+	QPixmap pm(QUADRATIC_COLOR_LABEL_SIZE, QUADRATIC_COLOR_LABEL_SIZE);
+
+	pm.fill(c);
+
+	QImage img = pm.toImage();
+	for (int i = 0; i < QUADRATIC_COLOR_LABEL_SIZE; ++i) {
+		img.setPixelColor(0, i, Qt::black);
+		img.setPixelColor(QUADRATIC_COLOR_LABEL_SIZE - 1, i, Qt::black);
+		img.setPixelColor(i, 0, Qt::black);
+		img.setPixelColor(i, QUADRATIC_COLOR_LABEL_SIZE - 1, Qt::black);
+	}
+
+	pm = QPixmap::fromImage(img);
+
+	pieceSelectedValue->setPixmap(pm.scaled(pieceSelectedValue->size(), Qt::KeepAspectRatio));
+}
+
+QMenu* MainWindow::getSelectPieceSubMenu() {
+	return ui->menuSelect_Piece;
+}
+
+void MainWindow::selectPieceByColor(int index) {
+	guiInteractiveController.selectPieceByColorId(index); // where to check range correctness? SignalMapper should not fire an int greater than color vector, make some additional check here (or somewhere else?)
+}
 
 
+template<class QMenu_OR_QMenuBar>
+inline void menu_recursion(QMenu_OR_QMenuBar* m) {
+	m->setEnabled(true);
+	for (QAction* item : m->actions()) {
+		qDebug() << item->text();
+		item->setEnabled(true);
+
+		if (item->isSeparator()) {
+		}
+		else if (item->menu()) {
+			QMenu* sub = item->menu();
+			menu_recursion(sub);
+		}
+		else /* normal action */ {
+		}
+	}
+}
+
+
+void MainWindow::on_actionEnableAllMenuBarItems_triggered()
+{
+	menu_recursion(ui->menubar);
+}
