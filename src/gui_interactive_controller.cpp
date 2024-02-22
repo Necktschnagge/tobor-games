@@ -17,7 +17,8 @@
 *	is deprecated, just for development and debugging
 */
 void GuiInteractiveController::startReferenceGame22() {
-
+	throw 4;
+#if false
 	interactive_mode = InteractiveMode::GAME_INTERACTIVE;
 
 	auto world = GameController::world_type(16, 16);
@@ -82,6 +83,7 @@ void GuiInteractiveController::startReferenceGame22() {
 	);
 
 	refreshAll();
+#endif
 
 }
 
@@ -113,7 +115,17 @@ void GuiInteractiveController::startGame() {
 
 	auto target = boardGenerator.get_target_cell();
 
-	std::vector<uint8_t> colorPermutation = boardGenerator.obtain_standard_4_coloring_permutation(std::vector<uint8_t>{ 0, 1, 2, 3 });
+	std::vector<GameController::piece_quantity_type::int_type> not_yet_permutated;
+
+	for (GameController::piece_quantity_type::int_type i = 0; i < GameController::piece_quantity_type::COUNT_ALL_PIECES; ++i) {
+		not_yet_permutated.push_back(i);
+	}
+
+	std::vector<GameController::piece_quantity_type::int_type> colorPermutation = not_yet_permutated;
+
+	if constexpr (GameController::piece_quantity_type::COUNT_ALL_PIECES == 4) {
+		colorPermutation = boardGenerator.obtain_standard_4_coloring_permutation(not_yet_permutated);
+	}
 
 	gameHistory.emplace_back(
 		world,
@@ -124,7 +136,7 @@ void GuiInteractiveController::startGame() {
 
 	++productWorldGenerator;
 
-	current_color_vector = tobor::v1_0::color_vector::get_standard_coloring(4);
+	current_color_vector = tobor::v1_0::color_vector::get_standard_coloring(GameController::piece_quantity_type::COUNT_ALL_PIECES);
 
 	createColorActions();
 
@@ -183,7 +195,7 @@ void GuiInteractiveController::moveBySolver(bool forward)
 
 }
 
-void GuiInteractiveController::setPieceId(const tobor::v1_0::default_piece_id& piece_id) {
+void GuiInteractiveController::setPieceId(const GameController::piece_id_type& piece_id) {
 
 	switch (interactive_mode)
 	{
@@ -223,6 +235,18 @@ void GuiInteractiveController::selectPieceByColorId(const std::size_t& color_id)
 	setPieceId(index);
 }
 
+template<class T, GameController::piece_quantity_type::int_type ... Index_Sequence>
+tobor::v1_0::tobor_graphics<GameController::positions_of_pieces_type>::coloring make_coloring(
+	T& permutated_color_vector,
+	std::integer_sequence<GameController::piece_quantity_type::int_type, Index_Sequence...>
+) {
+	auto coloring = tobor::v1_0::tobor_graphics<GameController::positions_of_pieces_type>::coloring{
+		(permutated_color_vector.colors[Index_Sequence].getSVGColorString()) ...
+	};
+	return coloring;
+}
+
+
 void GuiInteractiveController::refreshSVG()
 {
 	if (interactive_mode == InteractiveMode::GAME_INTERACTIVE || interactive_mode == InteractiveMode::SOLVER_INTERACTIVE_STEPS) {
@@ -233,12 +257,11 @@ void GuiInteractiveController::refreshSVG()
 			permutated_color_vector.colors[i] = current_color_vector.colors[gameHistory.back().colorPermutation[i]];
 		}
 
-		auto coloring = tobor::v1_0::tobor_graphics<GameController::positions_of_pieces_type>::coloring(
-			permutated_color_vector.colors[0].getSVGColorString(),
-			permutated_color_vector.colors[1].getSVGColorString(),
-			permutated_color_vector.colors[2].getSVGColorString(),
-			permutated_color_vector.colors[3].getSVGColorString()
-		);
+		tobor::v1_0::tobor_graphics<GameController::positions_of_pieces_type>::coloring coloring =
+			make_coloring(
+				permutated_color_vector,
+				std::make_integer_sequence<GameController::piece_quantity_type::int_type, GameController::piece_quantity_type::COUNT_ALL_PIECES>{}
+			);
 
 		std::string example_svg_string =
 			tobor::v1_0::tobor_graphics<GameController::positions_of_pieces_type>::draw_tobor_world(
@@ -331,7 +354,7 @@ void GuiInteractiveController::refreshStatusbar() {
 			]
 		].getQColor();
 
-		mainWindow->statusbarItems.setSelectedPiece(current_color);
+			mainWindow->statusbarItems.setSelectedPiece(current_color);
 
 	}
 	else {

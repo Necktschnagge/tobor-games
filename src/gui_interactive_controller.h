@@ -40,9 +40,13 @@ public:
 
 	using cell_id_type = tobor::v1_0::universal_cell_id<world_type>;
 
-	using positions_of_pieces_type = tobor::v1_0::positions_of_pieces<tobor::v1_0::default_pieces_quantity, cell_id_type, false, false>;
+	using piece_quantity_type = tobor::v1_0::pieces_quantity<uint8_t, 1, 7>;
 
-	using piece_move_type = tobor::v1_0::default_piece_move;
+	using piece_id_type = tobor::v1_0::piece_id<piece_quantity_type>;
+
+	using positions_of_pieces_type = tobor::v1_0::positions_of_pieces<piece_quantity_type, cell_id_type, false, false>;
+
+	using piece_move_type = tobor::v1_0::piece_move<piece_id_type>;
 
 	using move_one_piece_calculator_type = tobor::v1_0::move_one_piece_calculator<positions_of_pieces_type, tobor::v1_0::quick_move_cache<world_type>, piece_move_type>;
 
@@ -139,7 +143,7 @@ private:
 					while (!sink_optional_solver_state_graph.value().ps_map.empty()) {
 						sink_optional_solver_state_graph.value().ps_map.erase(sink_optional_solver_state_graph.value().ps_map.begin());
 						if (!do_not_wait_on_lazy_free) {
-							std::this_thread::sleep_for(std::chrono::milliseconds(10));
+							std::this_thread::sleep_for(std::chrono::milliseconds(100));
 						}
 					}
 				}
@@ -148,7 +152,7 @@ private:
 					while (!sink_optional_classified_move_paths.value().empty()) {
 						sink_optional_classified_move_paths.value().erase(sink_optional_classified_move_paths.value().begin());
 						if (!do_not_wait_on_lazy_free) {
-							std::this_thread::sleep_for(std::chrono::milliseconds(10));
+							std::this_thread::sleep_for(std::chrono::milliseconds(100));
 						}
 					}
 				}
@@ -198,7 +202,7 @@ public:
 
 	/* modifying */
 
-	inline void movePiece(const tobor::v1_0::default_piece_id& piece_id, const tobor::v1_0::direction& direction) {
+	inline void movePiece(const piece_id_type& piece_id, const tobor::v1_0::direction& direction) {
 		if (isFinal()) {
 			return;
 		}
@@ -270,7 +274,12 @@ public:
 
 	using board_generator_type = tobor::v1_0::world_generator::original_4_of_16;
 
-	using state_generator_type = tobor::v1_0::world_generator::initial_state_generator<GameController::positions_of_pieces_type, 256, 1, 3, 4>;
+	using state_generator_type = tobor::v1_0::world_generator::initial_state_generator<
+		GameController::positions_of_pieces_type,
+		256,
+		GameController::piece_quantity_type::COUNT_TARGET_PIECES,
+		GameController::piece_quantity_type::COUNT_NON_TARGET_PIECES,
+		4>;
 
 	using product_generator_type = tobor::v1_0::world_generator::product_group_generator<board_generator_type, state_generator_type>;
 
@@ -281,7 +290,7 @@ private:
 
 	std::list<GameController> gameHistory;
 
-	tobor::v1_0::default_piece_id selected_piece_id{ 0 };
+	GameController::piece_id_type selected_piece_id{ 0 };
 
 	product_generator_type productWorldGenerator;
 
@@ -334,7 +343,7 @@ public:
 
 	void moveBySolver(bool forward);
 
-	void setPieceId(const tobor::v1_0::default_piece_id& piece_id);
+	void setPieceId(const GameController::piece_id_type& piece_id);
 
 	void selectPieceByColorId(const std::size_t& color_id);
 
