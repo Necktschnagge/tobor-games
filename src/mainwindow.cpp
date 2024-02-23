@@ -140,35 +140,6 @@ void MainWindow::on_actionTest_ListView_triggered()
 
 }
 
-
-void MainWindow::on_actionRED_triggered()
-{
-	statusBar()->showMessage("RED selected.");
-	guiInteractiveController.setPieceId(0);
-}
-
-
-void MainWindow::on_actionYELLOW_triggered()
-{
-	statusBar()->showMessage("YELLOW selected.");
-	guiInteractiveController.setPieceId(3);
-}
-
-
-void MainWindow::on_actionGREEN_triggered()
-{
-	statusBar()->showMessage("GREEN selected.");
-	guiInteractiveController.setPieceId(1);
-}
-
-
-void MainWindow::on_actionBLUE_triggered()
-{
-	statusBar()->showMessage("BLUE selected.");
-	guiInteractiveController.setPieceId(2);
-}
-
-
 void MainWindow::on_actionNORTH_triggered()
 {
 	statusBar()->showMessage("Went north.");
