@@ -1009,7 +1009,7 @@ namespace tobor {
 
 		}
 
-		template<class Positions_Of_Pieces_Type_T = tobor::v1_0::default_positions_of_pieces>
+		template<class Positions_Of_Pieces_Type_T>
 		class tobor_graphics {
 		public:
 
