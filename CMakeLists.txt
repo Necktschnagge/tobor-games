@@ -83,6 +83,8 @@ else()
 	find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets Svg)
 endif()
 
+find_package(OpenSSL REQUIRED)
+
 
 
 ############### Sources ###############
