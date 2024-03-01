@@ -394,7 +394,7 @@ namespace tobor {
 
 			/* dependent types... */
 
-			using type = state_graph_node<Positions_Of_Pieces_Type>;
+			using type = state_graph_node<Positions_Of_Pieces_Type, Piece_Move_Type>;
 
 			using positions_of_pieces_type = Positions_Of_Pieces_Type;
 

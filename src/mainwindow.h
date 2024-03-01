@@ -94,14 +94,6 @@ private slots:
 
 	void on_actionTest_ListView_triggered();
 
-	void on_actionRED_triggered();
-
-	void on_actionYELLOW_triggered();
-
-	void on_actionGREEN_triggered();
-
-	void on_actionBLUE_triggered();
-
 	void on_actionNORTH_triggered();
 
 	void on_actionEAST_triggered();
