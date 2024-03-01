@@ -90,7 +90,7 @@ else()
 endif()
 
 target_link_libraries(${PROJECT_NAME_LIB} PRIVATE Threads::Threads)
-target_link_libraries(${PROJECT_NAME} OpenSSL::SSL)
+target_link_libraries(${PROJECT_NAME_LIB} OpenSSL::SSL)
 
 
 
