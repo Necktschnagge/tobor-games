@@ -1,4 +1,4 @@
-<svg viewBox="0 0 72 72" xmlns="http://www.w3.org/2000/svg">
+<svg id="emoji" viewBox="0 0 72 72" xmlns="http://www.w3.org/2000/svg">
     <path fill="#aaa" d="M0 0h72v72H0Z"/>
 
     <path fill="#fff" d="M10.9 9.4h50.2V63H10.9Z"/>
