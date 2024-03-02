@@ -37,7 +37,7 @@ else()
 endif()
 
 target_link_libraries(${PROJECT_NAME} PRIVATE Threads::Threads)
-target_link_libraries(${PROJECT_NAME} PRIVATE OpenSSL::SSL)
+target_link_libraries(${PROJECT_NAME} PRIVATE OpenSSL::SSL OpenSSL::Crypto)
 
 
 
@@ -90,7 +90,7 @@ else()
 endif()
 
 target_link_libraries(${PROJECT_NAME_LIB} PUBLIC Threads::Threads)
-target_link_libraries(${PROJECT_NAME_LIB} PUBLIC OpenSSL::SSL)
+target_link_libraries(${PROJECT_NAME_LIB} PUBLIC OpenSSL::SSL OpenSSL::Crypto)
 
 
 
