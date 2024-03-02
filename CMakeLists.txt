@@ -83,7 +83,12 @@ else()
 	find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets Svg)
 endif()
 
+set(OPENSSL_USE_STATIC_LIBS TRUE)
 find_package(OpenSSL REQUIRED)
+
+message("OpenSSL_VERSION: ${OPENSSL_VERSION}")
+message("OpenSSL_INCLUDE_DIR: ${OPENSSL_INCLUDE_DIR}")
+message("OpenSSL_LIBRARIES: ${OPENSSL_LIBRARIES}")
 
 
 
