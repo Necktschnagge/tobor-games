@@ -813,14 +813,14 @@ namespace tobor {
 				const tobor::v1_0::universal_cell_id<world_type>& cell,
 				const std::string& color) = 0;
 
-			virtual ~piece_drawer(){}
+			virtual ~piece_drawer() {}
 		};
 
 
 		template<class WorldType>
 		class duck_piece_drawer : public piece_drawer<WorldType> {
 		public:
-			
+
 			using world_type = WorldType;
 
 			using base_type = piece_drawer<world_type>;
@@ -938,8 +938,8 @@ namespace tobor {
 			using base_type = piece_drawer<world_type>;
 
 		private:
-			
-			double param{ 0.5 };
+
+			double param{ 0.2 };
 
 			inline double weighted_sum(double from, double to) {
 				return (1.0 - param) * from + param * to;
@@ -994,57 +994,57 @@ namespace tobor {
 
 				marker->path_elements.push_back(
 					std::make_shared<svg::svg_path_elements::C<double>>(
-						CENTER_X, CENTER_Y,
-						CENTER_X, CENTER_Y,
+						weighted_sum(CENTER_X, CENTER_X), weighted_sum(CENTER_Y + HALF_CANVAS_Y_SIZE, CENTER_Y),
+						weighted_sum(CENTER_X + COORD_DISTANCE_CORNER,CENTER_X), weighted_sum(CENTER_Y + COORD_DISTANCE_CORNER,CENTER_Y),
 						CENTER_X + COORD_DISTANCE_CORNER, CENTER_Y + COORD_DISTANCE_CORNER
 					)
 				);
 				marker->path_elements.push_back(
 					std::make_shared<svg::svg_path_elements::C<double>>(
-						CENTER_X, CENTER_Y,
-						CENTER_X, CENTER_Y,
+						weighted_sum(CENTER_X + COORD_DISTANCE_CORNER, CENTER_X), weighted_sum(CENTER_Y + COORD_DISTANCE_CORNER, CENTER_Y),
+						weighted_sum(CENTER_X + HALF_CANVAS_X_SIZE, CENTER_X), weighted_sum(CENTER_Y, CENTER_Y),
 						CENTER_X + HALF_CANVAS_X_SIZE, CENTER_Y
 					)
 				);
 				marker->path_elements.push_back(
 					std::make_shared<svg::svg_path_elements::C<double>>(
-						CENTER_X, CENTER_Y,
-						CENTER_X, CENTER_Y,
+						weighted_sum(CENTER_X + HALF_CANVAS_X_SIZE, CENTER_X), weighted_sum(CENTER_Y, CENTER_Y),
+						weighted_sum(CENTER_X + COORD_DISTANCE_CORNER, CENTER_X), weighted_sum(CENTER_Y - COORD_DISTANCE_CORNER, CENTER_Y),
 						CENTER_X + COORD_DISTANCE_CORNER, CENTER_Y - COORD_DISTANCE_CORNER
 					)
 				);
 				marker->path_elements.push_back(
 					std::make_shared<svg::svg_path_elements::C<double>>(
-						CENTER_X, CENTER_Y,
-						CENTER_X, CENTER_Y,
+						weighted_sum(CENTER_X + COORD_DISTANCE_CORNER, CENTER_X), weighted_sum(CENTER_Y - COORD_DISTANCE_CORNER, CENTER_Y),
+						weighted_sum(CENTER_X, CENTER_X), weighted_sum(CENTER_Y - HALF_CANVAS_Y_SIZE, CENTER_Y),
 						CENTER_X, CENTER_Y - HALF_CANVAS_Y_SIZE
 					)
 				);
 				marker->path_elements.push_back(
 					std::make_shared<svg::svg_path_elements::C<double>>(
-						CENTER_X, CENTER_Y,
-						CENTER_X, CENTER_Y,
+						weighted_sum(CENTER_X, CENTER_X), weighted_sum(CENTER_Y - HALF_CANVAS_Y_SIZE, CENTER_Y),
+						weighted_sum(CENTER_X - COORD_DISTANCE_CORNER, CENTER_X), weighted_sum(CENTER_Y - COORD_DISTANCE_CORNER, CENTER_Y),
 						CENTER_X - COORD_DISTANCE_CORNER, CENTER_Y - COORD_DISTANCE_CORNER
 					)
 				);
 				marker->path_elements.push_back(
 					std::make_shared<svg::svg_path_elements::C<double>>(
-						CENTER_X, CENTER_Y,
-						CENTER_X, CENTER_Y,
+						weighted_sum(CENTER_X - COORD_DISTANCE_CORNER, CENTER_X), weighted_sum(CENTER_Y - COORD_DISTANCE_CORNER, CENTER_Y),
+						weighted_sum(CENTER_X - HALF_CANVAS_X_SIZE, CENTER_X), weighted_sum(CENTER_Y, CENTER_Y),
 						CENTER_X - HALF_CANVAS_X_SIZE, CENTER_Y
 					)
 				);
 				marker->path_elements.push_back(
 					std::make_shared<svg::svg_path_elements::C<double>>(
-						CENTER_X, CENTER_Y,
-						CENTER_X, CENTER_Y,
+						weighted_sum(CENTER_X - HALF_CANVAS_X_SIZE, CENTER_X), weighted_sum(CENTER_Y, CENTER_Y),
+						weighted_sum(CENTER_X - COORD_DISTANCE_CORNER, CENTER_X), weighted_sum(CENTER_Y + COORD_DISTANCE_CORNER, CENTER_Y),
 						CENTER_X - COORD_DISTANCE_CORNER, CENTER_Y + COORD_DISTANCE_CORNER
 					)
 				);
 				marker->path_elements.push_back(
 					std::make_shared<svg::svg_path_elements::C<double>>(
-						CENTER_X, CENTER_Y,
-						CENTER_X, CENTER_Y,
+						weighted_sum(CENTER_X - COORD_DISTANCE_CORNER, CENTER_X), weighted_sum(CENTER_Y + COORD_DISTANCE_CORNER, CENTER_Y),
+						weighted_sum(CENTER_X, CENTER_X), weighted_sum(CENTER_Y + HALF_CANVAS_Y_SIZE, CENTER_Y),
 						CENTER_X, CENTER_Y + HALF_CANVAS_Y_SIZE
 					)
 				);
@@ -1091,7 +1091,7 @@ namespace tobor {
 			static_assert(pieces_quantity_type::COUNT_TARGET_PIECES == 1, "Not yet supported: multiple target pieces");
 
 			template<class ...T>
-			inline static std::unique_ptr<svg::svg_generator> draw_duck_piece(
+			[[deprecated]] inline static std::unique_ptr<svg::svg_generator> draw_duck_piece(
 				const tobor::v1_0::tobor_world<T...>& tobor_world,
 				const drawing_style_sheet& dss,
 				const tobor::v1_0::universal_cell_id<tobor::v1_0::tobor_world<T...>>& cell,
@@ -1190,7 +1190,7 @@ namespace tobor {
 
 
 			template<class ...T>
-			inline static std::unique_ptr<svg::svg_generator> draw_star_marker(
+			[[deprecated]] inline static std::unique_ptr<svg::svg_generator> draw_star_marker(
 				const tobor::v1_0::tobor_world<T...>& tobor_world,
 				const drawing_style_sheet& dss,
 				const tobor::v1_0::universal_cell_id<tobor::v1_0::tobor_world<T...>>& cell,
@@ -1313,7 +1313,7 @@ namespace tobor {
 			) {
 				std::unique_ptr<piece_drawer<tobor::v1_0::tobor_world<T...>>> piece_drawer;
 
-				piece_drawer = std::make_unique<duck_piece_drawer<tobor::v1_0::tobor_world<T...>>>();
+				piece_drawer = std::make_unique<ball_piece_drawer<tobor::v1_0::tobor_world<T...>>>();
 
 				(void)_dummy;
 
@@ -1380,6 +1380,7 @@ namespace tobor {
 				const std::vector<cell_id_type>& markers
 				/*, coloring*/
 			) {
+				ball_piece_drawer< tobor::v1_0::tobor_world<T...>> piece_drawer;
 
 				drawing_style_sheet dss;
 
@@ -1387,7 +1388,7 @@ namespace tobor {
 
 				for (const cell_id_type& marker_position : markers) {
 					svg_cell_markers->elements.push_back(
-						draw_star_marker(tw, dss, marker_position, "red")
+						piece_drawer(tw, dss, marker_position, "red")
 					);
 				}
 
