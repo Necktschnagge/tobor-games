@@ -83,6 +83,7 @@ private:
 
 		void createInsideQMenu(MainWindow* mainWindow, QMenu* qMenu);
 
+		QAction* getSelectedShape() const;
 	};
 
 public:
@@ -163,6 +164,8 @@ private:
 private slots:
 
 	void selectPieceByColor(int index);
+
+	void refreshAllInGuiInteractiveController();
 
 };
 

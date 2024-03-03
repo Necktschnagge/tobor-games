@@ -282,6 +282,11 @@ QMenu* MainWindow::getSelectPieceSubMenu() {
 	return ui->menuSelect_Piece;
 }
 
+void MainWindow::refreshAllInGuiInteractiveController()
+{
+	guiInteractiveController.refreshAll();
+}
+
 void MainWindow::selectPieceByColor(int index) {
 	guiInteractiveController.selectPieceByColorId(index); // where to check range correctness? SignalMapper should not fire an int greater than color vector, make some additional check here (or somewhere else?)
 }
@@ -338,12 +343,6 @@ void MainWindow::ShapeSelectionItems::createInsideQMenu(MainWindow* mainWindow, 
 	qMenu->addAction(duck);
 	qMenu->addAction(swan);
 
-	//ball->setText(QCoreApplication::translate("MainWindow", "&Ball", nullptr));
-	//duck->setText(QCoreApplication::translate("MainWindow", "&Duck", nullptr));
-	//swan->setText(QCoreApplication::translate("MainWindow", "&Swan", nullptr));
-
-
-
 	group->addAction(ball);
 	group->addAction(duck);
 	group->addAction(swan);
@@ -351,4 +350,20 @@ void MainWindow::ShapeSelectionItems::createInsideQMenu(MainWindow* mainWindow, 
 	group->setExclusive(true);
 	ball->setChecked(true);
 
+	QObject::connect(group, &QActionGroup::triggered, mainWindow, &MainWindow::refreshAllInGuiInteractiveController, Qt::AutoConnection);
+
+}
+
+QAction* MainWindow::ShapeSelectionItems::getSelectedShape() const {
+	if (ball->isChecked()) {
+		return ball;
+	}
+	if (duck->isChecked()) {
+		return duck;
+	}
+	if (swan->isChecked()) {
+		return swan;
+	}
+	ball->setChecked(true);
+	return ball;
 }

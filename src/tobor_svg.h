@@ -995,7 +995,7 @@ namespace tobor {
 				marker->path_elements.push_back(
 					std::make_shared<svg::svg_path_elements::C<double>>(
 						weighted_sum(CENTER_X, CENTER_X), weighted_sum(CENTER_Y + HALF_CANVAS_Y_SIZE, CENTER_Y),
-						weighted_sum(CENTER_X + COORD_DISTANCE_CORNER,CENTER_X), weighted_sum(CENTER_Y + COORD_DISTANCE_CORNER,CENTER_Y),
+						weighted_sum(CENTER_X + COORD_DISTANCE_CORNER, CENTER_X), weighted_sum(CENTER_Y + COORD_DISTANCE_CORNER, CENTER_Y),
 						CENTER_X + COORD_DISTANCE_CORNER, CENTER_Y + COORD_DISTANCE_CORNER
 					)
 				);
@@ -1084,8 +1084,9 @@ namespace tobor {
 				}
 			};
 
-			enum class piece_shape {
-
+			enum class piece_shape_selection {
+				BALL,
+				DUCK
 			};
 
 			static_assert(pieces_quantity_type::COUNT_TARGET_PIECES == 1, "Not yet supported: multiple target pieces");
@@ -1096,13 +1097,18 @@ namespace tobor {
 				const positions_of_pieces_type& pop,
 				const cell_id_type& target_cell,
 				const coloring& c,
-				int _dummy
+				piece_shape_selection shape
 			) {
 				std::unique_ptr<piece_drawer<tobor::v1_0::tobor_world<T...>>> piece_drawer;
-
-				piece_drawer = std::make_unique<ball_piece_drawer<tobor::v1_0::tobor_world<T...>>>();
-
-				(void)_dummy;
+				if (shape == piece_shape_selection::BALL) {
+					piece_drawer = std::make_unique<ball_piece_drawer<tobor::v1_0::tobor_world<T...>>>();
+				}
+				else if (shape == piece_shape_selection::DUCK) {
+					piece_drawer = std::make_unique<duck_piece_drawer<tobor::v1_0::tobor_world<T...>>>();
+				}
+				else {
+					throw std::invalid_argument("Unknown shape in SVG draw process.");
+				}
 
 				drawing_style_sheet dss;
 
