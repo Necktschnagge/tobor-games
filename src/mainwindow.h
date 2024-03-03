@@ -71,6 +71,16 @@ private:
 		void setSelectedPiece(const QColor& c);
 	};
 
+	class ShapeSelectionItems {
+	public:
+
+		QAction* ball;
+		QAction* duck;
+		QAction* swan;
+
+		void createInsideQMenu(MainWindow* mainWindow, QMenu* qMenu);
+
+	};
 
 public:
 
@@ -123,6 +133,8 @@ private:
 	SvgViewToolchain svgViewToolchain;
 
 	StatusbarItems statusbarItems;
+
+	ShapeSelectionItems shapeSelectionItems;
 
 	std::vector<QMetaObject::Connection> inputConnections;
 

@@ -164,15 +164,12 @@
         <property name="title">
           <string>&amp;View</string>
         </property>
+        <widget class="QMenu" name="menuPieces">
+          <property name="title">
+            <string>&amp;Pieces...</string>
+          </property>
+        </widget>
         <addaction name="menuPieces"/>
-      </widget>
-      <widget class="QMenu" name="menuPieces">
-        <property name="title">
-          <string>&amp;Pieces...</string>
-        </property>
-        <addaction name="actionBall"/>
-        <addaction name="actionDuck"/>
-        <addaction name="actionSwan"/>
       </widget>
       <widget class="QMenu" name="menuHelp">
         <property name="title">
@@ -359,39 +356,6 @@
       </property>
       <property name="shortcut">
         <string>F10</string>
-      </property>
-    </action>
-    <action name="actionBall">
-      <property name="enabled">
-        <bool>true</bool>
-      </property>
-      <property name="checkable">
-        <bool>true</bool>
-      </property>
-      <property name="text">
-        <string>&amp;Ball</string>
-      </property>
-    </action>
-    <action name="actionDuck">
-      <property name="enabled">
-        <bool>true</bool>
-      </property>
-      <property name="checkable">
-        <bool>true</bool>
-      </property>
-      <property name="text">
-        <string>&amp;Duck</string>
-      </property>
-    </action>
-    <action name="actionSwan">
-      <property name="enabled">
-        <bool>false</bool>
-      </property>
-      <property name="checkable">
-        <bool>true</bool>
-      </property>
-      <property name="text">
-        <string>&amp;Swan</string>
       </property>
     </action>
     <action name="actionLicense_Information">

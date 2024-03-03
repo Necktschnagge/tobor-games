@@ -35,6 +35,8 @@ MainWindow::MainWindow(QWidget* parent)
 	ui->setupUi(this);
 	statusbarItems.init(ui->statusbar);
 
+	shapeSelectionItems.createInsideQMenu(this, ui->menuPieces);
+
 	guiInteractiveController.refreshAll();
 
 	signalMapper = new QSignalMapper(this);
@@ -307,4 +309,32 @@ inline void menu_recursion(QMenu_OR_QMenuBar* m) {
 void MainWindow::on_actionEnableAllMenuBarItems_triggered()
 {
 	menu_recursion(ui->menubar);
+}
+
+void MainWindow::ShapeSelectionItems::createInsideQMenu(MainWindow* mainWindow, QMenu* qMenu) {
+	(void)mainWindow;
+
+	ball = new QAction(qMenu);
+	duck = new QAction(qMenu);
+	swan = new QAction(qMenu);
+
+	ball->setObjectName("actionBall");
+	duck->setObjectName("actionDuck");
+	swan->setObjectName("actionSwan");
+	swan->setEnabled(false);
+
+
+	ball->setText(QString("&Ball"));
+	duck->setText(QString("&Duck"));
+	swan->setText(QString("&Swan"));
+
+	qMenu->addAction(ball);
+	qMenu->addAction(duck);
+	qMenu->addAction(swan);
+
+	//ball->setText(QCoreApplication::translate("MainWindow", "&Ball", nullptr));
+	//duck->setText(QCoreApplication::translate("MainWindow", "&Duck", nullptr));
+	//swan->setText(QCoreApplication::translate("MainWindow", "&Swan", nullptr));
+
+
 }
