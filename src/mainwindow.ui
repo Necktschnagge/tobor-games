@@ -166,11 +166,6 @@
         </property>
         <addaction name="menuPieces"/>
       </widget>
-      <widget class="QActionGroup" name="actionGroupShapes">
-        <addaction name="actionBall"/>
-        <addaction name="actionDuck"/>
-        <addaction name="actionSwan"/>
-      </widget>
       <widget class="QMenu" name="menuPieces">
         <property name="title">
           <string>&amp;Pieces...</string>
