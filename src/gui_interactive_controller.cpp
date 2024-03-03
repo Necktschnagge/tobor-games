@@ -249,6 +249,8 @@ tobor::v1_0::tobor_graphics<GameController::positions_of_pieces_type>::coloring 
 
 void GuiInteractiveController::refreshSVG()
 {
+	using graphics = tobor::v1_0::tobor_graphics<GameController::positions_of_pieces_type>;
+
 	if (interactive_mode == InteractiveMode::GAME_INTERACTIVE || interactive_mode == InteractiveMode::SOLVER_INTERACTIVE_STEPS) {
 
 		auto permutated_color_vector = current_color_vector;
@@ -257,18 +259,26 @@ void GuiInteractiveController::refreshSVG()
 			permutated_color_vector.colors[i] = current_color_vector.colors[gameHistory.back().colorPermutation[i]];
 		}
 
-		tobor::v1_0::tobor_graphics<GameController::positions_of_pieces_type>::coloring coloring =
+		graphics::coloring coloring =
 			make_coloring(
 				permutated_color_vector,
 				std::make_integer_sequence<GameController::piece_quantity_type::int_type, GameController::piece_quantity_type::COUNT_ALL_PIECES>{}
 			);
 
+		graphics::piece_shape_selection shape{ graphics::piece_shape_selection::BALL};
+
+		if (mainWindow->shapeSelectionItems.getSelectedShape() == mainWindow->shapeSelectionItems.duck) {
+			shape = graphics::piece_shape_selection::DUCK;
+		}
+		// else default ball.
+
 		std::string example_svg_string =
-			tobor::v1_0::tobor_graphics<GameController::positions_of_pieces_type>::draw_tobor_world(
+			graphics::draw_tobor_world(
 				gameHistory.back().tobor_world,
 				gameHistory.back().path.back(),
 				gameHistory.back().target_cell,
-				coloring
+				coloring,
+				shape
 			);
 
 		mainWindow->viewSvgInMainView(example_svg_string);
