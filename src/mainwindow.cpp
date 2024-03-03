@@ -347,7 +347,8 @@ void MainWindow::ShapeSelectionItems::createInsideQMenu(MainWindow* mainWindow, 
 	group->addAction(ball);
 	group->addAction(duck);
 	group->addAction(swan);
-	group->setExclusionPolicy(QActionGroup::ExclusionPolicy::Exclusive);
+	//group->setExclusionPolicy(QActionGroup::ExclusionPolicy::Exclusive); not available on older Qt5 versions. :(
+	group->setExclusive(true);
 	ball->setChecked(true);
 
 }
