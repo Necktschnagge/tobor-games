@@ -14,6 +14,7 @@
 #include <QGraphicsScene>
 #include <QLabel>
 #include <QSignalMapper>
+#include <QActionGroup> 
 
 #include <memory>
 
@@ -77,6 +78,8 @@ private:
 		QAction* ball;
 		QAction* duck;
 		QAction* swan;
+
+		QActionGroup* group;
 
 		void createInsideQMenu(MainWindow* mainWindow, QMenu* qMenu);
 

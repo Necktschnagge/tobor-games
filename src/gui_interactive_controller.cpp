@@ -263,12 +263,15 @@ void GuiInteractiveController::refreshSVG()
 				std::make_integer_sequence<GameController::piece_quantity_type::int_type, GameController::piece_quantity_type::COUNT_ALL_PIECES>{}
 			);
 
+
+
 		std::string example_svg_string =
 			tobor::v1_0::tobor_graphics<GameController::positions_of_pieces_type>::draw_tobor_world(
 				gameHistory.back().tobor_world,
 				gameHistory.back().path.back(),
 				gameHistory.back().target_cell,
-				coloring
+				coloring,
+				0
 			);
 
 		mainWindow->viewSvgInMainView(example_svg_string);

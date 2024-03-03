@@ -314,6 +314,8 @@ void MainWindow::on_actionEnableAllMenuBarItems_triggered()
 void MainWindow::ShapeSelectionItems::createInsideQMenu(MainWindow* mainWindow, QMenu* qMenu) {
 	(void)mainWindow;
 
+	group = new QActionGroup(qMenu);
+
 	ball = new QAction(qMenu);
 	duck = new QAction(qMenu);
 	swan = new QAction(qMenu);
@@ -328,6 +330,10 @@ void MainWindow::ShapeSelectionItems::createInsideQMenu(MainWindow* mainWindow, 
 	duck->setText(QString("&Duck"));
 	swan->setText(QString("&Swan"));
 
+	ball->setCheckable(true);
+	duck->setCheckable(true);
+	swan->setCheckable(true);
+
 	qMenu->addAction(ball);
 	qMenu->addAction(duck);
 	qMenu->addAction(swan);
@@ -336,5 +342,12 @@ void MainWindow::ShapeSelectionItems::createInsideQMenu(MainWindow* mainWindow, 
 	//duck->setText(QCoreApplication::translate("MainWindow", "&Duck", nullptr));
 	//swan->setText(QCoreApplication::translate("MainWindow", "&Swan", nullptr));
 
+
+
+	group->addAction(ball);
+	group->addAction(duck);
+	group->addAction(swan);
+	group->setExclusionPolicy(QActionGroup::ExclusionPolicy::Exclusive);
+	ball->setChecked(true);
 
 }
