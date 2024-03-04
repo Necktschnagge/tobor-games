@@ -7,12 +7,12 @@ Tobor is an implementation of the game [Ricochet Robots](https://en.wikipedia.or
 ![grafik](https://github.com/Necktschnagge/tobor-games/assets/22790899/705700d6-eabc-4a73-827a-fc3a9c263258)
 
 ### Rules
-The goal of the game is to move the target piece (*here the the green ball*) to the target cell of the board (*here the cell painted in green*) within the smallest amount of steps you can find.
+The goal of the game is to move the target piece (*here the green ball*) to the target cell on the board (*here the cell painted in green*) within the smallest amount of steps you can find.
 You may move the target piece or any other piece too.
 Pieces move in one of the four directions *NORTH, EAST, SOUTH, WEST*.
-However in one step the always move as far as they can until hitting any obstacles.
-In this sense, other pieces as well as walls ar ethe obstacles on the board.
-One move in one direction is getting countet as a step.
+However in one step a piece always moves as far as possible until hitting any obstacle.
+Obstacles on the board are walls on the one hand and other pieces on the other hand.
+One move in one direction is countet as a step.
 The steps of all pieces are summed together to obtain the total number of steps needed.
 
 So in the example screenshot above, an optimal solution would be to move the blue piece to the east, followed by the green piece to the south and to the west.
