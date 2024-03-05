@@ -123,10 +123,6 @@
           <property name="title">
             <string>Select &amp;Piece...</string>
           </property>
-          <addaction name="actionRED"/>
-          <addaction name="actionYELLOW"/>
-          <addaction name="actionGREEN"/>
-          <addaction name="actionBLUE"/>
         </widget>
         <widget class="QMenu" name="menuMove">
           <property name="title">
@@ -162,6 +158,18 @@
         </property>
         <addaction name="actionAbout"/>
         <addaction name="actionHighlightGeneratedTargetCells"/>
+        <addaction name="actionEnableAllMenuBarItems"/>
+      </widget>
+      <widget class="QMenu" name="menuView">
+        <property name="title">
+          <string>&amp;View</string>
+        </property>
+        <widget class="QMenu" name="menuPieces">
+          <property name="title">
+            <string>&amp;Pieces...</string>
+          </property>
+        </widget>
+        <addaction name="menuPieces"/>
       </widget>
       <widget class="QMenu" name="menuHelp">
         <property name="title">
@@ -174,6 +182,7 @@
       <addaction name="menuEdit"/>
       <addaction name="menuDeveloper"/>
       <addaction name="menuGame"/>
+      <addaction name="menuView"/>
       <addaction name="menuHelp"/>
     </widget>
     <widget class="QStatusBar" name="statusbar"/>
@@ -234,56 +243,20 @@
         <string>&amp;Highlight generated target cells</string>
       </property>
     </action>
+    <action name="actionEnableAllMenuBarItems">
+      <property name="enabled">
+        <bool>true</bool>
+      </property>
+      <property name="text">
+        <string>&amp;Enable all MenuBar items</string>
+      </property>
+    </action>
     <action name="actionTest_ListView">
       <property name="enabled">
         <bool>false</bool>
       </property>
       <property name="text">
         <string>Test ListView</string>
-      </property>
-    </action>
-    <action name="actionRED">
-      <property name="enabled">
-        <bool>true</bool>
-      </property>
-      <property name="text">
-        <string>&amp;RED</string>
-      </property>
-      <property name="shortcut">
-        <string>Ctrl+R</string>
-      </property>
-    </action>
-    <action name="actionYELLOW">
-      <property name="enabled">
-        <bool>true</bool>
-      </property>
-      <property name="text">
-        <string>&amp;YELLOW</string>
-      </property>
-      <property name="shortcut">
-        <string>Ctrl+Y</string>
-      </property>
-    </action>
-    <action name="actionGREEN">
-      <property name="enabled">
-        <bool>true</bool>
-      </property>
-      <property name="text">
-        <string>&amp;GREEN</string>
-      </property>
-      <property name="shortcut">
-        <string>Ctrl+G</string>
-      </property>
-    </action>
-    <action name="actionBLUE">
-      <property name="enabled">
-        <bool>true</bool>
-      </property>
-      <property name="text">
-        <string>&amp;BLUE</string>
-      </property>
-      <property name="shortcut">
-        <string>Ctrl+B</string>
       </property>
     </action>
     <action name="actionNORTH">

@@ -3,6 +3,8 @@
 #define MAINWINDOW_H
 
 #include "gui_interactive_controller.h"
+#include "key_event_filter.h"
+
 
 
 #include <QMainWindow>
@@ -11,6 +13,8 @@
 #include <QKeyEvent>
 #include <QGraphicsScene>
 #include <QLabel>
+#include <QSignalMapper>
+#include <QActionGroup> 
 
 #include <memory>
 
@@ -49,6 +53,8 @@ private:
 	class StatusbarItems {
 	public:
 
+		static constexpr int QUADRATIC_COLOR_LABEL_SIZE{ 15 };
+
 		QLabel* stepsKey;
 		QLabel* stepsValue;
 
@@ -61,11 +67,23 @@ private:
 		QLabel* pieceSelectedKey; // "[colored square]" current selected piece's color
 		QLabel* pieceSelectedValue;
 
-		QGraphicsView* colorSquare;
-
-		SvgViewToolchain svgC;
-
 		void init(QStatusBar* statusbar);
+
+		void setSelectedPiece(const QColor& c);
+	};
+
+	class ShapeSelectionItems {
+	public:
+
+		QAction* ball;
+		QAction* duck;
+		QAction* swan;
+
+		QActionGroup* group;
+
+		void createInsideQMenu(MainWindow* mainWindow, QMenu* qMenu);
+
+		QAction* getSelectedShape() const;
 	};
 
 public:
@@ -78,6 +96,8 @@ private slots:
 
 	void on_actionHighlightGeneratedTargetCells_triggered();
 
+	void on_actionEnableAllMenuBarItems_triggered();
+
 	void on_actionAbout_triggered();
 
 	void on_actionNewGame_triggered();
@@ -87,14 +107,6 @@ private slots:
 	void on_actionMoveBack_triggered();
 
 	void on_actionTest_ListView_triggered();
-
-	void on_actionRED_triggered();
-
-	void on_actionYELLOW_triggered();
-
-	void on_actionGREEN_triggered();
-
-	void on_actionBLUE_triggered();
 
 	void on_actionNORTH_triggered();
 
@@ -120,10 +132,19 @@ private:
 	Ui::MainWindow* ui;
 	GuiInteractiveController guiInteractiveController;
 	friend class GuiInteractiveController;
+	friend class ControlKeyEventAgent;
 
 	SvgViewToolchain svgViewToolchain;
 
 	StatusbarItems statusbarItems;
+
+	ShapeSelectionItems shapeSelectionItems;
+
+	std::vector<QMetaObject::Connection> inputConnections;
+
+	QSignalMapper* signalMapper;
+
+	ControlKeyEventAgent controlKeyEventAgent;
 
 	void viewSvgInMainView(const QString& svg_string);
 
@@ -131,9 +152,20 @@ private:
 		return viewSvgInMainView(QString::fromStdString(svg_string));
 	}
 
+	QMenu* getSelectPieceSubMenu();
 
-protected:
-	void keyPressEvent(QKeyEvent* e);
+	void disconnectInputConnections() {
+		for (QMetaObject::Connection& c : inputConnections) {
+			QObject::disconnect(c);
+		}
+		inputConnections.clear();
+	}
+
+private slots:
+
+	void selectPieceByColor(int index);
+
+	void refreshAllInGuiInteractiveController();
 
 };
 

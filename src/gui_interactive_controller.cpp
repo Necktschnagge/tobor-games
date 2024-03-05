@@ -7,6 +7,7 @@
 #include "./ui_mainwindow.h"
 
 #include <QStringListModel>
+
 #include "tobor_svg.h" // has to be reordered!
 
 #include <stdexcept>
@@ -16,7 +17,8 @@
 *	is deprecated, just for development and debugging
 */
 void GuiInteractiveController::startReferenceGame22() {
-
+	throw 4;
+#if false
 	interactive_mode = InteractiveMode::GAME_INTERACTIVE;
 
 	auto world = GameController::world_type(16, 16);
@@ -76,10 +78,12 @@ void GuiInteractiveController::startReferenceGame22() {
 				GameController::cell_id_type::create_by_coordinates(12,15, world)
 			}
 		),
-		GameController::cell_id_type::create_by_coordinates(9, 3, world)
+		GameController::cell_id_type::create_by_coordinates(9, 3, world),
+		std::vector<uint8_t>{ 0, 1, 2, 3 }
 	);
 
 	refreshAll();
+#endif
 
 }
 
@@ -111,18 +115,69 @@ void GuiInteractiveController::startGame() {
 
 	auto target = boardGenerator.get_target_cell();
 
+	std::vector<GameController::piece_quantity_type::int_type> not_yet_permutated;
+
+	for (GameController::piece_quantity_type::int_type i = 0; i < GameController::piece_quantity_type::COUNT_ALL_PIECES; ++i) {
+		not_yet_permutated.push_back(i);
+	}
+
+	std::vector<GameController::piece_quantity_type::int_type> colorPermutation = not_yet_permutated;
+
+	if constexpr (GameController::piece_quantity_type::COUNT_ALL_PIECES == 4) {
+		colorPermutation = boardGenerator.obtain_standard_4_coloring_permutation(not_yet_permutated);
+	}
+
 	gameHistory.emplace_back(
 		world,
 		initialStateGenerator.get_positions_of_pieces(world),
-		target
+		target,
+		colorPermutation
 	);
 
 	++productWorldGenerator;
 
+	current_color_vector = tobor::v1_0::color_vector::get_standard_coloring(GameController::piece_quantity_type::COUNT_ALL_PIECES);
+
+	createColorActions();
+
 	refreshAll();
 }
 
+
+void GuiInteractiveController::createColorActions()
+{
+
+	QMenu* sub = mainWindow->getSelectPieceSubMenu();
+
+	sub->clear();
+	// actions are deleted,
+	// according to QSignalMapper's docs, the map entries for these objects will be deleted on their destruction.
+
+
+	for (std::size_t i = 0; i < current_color_vector.colors.size(); ++i) {
+
+		auto action = sub->addAction(
+			current_color_vector.colors[i].UPPERCASE_display_string_with_underscore()
+		);
+		// TODO need to add shortcuts (?) STRG+R ...
+
+		mainWindow->inputConnections.push_back(
+			QObject::connect(action, &QAction::triggered, mainWindow->signalMapper, qOverload<>(&QSignalMapper::map), Qt::AutoConnection)
+		);
+		//QObject::connect(action, &QAction::triggered, mainWindow->signalMapper, static_cast<void (QSignalMapper::*)()>(&QSignalMapper::map), Qt::AutoConnection);
+
+		mainWindow->signalMapper->setMapping(action, static_cast<int>(i));
+	}
+}
+
 void GuiInteractiveController::stopGame() {
+
+	mainWindow->statusbarItems.setSelectedPiece(Qt::darkGray);
+
+	mainWindow->disconnectInputConnections();
+
+	mainWindow->getSelectPieceSubMenu()->clear();
+
 
 	if (interactive_mode == InteractiveMode::NO_GAME) {
 		return showErrorDialog("This action should not be available.");
@@ -140,7 +195,7 @@ void GuiInteractiveController::moveBySolver(bool forward)
 
 }
 
-void GuiInteractiveController::setPieceId(const tobor::v1_0::default_piece_id& piece_id) {
+void GuiInteractiveController::setPieceId(const GameController::piece_id_type& piece_id) {
 
 	switch (interactive_mode)
 	{
@@ -161,24 +216,69 @@ void GuiInteractiveController::setPieceId(const tobor::v1_0::default_piece_id& p
 		break;
 	}
 
+	refreshStatusbar();
 }
+
+void GuiInteractiveController::selectPieceByColorId(const std::size_t& color_id)
+{
+	auto iter = std::find(
+		gameHistory.back().colorPermutation.cbegin(),
+		gameHistory.back().colorPermutation.cend(),
+		color_id
+	);
+
+	const typename decltype(iter)::difference_type index{ iter - gameHistory.back().colorPermutation.cbegin() };
+
+	if (iter == gameHistory.back().colorPermutation.cend())
+		throw std::logic_error("Illegal color_id.");
+
+	setPieceId(index);
+}
+
+template<class T, GameController::piece_quantity_type::int_type ... Index_Sequence>
+tobor::v1_0::tobor_graphics<GameController::positions_of_pieces_type>::coloring make_coloring(
+	T& permutated_color_vector,
+	std::integer_sequence<GameController::piece_quantity_type::int_type, Index_Sequence...>
+) {
+	auto coloring = tobor::v1_0::tobor_graphics<GameController::positions_of_pieces_type>::coloring{
+		(permutated_color_vector.colors[Index_Sequence].getSVGColorString()) ...
+	};
+	return coloring;
+}
+
 
 void GuiInteractiveController::refreshSVG()
 {
+	using graphics = tobor::v1_0::tobor_graphics<GameController::positions_of_pieces_type>;
+
 	if (interactive_mode == InteractiveMode::GAME_INTERACTIVE || interactive_mode == InteractiveMode::SOLVER_INTERACTIVE_STEPS) {
 
-		auto coloring = tobor::v1_0::tobor_graphics<GameController::positions_of_pieces_type>::coloring("red", "green", "blue", "yellow");
+		auto permutated_color_vector = current_color_vector;
 
-		// coloring = originalGenerator.obtain_standard_4_coloring_permutation(coloring.colors);
-		// we also have to permutate the selected (user input) color!
-		// Otherwise choosing the yellow duck e.g. moves the blue duck.
+		for (std::size_t i{ 0 }; i < current_color_vector.colors.size(); ++i) {
+			permutated_color_vector.colors[i] = current_color_vector.colors[gameHistory.back().colorPermutation[i]];
+		}
+
+		graphics::coloring coloring =
+			make_coloring(
+				permutated_color_vector,
+				std::make_integer_sequence<GameController::piece_quantity_type::int_type, GameController::piece_quantity_type::COUNT_ALL_PIECES>{}
+			);
+
+		graphics::piece_shape_selection shape{ graphics::piece_shape_selection::BALL};
+
+		if (mainWindow->shapeSelectionItems.getSelectedShape() == mainWindow->shapeSelectionItems.duck) {
+			shape = graphics::piece_shape_selection::DUCK;
+		}
+		// else default ball.
 
 		std::string example_svg_string =
-			tobor::v1_0::tobor_graphics<GameController::positions_of_pieces_type>::draw_tobor_world(
+			graphics::draw_tobor_world(
 				gameHistory.back().tobor_world,
 				gameHistory.back().path.back(),
 				gameHistory.back().target_cell,
-				coloring
+				coloring,
+				shape
 			);
 
 		mainWindow->viewSvgInMainView(example_svg_string);
@@ -256,35 +356,19 @@ void GuiInteractiveController::refreshMenuButtonEnable()
 
 void GuiInteractiveController::refreshStatusbar() {
 
-	// may be initial, not updated everytime:
-
-	MainWindow::SvgViewToolchain new_chain; // this data type aggregates more member data than enough.
-
-	new_chain.q_graphics_scene = std::make_unique<QGraphicsScene>();
-	// currently we do not show the SVG inside the graphicsScene
-
-	mainWindow->statusbarItems.colorSquare->setScene(new_chain.q_graphics_scene.get()); // does not take ownership
-	mainWindow->statusbarItems.colorSquare->fitInView(new_chain.q_graphics_scene.get()->sceneRect(), Qt::IgnoreAspectRatio);
-	mainWindow->statusbarItems.colorSquare->show();
-
-	mainWindow->statusbarItems.svgC = std::move(new_chain); // then destroy old objects in reverse order compared to construction...
-
 	if (interactive_mode == InteractiveMode::GAME_INTERACTIVE || interactive_mode == InteractiveMode::SOLVER_INTERACTIVE_STEPS) {
 
-		int r{ 240 };
-		int g{ 20 };
-		int b{ 50 };
+		auto current_color = current_color_vector.colors[
+			gameHistory.back().colorPermutation[
+				selected_piece_id.value
+			]
+		].getQColor();
 
-		auto color = QColor(r, g, b);
-
-		auto brush = QBrush(color);
-
-		mainWindow->statusbarItems.colorSquare->setBackgroundBrush(brush);
+			mainWindow->statusbarItems.setSelectedPiece(current_color);
 
 	}
 	else {
-
-		mainWindow->statusbarItems.colorSquare->setBackgroundBrush(Qt::white);
+		mainWindow->statusbarItems.setSelectedPiece(Qt::darkGray);
 	}
 
 	refreshNumberOfSteps();
@@ -407,6 +491,12 @@ void GuiInteractiveController::viewSolutionPaths() // this has to be improved!!!
 
 	std::size_t goal_counter{ 0 };
 
+	auto permutated_color_vector = current_color_vector;
+
+	for (std::size_t i{ 0 }; i < current_color_vector.colors.size(); ++i) {
+		permutated_color_vector.colors[i] = current_color_vector.colors[gameHistory.back().colorPermutation[i]];
+	}
+
 	for (const auto& pair : gameHistory.back().optional_classified_move_paths.value()) {
 		//const auto& goal_state{ pair.first };
 		const auto& equivalence_classes{ pair.second };
@@ -417,8 +507,10 @@ void GuiInteractiveController::viewSolutionPaths() // this has to be improved!!!
 			s = s + QString::number(i) + ": ";
 			for (const GameController::piece_move_type& m : equivalence_classes[i][0].vector()) {
 
-				std::string color = "RGBY";
-				color = color.substr(m.pid.value, 1); // this is not okay. we need to properly use the coloring array.
+				const char letter{ permutated_color_vector.colors[m.pid.value].UPPERCASE_shortcut_letter() };
+
+
+				std::string color = std::string(1, letter);
 				// please check #69 so that we may include tobor svg in this file's corresponding header to define coloring there....
 
 				// the solution might be a "global" fixed coloring with full words and with Letter, 

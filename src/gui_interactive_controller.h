@@ -5,6 +5,7 @@ class GameController; // to be removed! ps_map is private, this is needed for fr
 #include "solver.h" // ..., tobor::v1_0::tobor_world
 
 #include "world_generator.h"
+#include "color_generator.h"
 
 // #include "tobor_svg.h" produces error
 
@@ -39,9 +40,13 @@ public:
 
 	using cell_id_type = tobor::v1_0::universal_cell_id<world_type>;
 
-	using positions_of_pieces_type = tobor::v1_0::positions_of_pieces<tobor::v1_0::default_pieces_quantity, cell_id_type, false, false>;
+	using piece_quantity_type = tobor::v1_0::pieces_quantity<uint8_t, 1, 3>;
 
-	using piece_move_type = tobor::v1_0::default_piece_move;
+	using piece_id_type = tobor::v1_0::piece_id<piece_quantity_type>;
+
+	using positions_of_pieces_type = tobor::v1_0::positions_of_pieces<piece_quantity_type, cell_id_type, false, false>;
+
+	using piece_move_type = tobor::v1_0::piece_move<piece_id_type>;
 
 	using move_one_piece_calculator_type = tobor::v1_0::move_one_piece_calculator<positions_of_pieces_type, tobor::v1_0::quick_move_cache<world_type>, piece_move_type>;
 
@@ -83,6 +88,8 @@ private:
 	> optional_classified_move_paths;
 
 	std::size_t selected_solution_index;
+
+	std::vector<uint8_t> colorPermutation;
 
 	static constexpr bool DEFAULT_DO_NOT_WAIT_ON_LAZY_FREE{
 #ifdef _DEBUG 
@@ -136,7 +143,7 @@ private:
 					while (!sink_optional_solver_state_graph.value().ps_map.empty()) {
 						sink_optional_solver_state_graph.value().ps_map.erase(sink_optional_solver_state_graph.value().ps_map.begin());
 						if (!do_not_wait_on_lazy_free) {
-							std::this_thread::sleep_for(std::chrono::milliseconds(10));
+							std::this_thread::sleep_for(std::chrono::milliseconds(100));
 						}
 					}
 				}
@@ -145,7 +152,7 @@ private:
 					while (!sink_optional_classified_move_paths.value().empty()) {
 						sink_optional_classified_move_paths.value().erase(sink_optional_classified_move_paths.value().begin());
 						if (!do_not_wait_on_lazy_free) {
-							std::this_thread::sleep_for(std::chrono::milliseconds(10));
+							std::this_thread::sleep_for(std::chrono::milliseconds(100));
 						}
 					}
 				}
@@ -159,7 +166,8 @@ public:
 	GameController(
 		const world_type& tobor_world,
 		const positions_of_pieces_type& initial_state,
-		const cell_id_type& target_cell
+		const cell_id_type& target_cell,
+		const std::vector<uint8_t>& colorPermutation
 	) :
 		tobor_world(tobor_world),
 		move_one_piece_calculator(this->tobor_world),
@@ -168,7 +176,8 @@ public:
 		solver_begin_index(0),
 		optional_solver_state_graph(),
 		optional_classified_move_paths(),
-		selected_solution_index(0)
+		selected_solution_index(0),
+		colorPermutation(colorPermutation)
 	{
 
 	}
@@ -193,7 +202,7 @@ public:
 
 	/* modifying */
 
-	inline void movePiece(const tobor::v1_0::default_piece_id& piece_id, const tobor::v1_0::direction& direction) {
+	inline void movePiece(const piece_id_type& piece_id, const tobor::v1_0::direction& direction) {
 		if (isFinal()) {
 			return;
 		}
@@ -256,8 +265,7 @@ public:
 
 class GuiInteractiveController final {
 
-	MainWindow* mainWindow;
-
+public:
 	enum class InteractiveMode {
 		NO_GAME,
 		GAME_INTERACTIVE,
@@ -265,25 +273,36 @@ class GuiInteractiveController final {
 	};
 
 	using board_generator_type = tobor::v1_0::world_generator::original_4_of_16;
-	using state_generator_type = tobor::v1_0::world_generator::initial_state_generator<GameController::positions_of_pieces_type, 256, 1, 3, 4>;
 
+	using state_generator_type = tobor::v1_0::world_generator::initial_state_generator<
+		GameController::positions_of_pieces_type,
+		256,
+		GameController::piece_quantity_type::COUNT_TARGET_PIECES,
+		GameController::piece_quantity_type::COUNT_NON_TARGET_PIECES,
+		4>;
 
 	using product_generator_type = tobor::v1_0::world_generator::product_group_generator<board_generator_type, state_generator_type>;
+
+private:
+	MainWindow* mainWindow;
 
 	InteractiveMode interactive_mode;
 
 	std::list<GameController> gameHistory;
 
-	tobor::v1_0::default_piece_id selected_piece_id{ 0 };
+	GameController::piece_id_type selected_piece_id{ 0 };
 
 	product_generator_type productWorldGenerator;
 
 	std::mt19937 generator;
 
+
 	//tobor::v1_0::tobor_graphics<GameController::positions_of_pieces_type>::coloring coloring = tobor::v1_0::tobor_graphics<GameController::positions_of_pieces_type>::coloring("red", "yellow", "green", "blue");
 	// needs tobor svg include which brings errors...
 
 public:
+
+	tobor::v1_0::color_vector current_color_vector;
 
 	void startReferenceGame22();
 
@@ -312,13 +331,21 @@ public:
 		//productWorldGenerator.main().set_counter(73021);
 	}
 
+	inline InteractiveMode interactiveMode() const {
+		return interactive_mode;
+	}
+
 	void startGame();
+
+	void createColorActions();
 
 	void stopGame();
 
 	void moveBySolver(bool forward);
 
-	void setPieceId(const tobor::v1_0::default_piece_id& piece_id);
+	void setPieceId(const GameController::piece_id_type& piece_id);
+
+	void selectPieceByColorId(const std::size_t& color_id);
 
 	void refreshNumberOfSteps();
 
