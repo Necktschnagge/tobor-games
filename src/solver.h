@@ -583,25 +583,20 @@ namespace tobor {
 			) {
 				// what if initial state is already final? check this! ####
 
-				for (size_type expand_size{ 0 }; expand_size < optimal_solution_size; ++expand_size) {
+				for (size_type expand_index{ 0 }; expand_index < optimal_solution_size; ++expand_index) {
+
+					// condition: visited_game_states.size() == expand_size + 1
+					
+					visited_game_states[expand_index].shrink_to_fit();
 
 					visited_game_states.emplace_back();
-					// possibly invalidates iterators on sub-vectors, but on most compilers it will work anyway.
-					// But please do not rely on this behaviour.
 
-					//if (expand_size != 0) {
-						//visited_game_states[expand_size].shrink_to_fit();
-					visited_game_states[expand_size + 1].reserve(visited_game_states[expand_size].size() * 3 + 100 * expand_size + 10);
-					//}
+					visited_game_states[expand_index + 1].reserve(visited_game_states[expand_index].size() * 3 + 100 * expand_index + 10);
 
-					for (std::size_t iii = 0; iii < visited_game_states[expand_size].size(); ++iii) {
 
-						if (!(iii % 1000)) {
-							auto x = 5;
-							(void)x;
-						}
+					for (std::size_t iii = 0; iii < visited_game_states[expand_index].size(); ++iii) {
 
-						const map_iterator& current_iterator{ visited_game_states[expand_size][iii] };
+						const map_iterator& current_iterator{ visited_game_states[expand_index][iii] };
 
 						std::vector<move_candidate> candidates_for_successor_states; // can be array with fixed size(?)
 
@@ -615,14 +610,25 @@ namespace tobor {
 							}
 						}
 
+						/* order of candidates:
+						 piece 0: N E S E      <- target pieces come first!
+						 piece 1: N E S E
+						 ...
+						 piece last: N E S E
+						*/
+
+
 						// check if reached goal
 						for (
-							typename std::vector<move_candidate>::size_type candidate{ 0 };
-							candidate < static_cast<typename std::vector<move_candidate>::size_type>(4) * positions_of_pieces_type::COUNT_TARGET_PIECES; // only check candidates arising from moved target robots...
-							++candidate
+							typename std::vector<move_candidate>::size_type index_candidate{ 0 };
+							// only check candidates arising from moved target robots:
+							index_candidate < static_cast<typename std::vector<move_candidate>::size_type>(4) * positions_of_pieces_type::COUNT_TARGET_PIECES;
+							++index_candidate
 							)
 						{
-							if (candidates_for_successor_states[candidate].next_cell_paired_enable.first.piece_positions[candidate / 4] == target_cell) {
+							if (candidates_for_successor_states[index_candidate].next_cell_paired_enable.first.piece_positions[index_candidate / 4] == target_cell) {
+								// does not work for sorted final pieces!!
+
 								optimal_solution_size = current_iterator->second.smallest_seen_step_distance_from_initial_state + 1;
 							}
 						}
@@ -661,7 +667,7 @@ namespace tobor {
 									entry_value.optimal_predecessors.emplace_back(current_iterator, c.move); // why not delete old ones?
 									auto& c_pred{ current_iterator->second.count_successors_where_this_is_one_optimal_predecessor };
 									++c_pred;
-									visited_game_states[expand_size + 1].push_back(iter_insertion);
+									visited_game_states[expand_index + 1].push_back(iter_insertion);
 								}
 								else {
 									if (entry_value.smallest_seen_step_distance_from_initial_state == current_iterator->second.smallest_seen_step_distance_from_initial_state + 1) {
@@ -675,6 +681,8 @@ namespace tobor {
 							}
 						}
 					}
+
+					visited_game_states[expand_index + 1].shrink_to_fit();
 
 				}
 			}
