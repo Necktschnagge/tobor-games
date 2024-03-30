@@ -583,20 +583,20 @@ namespace tobor {
 			) {
 				// what if initial state is already final? check this! ####
 
-				for (size_type expand_index{ 0 }; expand_index < optimal_solution_size; ++expand_index) {
+				for (size_type expand_level_index{ 0 }; expand_level_index < optimal_solution_size; ++expand_level_index) {
 
 					// condition: visited_game_states.size() == expand_size + 1
 
-					visited_game_states[expand_index].shrink_to_fit();
+					visited_game_states[expand_level_index].shrink_to_fit();
 
 					visited_game_states.emplace_back();
 
-					visited_game_states[expand_index + 1].reserve(visited_game_states[expand_index].size() * 3 + 100 * expand_index + 10);
+					visited_game_states[expand_level_index + 1].reserve(visited_game_states[expand_level_index].size() * 3 + 100 * expand_level_index + 10);
 
 
-					for (std::size_t iii = 0; iii < visited_game_states[expand_index].size(); ++iii) {
+					for (std::size_t expand_index_inside_level = 0; expand_index_inside_level < visited_game_states[expand_level_index].size(); ++expand_index_inside_level) {
 
-						const map_iterator& current_iterator{ visited_game_states[expand_index][iii] };
+						const map_iterator& current_iterator{ visited_game_states[expand_level_index][expand_index_inside_level] };
 
 						std::vector<move_candidate> candidates_for_successor_states; // can be array with fixed size(?)
 
@@ -650,52 +650,84 @@ namespace tobor {
 						for (auto& c : candidates_for_successor_states) {
 							if (c.next_cell_paired_enable.second) { // there is a real move
 
-								auto& new_state_2 = c.next_cell_paired_enable.first;
+								auto& successor_state = c.next_cell_paired_enable.first;
+
+								auto [iter_insertion, bool_inserted] = ps_map.insert(std::make_pair(successor_state, partial_solutions_map_mapped_type()));
+								// Note: on entry creation default distance from 
 
 
-								/// check this whole comparison again!
-
-								auto [iter_insertion, bool_inserted] = ps_map.insert(std::make_pair(new_state_2, partial_solutions_map_mapped_type()));
+								// iter_insertion is the iterator to the inserted map entry or the one which prevented insertion.
 
 								auto& entry_value{ iter_insertion->second };
-								//auto& entry_key{ iter_insertion->first };
 
-								if (entry_value.smallest_seen_step_distance_from_initial_state > current_iterator->second.smallest_seen_step_distance_from_initial_state + 1) { // check if path to successor state is an optimal one (as far as we have seen)
-									/// ?????????????? if improvement.... only occurs as improving from not seen (=MAX) to some finite value for a distance
+								// check if path to successor state is an optimal one (as far as we have seen):
+								if (
+									current_iterator->second.smallest_seen_step_distance_from_initial_state + 1
+									<
+									entry_value.smallest_seen_step_distance_from_initial_state
+									)
+								{
+									/*
+										This IF is asking whether the current state is now found via a shorter path than before:
+											* We need to do this, if it is possible to find better paths later when a state has already been reached before
+												* This never happens here, since we expand states ordered by their distance from init
+											* We check here because the default distance is some MAX value.
+												* if we find the state for the first time, we compare the optimal distance with the default MAX.
+									*/
 
-									// to make it more efficient: use an .insert(...) get the iterator to newly inserted element.
+									// this whole IF therefore might be replaced by asking for the value of bool_inserted! <<<<<
 
-									// hint: on map entry creation by if condition, steps defaults to MAX value of std::size_t
 
-									// delete all predecessors!
-									//for (const auto& tuple : solutions_map[new_state].predecessors) { // it is always empty because of fifo order of visited_game_states
-									//	--(std::get<0>(tuple)->second.count_successors);
-									//}
-									//solutions_map[new_state].predecessors.clear();
+									/*
+										delete all predecessors -> not needed, because we know vector is empty
+											-> will be needed if we stop relying on the expand-order
+									*/
 
+
+									// set optimal distance seen so far: // here it is assured to be the shortest distance from init:
 									entry_value.smallest_seen_step_distance_from_initial_state = current_iterator->second.smallest_seen_step_distance_from_initial_state + 1;
 
-									entry_value.optimal_predecessors.reserve(16);
 
-									entry_value.optimal_predecessors.emplace_back(current_iterator, c.move); // why not delete old ones?
-									auto& c_pred{ current_iterator->second.count_successors_where_this_is_one_optimal_predecessor };
-									++c_pred;
-									visited_game_states[expand_index + 1].push_back(iter_insertion);
+									// add the current expandee as optimal predecessor:
+									entry_value.optimal_predecessors.reserve(16); // ### if we do not shrink later this consumes more memory than needed.
+									// <<<< we might collect statistics about typical vector sizes.
+									entry_value.optimal_predecessors.emplace_back(current_iterator, c.move);
+
+
+									// ++ optimal successor counter for expandee:
+									++(current_iterator->second.count_successors_where_this_is_one_optimal_predecessor);
+
+
+									// add newly discovered state to the vector of states to expand in the next round:
+									visited_game_states[expand_level_index + 1].push_back(iter_insertion);
 								}
 								else {
-									if (entry_value.smallest_seen_step_distance_from_initial_state == current_iterator->second.smallest_seen_step_distance_from_initial_state + 1) {
-										entry_value.optimal_predecessors.emplace_back(current_iterator, c.move); // can grow to size 9 (why???)
+									if (
+										entry_value.smallest_seen_step_distance_from_initial_state
+										==
+										current_iterator->second.smallest_seen_step_distance_from_initial_state + 1
+										)
+									{
+										/*
+											Check for:
+											* The state has already been found with the same distance from init
+										*/
 
-										auto& c_pred{ current_iterator->second.count_successors_where_this_is_one_optimal_predecessor };
-										++c_pred;
-										// visited_game_states.push_back(solutions_map.find(new_state)); don't add, already added on first path reaching new_state
+
+										// add the current expandee as optimal predecessor:
+										entry_value.optimal_predecessors.emplace_back(current_iterator, c.move);
+
+
+										// ++ optimal successor counter for expandee:
+										++(current_iterator->second.count_successors_where_this_is_one_optimal_predecessor);
+
 									}
 								}
 							}
 						}
 					}
 
-					visited_game_states[expand_index + 1].shrink_to_fit();
+					visited_game_states[expand_level_index + 1].shrink_to_fit();
 
 				}
 			}
