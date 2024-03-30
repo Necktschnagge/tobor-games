@@ -480,7 +480,7 @@ namespace tobor {
 								other_properties.cbegin(),
 								other_properties.cend(),
 								std::string(""),
-								[](std::string& acc, const map::value_type& el) -> std::string {
+								[](const std::string& acc, const map::value_type& el) -> std::string {
 									return acc + " " + el.first + "=" + "\"" + el.second + "\"";
 								});
 							result += std::string("/>");
