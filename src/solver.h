@@ -581,7 +581,10 @@ namespace tobor {
 				move_one_piece_calculator_type& engine,
 				const cell_id_type& target_cell
 			) {
-				// what if initial state is already final? check this! ####
+
+				if (visited_game_states[0][0]->first.is_final(target_cell)) {
+					return;
+				}
 
 				for (size_type expand_level_index{ 0 }; expand_level_index < optimal_solution_size; ++expand_level_index) {
 
