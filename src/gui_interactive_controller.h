@@ -44,7 +44,7 @@ public:
 
 	using piece_id_type = tobor::v1_0::piece_id<piece_quantity_type>;
 
-	using positions_of_pieces_type = tobor::v1_0::positions_of_pieces<piece_quantity_type, cell_id_type, false, false>;
+	using positions_of_pieces_type = tobor::v1_0::positions_of_pieces<piece_quantity_type, cell_id_type, true, true>;
 
 	using piece_move_type = tobor::v1_0::piece_move<piece_id_type>;
 

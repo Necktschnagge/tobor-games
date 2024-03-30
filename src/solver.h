@@ -557,6 +557,11 @@ namespace tobor {
 			}
 
 			inline std::map<positions_of_pieces_type, std::vector<move_path_type>> optimal_paths(const cell_id_type& target_cell) {
+				// rename to optimal_move_paths.
+
+				// are move paths well-defined with color-agnostic states?
+				// -> yes, they are, but certain classification methods may require color-awareness.
+
 
 				std::map<positions_of_pieces_type, std::vector<move_path_type>> result;
 
@@ -564,6 +569,7 @@ namespace tobor {
 
 				for (
 					auto iter = ps_map.begin(); iter != ps_map.end(); ++iter
+					// sub-optimal, we may iterate over a vector of states with distance == optimal distance
 					) {
 					auto& state{ iter->first };
 					if (state.is_final(target_cell)) {
