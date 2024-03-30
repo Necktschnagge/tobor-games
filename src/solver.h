@@ -614,10 +614,10 @@ namespace tobor {
 						}
 
 						/* order of candidates:
-						 piece 0: N E S E      <- target pieces come first!
-						 piece 1: N E S E
+						 piece 0: N E S W      <- target pieces come first!
+						 piece 1: N E S W
 						 ...
-						 piece last: N E S E
+						 piece last: N E S W
 						*/
 
 
