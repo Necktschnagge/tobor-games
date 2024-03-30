@@ -586,7 +586,7 @@ namespace tobor {
 				for (size_type expand_index{ 0 }; expand_index < optimal_solution_size; ++expand_index) {
 
 					// condition: visited_game_states.size() == expand_size + 1
-					
+
 					visited_game_states[expand_index].shrink_to_fit();
 
 					visited_game_states.emplace_back();
@@ -626,10 +626,23 @@ namespace tobor {
 							++index_candidate
 							)
 						{
-							if (candidates_for_successor_states[index_candidate].next_cell_paired_enable.first.piece_positions[index_candidate / 4] == target_cell) {
-								// does not work for sorted final pieces!!
+							constexpr bool IS_SORTED{ positions_of_pieces_type::SORTED_TARGET_PIECES };
 
-								optimal_solution_size = current_iterator->second.smallest_seen_step_distance_from_initial_state + 1;
+							if constexpr (IS_SORTED) {
+								for (typename positions_of_pieces_type::pieces_quantity_type::int_type index_target_piece{ 0 };
+									index_target_piece < positions_of_pieces_type::COUNT_TARGET_PIECES; // ### check again type consistency to be static_assert-ed for this inequation.
+									++index_target_piece)
+								{
+									if (candidates_for_successor_states[index_candidate].next_cell_paired_enable.first.piece_positions[index_target_piece] == target_cell) {
+										optimal_solution_size = current_iterator->second.smallest_seen_step_distance_from_initial_state + 1;
+									}
+								}
+							}
+							else {
+								if (candidates_for_successor_states[index_candidate].next_cell_paired_enable.first.piece_positions[index_candidate / 4] == target_cell) {
+									// does not work for sorted final pieces! In that case we do not know where the moved piece is located.
+									optimal_solution_size = current_iterator->second.smallest_seen_step_distance_from_initial_state + 1;
+								}
 							}
 						}
 
