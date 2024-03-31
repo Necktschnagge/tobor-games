@@ -573,15 +573,11 @@ namespace tobor {
 
 				std::map<positions_of_pieces_type, std::vector<move_path_type>> result;
 
-				//std::vector<positions_of_pieces_type> goal_states;
-
 				for (
 					auto iter = ps_map.begin(); iter != ps_map.end(); ++iter
 					) {
 					auto& state{ iter->first };
 					if (state.is_final(target_cell)) {
-						//goal_states.push_back(state);
-
 						optimal_path_helper_back_to_front(iter, std::back_inserter(result[state]));
 					}
 				}
@@ -648,7 +644,7 @@ namespace tobor {
 
 							if constexpr (positions_of_pieces_type::SORTED_TARGET_PIECES) {
 
-								if (candidates_for_successor_states[index_candidate].next_cell_paired_enable.first.is_final(target_cell)) {
+								if (candidates_for_successor_states[index_candidate].successor_state.is_final(target_cell)) {
 									optimal_solution_size = current_iterator->second.smallest_seen_step_distance_from_initial_state + 1;
 								}
 
