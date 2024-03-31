@@ -601,13 +601,13 @@ void GameController::startSolver(QMainWindow* mw) {
 	// build graph
 	optional_solver_state_graph.emplace(currentState());
 	partial_state_graph_type& graph{ optional_solver_state_graph.value() };
-	graph.build_state_graph_for_all_optimal_solutions(move_one_piece_calculator, target_cell);
+	graph.explore_until_optimal_solution_distance(move_one_piece_calculator, target_cell);
 
 	mw->statusBar()->showMessage("Extracting solution paths...");
 	mw->repaint();
 
 	// optimal paths
-	std::map<positions_of_pieces_type, std::vector<move_path_type>> optimal_paths_map{ graph.optimal_paths(target_cell) };
+	std::map<positions_of_pieces_type, std::vector<move_path_type>> optimal_paths_map{ graph.optimal_move_paths(target_cell) };
 
 	mw->statusBar()->showMessage("Classifying solution paths...");
 	mw->repaint();

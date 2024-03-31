@@ -525,6 +525,25 @@ namespace tobor {
 			// .back() contains all game states to be explored if one deepening step just finished.
 			std::vector<std::vector<map_iterator>> visited_game_states;
 
+			template<class Insert_Iterator>
+			inline void optimal_move_path_helper_back_to_front(map_iterator state, Insert_Iterator destination, const move_path_type& path_suffix = move_path_type()) {
+
+				if (state->second.smallest_seen_step_distance_from_initial_state == 0) {
+					destination = path_suffix;
+				}
+
+				for (auto& tuple : state->second.optimal_predecessors) {
+					
+					auto& predecessor_map_iterator{ std::get<0>(tuple) };
+					auto& move{ std::get<1>(tuple) };
+					move_path_type path(path_suffix.vector().size() + 1);
+					path.vector()[0] = move;
+					std::copy(path_suffix.vector().cbegin(), path_suffix.vector().cend(), path.vector().begin() + 1);
+
+					optimal_move_path_helper_back_to_front(predecessor_map_iterator, destination, path);
+				}
+			}
+
 		public:
 
 			// ### note in case of removing states with no optimal successors, the invalid iterator problem arises.
@@ -549,27 +568,8 @@ namespace tobor {
 
 			inline size_type get_optimal_solution_size() { return optimal_solution_size; };
 
-			template<class Insert_Iterator>
-			inline void optimal_path_helper_back_to_front(map_iterator state, Insert_Iterator destination, const move_path_type& rest_path = move_path_type()) {
 
-				if (state->second.smallest_seen_step_distance_from_initial_state == 0) {
-					destination = rest_path;
-				}
-
-				for (auto& tuple : state->second.optimal_predecessors) {
-					auto& predecessor_map_iterator{ std::get<0>(tuple) };
-					auto& move{ std::get<1>(tuple) };
-					move_path_type path(rest_path.vector().size() + 1);
-					path.vector()[0] = move;
-					std::copy(rest_path.vector().cbegin(), rest_path.vector().cend(), path.vector().begin() + 1);
-
-					optimal_path_helper_back_to_front(predecessor_map_iterator, destination, path);
-				}
-
-
-			}
-
-			inline std::map<positions_of_pieces_type, std::vector<move_path_type>> optimal_paths(const cell_id_type& target_cell) {
+			inline std::map<positions_of_pieces_type, std::vector<move_path_type>> optimal_move_paths(const cell_id_type& target_cell) {
 
 				std::map<positions_of_pieces_type, std::vector<move_path_type>> result;
 
@@ -578,15 +578,13 @@ namespace tobor {
 					) {
 					auto& state{ iter->first };
 					if (state.is_final(target_cell)) {
-						optimal_path_helper_back_to_front(iter, std::back_inserter(result[state]));
+						optimal_move_path_helper_back_to_front(iter, std::back_inserter(result[state]));
 					}
 				}
-
 				return result;
-
 			}
 
-			inline void build_state_graph_for_all_optimal_solutions(
+			inline void explore_until_optimal_solution_distance(
 				move_one_piece_calculator_type& engine,
 				const cell_id_type& target_cell
 			) {
