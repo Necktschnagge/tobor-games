@@ -430,7 +430,7 @@ namespace tobor {
 
 				/** The move consisting of piece_id and direction. */
 				piece_move_type move;
-				
+
 				/** The successor state */
 				positions_of_pieces_type successor_state;
 
@@ -440,7 +440,7 @@ namespace tobor {
 				move_candidate(
 					const piece_move_type& move,
 					const std::pair<positions_of_pieces_type, bool>& n
-				) : 
+				) :
 					move(move),
 					successor_state(n.first),
 					is_true_move(n.second)
@@ -516,7 +516,7 @@ namespace tobor {
 
 
 			// number of steps needed by any optimal solution
-			size_type optimal_solution_size;
+			size_type optimal_path_length;
 
 			// initial state
 			positions_of_pieces_type initial_state;
@@ -533,7 +533,7 @@ namespace tobor {
 				}
 
 				for (auto& tuple : state->second.optimal_predecessors) {
-					
+
 					auto& predecessor_map_iterator{ std::get<0>(tuple) };
 					auto& move{ std::get<1>(tuple) };
 					move_path_type path(path_suffix.vector().size() + 1);
@@ -548,7 +548,7 @@ namespace tobor {
 
 			// ### note in case of removing states with no optimal successors, the invalid iterator problem arises.
 			partial_state_graph(const positions_of_pieces_type& initial_state) :
-				optimal_solution_size(state_graph_node_type::MAX),
+				optimal_path_length(state_graph_node_type::MAX),
 				initial_state(initial_state)
 			{
 				ps_map[initial_state].smallest_seen_step_distance_from_initial_state = 0; // insert initial state into map
@@ -566,16 +566,13 @@ namespace tobor {
 			{
 			}
 
-			inline size_type get_optimal_solution_size() { return optimal_solution_size; };
+			inline size_type get_optimal_solution_size() { return optimal_path_length; };
 
 
 			inline std::map<positions_of_pieces_type, std::vector<move_path_type>> optimal_move_paths(const cell_id_type& target_cell) {
 
 				std::map<positions_of_pieces_type, std::vector<move_path_type>> result;
-
-				for (
-					auto iter = ps_map.begin(); iter != ps_map.end(); ++iter
-					) {
+				for (auto iter = ps_map.begin(); iter != ps_map.end(); ++iter) {
 					auto& state{ iter->first };
 					if (state.is_final(target_cell)) {
 						optimal_move_path_helper_back_to_front(iter, std::back_inserter(result[state]));
@@ -588,12 +585,20 @@ namespace tobor {
 				move_one_piece_calculator_type& engine,
 				const cell_id_type& target_cell
 			) {
+				const size_type SIZE_VISITED_BEFORE{ visited_game_states.size() };
+
+				// condition: SIZE_VISITED_BEFORE == 1 (on first call only)
 
 				if (visited_game_states[0][0]->first.is_final(target_cell)) {
 					return;
 				}
 
-				for (size_type expand_level_index{ 0 }; expand_level_index < optimal_solution_size; ++expand_level_index) {
+				if (SIZE_VISITED_BEFORE > optimal_path_length) {
+					//Already executed exploration before. Any state to be explored whould add states into map beyond the optimal path length
+					return;
+				}
+
+				for (size_type expand_level_index{ SIZE_VISITED_BEFORE - 1 }; expand_level_index < optimal_path_length; ++expand_level_index) {
 
 					// condition: visited_game_states.size() == expand_size + 1
 
@@ -643,14 +648,14 @@ namespace tobor {
 							if constexpr (positions_of_pieces_type::SORTED_TARGET_PIECES) {
 
 								if (candidates_for_successor_states[index_candidate].successor_state.is_final(target_cell)) {
-									optimal_solution_size = current_iterator->second.smallest_seen_step_distance_from_initial_state + 1;
+									optimal_path_length = current_iterator->second.smallest_seen_step_distance_from_initial_state + 1;
 								}
 
 							}
 							else {
 								if (candidates_for_successor_states[index_candidate].successor_state.piece_positions[index_candidate / 4] == target_cell) {
 									// does not work for sorted final pieces! In that case we do not know where the moved piece is located.
-									optimal_solution_size = current_iterator->second.smallest_seen_step_distance_from_initial_state + 1;
+									optimal_path_length = current_iterator->second.smallest_seen_step_distance_from_initial_state + 1;
 								}
 							}
 						}
