@@ -428,11 +428,24 @@ namespace tobor {
 
 			struct move_candidate {
 
+				/** The move consisting of piece_id and direction. */
 				piece_move_type move;
+				
+				/** The successor state */
+				positions_of_pieces_type successor_state;
 
-				std::pair<positions_of_pieces_type, bool> next_cell_paired_enable;
+				/** True if the position indeed changes on this move */
+				bool is_true_move;
 
-				move_candidate(const piece_move_type& move, const std::pair<positions_of_pieces_type, bool>& n) : move(move), next_cell_paired_enable(n) {}
+				move_candidate(
+					const piece_move_type& move,
+					const std::pair<positions_of_pieces_type, bool>& n
+				) : 
+					move(move),
+					successor_state(n.first),
+					is_true_move(n.second)
+				{
+				}
 
 			};
 
@@ -629,20 +642,19 @@ namespace tobor {
 							++index_candidate
 							)
 						{
-							constexpr bool IS_SORTED{ positions_of_pieces_type::SORTED_TARGET_PIECES };
+							if (!candidates_for_successor_states[index_candidate].is_true_move) {
+								continue;
+							}
 
-							if constexpr (IS_SORTED) {
-								for (typename positions_of_pieces_type::pieces_quantity_type::int_type index_target_piece{ 0 };
-									index_target_piece < positions_of_pieces_type::COUNT_TARGET_PIECES; // ### check again type consistency to be static_assert-ed for this inequation.
-									++index_target_piece)
-								{
-									if (candidates_for_successor_states[index_candidate].next_cell_paired_enable.first.piece_positions[index_target_piece] == target_cell) {
-										optimal_solution_size = current_iterator->second.smallest_seen_step_distance_from_initial_state + 1;
-									}
+							if constexpr (positions_of_pieces_type::SORTED_TARGET_PIECES) {
+
+								if (candidates_for_successor_states[index_candidate].next_cell_paired_enable.first.is_final(target_cell)) {
+									optimal_solution_size = current_iterator->second.smallest_seen_step_distance_from_initial_state + 1;
 								}
+
 							}
 							else {
-								if (candidates_for_successor_states[index_candidate].next_cell_paired_enable.first.piece_positions[index_candidate / 4] == target_cell) {
+								if (candidates_for_successor_states[index_candidate].successor_state.piece_positions[index_candidate / 4] == target_cell) {
 									// does not work for sorted final pieces! In that case we do not know where the moved piece is located.
 									optimal_solution_size = current_iterator->second.smallest_seen_step_distance_from_initial_state + 1;
 								}
@@ -651,11 +663,9 @@ namespace tobor {
 
 						// add candidates to map if they are valid:
 						for (auto& c : candidates_for_successor_states) {
-							if (c.next_cell_paired_enable.second) { // there is a real move
+							if (c.is_true_move) { // there is a real move
 
-								auto& successor_state = c.next_cell_paired_enable.first;
-
-								auto [iter_insertion, bool_inserted] = ps_map.insert(std::make_pair(successor_state, partial_solutions_map_mapped_type()));
+								auto [iter_insertion, bool_inserted] = ps_map.insert(std::make_pair(c.successor_state, partial_solutions_map_mapped_type()));
 								// Note: on entry creation default distance from 
 
 
@@ -679,7 +689,6 @@ namespace tobor {
 									*/
 
 									// this whole IF therefore might be replaced by asking for the value of bool_inserted! <<<<<
-
 
 									/*
 										delete all predecessors -> not needed, because we know vector is empty
