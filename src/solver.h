@@ -589,12 +589,13 @@ namespace tobor {
 
 				// condition: SIZE_VISITED_BEFORE == 1 (on first call only)
 
-				if (visited_game_states[0][0]->first.is_final(target_cell)) {
+				if (SIZE_VISITED_BEFORE > optimal_path_length) {
+					//Already executed exploration before. Any state to be explored whould add states into map beyond the optimal path length
 					return;
 				}
 
-				if (SIZE_VISITED_BEFORE > optimal_path_length) {
-					//Already executed exploration before. Any state to be explored whould add states into map beyond the optimal path length
+				if (visited_game_states[0][0]->first.is_final(target_cell)) {
+					optimal_path_length = 0;
 					return;
 				}
 
