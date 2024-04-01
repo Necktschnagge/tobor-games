@@ -507,6 +507,8 @@ namespace tobor {
 
 			using move_path_type = move_path<piece_move_type>;
 
+			static constexpr size_type SIZE_TYPE_MAX = state_graph_node_type::MAX;
+
 			friend class GameController; // remove this! is bad design.
 		private:
 
@@ -548,10 +550,12 @@ namespace tobor {
 
 			// ### note in case of removing states with no optimal successors, the invalid iterator problem arises.
 			partial_state_graph(const positions_of_pieces_type& initial_state) :
-				optimal_path_length(state_graph_node_type::MAX),
+				optimal_path_length(SIZE_TYPE_MAX),
 				initial_state(initial_state)
 			{
 				ps_map[initial_state].smallest_seen_step_distance_from_initial_state = 0; // insert initial state into map
+				//ps_map[initial_state].count_successors_where_this_is_one_optimal_predecessor; -> default 0
+				//ps_map[initial_state].optimal_predecessors; -> default empty vector
 
 				visited_game_states.push_back(std::vector<map_iterator>{ps_map.begin()}); // insert initial state into visited states
 			}
@@ -564,9 +568,10 @@ namespace tobor {
 					positions_of_pieces_type(initial_target_pieces, initial_non_target_pieces)
 				)
 			{
+				// ## check if removing this ctor is possible
 			}
 
-			inline size_type get_optimal_solution_size() { return optimal_path_length; };
+			inline size_type get_optimal_path_length() { return optimal_path_length; };
 
 
 			inline std::map<positions_of_pieces_type, std::vector<move_path_type>> optimal_move_paths(const cell_id_type& target_cell) {
@@ -581,6 +586,8 @@ namespace tobor {
 				return result;
 			}
 
+
+			// ### offer step-wise exploration instead of exploration until optimal.
 			inline void explore_until_optimal_solution_distance(
 				move_one_piece_calculator_type& engine,
 				const cell_id_type& target_cell

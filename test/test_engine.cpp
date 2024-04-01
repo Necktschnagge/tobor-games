@@ -127,7 +127,7 @@ TEST(engine, example_integration) {
 
 	partial_state_graph.explore_until_optimal_solution_distance(w_analyzer, target);
 
-	ASSERT_EQ(9, partial_state_graph.get_optimal_solution_size());
+	ASSERT_EQ(9, partial_state_graph.get_optimal_path_length());
 
 }
 
