@@ -362,6 +362,8 @@ namespace tobor {
 
 		using blocked_center_error = tobor::v1_0::blocked_center_error;
 
+		using direction = tobor::v1_0::direction;
+
 		using wall_type = tobor::v1_0::wall_type;
 
 		using wall_vector = tobor::v1_0::wall_vector;
@@ -373,14 +375,14 @@ namespace tobor {
 		*
 		*/
 		template <class Int_Size_Type_T = std::size_t, class Int_Cell_Id_Type_T = Int_Size_Type_T>
-		class tobor_world { // OK
+		class dynamic_rectangle_world { // OK
 		public:
 
 			using int_size_type = Int_Size_Type_T;
 			using int_cell_id_type = Int_Size_Type_T;
 
 			using wall_vector_type = wall_vector;
-			using type = tobor_world;
+			using type = dynamic_rectangle_world;
 
 		private:
 
@@ -405,9 +407,9 @@ namespace tobor {
 
 			/* ctors et. al. **************************************************************************************/
 
-			tobor_world() : x_size(0), y_size(0) {}
+			dynamic_rectangle_world() : x_size(0), y_size(0) {}
 
-			tobor_world(const int_size_type& x_size, const int_size_type& y_size) : tobor_world() {
+			dynamic_rectangle_world(const int_size_type& x_size, const int_size_type& y_size) : dynamic_rectangle_world() {
 				resize(x_size, y_size);
 			}
 
@@ -599,7 +601,7 @@ namespace tobor {
 
 		};
 
-		using default_world = tobor_world<>;
+		using default_dynamic_rectangle_world = dynamic_rectangle_world<>;
 
 	}
 
