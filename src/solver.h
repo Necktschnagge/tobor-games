@@ -548,6 +548,7 @@ namespace tobor {
 
 		public:
 
+
 			// ### note in case of removing states with no optimal successors, the invalid iterator problem arises.
 			partial_state_graph(const positions_of_pieces_type& initial_state) :
 				optimal_path_length(SIZE_TYPE_MAX),
@@ -573,9 +574,39 @@ namespace tobor {
 
 			inline size_type get_optimal_path_length() { return optimal_path_length; };
 
+			inline std::vector<map_iterator> optimal_final_state_iterators(const cell_id_type& target_cell) const {
+				std::vector<map_iterator> result;
+				for (const auto& iter : visited_game_states.back()) {
+					if (iter->first.is_final(target_cell)) {
+						result.push_back(iter);
+					}
+				}
+				return result;
+			}
+
+			/*
+			inline std::vector<map_iterator> optimal_distance_dead_state_iterators(const cell_id_type& target_cell) const {
+				//std::vector<map_iterator> result;
+				//for (const auto& iter : visited_game_states.back()) {
+				//	if (iter->first.is_final(target_cell)) {
+				//		result.push_back(iter);
+				//	}
+				//}
+				//return result;
+			}
+			*/
+
+			inline std::vector<positions_of_pieces_type> optimal_final_states(const cell_id_type& target_cell) const {
+				std::vector<positions_of_pieces_type> result;
+				for (const auto& iter : visited_game_states.back()) {
+					if (iter->first.is_final(target_cell)) {
+						result.push_back(iter->first);
+					}
+				}
+				return result;
+			}
 
 			inline std::map<positions_of_pieces_type, std::vector<move_path_type>> optimal_move_paths(const cell_id_type& target_cell) {
-
 				std::map<positions_of_pieces_type, std::vector<move_path_type>> result;
 				for (auto iter = ps_map.begin(); iter != ps_map.end(); ++iter) {
 					auto& state{ iter->first };
@@ -585,6 +616,47 @@ namespace tobor {
 				}
 				return result;
 			}
+
+
+			inline void remove_dead_states(const std::vector<map_iterator>& live_states) {
+				for (const auto& map_it : live_states) {
+					++map_it->second.count_successors_where_this_is_one_optimal_predecessor;
+				}
+				std::vector<map_iterator> to_be_removed; // all iterators pointing to states where:   count_successors_where_this_is_one_optimal_predecessor == 0
+
+				for (auto iter = ps_map.begin(); iter != ps_map.end(); ++iter) {
+					if (iter->second.count_successors_where_this_is_one_optimal_predecessor == 0) {
+						to_be_removed.push_back(iter);
+					}
+				}
+
+				while (!to_be_removed.empty()) {
+					map_iterator removee = to_be_removed.back();
+					to_be_removed.pop_back();
+
+					for (auto iter = removee->second.optimal_predecessors.begin(); iter != removee->second.optimal_predecessors.end(); ++iter) {
+						auto& pred{ std::get<0>(*iter) };
+						--pred->second.count_successors_where_this_is_one_optimal_predecessor;
+						if (pred->second.count_successors_where_this_is_one_optimal_predecessor == 0) {
+							to_be_removed.push_back(pred);
+						}
+					}
+
+					ps_map.erase(removee);
+				}
+
+				for (const auto& map_it : live_states) {
+					--map_it->second.count_successors_where_this_is_one_optimal_predecessor;
+				}
+			}
+
+			inline void remove_dead_states(const cell_id_type& target_cell_defining_live_states) {
+				return remove_dead_states(optimal_final_state_iterators(target_cell_defining_live_states));
+			}
+
+			//inline void remove_dead_states2(const std::vector<map_iterator>& dead_states = ) {
+			//	//...
+			//}
 
 
 			// ### offer step-wise exploration instead of exploration until optimal.

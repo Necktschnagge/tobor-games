@@ -602,6 +602,7 @@ void GameController::startSolver(QMainWindow* mw) {
 	optional_solver_state_graph.emplace(currentState());
 	partial_state_graph_type& graph{ optional_solver_state_graph.value() };
 	graph.explore_until_optimal_solution_distance(move_one_piece_calculator, target_cell);
+	graph.remove_dead_states(target_cell);
 
 	mw->statusBar()->showMessage("Extracting solution paths...");
 	mw->repaint();
