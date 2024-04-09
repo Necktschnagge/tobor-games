@@ -63,7 +63,7 @@ stages:
        - script: sudo apt-get update && sudo apt-get install gcc-7
          displayName: "install old version"
          condition: succeeded()
-       - script: gcc-7 --version && ls -la /usr/local/bin/
+       - script: gcc-7 --version && ls -la /usr/local/bin/ && whereis gcc-7
          displayName: "check version"
          condition: succeeded()
        - script: |
