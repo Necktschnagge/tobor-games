@@ -60,7 +60,7 @@ stages:
        - script: sudo bash -c 'echo "deb [arch=amd64] http://archive.ubuntu.com/ubuntu focal main universe" >> /etc/apt/sources.list'
          displayName: "add apt source"
          condition: succeeded()
-       - script: sudo apt-get update && sudo apt-get install gcc=4:7.2.0-1ubuntu1
+       - script: sudo apt-get update && sudo apt-get install gcc-7
          displayName: "install old version"
          condition: succeeded()
        - script: gcc --version
