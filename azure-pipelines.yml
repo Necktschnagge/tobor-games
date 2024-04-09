@@ -54,16 +54,16 @@ stages:
 #       - script: brew install qt@5 || brew install qt@5
 #         displayName: "Install Qt (Darwin)"
 #         condition: and(succeeded(), eq( variables['Agent.OS'], 'Darwin'))
-       - script: sudo apt-get remove gcc 
+       - script: sudo apt-get remove gcc clang
          displayName: "uninstall"
          condition: succeeded()
-       - script: sudo bash -c 'echo "deb [arch=amd64] http://archive.ubuntu.com/ubuntu focal main universe" >> /etc/apt/sources.list'
+       - script: sudo bash -c 'echo "deb [arch=amd64] http://old-releases.ubuntu.com/ubuntu artful main universe" >> /etc/apt/sources.list'
          displayName: "add apt source"
          condition: succeeded()
-       - script: sudo apt-get update && sudo apt-get install gcc-7 g++7
+       - script: sudo apt-get update && sudo apt-get install gcc=7.2.0-1ubuntu1
          displayName: "install old version"
          condition: succeeded()
-       - script: gcc-7 --version && ls -la /usr/bin && whereis gcc-7
+       - script: gcc-7 --version && ls -la /usr/bin && whereis gcc-7 && sudo ln /usr/bin/gcc-7 /usr/bin/gcc && sudo ln /usr/bin/g++7 /usr/bin/g++
          displayName: "check version"
          condition: succeeded()
        - script: |
