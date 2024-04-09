@@ -57,7 +57,7 @@ stages:
        - script: sudo apt-get remove gcc 
          displayName: "uninstall"
          condition: succeeded()
-       - script: sudo echo "deb [arch=amd64] http://archive.ubuntu.com/ubuntu focal main universe" >> /etc/apt/sources.list
+       - script: sudo bash -c 'echo "deb [arch=amd64] http://archive.ubuntu.com/ubuntu focal main universe" >> /etc/apt/sources.list'
          displayName: "add apt source"
          condition: succeeded()
        - script: sudo apt-get update && sudo apt-get install gcc=4:7.2.0-1ubuntu1
