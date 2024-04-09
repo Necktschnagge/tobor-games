@@ -2,8 +2,8 @@
 file(GLOB_RECURSE ALL_SOURCE_FILES LIST_DIRECTORIES true *.h *.cpp *.ui)
 
 
-
 ############### Target via add_executable ###############
+add_executable(${PROJECT_NAME} ${ALL_SOURCE_FILES})
 
 
 
@@ -30,3 +30,4 @@ target_link_libraries(${PROJECT_NAME} PRIVATE Threads::Threads)
 
 
 ############### Target Finalize ###############
+
