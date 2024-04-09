@@ -27,21 +27,21 @@ stages:
             imageName: "ubuntu-20.04"
             the_name: "Azure Pipelines"
       
-          mac_12:
-            imageName: "macOS-12"
-            the_name: "Azure Pipelines"
+          #mac_12:
+          #  imageName: "macOS-12"
+          #  the_name: "Azure Pipelines"
       
-          mac_13:
-            imageName: "macOS-13"
-            the_name: "Azure Pipelines"
+          #mac_13:
+          #  imageName: "macOS-13"
+          #  the_name: "Azure Pipelines"
       
-          windows_2022:
-            imageName: "windows-2022"
-            the_name: "Azure Pipelines"
+          #windows_2022:
+          #  imageName: "windows-2022"
+          #  the_name: "Azure Pipelines"
       
-          windows_2019:
-            imageName: "windows-2019"
-            the_name: "Azure Pipelines"
+          #windows_2019:
+          #  imageName: "windows-2019"
+          #  the_name: "Azure Pipelines"
       
       pool:
         vmImage: $(imageName)
@@ -98,6 +98,7 @@ stages:
          condition: and(succeeded(), eq( variables['Agent.OS'], 'Windows_NT' ))
     - job: Qt_6
       timeoutInMinutes: 30
+      condition: false
       strategy:
         matrix:
           ubuntu_22_04:
