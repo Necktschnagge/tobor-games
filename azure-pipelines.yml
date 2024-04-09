@@ -54,7 +54,7 @@ stages:
        - script: brew install qt@5 || brew install qt@5
          displayName: "Install Qt (Darwin)"
          condition: and(succeeded(), eq( variables['Agent.OS'], 'Darwin'))
-       - script: sudo apt-get remove gcc && gcc --version
+       - script: sudo apt-get remove gcc && sudo apt-get install gcc-7 && gcc --version
          displayName: "check version"
          condition: succeeded()
        - script: |
