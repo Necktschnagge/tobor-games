@@ -98,7 +98,7 @@ private slots:
 
 	void on_actionEnableAllMenuBarItems_triggered();
 	
-	void on_action22ReferenceGame();
+	void on_action22ReferenceGame_triggered();
 
 	void on_actionAbout_triggered();
 

@@ -310,7 +310,7 @@ void MainWindow::on_actionEnableAllMenuBarItems_triggered()
 	menu_recursion(ui->menubar);
 }
 
-void MainWindow::on_action22ReferenceGame()
+void MainWindow::on_action22ReferenceGame_triggered()
 {
 	guiInteractiveController.startReferenceGame22();
 }

@@ -68,8 +68,8 @@ inline GameController::world_type get22Game() {
 */
 void GuiInteractiveController::startReferenceGame22() {
 
-	if constexpr (!(
-		GameController::piece_quantity_type::COUNT_TARGET_PIECES == 1 && GameController::piece_quantity_type::COUNT_NON_TARGET_PIECES == 3)
+	if constexpr (!
+		(GameController::piece_quantity_type::COUNT_TARGET_PIECES == 1 && GameController::piece_quantity_type::COUNT_NON_TARGET_PIECES == 3)
 		) {
 		return;
 	}
