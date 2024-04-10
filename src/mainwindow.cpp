@@ -136,12 +136,6 @@ void MainWindow::on_actionMoveBack_triggered()
 	guiInteractiveController.undo();
 }
 
-void MainWindow::on_actionTest_ListView_triggered()
-{
-	guiInteractiveController.startReferenceGame22();
-
-}
-
 void MainWindow::on_actionNORTH_triggered()
 {
 	statusBar()->showMessage("Went north.");
@@ -314,6 +308,11 @@ inline void menu_recursion(QMenu_OR_QMenuBar* m) {
 void MainWindow::on_actionEnableAllMenuBarItems_triggered()
 {
 	menu_recursion(ui->menubar);
+}
+
+void MainWindow::on_action22ReferenceGame()
+{
+	guiInteractiveController.startReferenceGame22();
 }
 
 void MainWindow::ShapeSelectionItems::createInsideQMenu(MainWindow* mainWindow, QMenu* qMenu) {

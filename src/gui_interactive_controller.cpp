@@ -12,15 +12,8 @@
 
 #include <stdexcept>
 
-/**
-*	@brief Starts a reference game where 22 steps are needed until goal
-*	is deprecated, just for development and debugging
-*/
-void GuiInteractiveController::startReferenceGame22() {
-	throw 4;
-#if false
-	interactive_mode = InteractiveMode::GAME_INTERACTIVE;
 
+inline GameController::world_type get22Game() {
 	auto world = GameController::world_type(16, 16);
 	world.block_center_cells(2, 2);
 
@@ -66,24 +59,64 @@ void GuiInteractiveController::startReferenceGame22() {
 	world.south_wall_by_transposed_id(15 * 16 + 5) = true;
 	world.south_wall_by_transposed_id(15 * 16 + 12) = true;
 
-	gameHistory.emplace_back(
-		world,
-		GameController::positions_of_pieces_type(
-			{
-				GameController::cell_id_type::create_by_coordinates(15, 15, world)
-			},
+	return world;
+}
+
+/**
+*	@brief Starts a reference game where 22 steps are needed until goal
+*	is deprecated, just for development and debugging
+*/
+void GuiInteractiveController::startReferenceGame22() {
+
+	if constexpr (!(
+		GameController::piece_quantity_type::COUNT_TARGET_PIECES == 1 && GameController::piece_quantity_type::COUNT_NON_TARGET_PIECES == 3)
+		) {
+		return;
+	}
+
+	if (interactive_mode != InteractiveMode::NO_GAME) {
+		return showErrorDialog("This action should not be available.");
+	}
+
+	interactive_mode = InteractiveMode::GAME_INTERACTIVE;
+
+	GameController::world_type world = get22Game();
+
+	GameController::cell_id_type target_cell = GameController::cell_id_type::create_by_coordinates(9, 3, world);
+
+	GameController::positions_of_pieces_type initial_state = GameController::positions_of_pieces_type(
+		{
+			GameController::cell_id_type::create_by_coordinates(15, 15, world)
+		},
 			{
 				GameController::cell_id_type::create_by_coordinates(1,0, world),
 				GameController::cell_id_type::create_by_coordinates(12,14, world),
 				GameController::cell_id_type::create_by_coordinates(12,15, world)
 			}
-		),
-		GameController::cell_id_type::create_by_coordinates(9, 3, world),
-		std::vector<uint8_t>{ 0, 1, 2, 3 }
+			);
+
+	std::vector<GameController::piece_quantity_type::int_type> not_yet_permutated;
+
+	for (GameController::piece_quantity_type::int_type i = 0; i < GameController::piece_quantity_type::COUNT_ALL_PIECES; ++i) {
+		not_yet_permutated.push_back(i);
+	}
+
+	std::vector<GameController::piece_quantity_type::int_type> colorPermutation = not_yet_permutated;
+
+	gameHistory.emplace_back(
+		world,
+		initial_state,
+		target_cell,
+		colorPermutation
 	);
 
+	++productWorldGenerator;
+
+	current_color_vector = tobor::v1_0::color_vector::get_standard_coloring(GameController::piece_quantity_type::COUNT_ALL_PIECES);
+
+	createColorActions();
+
 	refreshAll();
-#endif
 
 }
 
@@ -263,9 +296,9 @@ void GuiInteractiveController::refreshSVG()
 			make_coloring(
 				permutated_color_vector,
 				std::make_integer_sequence<GameController::piece_quantity_type::int_type, GameController::piece_quantity_type::COUNT_ALL_PIECES>{}
-			);
+		);
 
-		graphics::piece_shape_selection shape{ graphics::piece_shape_selection::BALL};
+		graphics::piece_shape_selection shape{ graphics::piece_shape_selection::BALL };
 
 		if (mainWindow->shapeSelectionItems.getSelectedShape() == mainWindow->shapeSelectionItems.duck) {
 			shape = graphics::piece_shape_selection::DUCK;
