@@ -129,7 +129,7 @@ void GuiInteractiveController::startReferenceGame22() {
 }
 
 void GuiInteractiveController::startGame() {
-
+	// when editing, also edit inline void startReferenceGame22Helper(X& guiInteractiveController) and maybe use a new fascade for creating a new game
 	if (interactive_mode != InteractiveMode::NO_GAME) {
 		return showErrorDialog("This action should not be available.");
 	}
