@@ -143,11 +143,11 @@ namespace tobor {
 				y_coord = transposed_id % y_size;
 			}
 
-			inline constexpr int_cell_id_type id_to_transposed_id(int_cell_id_type id) const noexcept {
+			inline constexpr int_cell_id_type cell_id_to_transposed_cell_id(int_cell_id_type id) const noexcept {
 				return y_size * (id % x_size) + id / x_size;
 			}
 
-			inline constexpr int_cell_id_type transposed_id_to_id(int_cell_id_type transposed_id) const noexcept {
+			inline constexpr int_cell_id_type transposed_cell_id_to_cell_id(int_cell_id_type transposed_id) const noexcept {
 				return x_size * (transposed_id % y_size) + transposed_id / y_size;
 			}
 
@@ -249,16 +249,104 @@ namespace tobor {
 
 		using default_dynamic_rectangle_world = dynamic_rectangle_world<std::size_t, std::size_t>;
 
-		template<class World_Type_T> // change default for v1_1 !
-		using universal_cell_id = tobor::v1_0::universal_cell_id<World_Type_T>;
+		template<class World_Type_T>
+		class min_size_cell_id {
+		public:
 
-		using default_cell_id = universal_cell_id<tobor::v1_0::default_world>;
+			using world_type = World_Type_T;
+
+			using int_size_type = typename world_type::int_size_type;
+			using int_cell_id_type = typename world_type::int_cell_id_type;
+
+			using type = min_size_cell_id<world_type>;
+
+			/* static factory member functions */
+
+			inline static type create_by_coordinates(int_cell_id_type p_x_coord, int_cell_id_type p_y_coord, const world_type& world) noexcept {
+				return type(world.coordinates_to_cell_id(p_x_coord, p_y_coord));
+			}
+
+			inline static type create_by_id(int_cell_id_type p_id) noexcept {
+				return type(p_id);
+			}
+
+			inline static type create_by_id(int_cell_id_type p_id, const world_type&) noexcept {
+				return create_by_id(p_id);
+			}
+
+			inline static type create_by_transposed_id(int_cell_id_type p_transposed_id, const world_type& world) noexcept {
+				return type(world.transposed_cell_id_to_cell_id(p_transposed_id));
+			}
+
+		private:
+
+			int_cell_id_type id;
+
+		public:
+
+			/* ctors */
+
+			min_size_cell_id() : id(0) {}
+			
+			min_size_cell_id(int_cell_id_type id) : id(id) {}
+
+			min_size_cell_id(const min_size_cell_id&) = default;
+
+			min_size_cell_id(min_size_cell_id&&) = default; // needed for static factory member function
+
+			/* operator = */
+
+			inline min_size_cell_id& operator = (const min_size_cell_id&) = default;
+
+			inline min_size_cell_id& operator = (min_size_cell_id&&) = default;
+
+			/* comparison operators */
+
+			inline bool operator < (const min_size_cell_id& other) const noexcept {
+				return this->id < other.id;
+			}
+
+			inline bool operator == (const min_size_cell_id& other) const noexcept {
+				return this->id == other.id;
+			}
+
+			/* getter */
+
+			inline int_cell_id_type get_id() const noexcept { return id; }
+
+			inline int_cell_id_type get_transposed_id(const world_type& world) const noexcept { return world.cell_id_to_transposed_cell_id(id); }
+
+			inline int_cell_id_type get_x_coord(const world_type& world) const noexcept { return world.cell_id_to_coordinates(id).first; }
+
+			inline int_cell_id_type get_y_coord(const world_type& world) const noexcept { return world.cell_id_to_coordinates(id).second; }
+
+			/* modifiers */
+
+			inline void set_id(int_cell_id_type p_id) noexcept {
+				id = p_id;
+			}
+
+			inline void set_id(int_cell_id_type p_id, const world_type&) noexcept {
+				return set_id(p_id);
+			}
+
+			inline void set_transposed_id(int_cell_id_type p_transposed_id, const world_type& world) noexcept {
+				id = world.transposed_cell_id_to_cell_id(p_transposed_id);
+			}
+
+			inline void set_coord(int_cell_id_type p_x_coord, int_cell_id_type p_y_coord, const world_type& world) noexcept {
+				id = world.coordinates_to_cell_id(p_x_coord, p_y_coord);
+			}
+
+		};
+
+		using default_min_size_cell_id = min_size_cell_id<default_dynamic_rectangle_world>;
 
 		template<class Int_Type_T, Int_Type_T COUNT_TARGET_PIECES_V, Int_Type_T COUNT_NON_TARGET_PIECES_V>
 		using pieces_quantity = tobor::v1_0::pieces_quantity<Int_Type_T, COUNT_TARGET_PIECES_V, COUNT_NON_TARGET_PIECES_V>;
 
 		template<uint8_t COUNT_TARGET_PIECES_V, uint8_t COUNT_NON_TARGET_PIECES_V>
-		using uint8_t_pieces_quantity = pieces_quantity< uint8_t, COUNT_TARGET_PIECES_V, COUNT_NON_TARGET_PIECES_V>;
+		using uint8_t_pieces_quantity = pieces_quantity<uint8_t, COUNT_TARGET_PIECES_V, COUNT_NON_TARGET_PIECES_V>;
 
 		using default_pieces_quantity = pieces_quantity<uint8_t, 1, 3>;
 
@@ -269,31 +357,33 @@ namespace tobor {
 		*	@details It only distinguishes the target piece from non target pieces.
 		*			Non target pieces cannot be distiguished. They are kept sorted acending by their cell ids.
 		*/
-		template <class Pieces_Quantity_Type = default_pieces_quantity, class Cell_Id_Type_T = default_cell_id, bool SORTED_TARGET_PIECES_V = true, bool SORTED_NON_TARGET_PIECES_V = true>
+		template <class Pieces_Quantity_Type, class Cell_Id_Type_T, bool SORTED_TARGET_PIECES_V, bool SORTED_NON_TARGET_PIECES_V>
 		using positions_of_pieces = tobor::v1_0::positions_of_pieces<Pieces_Quantity_Type, Cell_Id_Type_T, SORTED_TARGET_PIECES_V, SORTED_NON_TARGET_PIECES_V>;
 
-		using default_positions_of_pieces = positions_of_pieces<default_pieces_quantity, default_cell_id, false, true>;
+		using default_positions_of_pieces = positions_of_pieces<default_pieces_quantity, default_min_size_cell_id, false, true>;
 
-		template <class Pieces_Quantity_Type = default_pieces_quantity>
+		template <class Pieces_Quantity_Type>
 		using piece_id = tobor::v1_0::piece_id<Pieces_Quantity_Type>;
 
-		using default_piece_id = piece_id<>;
+		using default_piece_id = piece_id<default_pieces_quantity>;
 
 		/*
 		*	@brief Equivalent to a pair of a piece_id and a direction where to move it
 		*
 		*	@details Does not define how piece_id is interpreted.
 		*/
-		template<class Piece_Id_Type = default_piece_id>
-		using piece_move = tobor::v1_0::piece_move;
+		template<class Piece_Id_Type>
+		using piece_move = tobor::v1_0::piece_move<Piece_Id_type>;
 
-		using default_piece_move = piece_move<>;
+		using default_piece_move = piece_move<default_piece_id>;
 
-		template<class Position_Of_Pieces_T = default_positions_of_pieces>
+		template<class Position_Of_Pieces_T>
 		using state_path = tobor::v1_0::state_path<Position_Of_Pieces_T>;
+		// has to be reviewed again! ###
 
-		template<class Piece_Move_Type = default_piece_move>
+		template<class Piece_Move_Type>
 		using move_path = tobor::v1_0::move_path<Piece_Move_Type>;
+		// has to be reviewed again! ###
 
 	}
 }

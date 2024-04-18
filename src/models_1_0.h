@@ -475,7 +475,7 @@ namespace tobor {
 		};
 
 		template<uint8_t COUNT_TARGET_PIECES_V, uint8_t COUNT_NON_TARGET_PIECES_V>
-		using uint8_t_pieces_quantity = pieces_quantity< uint8_t, COUNT_TARGET_PIECES_V, COUNT_NON_TARGET_PIECES_V>;
+		using uint8_t_pieces_quantity = pieces_quantity<uint8_t, COUNT_TARGET_PIECES_V, COUNT_NON_TARGET_PIECES_V>;
 
 		using default_pieces_quantity = pieces_quantity<uint8_t, 1, 3>;
 
@@ -487,7 +487,7 @@ namespace tobor {
 		*			Non target pieces cannot be distiguished. They are kept sorted acending by their cell ids.
 		*/
 		template <class Pieces_Quantity_Type = default_pieces_quantity, class Cell_Id_Type_T = default_cell_id, bool SORTED_TARGET_PIECES_V = true, bool SORTED_NON_TARGET_PIECES_V = true>
-		class positions_of_pieces { // OK
+		class positions_of_pieces {
 			// ## alternative implementation using std::vector instead of array, as non-template variant
 
 			template <class Move_One_Piece_Calculator, class State_Graph_Node>
@@ -753,6 +753,7 @@ namespace tobor {
 					);
 					return copy;
 				}
+				// ### error case of non-matching paths is missing here!
 			}
 
 		};
@@ -789,7 +790,9 @@ namespace tobor {
 			const vector_type& vector() const { return move_vector; }
 
 			inline move_path operator +(const move_path& another) {
-				move_path copy{ *this };
+				move_path copy;
+				copy.move_vector.reserve(move_vector.size() + another.move_vector.size());
+				std::copy(move_vector.cbegin(), move_vector.cend(), std::back_inserter(copy.move_vector));
 				std::copy(another.move_vector.cbegin(), another.move_vector.cend(), std::back_inserter(copy.move_vector));
 				return copy;
 			}
