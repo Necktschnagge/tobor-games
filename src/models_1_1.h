@@ -26,7 +26,7 @@ namespace tobor {
 		public:
 
 			using int_size_type = Int_Size_Type_T;
-			using int_cell_id_type = Int_Size_Type_T;
+			using int_cell_id_type = Int_Cell_Id_Type_T;
 
 			using wall_vector_type = wall_vector;
 			using type = dynamic_rectangle_world;
@@ -119,11 +119,11 @@ namespace tobor {
 			/* cell id conversion **************************************************************************************/
 			// #### beginning from here check overflow for allowed inputs by some static asserts!!!
 			inline constexpr int_cell_id_type coordinates_to_cell_id(int_cell_id_type x_coord, int_cell_id_type y_coord) const noexcept {
-				return x_size * y_coord + x_coord;
+				return static_cast<int_cell_id_type>(x_size * y_coord + x_coord);
 			}
 
 			inline constexpr int_cell_id_type coordinates_to_transposed_cell_id(int_cell_id_type x_coord, int_cell_id_type y_coord) const noexcept {
-				return y_size * x_coord + y_coord;
+				return static_cast<int_cell_id_type>(y_size * x_coord + y_coord);
 			}
 
 			inline constexpr std::pair<int_cell_id_type, int_cell_id_type> cell_id_to_coordinates(int_cell_id_type id) const noexcept {
@@ -145,11 +145,11 @@ namespace tobor {
 			}
 
 			inline constexpr int_cell_id_type cell_id_to_transposed_cell_id(int_cell_id_type id) const noexcept {
-				return y_size * (id % x_size) + id / x_size;
+				return static_cast<int_cell_id_type>(y_size * (id % x_size) + id / x_size);
 			}
 
 			inline constexpr int_cell_id_type transposed_cell_id_to_cell_id(int_cell_id_type transposed_id) const noexcept {
-				return x_size * (transposed_id % y_size) + transposed_id / y_size;
+				return static_cast<int_cell_id_type>(x_size * (transposed_id % y_size) + transposed_id / y_size);
 			}
 
 			/* wall accessors **************************************************************************************/

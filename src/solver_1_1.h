@@ -68,45 +68,48 @@ namespace tobor {
 				go_south = std::vector<cell_id_int_type>(VECTOR_SIZE, 0);
 				go_north = std::vector<cell_id_int_type>(VECTOR_SIZE, 0);
 
-				go_west[0] = 0;
-				go_south[0] = 0;
+				{
+					go_west[0] = 0;
+					go_south[0] = 0;
 
-				cell_id_int_type id = 0;
-				while (static_cast<int_size_type>(id) + 1 < VECTOR_SIZE) {
-					++id;
-					if (board.west_wall_by_id(id)) {
-						go_west[id] = id;
-					}
-					else {
-						go_west[id] = go_west[id - 1];
-					}
-					if (board.south_wall_by_transposed_id(id)) {
-						go_south[id] = id;
-					}
-					else {
-						go_south[id] = go_south[id - 1];
+					cell_id_int_type id = 0;
+					while (static_cast<int_size_type>(id) + 1 < VECTOR_SIZE) {
+						++id;
+						if (board.west_wall_by_id(id)) {
+							go_west[id] = id;
+						}
+						else {
+							go_west[id] = go_west[id - 1];
+						}
+						if (board.south_wall_by_transposed_id(id)) {
+							go_south[id] = id;
+						}
+						else {
+							go_south[id] = go_south[id - 1];
+						}
 					}
 				}
+				{
+					go_east[VECTOR_SIZE - 1] = VECTOR_SIZE - 1;
+					go_north[VECTOR_SIZE - 1] = VECTOR_SIZE - 1;
 
-				go_east[VECTOR_SIZE - 1] = VECTOR_SIZE - 1;
-				go_north[VECTOR_SIZE - 1] = VECTOR_SIZE - 1;
-
-				cell_id_int_type id = VECTOR_SIZE - 1;
-				do {
-					--id;
-					if (board.east_wall_by_id(id)) {
-						go_east[id] = id;
-					}
-					else {
-						go_east[id] = go_east[id + 1];
-					}
-					if (board.north_wall_by_transposed_id(id)) {
-						go_north[id] = id;
-					}
-					else {
-						go_north[id] = go_north[id + 1];
-					}
-				} while (id != 0);
+					cell_id_int_type id = VECTOR_SIZE - 1;
+					do {
+						--id;
+						if (board.east_wall_by_id(id)) {
+							go_east[id] = id;
+						}
+						else {
+							go_east[id] = go_east[id + 1];
+						}
+						if (board.north_wall_by_transposed_id(id)) {
+							go_north[id] = id;
+						}
+						else {
+							go_north[id] = go_north[id + 1];
+						}
+					} while (id != 0);
+				}
 			}
 
 			/**
@@ -385,6 +388,42 @@ namespace tobor {
 
 		using default_move_one_piece_calculator = move_one_piece_calculator<default_positions_of_pieces, default_quick_move_cache, default_piece_move>;
 
+		template<class Positions_Of_Pieces_Type>
+		class backward_graph {
+		public:
+			using positions_of_pieces_type = Positions_Of_Pieces_Type;
+
+
+
+			struct graph_node {
+				positions_of_pieces state;
+				//std::size_t;
+			};
+
+		};
+
+		//template<uint64_t MAX_DISTANCE, uint64_t MAX_WIDTH>
+		class indexing_backward_graph {
+		public:
+			using positions_of_pieces_type = Positions_Of_Pieces_Type;
+
+			template<class Distance_Int, class Index_Int>
+			struct index_edge {
+				Distance_Int d_from;
+				Index_Int i_from;
+				Index_Int i_to;
+
+				friend auto operator <=>(const index_edge& l, const index_edge& r) = default;
+			};
+
+			std::vector<index_edge<uint8_t, uint64_t>> edges;
+
+			inline void sort() {
+				std::sort(edges.begin(), edges.end());
+			}
+
+		};
+
 
 		template <class Move_One_Piece_Calculator>
 		class distance_exploration {
@@ -415,7 +454,7 @@ namespace tobor {
 				optimal_path_length(SIZE_TYPE_MAX)
 				//initial_state(initial_state)
 			{
-				reachable_states_by_distance.emplace_back({ initial_state });
+				reachable_states_by_distance.emplace_back(std::vector<positions_of_pieces_type>{ initial_state });
 
 			}
 
@@ -433,6 +472,46 @@ namespace tobor {
 						return result;
 					}
 				}
+				return result;
+			}
+
+			indexing_backward_graph get_indexing_backward_graph(const cell_id_type& target_cell) {
+				if (optimal_path_length == SIZE_TYPE_MAX) {
+					throw 0;
+				}
+
+				indexing_backward_graph result;
+
+				std::vector<bool> flagged_states(reachable_states_by_distance[optimal_path_length].size(), false);
+				std::vector<bool> next_flagged_states;
+
+				for (std::size_t i{ 0 }; i < reachable_states_by_distance[optimal_path_length].size(); ++i) {
+					if (reachable_states_by_distance[optimal_path_length][i].is_final(target_cell)) {
+						flagged_states[i] = true;
+					}
+				}
+
+				for (std::size_t backward_explore_distance = optimal_path_length; backward_explore_distance != 0; --backward_explore_distance) {
+					next_flagged_states = std::vector<bool>(reachable_states_by_distance[backward_explore_distance - 1].size, false);
+					for (std::size_t i{ 0 }; i < reachable_states_by_distance[backward_explore_distance]; ++i) {
+						if (flagged_states[i]) {
+							std::vector<positions_of_pieces_type> found_predecessors;
+							//calc all possible predecessor states.
+							// set bits in next_flagged_states, only keep predecessor found in prvious distance vector!!!
+							
+							//add an edge to the edge vector
+							//(first for every layer an own edge vector, less need of sorting afterwards when concatting them)
+							//	flag the state we reached backwards...
+
+
+						}
+					}
+
+					flagged_states = next_flagged_states;
+				}
+
+				throw "not yet implemented";
+
 				return result;
 			}
 

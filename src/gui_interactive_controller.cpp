@@ -183,8 +183,6 @@ void GuiInteractiveController::stopGame() {
 		return showErrorDialog("This action should not be available.");
 	}
 
-	gameHistory.back().lazyFreeSolverData();
-
 	interactive_mode = InteractiveMode::NO_GAME;
 	refreshAll();
 }
@@ -249,7 +247,7 @@ tobor::v1_0::tobor_graphics<GameController::positions_of_pieces_type>::coloring 
 
 void GuiInteractiveController::refreshSVG()
 {
-	using graphics = tobor::v1_0::tobor_graphics<GameController::positions_of_pieces_type>;
+	using graphics = tobor::v1_1::tobor_graphics<GameController::positions_of_pieces_type>;
 
 	if (interactive_mode == InteractiveMode::GAME_INTERACTIVE || interactive_mode == InteractiveMode::SOLVER_INTERACTIVE_STEPS) {
 
@@ -553,7 +551,7 @@ void GuiInteractiveController::highlightGeneratedTargetCells()
 		}
 	);
 
-	std::string svg_string = tobor::v1_0::tobor_graphics<GameController::positions_of_pieces_type>::draw_tobor_world_with_cell_markers(
+	std::string svg_string = tobor::v1_1::tobor_graphics<GameController::positions_of_pieces_type>::draw_tobor_world_with_cell_markers(
 		world,
 		comfort_cell_id_vector
 	);
@@ -598,11 +596,19 @@ void GameController::startSolver(QMainWindow* mw) {
 	// set solver begin
 	solver_begin_index = path.size();
 
+	// explore...
+	distance_explorer.explore_until_optimal_solution_distance(move_one_piece_calculator, target_cell);
+
 	// build graph
-	optional_solver_state_graph.emplace(currentState());
-	partial_state_graph_type& graph{ optional_solver_state_graph.value() };
-	graph.explore_until_optimal_solution_distance(move_one_piece_calculator, target_cell);
-	graph.remove_dead_states(target_cell);
+	/////optional_solver_state_graph.emplace(currentState());
+	/////partial_state_graph_type& graph{ optional_solver_state_graph.value() };
+	/////
+	/////
+	/////graph.explore_until_optimal_solution_distance(move_one_piece_calculator, target_cell);
+	/////graph.remove_dead_states(target_cell);
+	
+	
+	use  distance_explorer.get_indexing_backward_graph
 
 	mw->statusBar()->showMessage("Extracting solution paths...");
 	mw->repaint();

@@ -15,6 +15,11 @@
 
 namespace tobor {
 
+	namespace v1_1 {
+		template<class Position_Of_Pieces_T, class Quick_Move_Cache_T, class Piece_Move_Type>
+		class move_one_piece_calculator;
+	}
+
 	namespace v1_0 {
 
 		class division_by_2_error : public std::logic_error { // OK
@@ -495,6 +500,9 @@ namespace tobor {
 
 			template<class Position_Of_Pieces_T, class Quick_Move_Cache_T, class Piece_Move_Type>
 			friend class move_one_piece_calculator;
+
+			template<class Position_Of_Pieces_T, class Quick_Move_Cache_T, class Piece_Move_Type>
+			friend class ::tobor::v1_1::move_one_piece_calculator;
 
 			template<class Positions_Of_Pieces_Type_T>
 			friend class tobor_graphics;
