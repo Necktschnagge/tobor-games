@@ -20,8 +20,8 @@ namespace tobor {
 		*	@details Does NOT contain any information about where pieces are located.
 		*
 		*/
-		template <class Int_Size_Type_T = std::size_t, class Int_Cell_Id_Type_T = Int_Size_Type_T>
-		class dynamic_rectangle_world { // OK
+		template <class Int_Size_Type_T, class Int_Cell_Id_Type_T>
+		class dynamic_rectangle_world {
 		public:
 
 			using int_size_type = Int_Size_Type_T;
@@ -247,12 +247,12 @@ namespace tobor {
 
 		};
 
-		using default_dynamic_rectangle_world = dynamic_rectangle_world<>;
+		using default_dynamic_rectangle_world = dynamic_rectangle_world<std::size_t, std::size_t>;
 
-		template<class World_Type_T = tobor::v1_0::default_world> // change default for v1_1 !
+		template<class World_Type_T> // change default for v1_1 !
 		using universal_cell_id = tobor::v1_0::universal_cell_id<World_Type_T>;
 
-		using default_cell_id = universal_cell_id<>;
+		using default_cell_id = universal_cell_id<tobor::v1_0::default_world>;
 
 		template<class Int_Type_T, Int_Type_T COUNT_TARGET_PIECES_V, Int_Type_T COUNT_NON_TARGET_PIECES_V>
 		using pieces_quantity = tobor::v1_0::pieces_quantity<Int_Type_T, COUNT_TARGET_PIECES_V, COUNT_NON_TARGET_PIECES_V>;
