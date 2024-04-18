@@ -370,11 +370,7 @@ namespace tobor {
 			}
 
 			inline bool is_target_state(const positions_of_pieces_type& state, const cell_id_type& target_cell) {
-				for (auto iter = state.target_pieces_cbegin(); iter != state.target_pieces_cend(); ++iter) {
-					if (*iter == target_cell)
-						return true;
-				}
-				return false;
+				return state.is_final(target_cell); // ### wrapper to be deleted
 			}
 
 		};
