@@ -355,7 +355,6 @@ namespace tobor {
 
 		using default_world = tobor_world<>;
 
-
 		/**
 		*	@brief Kind of iterator to a cell of a board game. Does only store a cell id.
 		*
