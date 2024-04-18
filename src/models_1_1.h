@@ -1,5 +1,7 @@
 
+#include "models_1_0.h"
 
+namespace tobor {
 	namespace v1_1 {
 
 		using division_by_2_error = tobor::v1_0::division_by_2_error;
@@ -10,7 +12,7 @@
 
 		using wall_type = tobor::v1_0::wall_type;
 
-		using wall_vector = tobor::v1_0::wall_vector;
+		using wall_vector = std::vector<wall_type>;
 
 		/**
 		*
@@ -247,5 +249,51 @@
 
 		using default_dynamic_rectangle_world = dynamic_rectangle_world<>;
 
-	}
+		template<class World_Type_T = tobor::v1_0::default_world> // change default for v1_1 !
+		using universal_cell_id = tobor::v1_0::universal_cell_id<World_Type_T>;
 
+		using default_cell_id = universal_cell_id<>;
+
+		template<class Int_Type_T, Int_Type_T COUNT_TARGET_PIECES_V, Int_Type_T COUNT_NON_TARGET_PIECES_V>
+		using pieces_quantity = tobor::v1_0::pieces_quantity<Int_Type_T, COUNT_TARGET_PIECES_V, COUNT_NON_TARGET_PIECES_V>;
+
+		template<uint8_t COUNT_TARGET_PIECES_V, uint8_t COUNT_NON_TARGET_PIECES_V>
+		using uint8_t_pieces_quantity = pieces_quantity< uint8_t, COUNT_TARGET_PIECES_V, COUNT_NON_TARGET_PIECES_V>;
+
+		using default_pieces_quantity = pieces_quantity<uint8_t, 1, 3>;
+
+
+		/**
+		*	@brief Contains the information where the pieces are located on the game board.
+		*
+		*	@details It only distinguishes the target piece from non target pieces.
+		*			Non target pieces cannot be distiguished. They are kept sorted acending by their cell ids.
+		*/
+		template <class Pieces_Quantity_Type = default_pieces_quantity, class Cell_Id_Type_T = default_cell_id, bool SORTED_TARGET_PIECES_V = true, bool SORTED_NON_TARGET_PIECES_V = true>
+		using positions_of_pieces = tobor::v1_0::positions_of_pieces<Pieces_Quantity_Type, Cell_Id_Type_T, SORTED_TARGET_PIECES_V, SORTED_NON_TARGET_PIECES_V>;
+
+		using default_positions_of_pieces = positions_of_pieces<default_pieces_quantity, default_cell_id, false, true>;
+
+		template <class Pieces_Quantity_Type = default_pieces_quantity>
+		using piece_id = tobor::v1_0::piece_id<Pieces_Quantity_Type>;
+
+		using default_piece_id = piece_id<>;
+
+		/*
+		*	@brief Equivalent to a pair of a piece_id and a direction where to move it
+		*
+		*	@details Does not define how piece_id is interpreted.
+		*/
+		template<class Piece_Id_Type = default_piece_id>
+		using piece_move = tobor::v1_0::piece_move;
+
+		using default_piece_move = piece_move<>;
+
+		template<class Position_Of_Pieces_T = default_positions_of_pieces>
+		using state_path = tobor::v1_0::state_path<Position_Of_Pieces_T>;
+
+		template<class Piece_Move_Type = default_piece_move>
+		using move_path = tobor::v1_0::move_path<Piece_Move_Type>;
+
+	}
+}
