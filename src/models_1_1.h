@@ -1,3 +1,4 @@
+#pragma once
 
 #include "models_1_0.h"
 
@@ -373,7 +374,7 @@ namespace tobor {
 		*	@details Does not define how piece_id is interpreted.
 		*/
 		template<class Piece_Id_Type>
-		using piece_move = tobor::v1_0::piece_move<Piece_Id_type>;
+		using piece_move = tobor::v1_0::piece_move<Piece_Id_Type>;
 
 		using default_piece_move = piece_move<default_piece_id>;
 

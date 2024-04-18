@@ -1,6 +1,7 @@
 #pragma once
 
 #include "models_1_1.h"
+#include "solver_1_0.h"
 
 #include <map>
 #include <array>
@@ -393,10 +394,15 @@ namespace tobor {
 
 			using positions_of_pieces_type = typename Move_One_Piece_Calculator::positions_of_pieces_type;
 
+			using piece_move_type = typename move_one_piece_calculator_type::piece_move_type;
+
+			using cell_id_type = typename positions_of_pieces_type::cell_id_type;
+
 			using size_type = std::size_t;
 
-			static constexpr size_type MAX{ std::numeric_limits<size_type>::max() };
+			static constexpr size_type SIZE_TYPE_MAX{ std::numeric_limits<size_type>::max() };
 
+			using move_candidate = typename tobor::v1_0::state_graph_node<positions_of_pieces_type, piece_move_type>::move_candidate;
 
 		private:
 			std::vector<std::vector<positions_of_pieces_type>> reachable_states_by_distance;
@@ -406,10 +412,10 @@ namespace tobor {
 
 		public:
 			distance_exploration(const positions_of_pieces_type& initial_state) :
-				optimal_path_length(SIZE_TYPE_MAX),
+				optimal_path_length(SIZE_TYPE_MAX)
 				//initial_state(initial_state)
 			{
-				reachable_states_by_distance.push_back({ initial_state });
+				reachable_states_by_distance.emplace_back({ initial_state });
 
 			}
 
@@ -449,7 +455,7 @@ namespace tobor {
 				return result;
 			}
 
-
+			/*
 			inline std::map<positions_of_pieces_type, std::vector<move_path_type>> optimal_move_paths(const cell_id_type& target_cell) {
 				throw "not implemented";
 				std::map<positions_of_pieces_type, std::vector<move_path_type>> result;
@@ -500,6 +506,7 @@ namespace tobor {
 				throw "not yet defined"
 					return remove_dead_states(optimal_final_state_iterators(target_cell_defining_live_states));
 			}
+			*/
 
 			// ### offer step-wise exploration instead of exploration until optimal.
 			inline void explore_until_optimal_solution_distance(
