@@ -116,25 +116,41 @@ namespace tobor {
 			* @brief Returns the id of the cell you reach from cell \p id when moving west with no pieces on the way.
 			* @details Has undefined behavior if \p id is out of range. Valid range is [ 0, board.count_cells() - 1 ]
 			*/
-			cell_id_int_type get_west(cell_id_int_type id) const { return go_west[id]; }
+			inline cell_id_int_type get_west(cell_id_int_type id) const { return go_west[id]; }
 
 			/**
 			* @brief Returns the id of the cell you reach from cell \p id when moving east with no pieces on the way.
 			* @details Has undefined behavior if \p id is out of range. Valid range is [ 0, board.count_cells() - 1 ]
 			*/
-			cell_id_int_type get_east(cell_id_int_type id) const { return go_east[id]; }
+			inline cell_id_int_type get_east(cell_id_int_type id) const { return go_east[id]; }
 
 			/**
 			* @brief Returns the transposed id of the cell you reach from cell \p transposed_id when moving south with no pieces on the way.
 			* @details Has undefined behavior if \p id is out of range. Valid range is [ 0, board.count_cells() - 1 ]
 			*/
-			cell_id_int_type get_south(cell_id_int_type transposed_id) const { return go_south[transposed_id]; }
+			inline cell_id_int_type get_south(cell_id_int_type transposed_id) const { return go_south[transposed_id]; }
 
 			/**
 			* @brief Returns the transposed id of the cell you reach from cell \p transposed_id when moving north with no pieces on the way.
 			* @details Has undefined behavior if \p id is out of range. Valid range is [ 0, board.count_cells() - 1 ]
 			*/
-			cell_id_int_type get_north(cell_id_int_type transposed_id) const { return go_north[transposed_id]; }
+			inline cell_id_int_type get_north(cell_id_int_type transposed_id) const { return go_north[transposed_id]; }
+
+			inline cell_id_int_type get(const direction& d, cell_id_int_type raw_id) const {
+				switch (d.get())
+				{
+				case direction::encoding::NORTH:
+					return get_north(raw_id);
+				case direction::encoding::EAST:
+					return get_east(raw_id);
+				case direction::encoding::SOUTH:
+					return get_south(raw_id);
+				case direction::encoding::WEST:
+					return get_west(raw_id);
+				default:
+					return raw_id;
+				}
+			}
 		};
 
 		using default_quick_move_cache = quick_move_cache<default_dynamic_rectangle_world>;
@@ -196,13 +212,118 @@ namespace tobor {
 			move_one_piece_calculator(const world_type& my_world) : my_world(my_world), cache(my_world) {
 			}
 
-			// put the following four functions together using some if constexpr. Use the direction as template parameter. ####
-			// it may be better to not return a bool, just return the start cell itself if no move happens. (?)
+			using id_getter_type = cell_id_int_type(cell_id_type::*)(const world_type&);
+			using cell_id_creator = cell_id_type(*)(cell_id_int_type, const world_type&);
+			using cache_direction_getter = cell_id_int_type(quick_move_cache_type::*)(cell_id_int_type);
+
+			/**
+			*	@brief Calculates the successor cell to reach starting at \p start_cell moving in given direction until any obstacle (wall or piece).
+			*/
+			inline cell_id_int_type next_cell_max_move_raw(
+				const cell_id_int_type& raw_start_cell_id,
+				const positions_of_pieces_type& state,
+				const id_getter_type& get_raw_id,
+				const cache_direction_getter& get_cache_direction
+			) {
+				cell_id_int_type raw_next_cell_id{ (cache.*get_cache_direction)(raw_start_cell_id) };
+
+				for (std::size_t i = 0; i < state.COUNT_ALL_PIECES; ++i) { // iterate over all pieces
+					const cell_id_int_type current_raw_id{ (state.piece_positions[i].*get_raw_id)(my_world) };
+
+					if (raw_start_cell_id < current_raw_id && current_raw_id <= raw_next_cell_id) {
+						raw_next_cell_id = current_raw_id - 1;
+					}
+
+					if (raw_start_cell_id > current_raw_id && current_raw_id >= raw_next_cell_id) {
+						raw_next_cell_id = current_raw_id + 1;
+					}
+				}
+
+				return raw_next_cell_id;
+			}
+
+
+			/**
+			*	@brief Calculates the successor cell to reach starting at \p start_cell moving in given direction until any obstacle (wall or piece).
+			*/
+			inline cell_id_int_type next_cell_max_move_raw(
+				const cell_id_int_type& raw_start_cell_id,
+				const positions_of_pieces_type& state,
+				const direction& d
+			) const {
+				cell_id_int_type raw_next_cell_id{ cache.get(d, raw_start_cell_id) };
+
+				for (std::size_t i = 0; i < state.COUNT_ALL_PIECES; ++i) { // iterate over all pieces
+					const cell_id_int_type current_raw_id{ state.piece_positions[i].get_raw_id(d, my_world) };
+
+					if (raw_start_cell_id < current_raw_id && current_raw_id <= raw_next_cell_id) {
+						raw_next_cell_id = current_raw_id - 1;
+					}
+
+					if (raw_start_cell_id > current_raw_id && current_raw_id >= raw_next_cell_id) {
+						raw_next_cell_id = current_raw_id + 1;
+					}
+				}
+
+				return raw_next_cell_id;
+			}
+
+
+			/**
+			*	@brief Calculates the successor cell to reach starting at \p start_cell moving in given direction until any obstacle (wall or piece).
+			*/
+			inline cell_id_type next_cell_max_move(
+				const cell_id_type& start_cell,
+				const positions_of_pieces_type& state,
+				const id_getter_type& get_raw_id,
+				const cell_id_creator& create_cell_id_by,
+				const cache_direction_getter& get_cache_direction
+			) {
+				const cell_id_int_type raw_start_cell_id{ (start_cell.*get_raw_id)(my_world) };
+
+				const cell_id_int_type raw_next_cell_id{ next_cell_max_move_raw(raw_start_cell_id, state, get_raw_id,get_cache_direction) };
+
+				return create_cell_id_by(raw_next_cell_id, my_world);
+			}
+
+			/**
+			*	@brief Calculates the successor cell to reach starting at \p start_cell moving in given direction until any obstacle (wall or piece).
+			*/
+			inline cell_id_type next_cell_max_move(
+				const cell_id_type& start_cell,
+				const positions_of_pieces_type& state,
+				const direction& d
+			) const {
+				const cell_id_int_type raw_start_cell_id{ start_cell.get_raw_id(d,my_world) };
+
+				const cell_id_int_type raw_next_cell_id{ next_cell_max_move_raw(raw_start_cell_id, state, d) };
+
+				return cell_id_type::create_by_raw_id(d, raw_next_cell_id, my_world);
+			}
+
+			/**
+			*	@brief Calculates the successor cell to reach starting at \p start_cell moving in given direction until any obstacle (wall or piece).
+			*/
+			template<id_getter_type get_raw_id,
+				cell_id_creator create_cell_id_by,
+				cache_direction_getter get_cache_direction
+			>
+			inline cell_id_type static_next_cell_max_move(
+				const cell_id_type& start_cell,
+				const positions_of_pieces_type& state
+			) {
+				const cell_id_int_type raw_start_cell_id{ (start_cell.*get_raw_id)(my_world) };
+
+				const cell_id_int_type raw_next_cell_id{ next_cell_max_move_raw(raw_start_cell_id, state, get_raw_id,get_cache_direction) };
+
+				return create_cell_id_by(raw_next_cell_id, my_world);
+			}
+
 
 			/**
 			*	@brief Calculates the successor cell to reach starting at \p start_cell moving west until obstacle.
 			*/
-			inline std::pair<cell_id_type, bool> get_next_cell_on_west_move(const cell_id_type& start_cell, const positions_of_pieces_type& state) {
+			[[deprecated]] inline std::pair<cell_id_type, bool> get_next_cell_on_west_move(const cell_id_type& start_cell, const positions_of_pieces_type& state) {
 				cell_id_int_type next_cell{ cache.get_west(start_cell.get_id()) };
 
 				// iterate over all pieces since they may appear as obstacle
@@ -223,16 +344,12 @@ namespace tobor {
 			/**
 			*	@brief Calculates the successor cell to reach starting at \p start_cell moving east until obstacle.
 			*/
-			inline std::pair<cell_id_type, bool> get_next_cell_on_east_move(const cell_id_type& start_cell, const positions_of_pieces_type& state) {
+			[[deprecated]] inline std::pair<cell_id_type, bool> get_next_cell_on_east_move(const cell_id_type& start_cell, const positions_of_pieces_type& state) {
 
 				//decltype(cell_id_type::get_id) cell_id_type::* get_id_type = &cell_id_type::get_id;
 				//decltype(quick_move_cache::get_west) quick_move_cache::* next_cache_direction = &quick_move_cache::get_east;
 
 				cell_id_int_type next_cell{ cache.get_east(start_cell.get_id()) };
-
-				//if (start_cell.get_id() == next_cell) { // no move possible by walls
-				//	return std::make_pair(cell_id_type::create_by_id(next_cell, my_world), false);
-				//}
 
 				// iterate over all pieces since they may appear as obstacle
 
@@ -252,7 +369,7 @@ namespace tobor {
 			/**
 			*	@brief Calculates the successor cell to reach starting at \p start_cell moving south until obstacle.
 			*/
-			inline std::pair<cell_id_type, bool> get_next_cell_on_south_move(const cell_id_type& start_cell, const positions_of_pieces_type& state) {
+			[[deprecated]] inline std::pair<cell_id_type, bool> get_next_cell_on_south_move(const cell_id_type& start_cell, const positions_of_pieces_type& state) {
 				cell_id_int_type next_cell{ cache.get_south(start_cell.get_transposed_id(my_world)) };
 
 				//if (start_cell.get_transposed_id() == next_cell) { // no move possible by walls
@@ -277,7 +394,7 @@ namespace tobor {
 			/**
 			*	@brief Calculates the successor cell to reach starting at \p start_cell moving north until obstacle.
 			*/
-			inline std::pair<cell_id_type, bool> get_next_cell_on_north_move(const cell_id_type& start_cell, const positions_of_pieces_type& state) {
+			[[deprecated]] inline std::pair<cell_id_type, bool> get_next_cell_on_north_move(const cell_id_type& start_cell, const positions_of_pieces_type& state) {
 				cell_id_int_type next_cell{ cache.get_north(start_cell.get_transposed_id(my_world)) };
 
 				//if (start_cell.get_transposed_id() == next_cell) { // no move possible by walls
@@ -299,7 +416,67 @@ namespace tobor {
 				return std::make_pair(cell_id_type::create_by_transposed_id(next_cell, my_world), true);
 			}
 
-			inline std::pair<positions_of_pieces_type, bool> successor_state(
+			inline std::vector<positions_of_pieces_type> predecessor_states(
+				const positions_of_pieces_type& state,
+				const typename piece_move_type::piece_id_type& _piece_id,
+				const direction& _direction_from)
+			{
+				const cell_id_type start_cell{ state.piece_positions[_piece_id.value] };
+
+				const cell_id_int_type raw_start_cell_id{ start_cell.get_raw_id(_direction_from, my_world) };
+
+				auto raw_far_id = next_cell_max_move_raw(
+					raw_start_cell_id,
+					state,
+					!_direction_from
+				);
+
+				auto result = std::vector<positions_of_pieces_type>(
+					raw_start_cell_id > raw_far_id ?
+					raw_start_cell_id - raw_far_id :
+					raw_far_id - raw_start_cell_id,
+					state
+				);
+
+				const int8_t increment{ (raw_start_cell_id > raw_far_id) - (raw_start_cell_id < raw_far_id) };
+
+				auto iter = result.begin();
+				for (cell_id_int_type raw_id = raw_far_id; raw_id != raw_start_cell_id; raw_id += increment, ++iter) {
+					iter->piece_positions[_piece_id.value] = cell_id_type::create_by_raw_id(_direction_from, raw_id, my_world);
+					iter->sort_pieces();
+				}
+				return result;
+			}
+
+			inline std::vector<positions_of_pieces_type> predecessor_states(
+				const positions_of_pieces_type& state,
+				const typename piece_move_type::piece_id_type& _piece_id)
+			{
+				auto result = std::vector<positions_of_pieces_type>();
+				result.reserve(static_cast<std::size_t>(my_world.get_horizontal_size() + my_world.get_vertical_size()) * 2);
+				for (direction d = direction::begin(); d != direction::end(); ++d) {
+					auto part = predecessor_states(state, _piece_id, d);
+					std::copy(std::begin(part), std::end(part), std::back_inserter(result));
+				}
+				result.shrink_to_fit();
+				return result;
+			}
+
+			inline std::vector<positions_of_pieces_type> predecessor_states(const positions_of_pieces_type& state) {
+				auto result = std::vector<positions_of_pieces_type>();
+				result.reserve(
+					static_cast<std::size_t>(my_world.get_horizontal_size() + my_world.get_vertical_size()) * 2 * piece_id_type::pieces_quantity_type::COUNT_ALL_PIECES
+				);
+				for (piece_id_type piece = piece_id_type::begin(); piece != piece_id_type::end(); ++piece) {
+					auto part = predecessor_states(state, piece);
+					std::copy(std::begin(part), std::end(part), std::back_inserter(result));
+				}
+				result.shrink_to_fit();
+				return result;
+			} // should add a function returning void but taking an insert iterator
+
+
+			[[deprecated]] inline std::pair<positions_of_pieces_type, bool> successor_state_deprecated(
 				const positions_of_pieces_type& state,
 				const typename piece_move_type::piece_id_type& _piece_id,
 				const direction& _direction)
@@ -333,6 +510,23 @@ namespace tobor {
 				next_state.sort_pieces();
 
 				return std::make_pair(next_state, true);
+			}
+
+			inline positions_of_pieces_type successor_state(
+				const positions_of_pieces_type& state,
+				const typename piece_move_type::piece_id_type& _piece_id,
+				const direction& _direction
+			) const {
+				positions_of_pieces_type result(state);
+
+				result.piece_positions[_piece_id.value] = next_cell_max_move(
+					state.piece_positions[_piece_id.value],
+					state,
+					_direction
+				);
+				result.sort_pieces();
+
+				return result;
 			}
 
 			inline std::pair<positions_of_pieces_type, bool> successor_state(
@@ -388,24 +582,26 @@ namespace tobor {
 
 		using default_move_one_piece_calculator = move_one_piece_calculator<default_positions_of_pieces, default_quick_move_cache, default_piece_move>;
 
-		template<class Positions_Of_Pieces_Type>
-		class backward_graph {
-		public:
-			using positions_of_pieces_type = Positions_Of_Pieces_Type;
+		/*
+				template<class Positions_Of_Pieces_Type>
+				class backward_graph {
+				public:
+					using positions_of_pieces_type = Positions_Of_Pieces_Type;
 
 
 
-			struct graph_node {
-				positions_of_pieces state;
-				//std::size_t;
-			};
+					struct graph_node {
+						positions_of_pieces_type state;
+						//std::size_t;
+					};
 
-		};
+				};
+		*/
 
 		//template<uint64_t MAX_DISTANCE, uint64_t MAX_WIDTH>
 		class indexing_backward_graph {
 		public:
-			using positions_of_pieces_type = Positions_Of_Pieces_Type;
+			//using positions_of_pieces_type = Positions_Of_Pieces_Type;
 
 			template<class Distance_Int, class Index_Int>
 			struct index_edge {
@@ -475,7 +671,10 @@ namespace tobor {
 				return result;
 			}
 
-			indexing_backward_graph get_indexing_backward_graph(const cell_id_type& target_cell) {
+			indexing_backward_graph get_indexing_backward_graph(
+				move_one_piece_calculator_type& engine,
+				const cell_id_type& target_cell
+			) {
 				if (optimal_path_length == SIZE_TYPE_MAX) {
 					throw 0;
 				}
@@ -496,13 +695,16 @@ namespace tobor {
 					for (std::size_t i{ 0 }; i < reachable_states_by_distance[backward_explore_distance]; ++i) {
 						if (flagged_states[i]) {
 							std::vector<positions_of_pieces_type> found_predecessors;
+							
+							engine.
+
 							//calc all possible predecessor states.
 							// set bits in next_flagged_states, only keep predecessor found in prvious distance vector!!!
-							
+
 							//add an edge to the edge vector
 							//(first for every layer an own edge vector, less need of sorting afterwards when concatting them)
 							//	flag the state we reached backwards...
-
+							bla
 
 						}
 					}

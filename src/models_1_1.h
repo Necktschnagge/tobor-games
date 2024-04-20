@@ -11,6 +11,23 @@ namespace tobor {
 
 		using direction = tobor::v1_0::direction;
 
+		class id_polarisation {
+
+			bool is_transposed{ false };
+
+		public:
+			id_polarisation() {}
+			id_polarisation(const id_polarisation&) = default;
+			id_polarisation(id_polarisation&&) = default;
+
+			id_polarisation& operator=(const id_polarisation&) = default;
+			id_polarisation& operator=(id_polarisation&&) = default;
+
+			inline id_polarisation(const direction& d) : is_transposed(d.is_transposed_id_direction()) {}
+
+			inline operator bool() const noexcept { return is_transposed; };
+		};
+
 		using wall_type = tobor::v1_0::wall_type;
 
 		using wall_vector = std::vector<wall_type>;
@@ -279,6 +296,11 @@ namespace tobor {
 				return type(world.transposed_cell_id_to_cell_id(p_transposed_id));
 			}
 
+			inline static type create_by_raw_id(const id_polarisation& p, int_cell_id_type p_raw_id, const world_type& world) noexcept {
+				if (p) return create_by_transposed_id(p_raw_id, world);
+				else return create_by_id(p_raw_id);
+			}
+
 		private:
 
 			int_cell_id_type id;
@@ -314,12 +336,19 @@ namespace tobor {
 			/* getter */
 
 			inline int_cell_id_type get_id() const noexcept { return id; }
+			
+			inline int_cell_id_type get_id(const world_type&) const noexcept { return id; }
 
 			inline int_cell_id_type get_transposed_id(const world_type& world) const noexcept { return world.cell_id_to_transposed_cell_id(id); }
 
 			inline int_cell_id_type get_x_coord(const world_type& world) const noexcept { return world.cell_id_to_coordinates(id).first; }
 
 			inline int_cell_id_type get_y_coord(const world_type& world) const noexcept { return world.cell_id_to_coordinates(id).second; }
+
+			inline int_cell_id_type get_raw_id(const id_polarisation& p, const world_type& world) const noexcept {
+				if (p) return get_transposed_id(world);
+				else return get_id();
+			}
 
 			/* modifiers */
 

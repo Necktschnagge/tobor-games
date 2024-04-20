@@ -608,7 +608,7 @@ void GameController::startSolver(QMainWindow* mw) {
 	/////graph.remove_dead_states(target_cell);
 	
 	
-	use  distance_explorer.get_indexing_backward_graph
+	auto graph = distance_explorer.get_indexing_backward_graph(target_cell);
 
 	mw->statusBar()->showMessage("Extracting solution paths...");
 	mw->repaint();

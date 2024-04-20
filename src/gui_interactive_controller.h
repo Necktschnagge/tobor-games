@@ -139,9 +139,9 @@ public:
 			return;
 		}
 
-		auto [next_state, valid] = move_one_piece_calculator.successor_state(currentState(), piece_id, direction);
+		auto next_state = move_one_piece_calculator.successor_state(currentState(), piece_id, direction);
 
-		if (valid) {
+		if (next_state != currentState()) {
 			path.push_back(next_state);
 		}
 

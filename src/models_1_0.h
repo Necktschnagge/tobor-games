@@ -68,6 +68,8 @@ namespace tobor {
 			inline static direction SOUTH() { return encoding::SOUTH; }
 			inline static direction WEST() { return encoding::WEST; }
 
+			inline bool is_id_direction() const noexcept { return (value & (encoding::EAST | encoding::WEST)); }
+			inline bool is_transposed_id_direction() const noexcept { return (value & (encoding::NORTH | encoding::SOUTH)); }
 
 			/* usage like an iterator over directions: */
 			inline static direction begin() { return encoding::NORTH; }
@@ -78,12 +80,16 @@ namespace tobor {
 
 
 			/* comparison operators */
-			inline bool operator<(const direction& another) { return this->value < another.value; }
-			inline bool operator==(const direction& another) { return this->value == another.value; }
+			//inline bool operator<(const direction& another) { return this->value < another.value; }
+			//inline bool operator==(const direction& another) { return this->value == another.value; }
+			inline std::strong_ordering operator<=>(const direction& another) const { return value <=> another.value; }
+			
 
 
 			/* access via conversion to underlying type */
 			inline operator int_type() const { return value; }
+
+			inline int_type get() const noexcept { return value; }
 
 			inline operator std::string() const {
 				switch (value) {
@@ -98,6 +104,10 @@ namespace tobor {
 				default:
 					return " ";
 				}
+			}
+
+			direction operator!() const noexcept {
+				return direction( ((value << 2) | (value >> 2))^(value) );
 			}
 
 		};
