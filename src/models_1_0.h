@@ -83,7 +83,7 @@ namespace tobor {
 			//inline bool operator<(const direction& another) { return this->value < another.value; }
 			//inline bool operator==(const direction& another) { return this->value == another.value; }
 			inline std::strong_ordering operator<=>(const direction& another) const { return value <=> another.value; }
-			
+
 
 
 			/* access via conversion to underlying type */
@@ -107,7 +107,7 @@ namespace tobor {
 			}
 
 			direction operator!() const noexcept {
-				return direction( ((value << 2) | (value >> 2))^(value) );
+				return direction(((value << 2) | (value >> 2)) ^ (value));
 			}
 
 		};
@@ -634,6 +634,67 @@ namespace tobor {
 						return true;
 				}
 				return false;
+			}
+
+			inline std::size_t count_changed_pieces(const positions_of_pieces& another) const {
+				std::size_t counter{ 0 };
+				if constexpr (SORTED_TARGET_PIECES) {
+					auto iter = target_pieces_cbegin();
+					auto jter = another.target_pieces_cbegin();
+					while (iter != target_pieces_cend() && jter != another.target_pieces_cend()) {
+						if (*iter == *jter) {
+							++iter;
+							++jter;
+						}
+						else if (*iter < *jter) {
+							++iter;
+							++counter;
+						}
+						else
+							++jter;
+					}
+					counter += (target_pieces_cend() - iter);
+				}
+				else {
+					for (
+						auto iter = target_pieces_cbegin(), jter = another.target_pieces_cbegin();
+						iter != target_pieces_cend();
+						++iter, ++jter
+						)
+					{
+						if (*iter != *jter)
+							++counter;
+					}
+				}
+				if constexpr (SORTED_NON_TARGET_PIECES) {
+					auto iter = non_target_pieces_cbegin();
+					auto jter = another.non_target_pieces_cbegin();
+					while (iter != non_target_pieces_cend() && jter != another.non_target_pieces_cend()) {
+						if (*iter == *jter) {
+							++iter;
+							++jter;
+						}
+						else if (*iter < *jter) {
+							++iter;
+							++counter;
+						}
+						else
+							++jter;
+					}
+					counter += (non_target_pieces_cend() - iter);
+				}
+				else {
+					for (
+						auto iter = non_target_pieces_cbegin(), jter = another.non_target_pieces_cbegin();
+						iter != non_target_pieces_cend();
+						++iter, ++jter
+						)
+					{
+						if (*iter != *jter)
+							++counter;
+					}
+				}
+				return counter;
 			}
 		};
 

@@ -640,26 +640,20 @@ void GameController::startSolver(QMainWindow* mw) {
 	// explore...
 	distance_explorer.explore_until_optimal_solution_distance(move_one_piece_calculator, target_cell);
 
-	tobor::v1_1::simple_state_bigraph<positions_of_pieces_type, std::vector<bool>> bigraph;
+	tobor::v1_1::simple_state_bigraph<positions_of_pieces_type, std::vector<bool>> bigraph; // ### inside this call, log every distance level as a progress bar
+
+	mw->statusBar()->showMessage("Extracting solution state graph...");
+	mw->repaint();
 
 	distance_explorer.get_simple_bigraph(move_one_piece_calculator, target_cell, bigraph);
-
-	// build graph
-	/////optional_solver_state_graph.emplace(currentState());
-	/////partial_state_graph_type& graph{ optional_solver_state_graph.value() };
-	/////
-	/////
-	/////graph.explore_until_optimal_solution_distance(move_one_piece_calculator, target_cell);
-	/////graph.remove_dead_states(target_cell);
-	
-	mw->statusBar()->showMessage("Extracting solution paths...");
-	mw->repaint();
 
 	// optimal paths
 	std::map<positions_of_pieces_type, std::vector<move_path_type>> optimal_paths_map{ graph.optimal_move_paths(target_cell) };
 
 	mw->statusBar()->showMessage("Classifying solution paths...");
 	mw->repaint();
+
+
 
 	// classify optimal paths...
 	optional_classified_move_paths.reset();

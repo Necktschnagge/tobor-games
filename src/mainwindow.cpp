@@ -180,8 +180,6 @@ void MainWindow::on_actionBack_triggered()
 void MainWindow::on_actionStart_Solver_triggered()
 {
 	ui->statusbar->showMessage("starting solver...");
-	//update(); //repaint();
-	//ui->statusbar->update();
 	repaint();
 	guiInteractiveController.startSolver();
 }
