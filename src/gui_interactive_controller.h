@@ -184,6 +184,9 @@ public:
 };
 
 class GuiInteractiveController final {
+	
+	template<class X>
+	friend void startReferenceGame22Helper(X& guiInteractiveController);
 
 public:
 	enum class InteractiveMode {
