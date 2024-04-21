@@ -113,7 +113,6 @@
         <property name="title">
           <string>&amp;Edit</string>
         </property>
-        <addaction name="actionTest_ListView"/>
       </widget>
       <widget class="QMenu" name="menuGame">
         <property name="title">
@@ -156,9 +155,16 @@
         <property name="title">
           <string>&amp;Developer</string>
         </property>
+        <widget class="QMenu" name="menuDeveloperDebug">
+          <property name="title">
+            <string>&amp;Debug</string>
+          </property>
+          <addaction name="action22ReferenceGame"/>
+        </widget>
         <addaction name="actionAbout"/>
         <addaction name="actionHighlightGeneratedTargetCells"/>
         <addaction name="actionEnableAllMenuBarItems"/>
+        <addaction name="menuDeveloperDebug"/>
       </widget>
       <widget class="QMenu" name="menuView">
         <property name="title">
@@ -251,12 +257,12 @@
         <string>&amp;Enable all MenuBar items</string>
       </property>
     </action>
-    <action name="actionTest_ListView">
+    <action name="action22ReferenceGame">
       <property name="enabled">
-        <bool>false</bool>
+        <bool>true</bool>
       </property>
       <property name="text">
-        <string>Test ListView</string>
+        <string>&amp;Start 22 Reference Game</string>
       </property>
     </action>
     <action name="actionNORTH">
