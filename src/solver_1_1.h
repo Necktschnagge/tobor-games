@@ -598,6 +598,44 @@ namespace tobor {
 				};
 		*/
 
+		template<class State_Type, class State_Label_Type = void>
+		class simple_state_bigraph;
+
+		template<class State_Type>
+		class simple_state_bigraph<State_Type, void> {
+		public:
+
+			using state_type = State_Type;
+			using state_label_type = void;
+
+			struct node_links {
+				std::set<state_type> predecessors;
+				std::set<state_type> successors;
+			};
+
+			using map_type = std::map<state_type, node_links>;
+
+			map_type map;
+		};
+
+		template<class State_Type, class State_Label_Type>
+		class simple_state_bigraph {
+		public:
+			using state_type = State_Type;
+
+			using state_label_type = State_Label_Type;
+
+			struct node_links {
+				std::set<state_type> predecessors;
+				std::set<state_type> successors;
+				state_label_type labels;
+			};
+
+			using map_type = std::map<state_type, node_links>;
+
+			map_type map;
+		};
+
 		//template<uint64_t MAX_DISTANCE, uint64_t MAX_WIDTH>
 		class indexing_backward_graph {
 		public:
@@ -671,50 +709,83 @@ namespace tobor {
 				return result;
 			}
 
-			indexing_backward_graph get_indexing_backward_graph(
+			template<class State_Label_Type>
+			void get_simple_bigraph(
 				move_one_piece_calculator_type& engine,
-				const cell_id_type& target_cell
+				const cell_id_type& target_cell,
+				simple_state_bigraph<positions_of_pieces_type, State_Label_Type>& destination
 			) {
 				if (optimal_path_length == SIZE_TYPE_MAX) {
 					throw 0;
 				}
+				using bigraph = simple_state_bigraph<positions_of_pieces_type>;
 
-				indexing_backward_graph result;
-
-				std::vector<bool> flagged_states(reachable_states_by_distance[optimal_path_length].size(), false);
-				std::vector<bool> next_flagged_states;
+				//std::vector<bool> flagged_states(reachable_states_by_distance[optimal_path_length].size(), false);
+				//std::vector<bool> next_flagged_states;
+				std::vector<positions_of_pieces_type> states;
 
 				for (std::size_t i{ 0 }; i < reachable_states_by_distance[optimal_path_length].size(); ++i) {
 					if (reachable_states_by_distance[optimal_path_length][i].is_final(target_cell)) {
-						flagged_states[i] = true;
+						//flagged_states[i] = true;
+						destination.map.insert(
+							destination.map.end(),
+							std::make_pair(
+								reachable_states_by_distance[optimal_path_length][i],
+								bigraph::node_links()
+							)
+						);
+						states.push_back(reachable_states_by_distance[optimal_path_length][i]);
 					}
 				}
+				std::size_t backward_explore_distance = optimal_path_length;
 
-				for (std::size_t backward_explore_distance = optimal_path_length; backward_explore_distance != 0; --backward_explore_distance) {
-					next_flagged_states = std::vector<bool>(reachable_states_by_distance[backward_explore_distance - 1].size, false);
-					for (std::size_t i{ 0 }; i < reachable_states_by_distance[backward_explore_distance]; ++i) {
-						if (flagged_states[i]) {
-							std::vector<positions_of_pieces_type> found_predecessors;
-							
-							engine.
+				while (backward_explore_distance > 0) {
+					--backward_explore_distance;
 
-							//calc all possible predecessor states.
-							// set bits in next_flagged_states, only keep predecessor found in prvious distance vector!!!
+					std::vector<std::pair<positions_of_pieces_type, positions_of_pieces_type>> possible_edges;
 
-							//add an edge to the edge vector
-							//(first for every layer an own edge vector, less need of sorting afterwards when concatting them)
-							//	flag the state we reached backwards...
-							bla
+					// all maybe-edges
+					for (const auto& state : states) {
+						auto vec = engine.predecessor_states(state);
+						possible_edges.reserve(possible_edges.size() + vec.size());
+						std::transform(std::execution::par, vec.cbegin(), vec.cend(), [&](const positions_of_pieces_type& pred_state) {
+							possible_edges.emplace_back(pred_state, state);
+							});
+					}
+					// sort by from-state
+					std::sort(possible_edges.begin(), possible_edges.end());
 
+					//remove if from state not in distance state vector
+					std::size_t compare_index{ 0 };
+
+					possible_edges.erase(
+						std::remove_if(possible_edges.begin(), possible_edges.end(), [&](const std::pair<positions_of_pieces_type, positions_of_pieces_type>& edge) {
+							while (compare_index < reachable_states_by_distance[backward_explore_distance].size() && reachable_states_by_distance[backward_explore_distance][compare_index] < edge.first) {
+								++compare_index;
+							}
+							if (compare_index < reachable_states_by_distance[backward_explore_distance].size() && reachable_states_by_distance[backward_explore_distance][compare_index] == edge.first) {
+								return false; // do not remove edge
+							}
+							return true; // remove edge
+							}),
+						possible_edges.end()
+					);
+
+					// add edges to the bigraph:
+					states.clear();
+
+					for (const std::pair<positions_of_pieces_type, positions_of_pieces_type>& edge : possible_edges) {
+						if (states.empty() || states.back() != edge.first) {
+							states.push_back(edge.first);
 						}
+						auto& s{ destination.map[edge.first].successors };
+						s.insert(s.end(), edge.second);
+						auto& p{ destination.map[edge.second].predecessors };
+						p.insert(p.end(), edge.first);
 					}
 
-					flagged_states = next_flagged_states;
+					// pass vector of pre-states to next loop run.
 				}
-
-				throw "not yet implemented";
-
-				return result;
 			}
 
 			inline std::vector<positions_of_pieces_type> optimal_final_states(const cell_id_type& target_cell, size_type min_distance_level) const {
