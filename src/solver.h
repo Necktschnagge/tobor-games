@@ -428,11 +428,24 @@ namespace tobor {
 
 			struct move_candidate {
 
+				/** The move consisting of piece_id and direction. */
 				piece_move_type move;
 
-				std::pair<positions_of_pieces_type, bool> next_cell_paired_enable;
+				/** The successor state */
+				positions_of_pieces_type successor_state;
 
-				move_candidate(const piece_move_type& move, const std::pair<positions_of_pieces_type, bool>& n) : move(move), next_cell_paired_enable(n) {}
+				/** True if the position indeed changes on this move */
+				bool is_true_move;
+
+				move_candidate(
+					const piece_move_type& move,
+					const std::pair<positions_of_pieces_type, bool>& n
+				) :
+					move(move),
+					successor_state(n.first),
+					is_true_move(n.second)
+				{
+				}
 
 			};
 
@@ -494,6 +507,8 @@ namespace tobor {
 
 			using move_path_type = move_path<piece_move_type>;
 
+			static constexpr size_type SIZE_TYPE_MAX = state_graph_node_type::MAX;
+
 			friend class GameController; // remove this! is bad design.
 		private:
 
@@ -503,7 +518,7 @@ namespace tobor {
 
 
 			// number of steps needed by any optimal solution
-			size_type optimal_solution_size;
+			size_type optimal_path_length;
 
 			// initial state
 			positions_of_pieces_type initial_state;
@@ -512,14 +527,36 @@ namespace tobor {
 			// .back() contains all game states to be explored if one deepening step just finished.
 			std::vector<std::vector<map_iterator>> visited_game_states;
 
+			template<class Insert_Iterator>
+			inline void optimal_move_path_helper_back_to_front(map_iterator state, Insert_Iterator destination, const move_path_type& path_suffix = move_path_type()) {
+
+				if (state->second.smallest_seen_step_distance_from_initial_state == 0) {
+					destination = path_suffix;
+				}
+
+				for (auto& tuple : state->second.optimal_predecessors) {
+
+					auto& predecessor_map_iterator{ std::get<0>(tuple) };
+					auto& move{ std::get<1>(tuple) };
+					move_path_type path(path_suffix.vector().size() + 1);
+					path.vector()[0] = move;
+					std::copy(path_suffix.vector().cbegin(), path_suffix.vector().cend(), path.vector().begin() + 1);
+
+					optimal_move_path_helper_back_to_front(predecessor_map_iterator, destination, path);
+				}
+			}
+
 		public:
+
 
 			// ### note in case of removing states with no optimal successors, the invalid iterator problem arises.
 			partial_state_graph(const positions_of_pieces_type& initial_state) :
-				optimal_solution_size(state_graph_node_type::MAX),
+				optimal_path_length(SIZE_TYPE_MAX),
 				initial_state(initial_state)
 			{
 				ps_map[initial_state].smallest_seen_step_distance_from_initial_state = 0; // insert initial state into map
+				//ps_map[initial_state].count_successors_where_this_is_one_optimal_predecessor; -> default 0
+				//ps_map[initial_state].optimal_predecessors; -> default empty vector
 
 				visited_game_states.push_back(std::vector<map_iterator>{ps_map.begin()}); // insert initial state into visited states
 			}
@@ -532,76 +569,129 @@ namespace tobor {
 					positions_of_pieces_type(initial_target_pieces, initial_non_target_pieces)
 				)
 			{
+				// ## check if removing this ctor is possible
 			}
 
-			inline size_type get_optimal_solution_size() { return optimal_solution_size; };
+			inline size_type get_optimal_path_length() { return optimal_path_length; };
 
-			template<class Insert_Iterator>
-			inline void optimal_path_helper_back_to_front(map_iterator state, Insert_Iterator destination, const move_path_type& rest_path = move_path_type()) {
-
-				if (state->second.smallest_seen_step_distance_from_initial_state == 0) {
-					destination = rest_path;
+			inline std::vector<map_iterator> optimal_final_state_iterators(const cell_id_type& target_cell) const {
+				std::vector<map_iterator> result;
+				for (const auto& iter : visited_game_states.back()) {
+					if (iter->first.is_final(target_cell)) {
+						result.push_back(iter);
+					}
 				}
-
-				for (auto& tuple : state->second.optimal_predecessors) {
-					auto& predecessor_map_iterator{ std::get<0>(tuple) };
-					auto& move{ std::get<1>(tuple) };
-					move_path_type path(rest_path.vector().size() + 1);
-					path.vector()[0] = move;
-					std::copy(rest_path.vector().cbegin(), rest_path.vector().cend(), path.vector().begin() + 1);
-
-					optimal_path_helper_back_to_front(predecessor_map_iterator, destination, path);
-				}
-
-
+				return result;
 			}
 
-			inline std::map<positions_of_pieces_type, std::vector<move_path_type>> optimal_paths(const cell_id_type& target_cell) {
+			/*
+			inline std::vector<map_iterator> optimal_distance_dead_state_iterators(const cell_id_type& target_cell) const {
+				//std::vector<map_iterator> result;
+				//for (const auto& iter : visited_game_states.back()) {
+				//	if (iter->first.is_final(target_cell)) {
+				//		result.push_back(iter);
+				//	}
+				//}
+				//return result;
+			}
+			*/
 
+			inline std::vector<positions_of_pieces_type> optimal_final_states(const cell_id_type& target_cell) const {
+				std::vector<positions_of_pieces_type> result;
+				for (const auto& iter : visited_game_states.back()) {
+					if (iter->first.is_final(target_cell)) {
+						result.push_back(iter->first);
+					}
+				}
+				return result;
+			}
+
+			inline std::map<positions_of_pieces_type, std::vector<move_path_type>> optimal_move_paths(const cell_id_type& target_cell) {
 				std::map<positions_of_pieces_type, std::vector<move_path_type>> result;
-
-				//std::vector<positions_of_pieces_type> goal_states;
-
-				for (
-					auto iter = ps_map.begin(); iter != ps_map.end(); ++iter
-					) {
+				for (auto iter = ps_map.begin(); iter != ps_map.end(); ++iter) {
 					auto& state{ iter->first };
 					if (state.is_final(target_cell)) {
-						//goal_states.push_back(state);
+						optimal_move_path_helper_back_to_front(iter, std::back_inserter(result[state]));
+					}
+				}
+				return result;
+			}
 
-						optimal_path_helper_back_to_front(iter, std::back_inserter(result[state]));
+
+			inline void remove_dead_states(const std::vector<map_iterator>& live_states) {
+				for (const auto& map_it : live_states) {
+					++map_it->second.count_successors_where_this_is_one_optimal_predecessor;
+				}
+				std::vector<map_iterator> to_be_removed; // all iterators pointing to states where:   count_successors_where_this_is_one_optimal_predecessor == 0
+
+				for (auto iter = ps_map.begin(); iter != ps_map.end(); ++iter) {
+					if (iter->second.count_successors_where_this_is_one_optimal_predecessor == 0) {
+						to_be_removed.push_back(iter);
 					}
 				}
 
-				return result;
+				while (!to_be_removed.empty()) {
+					map_iterator removee = to_be_removed.back();
+					to_be_removed.pop_back();
 
+					for (auto iter = removee->second.optimal_predecessors.begin(); iter != removee->second.optimal_predecessors.end(); ++iter) {
+						auto& pred{ std::get<0>(*iter) };
+						--pred->second.count_successors_where_this_is_one_optimal_predecessor;
+						if (pred->second.count_successors_where_this_is_one_optimal_predecessor == 0) {
+							to_be_removed.push_back(pred);
+						}
+					}
+
+					ps_map.erase(removee);
+				}
+
+				for (const auto& map_it : live_states) {
+					--map_it->second.count_successors_where_this_is_one_optimal_predecessor;
+				}
 			}
 
-			inline void build_state_graph_for_all_optimal_solutions(
+			inline void remove_dead_states(const cell_id_type& target_cell_defining_live_states) {
+				return remove_dead_states(optimal_final_state_iterators(target_cell_defining_live_states));
+			}
+
+			//inline void remove_dead_states2(const std::vector<map_iterator>& dead_states = ) {
+			//	//...
+			//}
+
+
+			// ### offer step-wise exploration instead of exploration until optimal.
+			inline void explore_until_optimal_solution_distance(
 				move_one_piece_calculator_type& engine,
 				const cell_id_type& target_cell
 			) {
-				// what if initial state is already final? check this! ####
+				const size_type SIZE_VISITED_BEFORE{ visited_game_states.size() };
 
-				for (size_type expand_size{ 0 }; expand_size < optimal_solution_size; ++expand_size) {
+				// condition: SIZE_VISITED_BEFORE == 1 (on first call only)
+
+				if (SIZE_VISITED_BEFORE > optimal_path_length) {
+					//Already executed exploration before. Any state to be explored whould add states into map beyond the optimal path length
+					return;
+				}
+
+				if (visited_game_states[0][0]->first.is_final(target_cell)) {
+					optimal_path_length = 0;
+					return;
+				}
+
+				for (size_type expand_level_index{ SIZE_VISITED_BEFORE - 1 }; expand_level_index < optimal_path_length; ++expand_level_index) {
+
+					// condition: visited_game_states.size() == expand_size + 1
+
+					visited_game_states[expand_level_index].shrink_to_fit();
 
 					visited_game_states.emplace_back();
-					// possibly invalidates iterators on sub-vectors, but on most compilers it will work anyway.
-					// But please do not rely on this behaviour.
 
-					//if (expand_size != 0) {
-						//visited_game_states[expand_size].shrink_to_fit();
-					visited_game_states[expand_size + 1].reserve(visited_game_states[expand_size].size() * 3 + 100 * expand_size + 10);
-					//}
+					visited_game_states[expand_level_index + 1].reserve(visited_game_states[expand_level_index].size() * 3 + 100 * expand_level_index + 10);
 
-					for (std::size_t iii = 0; iii < visited_game_states[expand_size].size(); ++iii) {
 
-						if (!(iii % 1000)) {
-							auto x = 5;
-							(void)x;
-						}
+					for (std::size_t expand_index_inside_level = 0; expand_index_inside_level < visited_game_states[expand_level_index].size(); ++expand_index_inside_level) {
 
-						const map_iterator& current_iterator{ visited_game_states[expand_size][iii] };
+						const map_iterator& current_iterator{ visited_game_states[expand_level_index][expand_index_inside_level] };
 
 						std::vector<move_candidate> candidates_for_successor_states; // can be array with fixed size(?)
 
@@ -615,66 +705,120 @@ namespace tobor {
 							}
 						}
 
+						/* order of candidates:
+						 piece 0: N E S W      <- target pieces come first!
+						 piece 1: N E S W
+						 ...
+						 piece last: N E S W
+						*/
+
+
 						// check if reached goal
 						for (
-							typename std::vector<move_candidate>::size_type candidate{ 0 };
-							candidate < static_cast<typename std::vector<move_candidate>::size_type>(4) * positions_of_pieces_type::COUNT_TARGET_PIECES; // only check candidates arising from moved target robots...
-							++candidate
+							typename std::vector<move_candidate>::size_type index_candidate{ 0 };
+							// only check candidates arising from moved target robots:
+							index_candidate < static_cast<typename std::vector<move_candidate>::size_type>(4) * positions_of_pieces_type::COUNT_TARGET_PIECES;
+							++index_candidate
 							)
 						{
-							if (candidates_for_successor_states[candidate].next_cell_paired_enable.first.piece_positions[candidate / 4] == target_cell) {
-								optimal_solution_size = current_iterator->second.smallest_seen_step_distance_from_initial_state + 1;
+							if (!candidates_for_successor_states[index_candidate].is_true_move) {
+								continue;
+							}
+
+							if constexpr (positions_of_pieces_type::SORTED_TARGET_PIECES) {
+
+								if (candidates_for_successor_states[index_candidate].successor_state.is_final(target_cell)) {
+									optimal_path_length = current_iterator->second.smallest_seen_step_distance_from_initial_state + 1;
+								}
+
+							}
+							else {
+								if (candidates_for_successor_states[index_candidate].successor_state.piece_positions[index_candidate / 4] == target_cell) {
+									// does not work for sorted final pieces! In that case we do not know where the moved piece is located.
+									optimal_path_length = current_iterator->second.smallest_seen_step_distance_from_initial_state + 1;
+								}
 							}
 						}
 
 						// add candidates to map if they are valid:
 						for (auto& c : candidates_for_successor_states) {
-							if (c.next_cell_paired_enable.second) { // there is a real move
+							if (c.is_true_move) { // there is a real move
 
-								auto& new_state_2 = c.next_cell_paired_enable.first;
+								auto [iter_insertion, bool_inserted] = ps_map.insert(std::make_pair(c.successor_state, partial_solutions_map_mapped_type()));
+								// Note: on entry creation default distance from 
 
 
-								/// check this whole comparison again!
-
-								auto [iter_insertion, bool_inserted] = ps_map.insert(std::make_pair(new_state_2, partial_solutions_map_mapped_type()));
+								// iter_insertion is the iterator to the inserted map entry or the one which prevented insertion.
 
 								auto& entry_value{ iter_insertion->second };
-								//auto& entry_key{ iter_insertion->first };
 
-								if (entry_value.smallest_seen_step_distance_from_initial_state > current_iterator->second.smallest_seen_step_distance_from_initial_state + 1) { // check if path to successor state is an optimal one (as far as we have seen)
-									/// ?????????????? if improvement.... only occurs as improving from not seen (=MAX) to some finite value for a distance
+								// check if path to successor state is an optimal one (as far as we have seen):
+								if (
+									current_iterator->second.smallest_seen_step_distance_from_initial_state + 1
+									<
+									entry_value.smallest_seen_step_distance_from_initial_state
+									)
+								{
+									/*
+										This IF is asking whether the current state is now found via a shorter path than before:
+											* We need to do this, if it is possible to find better paths later when a state has already been reached before
+												* This never happens here, since we expand states ordered by their distance from init
+											* We check here because the default distance is some MAX value.
+												* if we find the state for the first time, we compare the optimal distance with the default MAX.
+									*/
 
-									// to make it more efficient: use an .insert(...) get the iterator to newly inserted element.
+									// this whole IF therefore might be replaced by asking for the value of bool_inserted! <<<<<
 
-									// hint: on map entry creation by if condition, steps defaults to MAX value of std::size_t
+									/*
+										delete all predecessors -> not needed, because we know vector is empty
+											-> will be needed if we stop relying on the expand-order
+									*/
 
-									// delete all predecessors!
-									//for (const auto& tuple : solutions_map[new_state].predecessors) { // it is always empty because of fifo order of visited_game_states
-									//	--(std::get<0>(tuple)->second.count_successors);
-									//}
-									//solutions_map[new_state].predecessors.clear();
 
+									// set optimal distance seen so far: // here it is assured to be the shortest distance from init:
 									entry_value.smallest_seen_step_distance_from_initial_state = current_iterator->second.smallest_seen_step_distance_from_initial_state + 1;
 
-									entry_value.optimal_predecessors.reserve(16);
 
-									entry_value.optimal_predecessors.emplace_back(current_iterator, c.move); // why not delete old ones?
-									auto& c_pred{ current_iterator->second.count_successors_where_this_is_one_optimal_predecessor };
-									++c_pred;
-									visited_game_states[expand_size + 1].push_back(iter_insertion);
+									// add the current expandee as optimal predecessor:
+									entry_value.optimal_predecessors.reserve(16); // ### if we do not shrink later this consumes more memory than needed.
+									// <<<< we might collect statistics about typical vector sizes.
+									entry_value.optimal_predecessors.emplace_back(current_iterator, c.move);
+
+
+									// ++ optimal successor counter for expandee:
+									++(current_iterator->second.count_successors_where_this_is_one_optimal_predecessor);
+
+
+									// add newly discovered state to the vector of states to expand in the next round:
+									visited_game_states[expand_level_index + 1].push_back(iter_insertion);
 								}
 								else {
-									if (entry_value.smallest_seen_step_distance_from_initial_state == current_iterator->second.smallest_seen_step_distance_from_initial_state + 1) {
-										entry_value.optimal_predecessors.emplace_back(current_iterator, c.move); // can grow to size 9 (why???)
+									if (
+										entry_value.smallest_seen_step_distance_from_initial_state
+										==
+										current_iterator->second.smallest_seen_step_distance_from_initial_state + 1
+										)
+									{
+										/*
+											Check for:
+											* The state has already been found with the same distance from init
+										*/
 
-										auto& c_pred{ current_iterator->second.count_successors_where_this_is_one_optimal_predecessor };
-										++c_pred;
-										// visited_game_states.push_back(solutions_map.find(new_state)); don't add, already added on first path reaching new_state
+
+										// add the current expandee as optimal predecessor:
+										entry_value.optimal_predecessors.emplace_back(current_iterator, c.move);
+
+
+										// ++ optimal successor counter for expandee:
+										++(current_iterator->second.count_successors_where_this_is_one_optimal_predecessor);
+
 									}
 								}
 							}
 						}
 					}
+
+					visited_game_states[expand_level_index + 1].shrink_to_fit();
 
 				}
 			}

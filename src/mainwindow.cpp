@@ -35,6 +35,8 @@ MainWindow::MainWindow(QWidget* parent)
 	ui->setupUi(this);
 	statusbarItems.init(ui->statusbar);
 
+	shapeSelectionItems.createInsideQMenu(this, ui->menuPieces);
+
 	guiInteractiveController.refreshAll();
 
 	signalMapper = new QSignalMapper(this);
@@ -132,12 +134,6 @@ void MainWindow::on_actionStopGame_triggered() {
 void MainWindow::on_actionMoveBack_triggered()
 {
 	guiInteractiveController.undo();
-}
-
-void MainWindow::on_actionTest_ListView_triggered()
-{
-	guiInteractiveController.startReferenceGame22();
-
 }
 
 void MainWindow::on_actionNORTH_triggered()
@@ -280,6 +276,11 @@ QMenu* MainWindow::getSelectPieceSubMenu() {
 	return ui->menuSelect_Piece;
 }
 
+void MainWindow::refreshAllInGuiInteractiveController()
+{
+	guiInteractiveController.refreshAll();
+}
+
 void MainWindow::selectPieceByColor(int index) {
 	guiInteractiveController.selectPieceByColorId(index); // where to check range correctness? SignalMapper should not fire an int greater than color vector, make some additional check here (or somewhere else?)
 }
@@ -307,4 +308,61 @@ inline void menu_recursion(QMenu_OR_QMenuBar* m) {
 void MainWindow::on_actionEnableAllMenuBarItems_triggered()
 {
 	menu_recursion(ui->menubar);
+}
+
+void MainWindow::on_action22ReferenceGame_triggered()
+{
+	guiInteractiveController.startReferenceGame22();
+}
+
+void MainWindow::ShapeSelectionItems::createInsideQMenu(MainWindow* mainWindow, QMenu* qMenu) {
+	(void)mainWindow;
+
+	group = new QActionGroup(qMenu);
+
+	ball = new QAction(qMenu);
+	duck = new QAction(qMenu);
+	swan = new QAction(qMenu);
+
+	ball->setObjectName("actionBall");
+	duck->setObjectName("actionDuck");
+	swan->setObjectName("actionSwan");
+	swan->setEnabled(false);
+
+
+	ball->setText(QString("&Ball"));
+	duck->setText(QString("&Duck"));
+	swan->setText(QString("&Swan"));
+
+	ball->setCheckable(true);
+	duck->setCheckable(true);
+	swan->setCheckable(true);
+
+	qMenu->addAction(ball);
+	qMenu->addAction(duck);
+	qMenu->addAction(swan);
+
+	group->addAction(ball);
+	group->addAction(duck);
+	group->addAction(swan);
+	//group->setExclusionPolicy(QActionGroup::ExclusionPolicy::Exclusive); not available on older Qt5 versions. :(
+	group->setExclusive(true);
+	ball->setChecked(true);
+
+	QObject::connect(group, &QActionGroup::triggered, mainWindow, &MainWindow::refreshAllInGuiInteractiveController, Qt::AutoConnection);
+
+}
+
+QAction* MainWindow::ShapeSelectionItems::getSelectedShape() const {
+	if (ball->isChecked()) {
+		return ball;
+	}
+	if (duck->isChecked()) {
+		return duck;
+	}
+	if (swan->isChecked()) {
+		return swan;
+	}
+	ball->setChecked(true);
+	return ball;
 }

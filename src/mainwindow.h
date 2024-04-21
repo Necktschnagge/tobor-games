@@ -14,6 +14,7 @@
 #include <QGraphicsScene>
 #include <QLabel>
 #include <QSignalMapper>
+#include <QActionGroup> 
 
 #include <memory>
 
@@ -71,6 +72,19 @@ private:
 		void setSelectedPiece(const QColor& c);
 	};
 
+	class ShapeSelectionItems {
+	public:
+
+		QAction* ball;
+		QAction* duck;
+		QAction* swan;
+
+		QActionGroup* group;
+
+		void createInsideQMenu(MainWindow* mainWindow, QMenu* qMenu);
+
+		QAction* getSelectedShape() const;
+	};
 
 public:
 
@@ -83,6 +97,8 @@ private slots:
 	void on_actionHighlightGeneratedTargetCells_triggered();
 
 	void on_actionEnableAllMenuBarItems_triggered();
+	
+	void on_action22ReferenceGame_triggered();
 
 	void on_actionAbout_triggered();
 
@@ -91,8 +107,6 @@ private slots:
 	void on_actionStopGame_triggered();
 
 	void on_actionMoveBack_triggered();
-
-	void on_actionTest_ListView_triggered();
 
 	void on_actionNORTH_triggered();
 
@@ -124,6 +138,8 @@ private:
 
 	StatusbarItems statusbarItems;
 
+	ShapeSelectionItems shapeSelectionItems;
+
 	std::vector<QMetaObject::Connection> inputConnections;
 
 	QSignalMapper* signalMapper;
@@ -148,6 +164,8 @@ private:
 private slots:
 
 	void selectPieceByColor(int index);
+
+	void refreshAllInGuiInteractiveController();
 
 };
 

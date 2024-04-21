@@ -480,7 +480,7 @@ namespace tobor {
 								other_properties.cbegin(),
 								other_properties.cend(),
 								std::string(""),
-								[](std::string& acc, const map::value_type& el) -> std::string {
+								[](const std::string& acc, const map::value_type& el) -> std::string {
 									return acc + " " + el.first + "=" + "\"" + el.second + "\"";
 								});
 							result += std::string("/>");
@@ -800,214 +800,264 @@ namespace tobor {
 			return svg_walls;
 		}
 
-		template<class ...T>
-		inline std::unique_ptr<svg::svg_generator> draw_duck_piece(
-			const tobor::v1_0::tobor_world<T...>& tobor_world,
-			const drawing_style_sheet& dss,
-			const tobor::v1_0::universal_cell_id<tobor::v1_0::tobor_world<T...>>& cell,
-			bool look_right,
-			const std::string& color
-		) {
+		template<class WorldType>
+		class piece_drawer {
+		public:
 
-			(void)look_right;
+			using world_type = WorldType;
+			// assert that it is indeed a tobor::v1_0::tobor_world<...> ?
 
-			auto duck = std::make_unique<svg::svg_path >();
+			virtual std::unique_ptr<svg::svg_generator> operator()(
+				const world_type& tobor_world,
+				const drawing_style_sheet& dss,
+				const tobor::v1_0::universal_cell_id<world_type>& cell,
+				const std::string& color) = 0;
 
-			duck->fill() = color;
-			duck->stroke() = "black";
-			duck->stroke_width() = std::to_string(dss.PIECE_LINE_WIDTH);
-
-			const auto CELL_CORNER_SOUTH_WEST_x = dss.LEFT_PADDING + dss.CELL_WIDTH * cell.get_x_coord();
-			const auto CELL_CORNER_SOUTH_WEST_y = dss.TOP_PADDING + dss.CELL_HEIGHT * (tobor_world.get_vertical_size() - cell.get_y_coord());
-
-			const auto CANVAS_X_SIZE = dss.CELL_WIDTH - 2 * dss.HORIZONTAL_PIECE_PADDING;
-			const auto CANVAS_Y_SIZE = dss.CELL_HEIGHT - 2 * dss.VERTICAL_PIECE_PADDING;
-
-			const auto MINIMUM_CANVAS_SIZE = std::min(CANVAS_X_SIZE, CANVAS_Y_SIZE);
-
-			const auto FOOT_THICKNESS_RIGHT = CANVAS_Y_SIZE * dss.PIECE_FOOT_THICKNESS_FACTOR;
-
-			auto start_at_south_west = std::make_shared<svg::svg_path_elements::M<double>>(
-				CELL_CORNER_SOUTH_WEST_x + dss.HORIZONTAL_PIECE_PADDING,
-				CELL_CORNER_SOUTH_WEST_y - dss.VERTICAL_PIECE_PADDING
-			);
-
-			auto go_bottom_east = std::make_shared<svg::svg_path_elements::l<double>>(
-				dss.CELL_WIDTH - 2 * dss.HORIZONTAL_PIECE_PADDING, 0
-			);
-
-			auto go_bottom_right_corner_north = std::make_shared<svg::svg_path_elements::l<double>>(
-				0, -FOOT_THICKNESS_RIGHT
-			);
-
-			auto go_back_neck_bottom_up = std::make_shared<svg::svg_path_elements::c<double>>(
-				-0.5 * CANVAS_X_SIZE, 0,
-				-0.5 * CANVAS_X_SIZE, 0,
-				-0.4 * CANVAS_X_SIZE, -(0.45 * CANVAS_Y_SIZE - FOOT_THICKNESS_RIGHT)
-			);
-
-			auto go_head = std::make_shared<svg::svg_path_elements::a<double>>(
-				svg::svg_path_elements::a<double>::step(dss.PIECE_HEAD_X_RADIUS_FACTOR * MINIMUM_CANVAS_SIZE, dss.PIECE_HEAD_Y_RADIUS_FACTOR * MINIMUM_CANVAS_SIZE, dss.PIECE_HEAD_AXIS_ROTATION, true, false, -0.2 * MINIMUM_CANVAS_SIZE, -0.25 * MINIMUM_CANVAS_SIZE)
-			);
-
-			auto go_nort_west_for_beak = std::make_shared<svg::svg_path_elements::l<double>>(
-				-0.33 * MINIMUM_CANVAS_SIZE, -0.15 * MINIMUM_CANVAS_SIZE
-			);
-
-			auto go_south_east_for_beak_down = std::make_shared<svg::svg_path_elements::l<double>>(
-				0.32 * MINIMUM_CANVAS_SIZE, 0.25 * MINIMUM_CANVAS_SIZE
-			);
-
-			auto go_back = std::make_shared<svg::svg_path_elements::Z>();
-
-			duck->path_elements = { start_at_south_west, go_bottom_east, go_bottom_right_corner_north, go_back_neck_bottom_up, go_head , go_nort_west_for_beak, go_south_east_for_beak_down, go_back };
-
-			auto outer_eye = std::make_unique<svg::svg_path >();
-
-			outer_eye->fill() = "white";
-			outer_eye->stroke() = "black";
-			outer_eye->stroke_width() = std::to_string(dss.PIECE_LINE_WIDTH);
+			virtual ~piece_drawer() {}
+		};
 
 
-			auto start_eye = std::make_shared<svg::svg_path_elements::M<double>>(
-				CELL_CORNER_SOUTH_WEST_x + dss.HORIZONTAL_PIECE_PADDING + 0.66 * MINIMUM_CANVAS_SIZE,
-				CELL_CORNER_SOUTH_WEST_y - (dss.VERTICAL_PIECE_PADDING + 0.77 * MINIMUM_CANVAS_SIZE)
-			);
+		template<class WorldType>
+		class duck_piece_drawer : public piece_drawer<WorldType> {
+		public:
 
-			outer_eye->path_elements.push_back(start_eye);
+			using world_type = WorldType;
 
-			outer_eye->path_elements.push_back(
-				std::make_shared<svg::svg_path_elements::a<double>>(
-					svg::svg_path_elements::a<double>::step(
-						0.04 * MINIMUM_CANVAS_SIZE,
-						0.03 * MINIMUM_CANVAS_SIZE,
-						-10.0,
-						true,
-						false,
-						0.2,
-						0.2
+			using base_type = piece_drawer<world_type>;
+
+		private:
+
+			bool look_right{ false };
+
+		public:
+			virtual std::unique_ptr<svg::svg_generator> operator()(
+				const world_type& tobor_world,
+				const drawing_style_sheet& dss,
+				const tobor::v1_0::universal_cell_id<world_type>& cell,
+				const std::string& color
+				) override {
+
+				(void)look_right;
+
+				auto duck = std::make_unique<svg::svg_path >();
+
+				duck->fill() = color;
+				duck->stroke() = "black";
+				duck->stroke_width() = std::to_string(dss.PIECE_LINE_WIDTH);
+
+				const auto CELL_CORNER_SOUTH_WEST_x = dss.LEFT_PADDING + dss.CELL_WIDTH * cell.get_x_coord();
+				const auto CELL_CORNER_SOUTH_WEST_y = dss.TOP_PADDING + dss.CELL_HEIGHT * (tobor_world.get_vertical_size() - cell.get_y_coord());
+
+				const auto CANVAS_X_SIZE = dss.CELL_WIDTH - 2 * dss.HORIZONTAL_PIECE_PADDING;
+				const auto CANVAS_Y_SIZE = dss.CELL_HEIGHT - 2 * dss.VERTICAL_PIECE_PADDING;
+
+				const auto MINIMUM_CANVAS_SIZE = std::min(CANVAS_X_SIZE, CANVAS_Y_SIZE);
+
+				const auto FOOT_THICKNESS_RIGHT = CANVAS_Y_SIZE * dss.PIECE_FOOT_THICKNESS_FACTOR;
+
+				auto start_at_south_west = std::make_shared<svg::svg_path_elements::M<double>>(
+					CELL_CORNER_SOUTH_WEST_x + dss.HORIZONTAL_PIECE_PADDING,
+					CELL_CORNER_SOUTH_WEST_y - dss.VERTICAL_PIECE_PADDING
+				);
+
+				auto go_bottom_east = std::make_shared<svg::svg_path_elements::l<double>>(
+					dss.CELL_WIDTH - 2 * dss.HORIZONTAL_PIECE_PADDING, 0
+				);
+
+				auto go_bottom_right_corner_north = std::make_shared<svg::svg_path_elements::l<double>>(
+					0, -FOOT_THICKNESS_RIGHT
+				);
+
+				auto go_back_neck_bottom_up = std::make_shared<svg::svg_path_elements::c<double>>(
+					-0.5 * CANVAS_X_SIZE, 0,
+					-0.5 * CANVAS_X_SIZE, 0,
+					-0.4 * CANVAS_X_SIZE, -(0.45 * CANVAS_Y_SIZE - FOOT_THICKNESS_RIGHT)
+				);
+
+				auto go_head = std::make_shared<svg::svg_path_elements::a<double>>(
+					svg::svg_path_elements::a<double>::step(dss.PIECE_HEAD_X_RADIUS_FACTOR * MINIMUM_CANVAS_SIZE, dss.PIECE_HEAD_Y_RADIUS_FACTOR * MINIMUM_CANVAS_SIZE, dss.PIECE_HEAD_AXIS_ROTATION, true, false, -0.2 * MINIMUM_CANVAS_SIZE, -0.25 * MINIMUM_CANVAS_SIZE)
+				);
+
+				auto go_nort_west_for_beak = std::make_shared<svg::svg_path_elements::l<double>>(
+					-0.33 * MINIMUM_CANVAS_SIZE, -0.15 * MINIMUM_CANVAS_SIZE
+				);
+
+				auto go_south_east_for_beak_down = std::make_shared<svg::svg_path_elements::l<double>>(
+					0.32 * MINIMUM_CANVAS_SIZE, 0.25 * MINIMUM_CANVAS_SIZE
+				);
+
+				auto go_back = std::make_shared<svg::svg_path_elements::Z>();
+
+				duck->path_elements = { start_at_south_west, go_bottom_east, go_bottom_right_corner_north, go_back_neck_bottom_up, go_head , go_nort_west_for_beak, go_south_east_for_beak_down, go_back };
+
+				auto outer_eye = std::make_unique<svg::svg_path >();
+
+				outer_eye->fill() = "white";
+				outer_eye->stroke() = "black";
+				outer_eye->stroke_width() = std::to_string(dss.PIECE_LINE_WIDTH);
+
+
+				auto start_eye = std::make_shared<svg::svg_path_elements::M<double>>(
+					CELL_CORNER_SOUTH_WEST_x + dss.HORIZONTAL_PIECE_PADDING + 0.66 * MINIMUM_CANVAS_SIZE,
+					CELL_CORNER_SOUTH_WEST_y - (dss.VERTICAL_PIECE_PADDING + 0.77 * MINIMUM_CANVAS_SIZE)
+				);
+
+				outer_eye->path_elements.push_back(start_eye);
+
+				outer_eye->path_elements.push_back(
+					std::make_shared<svg::svg_path_elements::a<double>>(
+						svg::svg_path_elements::a<double>::step(
+							0.04 * MINIMUM_CANVAS_SIZE,
+							0.03 * MINIMUM_CANVAS_SIZE,
+							-10.0,
+							true,
+							false,
+							0.2,
+							0.2
+						)
 					)
-				)
-			);
-			outer_eye->path_elements.push_back(go_back);
+				);
+				outer_eye->path_elements.push_back(go_back);
 
 
-			auto comp = std::make_unique<svg::svg_compound>(std::move(duck), std::move(outer_eye));
+				auto comp = std::make_unique<svg::svg_compound>(std::move(duck), std::move(outer_eye));
 
-			return comp;
+				return comp;
 
-		}
+			}
+
+			virtual ~duck_piece_drawer() {}
+		};
+
+		template<class WorldType>
+		class ball_piece_drawer : public piece_drawer<WorldType> {
+		public:
+
+			using world_type = WorldType;
+
+			using base_type = piece_drawer<world_type>;
+
+		private:
+
+			double param{ 0.2 };
+
+			inline double weighted_sum(double from, double to) {
+				return (1.0 - param) * from + param * to;
+			}
+
+		public:
+			virtual std::unique_ptr<svg::svg_generator> operator()(
+				const world_type& tobor_world,
+				const drawing_style_sheet& dss,
+				const tobor::v1_0::universal_cell_id<world_type>& cell,
+				const std::string& color
+				) override {
+
+				auto marker = std::make_unique<svg::svg_path>();
+
+				marker->fill() = color;
+				marker->stroke() = "black";
+				marker->stroke_width() = std::to_string(dss.PIECE_LINE_WIDTH);
+
+				const auto CELL_CORNER_SOUTH_WEST_x = dss.LEFT_PADDING + dss.CELL_WIDTH * cell.get_x_coord();
+				const auto CELL_CORNER_SOUTH_WEST_y = dss.TOP_PADDING + dss.CELL_HEIGHT * (tobor_world.get_vertical_size() - cell.get_y_coord());
+
+				const auto CANVAS_X_SIZE = dss.CELL_WIDTH - 2 * dss.HORIZONTAL_PIECE_PADDING;
+				const auto CANVAS_Y_SIZE = dss.CELL_HEIGHT - 2 * dss.VERTICAL_PIECE_PADDING;
+
+				const auto HALF_CANVAS_X_SIZE = CANVAS_X_SIZE / 2;
+				const auto HALF_CANVAS_Y_SIZE = CANVAS_Y_SIZE / 2;
+
+				//const auto MINIMUM_CANVAS_SIZE = std::min(CANVAS_X_SIZE, CANVAS_Y_SIZE);
+
+				//const auto FOOT_THICKNESS_RIGHT = CANVAS_Y_SIZE * dss.PIECE_FOOT_THICKNESS_FACTOR;
 
 
-		template<class ...T>
-		inline std::unique_ptr<svg::svg_generator> draw_star_marker(
-			const tobor::v1_0::tobor_world<T...>& tobor_world,
-			const drawing_style_sheet& dss,
-			const tobor::v1_0::universal_cell_id<tobor::v1_0::tobor_world<T...>>& cell,
-			const std::string& color
-		) {
+				const auto CENTER_X{ CELL_CORNER_SOUTH_WEST_x + dss.CELL_WIDTH / 2 };
+				const auto CENTER_Y{ CELL_CORNER_SOUTH_WEST_y - dss.CELL_HEIGHT / 2 };
 
-			auto marker = std::make_unique<svg::svg_path>();
+				//const auto TOP_Y{ dss.TOP_PADDING + dss.CELL_HEIGHT * (tobor_world.get_vertical_size() - cell.get_y_coord() - 1) + dss.VERTICAL_PIECE_PADDING };
+				//const auto BOTTOM_Y{ CELL_CORNER_SOUTH_WEST_y - dss.VERTICAL_PIECE_PADDING };
 
-			marker->fill() = color;
-			marker->stroke() = "black";
-			marker->stroke_width() = std::to_string(dss.PIECE_LINE_WIDTH);
+				const double SINCOS45{ 0.7071 };
 
-			const auto CELL_CORNER_SOUTH_WEST_x = dss.LEFT_PADDING + dss.CELL_WIDTH * cell.get_x_coord();
-			const auto CELL_CORNER_SOUTH_WEST_y = dss.TOP_PADDING + dss.CELL_HEIGHT * (tobor_world.get_vertical_size() - cell.get_y_coord());
+				const auto COORD_DISTANCE_CORNER{ (CANVAS_X_SIZE / 2) * SINCOS45 };
 
-			const auto CANVAS_X_SIZE = dss.CELL_WIDTH - 2 * dss.HORIZONTAL_PIECE_PADDING;
-			const auto CANVAS_Y_SIZE = dss.CELL_HEIGHT - 2 * dss.VERTICAL_PIECE_PADDING;
+				marker->path_elements.push_back(
+					std::make_shared<svg::svg_path_elements::M<double>>(
+						CENTER_X,
+						CENTER_Y + HALF_CANVAS_Y_SIZE
+					)
+				);
 
-			const auto HALF_CANVAS_X_SIZE = CANVAS_X_SIZE / 2;
-			const auto HALF_CANVAS_Y_SIZE = CANVAS_Y_SIZE / 2;
+				// remove unused consts in this function!
 
-			//const auto MINIMUM_CANVAS_SIZE = std::min(CANVAS_X_SIZE, CANVAS_Y_SIZE);
+				marker->path_elements.push_back(
+					std::make_shared<svg::svg_path_elements::C<double>>(
+						weighted_sum(CENTER_X, CENTER_X), weighted_sum(CENTER_Y + HALF_CANVAS_Y_SIZE, CENTER_Y),
+						weighted_sum(CENTER_X + COORD_DISTANCE_CORNER, CENTER_X), weighted_sum(CENTER_Y + COORD_DISTANCE_CORNER, CENTER_Y),
+						CENTER_X + COORD_DISTANCE_CORNER, CENTER_Y + COORD_DISTANCE_CORNER
+					)
+				);
+				marker->path_elements.push_back(
+					std::make_shared<svg::svg_path_elements::C<double>>(
+						weighted_sum(CENTER_X + COORD_DISTANCE_CORNER, CENTER_X), weighted_sum(CENTER_Y + COORD_DISTANCE_CORNER, CENTER_Y),
+						weighted_sum(CENTER_X + HALF_CANVAS_X_SIZE, CENTER_X), weighted_sum(CENTER_Y, CENTER_Y),
+						CENTER_X + HALF_CANVAS_X_SIZE, CENTER_Y
+					)
+				);
+				marker->path_elements.push_back(
+					std::make_shared<svg::svg_path_elements::C<double>>(
+						weighted_sum(CENTER_X + HALF_CANVAS_X_SIZE, CENTER_X), weighted_sum(CENTER_Y, CENTER_Y),
+						weighted_sum(CENTER_X + COORD_DISTANCE_CORNER, CENTER_X), weighted_sum(CENTER_Y - COORD_DISTANCE_CORNER, CENTER_Y),
+						CENTER_X + COORD_DISTANCE_CORNER, CENTER_Y - COORD_DISTANCE_CORNER
+					)
+				);
+				marker->path_elements.push_back(
+					std::make_shared<svg::svg_path_elements::C<double>>(
+						weighted_sum(CENTER_X + COORD_DISTANCE_CORNER, CENTER_X), weighted_sum(CENTER_Y - COORD_DISTANCE_CORNER, CENTER_Y),
+						weighted_sum(CENTER_X, CENTER_X), weighted_sum(CENTER_Y - HALF_CANVAS_Y_SIZE, CENTER_Y),
+						CENTER_X, CENTER_Y - HALF_CANVAS_Y_SIZE
+					)
+				);
+				marker->path_elements.push_back(
+					std::make_shared<svg::svg_path_elements::C<double>>(
+						weighted_sum(CENTER_X, CENTER_X), weighted_sum(CENTER_Y - HALF_CANVAS_Y_SIZE, CENTER_Y),
+						weighted_sum(CENTER_X - COORD_DISTANCE_CORNER, CENTER_X), weighted_sum(CENTER_Y - COORD_DISTANCE_CORNER, CENTER_Y),
+						CENTER_X - COORD_DISTANCE_CORNER, CENTER_Y - COORD_DISTANCE_CORNER
+					)
+				);
+				marker->path_elements.push_back(
+					std::make_shared<svg::svg_path_elements::C<double>>(
+						weighted_sum(CENTER_X - COORD_DISTANCE_CORNER, CENTER_X), weighted_sum(CENTER_Y - COORD_DISTANCE_CORNER, CENTER_Y),
+						weighted_sum(CENTER_X - HALF_CANVAS_X_SIZE, CENTER_X), weighted_sum(CENTER_Y, CENTER_Y),
+						CENTER_X - HALF_CANVAS_X_SIZE, CENTER_Y
+					)
+				);
+				marker->path_elements.push_back(
+					std::make_shared<svg::svg_path_elements::C<double>>(
+						weighted_sum(CENTER_X - HALF_CANVAS_X_SIZE, CENTER_X), weighted_sum(CENTER_Y, CENTER_Y),
+						weighted_sum(CENTER_X - COORD_DISTANCE_CORNER, CENTER_X), weighted_sum(CENTER_Y + COORD_DISTANCE_CORNER, CENTER_Y),
+						CENTER_X - COORD_DISTANCE_CORNER, CENTER_Y + COORD_DISTANCE_CORNER
+					)
+				);
+				marker->path_elements.push_back(
+					std::make_shared<svg::svg_path_elements::C<double>>(
+						weighted_sum(CENTER_X - COORD_DISTANCE_CORNER, CENTER_X), weighted_sum(CENTER_Y + COORD_DISTANCE_CORNER, CENTER_Y),
+						weighted_sum(CENTER_X, CENTER_X), weighted_sum(CENTER_Y + HALF_CANVAS_Y_SIZE, CENTER_Y),
+						CENTER_X, CENTER_Y + HALF_CANVAS_Y_SIZE
+					)
+				);
 
-			//const auto FOOT_THICKNESS_RIGHT = CANVAS_Y_SIZE * dss.PIECE_FOOT_THICKNESS_FACTOR;
+				marker->path_elements.push_back(std::make_shared<svg::svg_path_elements::Z>());
+
+				return marker;
+
+			}
 
 
-			const auto CENTER_X{ CELL_CORNER_SOUTH_WEST_x + dss.CELL_WIDTH / 2 };
-			const auto CENTER_Y{ CELL_CORNER_SOUTH_WEST_y - dss.CELL_HEIGHT / 2 };
-
-			//const auto TOP_Y{ dss.TOP_PADDING + dss.CELL_HEIGHT * (tobor_world.get_vertical_size() - cell.get_y_coord() - 1) + dss.VERTICAL_PIECE_PADDING };
-			//const auto BOTTOM_Y{ CELL_CORNER_SOUTH_WEST_y - dss.VERTICAL_PIECE_PADDING };
-
-			const double SINCOS45{ 0.7071 };
-
-			const auto COORD_DISTANCE_CORNER{ (CANVAS_X_SIZE / 2) * SINCOS45 };
-
-			marker->path_elements.push_back(
-				std::make_shared<svg::svg_path_elements::M<double>>(
-					CENTER_X,
-					CENTER_Y + HALF_CANVAS_Y_SIZE
-				)
-			);
-
-			// remove unused consts in this function!
-
-			marker->path_elements.push_back(
-				std::make_shared<svg::svg_path_elements::C<double>>(
-					CENTER_X, CENTER_Y,
-					CENTER_X, CENTER_Y,
-					CENTER_X + COORD_DISTANCE_CORNER, CENTER_Y + COORD_DISTANCE_CORNER
-				)
-			);
-			marker->path_elements.push_back(
-				std::make_shared<svg::svg_path_elements::C<double>>(
-					CENTER_X, CENTER_Y,
-					CENTER_X, CENTER_Y,
-					CENTER_X + HALF_CANVAS_X_SIZE, CENTER_Y
-				)
-			);
-			marker->path_elements.push_back(
-				std::make_shared<svg::svg_path_elements::C<double>>(
-					CENTER_X, CENTER_Y,
-					CENTER_X, CENTER_Y,
-					CENTER_X + COORD_DISTANCE_CORNER, CENTER_Y - COORD_DISTANCE_CORNER
-				)
-			);
-			marker->path_elements.push_back(
-				std::make_shared<svg::svg_path_elements::C<double>>(
-					CENTER_X, CENTER_Y,
-					CENTER_X, CENTER_Y,
-					CENTER_X, CENTER_Y - HALF_CANVAS_Y_SIZE
-				)
-			);
-			marker->path_elements.push_back(
-				std::make_shared<svg::svg_path_elements::C<double>>(
-					CENTER_X, CENTER_Y,
-					CENTER_X, CENTER_Y,
-					CENTER_X - COORD_DISTANCE_CORNER, CENTER_Y - COORD_DISTANCE_CORNER
-				)
-			);
-			marker->path_elements.push_back(
-				std::make_shared<svg::svg_path_elements::C<double>>(
-					CENTER_X, CENTER_Y,
-					CENTER_X, CENTER_Y,
-					CENTER_X - HALF_CANVAS_X_SIZE, CENTER_Y
-				)
-			);
-			marker->path_elements.push_back(
-				std::make_shared<svg::svg_path_elements::C<double>>(
-					CENTER_X, CENTER_Y,
-					CENTER_X, CENTER_Y,
-					CENTER_X - COORD_DISTANCE_CORNER, CENTER_Y + COORD_DISTANCE_CORNER
-				)
-			);
-			marker->path_elements.push_back(
-				std::make_shared<svg::svg_path_elements::C<double>>(
-					CENTER_X, CENTER_Y,
-					CENTER_X, CENTER_Y,
-					CENTER_X, CENTER_Y + HALF_CANVAS_Y_SIZE
-				)
-			);
-
-			marker->path_elements.push_back(std::make_shared<svg::svg_path_elements::Z>());
-
-			return marker;
-
-		}
+			virtual ~ball_piece_drawer() {}
+		};
 
 		template<class Positions_Of_Pieces_Type_T>
 		class tobor_graphics {
@@ -1034,6 +1084,11 @@ namespace tobor {
 				}
 			};
 
+			enum class piece_shape_selection {
+				BALL,
+				DUCK
+			};
+
 			static_assert(pieces_quantity_type::COUNT_TARGET_PIECES == 1, "Not yet supported: multiple target pieces");
 
 			template<class ... T>
@@ -1041,8 +1096,19 @@ namespace tobor {
 				const tobor::v1_0::tobor_world<T...>& tw,
 				const positions_of_pieces_type& pop,
 				const cell_id_type& target_cell,
-				const coloring& c
+				const coloring& c,
+				piece_shape_selection shape
 			) {
+				std::unique_ptr<piece_drawer<tobor::v1_0::tobor_world<T...>>> piece_drawer;
+				if (shape == piece_shape_selection::BALL) {
+					piece_drawer = std::make_unique<ball_piece_drawer<tobor::v1_0::tobor_world<T...>>>();
+				}
+				else if (shape == piece_shape_selection::DUCK) {
+					piece_drawer = std::make_unique<duck_piece_drawer<tobor::v1_0::tobor_world<T...>>>();
+				}
+				else {
+					throw std::invalid_argument("Unknown shape in SVG draw process.");
+				}
 
 				drawing_style_sheet dss;
 
@@ -1051,7 +1117,13 @@ namespace tobor {
 				auto svg_pieces = std::make_unique<svg::svg_compound>();
 
 				for (pq_size_type pid = 0; pid < pieces_quantity_type::COUNT_ALL_PIECES; ++pid) {
-					svg_pieces->elements.push_back(draw_duck_piece(tw, dss, pop.piece_positions[pid], true, c.colors[pid]));
+					svg_pieces->elements.push_back(
+
+						//draw_duck_piece(tw, dss, pop.piece_positions[pid], true, c.colors[pid])
+
+						(*piece_drawer)(tw, dss, pop.piece_positions[pid], c.colors[pid])
+
+					);
 
 				}
 
@@ -1101,6 +1173,7 @@ namespace tobor {
 				const std::vector<cell_id_type>& markers
 				/*, coloring*/
 			) {
+				ball_piece_drawer< tobor::v1_0::tobor_world<T...>> piece_drawer;
 
 				drawing_style_sheet dss;
 
@@ -1108,7 +1181,7 @@ namespace tobor {
 
 				for (const cell_id_type& marker_position : markers) {
 					svg_cell_markers->elements.push_back(
-						draw_star_marker(tw, dss, marker_position, "red")
+						piece_drawer(tw, dss, marker_position, "red")
 					);
 				}
 

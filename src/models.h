@@ -509,6 +509,10 @@ namespace tobor {
 
 			// cell_id_type::int_type for cell ids
 
+
+			// here it should not use a dependent name without alias-defining it in the class itself!
+			// like piece_id_int_type, we already defined class piece_id as a wrapper.
+
 			static constexpr typename pieces_quantity_type::int_type COUNT_TARGET_PIECES{ Pieces_Quantity_Type::COUNT_TARGET_PIECES };
 
 			static constexpr typename pieces_quantity_type::int_type COUNT_NON_TARGET_PIECES{ Pieces_Quantity_Type::COUNT_NON_TARGET_PIECES };
