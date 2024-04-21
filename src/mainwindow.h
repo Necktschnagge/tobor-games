@@ -97,6 +97,8 @@ private slots:
 	void on_actionHighlightGeneratedTargetCells_triggered();
 
 	void on_actionEnableAllMenuBarItems_triggered();
+	
+	void on_action22ReferenceGame_triggered();
 
 	void on_actionAbout_triggered();
 
@@ -105,8 +107,6 @@ private slots:
 	void on_actionStopGame_triggered();
 
 	void on_actionMoveBack_triggered();
-
-	void on_actionTest_ListView_triggered();
 
 	void on_actionNORTH_triggered();
 
