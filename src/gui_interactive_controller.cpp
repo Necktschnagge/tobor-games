@@ -647,12 +647,10 @@ void GameController::startSolver(QMainWindow* mw) {
 
 	distance_explorer.get_simple_bigraph(move_one_piece_calculator, target_cell, bigraph);
 
-	// optimal paths
-	std::map<positions_of_pieces_type, std::vector<move_path_type>> optimal_paths_map{ graph.optimal_move_paths(target_cell) };
-
 	mw->statusBar()->showMessage("Classifying solution paths...");
 	mw->repaint();
 
+	tobor::v1_1::path_classificator<positions_of_pieces_type>::make_state_graph_path_partitioning(bigraph);
 
 
 	// classify optimal paths...
