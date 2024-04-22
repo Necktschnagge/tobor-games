@@ -634,6 +634,8 @@ GameController::move_path_type& GameController::get_selected_solution_representa
 
 void GameController::startSolver(QMainWindow* mw) {
 
+	using pct = tobor::v1_1::path_classificator<positions_of_pieces_type>;
+
 	// set solver begin
 	solver_begin_index = path.size();
 
@@ -647,23 +649,49 @@ void GameController::startSolver(QMainWindow* mw) {
 
 	distance_explorer.get_simple_bigraph(move_one_piece_calculator, target_cell, bigraph);
 
-	mw->statusBar()->showMessage("Classifying solution paths...");
+	mw->statusBar()->showMessage("Partition state graph...");
 	mw->repaint();
 
-	tobor::v1_1::path_classificator<positions_of_pieces_type>::make_state_graph_path_partitioning(bigraph);
+	std::size_t count_partitions = pct::make_state_graph_path_partitioning(bigraph);
 
+	mw->statusBar()->showMessage("Extracting subgraph for each partition...");
+	mw->repaint();
+
+	std::vector<tobor::v1_1::simple_state_bigraph<positions_of_pieces_type, void>> partitions;
+	for (std::size_t i{ 0 }; i < count_partitions; ++i) {
+		partitions.emplace_back();
+		pct::extract_subgraph_by_label(bigraph, i, partitions.back());
+	}
+
+	mw->statusBar()->showMessage("Generating state_paths ...");
+	mw->repaint();
+
+	std::vector<std::vector<tobor::v1_1::state_path<positions_of_pieces_type>>> all_state_paths_partitioned;
+	for (std::size_t i{ 0 }; i < partitions.size(); ++i) {
+		all_state_paths_partitioned.emplace_back(pct::extract_all_state_paths(partitions[i]));
+	}
+
+	mw->statusBar()->showMessage("Generating move_paths ...");
+	mw->repaint();
+
+	for (std::size_t i{ 0 }; i < all_state_paths_partitioned.size(); ++i) {
+		all_state_paths_partitioned[i];
+	}
 
 	// classify optimal paths...
-	optional_classified_move_paths.reset();
-	optional_classified_move_paths.emplace();
-	auto& classified_move_paths{ optional_classified_move_paths.value() };
+	//optional_classified_move_paths.reset();
+	//optional_classified_move_paths.emplace();
+	//auto& classified_move_paths{ optional_classified_move_paths.value() };
+	//
+	//for (const auto& pair : optimal_paths_map) {
+	//	classified_move_paths[pair.first] = move_path_type::interleaving_partitioning(pair.second);
+	//	for (auto& equivalence_class : classified_move_paths[pair.first]) {
+	//		std::sort(equivalence_class.begin(), equivalence_class.end(), move_path_type::antiprettiness_relation);
+	//	}
+	//}
 
-	for (const auto& pair : optimal_paths_map) {
-		classified_move_paths[pair.first] = move_path_type::interleaving_partitioning(pair.second);
-		for (auto& equivalence_class : classified_move_paths[pair.first]) {
-			std::sort(equivalence_class.begin(), equivalence_class.end(), move_path_type::antiprettiness_relation);
-		}
-	}
+	throw 0;
+
 	mw->statusBar()->showMessage("Done");
 	mw->repaint();
 }

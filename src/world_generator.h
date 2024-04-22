@@ -919,6 +919,10 @@ namespace tobor {
 
 				using world_type = typename positions_of_pieces_type::world_type;
 
+				using cell_id_narrow_int_type = typename cell_id_type::int_cell_id_type;
+
+				using cell_id_size_int_type = typename cell_id_type::int_size_type;
+
 				/* integer constants */
 
 				constexpr static uint64_t BOARD_SIZE{ _BOARD_SIZE };
@@ -1060,7 +1064,7 @@ namespace tobor {
 					std::vector<uint64_t> selected_indices_non_target = get_selected_indices(COUNT_NON_TARGET_ROBOTS, NON_BLOCKED_CELLS - COUNT_TARGET_ROBOTS, select_non_target_pieces);
 
 					//shift indices where cells are blocked!
-					for (typename world_type::int_type cell_id = 0; cell_id < BOARD_SIZE; ++cell_id) {
+					for (cell_id_size_int_type cell_id = 0; cell_id < BOARD_SIZE; ++cell_id) {
 						for (auto& selected_index : selected_indices_target) {
 							if (world.blocked(cell_id) && (selected_index >= cell_id)) {
 								++selected_index;
@@ -1068,7 +1072,7 @@ namespace tobor {
 						}
 					}
 
-					for (typename world_type::int_type cell_id = 0; cell_id < BOARD_SIZE; ++cell_id) {
+					for (cell_id_size_int_type cell_id = 0; cell_id < BOARD_SIZE; ++cell_id) {
 						for (auto& selected_index : selected_indices_non_target) {
 							bool is_blocked =
 								world.blocked(cell_id)

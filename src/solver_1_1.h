@@ -683,6 +683,7 @@ namespace tobor {
 			// number of steps needed by any optimal solution
 			size_type optimal_path_length;
 
+
 		public:
 			distance_exploration(const positions_of_pieces_type& initial_state) :
 				optimal_path_length(SIZE_TYPE_MAX)
@@ -999,7 +1000,7 @@ namespace tobor {
 
 		};
 
-		template<class Position_Of_Pieces_Type>
+		template<class Positions_Of_Pieces_Type>
 		class path_classificator {
 
 			inline static bool contains(const std::vector<bool>& flag_vector, std::size_t flag_index) {
@@ -1017,9 +1018,38 @@ namespace tobor {
 			}
 
 		public:
-			using position_of_pieces_type = Position_Of_Pieces_Type;
+			using positions_of_pieces_type = Positions_Of_Pieces_Type;
 
-			static void make_state_graph_path_partitioning(simple_state_bigraph<position_of_pieces_type, std::vector<bool>>& bigraph) {
+			using state_path_type = state_path<positions_of_pieces_type>;
+
+			using state_path_vector_type = typename state_path_type::vector_type;
+
+		private:
+
+			template<class State_Label_Type>
+			static void extract_all_state_paths_helper(
+				const simple_state_bigraph<positions_of_pieces_type, State_Label_Type>& source,
+				std::vector<state_path<positions_of_pieces_type>> all_state_paths,
+				state_path_vector_type& depth_first_path
+				) {
+				if (source.map[depth_first_path.back()].successors.empty()) {
+					all_state_paths.emplace_back(depth_first_path);
+					return;
+				}
+				for (const auto& succ : source.map[depth_first_path.back()].successors) {
+					depth_first_path.push_back(succ);
+					extract_all_state_paths_helper(source, all_state_paths, depth_first_path);
+					depth_first_path.pop_back();
+				}
+			}
+
+		public:
+
+			/**
+			*	@brief
+			*	@return Number of partitions found
+			*/
+			static std::size_t make_state_graph_path_partitioning(simple_state_bigraph<positions_of_pieces_type, std::vector<bool>>& bigraph) {
 				/*
 				std::vector<position_of_pieces_type> initials;
 				std::vector<position_of_pieces_type> finals;
@@ -1154,8 +1184,51 @@ namespace tobor {
 					}
 
 				}
+
+				return flag_index;
 			}
 
+			template<class State_Label_Type>
+			static void extract_subgraph_by_label(
+				const simple_state_bigraph<positions_of_pieces_type, std::vector<bool>>& source,
+				std::size_t label_index,
+				simple_state_bigraph<positions_of_pieces_type, State_Label_Type>& destination
+			) {
+				destination.map.clear();
+
+				const auto has_label{
+					[&](const positions_of_pieces_type& e) {
+					auto pos = source.map.find(e);
+					const bool found_label = pos != source.map.end() && contains(pos->second.labels, label_index);
+					return found_label;
+					}
+				};
+
+				for (const auto& pair : source.map) {
+					if (contains(pair.second.labels, label_index)) {
+						auto iter = destination.map.insert(
+							destination.map.end(),
+							std::make_pair(pair.first, simple_state_bigraph<positions_of_pieces_type, State_Label_Type>::node_links())
+						);
+						std::copy_if(pair.second.predecessors.cbegin(), pair.second.predecessors.cend(), std::inserter(iter->second.predecessors, iter->second.predecessors.end()), has_label);
+						std::copy_if(pair.second.successors.cbegin(), pair.second.successors.cend(), std::inserter(iter->second.successors, iter->second.successors.end()), has_label);
+					}
+				}
+			}
+
+
+
+			template<class State_Label_Type>
+			static std::vector<state_path<positions_of_pieces_type>> extract_all_state_paths(const simple_state_bigraph<positions_of_pieces_type, State_Label_Type>& source) {
+				std::vector<state_path<positions_of_pieces_type>> all_state_paths;
+
+				for (auto iter = source.map.cbegin(); iter != source.map.cend(); ++iter) {
+					if (iter->second.predecessors.empty()) {
+						extract_all_state_paths_helper(source, all_state_paths, std::vector<positions_of_pieces_type>{iter->first});
+					}
+				}
+				return all_state_paths;
+			}
 
 		};
 

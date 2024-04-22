@@ -790,6 +790,9 @@ namespace tobor {
 
 			state_path() {}
 
+			state_path(const vector_type& v) : state_vector(v) {}
+
+
 			vector_type& vector() { return state_vector; }
 
 			inline void make_canonical() {
