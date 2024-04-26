@@ -185,7 +185,7 @@ public:
 };
 
 class GuiInteractiveController final {
-	
+
 	template<class X>
 	friend void startReferenceGame22Helper(X& guiInteractiveController);
 
@@ -209,6 +209,8 @@ public:
 
 	using graphics_type = tobor::v1_1::tobor_graphics<GameController::world_type, GameController::positions_of_pieces_type>;
 
+	using graphics_coloring_type = typename graphics_type::coloring;
+
 private:
 	MainWindow* mainWindow;
 
@@ -225,6 +227,17 @@ private:
 
 	//tobor::v1_0::tobor_graphics<GameController::positions_of_pieces_type>::coloring coloring = tobor::v1_0::tobor_graphics<GameController::positions_of_pieces_type>::coloring("red", "yellow", "green", "blue");
 	// needs tobor svg include which brings errors...
+
+	template<class T, GameController::piece_quantity_type::int_type ... Index_Sequence>
+	graphics_coloring_type make_coloring(
+		T& permutated_color_vector,
+		std::integer_sequence<GameController::piece_quantity_type::int_type, Index_Sequence...>
+	) {
+		auto coloring = graphics_coloring_type{
+			(permutated_color_vector.colors[Index_Sequence].getSVGColorString()) ...
+		};
+		return coloring;
+	}
 
 public:
 

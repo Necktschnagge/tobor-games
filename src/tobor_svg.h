@@ -2280,20 +2280,19 @@ namespace tobor {
 
 			static_assert(pieces_quantity_type::COUNT_TARGET_PIECES == 1, "Not yet supported: multiple target pieces");
 
-			template<class ... T>
 			inline static std::string draw_tobor_world(
-				const tobor::v1_1::dynamic_rectangle_world<T...>& tw,
+				const world_type& tw,
 				const positions_of_pieces_type& pop,
 				const cell_id_type& target_cell,
 				const coloring& c,
 				piece_shape_selection shape
 			) {
-				std::unique_ptr<piece_drawer<tobor::v1_1::dynamic_rectangle_world<T...>>> piece_drawer;
+				std::unique_ptr<piece_drawer<world_type>> piece_drawer;
 				if (shape == piece_shape_selection::BALL) {
-					piece_drawer = std::make_unique<ball_piece_drawer<tobor::v1_0::tobor_world<T...>>>();
+					piece_drawer = std::make_unique<ball_piece_drawer<world_type>>();
 				}
 				else if (shape == piece_shape_selection::DUCK) {
-					piece_drawer = std::make_unique<duck_piece_drawer<tobor::v1_0::tobor_world<T...>>>();
+					piece_drawer = std::make_unique<duck_piece_drawer<world_type>>();
 				}
 				else {
 					throw std::invalid_argument("Unknown shape in SVG draw process.");

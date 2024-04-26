@@ -274,17 +274,6 @@ void GuiInteractiveController::selectPieceByColorId(const std::size_t& color_id)
 	setPieceId(index);
 }
 
-template<class T, GameController::piece_quantity_type::int_type ... Index_Sequence>
-tobor::v1_0::tobor_graphics<GameController::positions_of_pieces_type>::coloring make_coloring(
-	T& permutated_color_vector,
-	std::integer_sequence<GameController::piece_quantity_type::int_type, Index_Sequence...>
-) {
-	auto coloring = tobor::v1_0::tobor_graphics<GameController::positions_of_pieces_type>::coloring{
-		(permutated_color_vector.colors[Index_Sequence].getSVGColorString()) ...
-	};
-	return coloring;
-}
-
 
 void GuiInteractiveController::refreshSVG()
 {
