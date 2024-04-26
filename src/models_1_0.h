@@ -587,6 +587,8 @@ namespace tobor {
 
 			inline positions_of_pieces& operator = (positions_of_pieces&&) = default;
 
+			inline const all_pieces_array_type& raw() const { return piece_positions; }
+
 			bool operator< (const positions_of_pieces& another) const noexcept {
 				return piece_positions < another.piece_positions;
 			}
