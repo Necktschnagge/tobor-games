@@ -6,6 +6,7 @@ class GameController; // to be removed! ps_map is private, this is needed for fr
 
 #include "world_generator.h"
 #include "color_generator.h"
+#include "tobor_svg.h"
 
 // #include "tobor_svg.h" produces error
 
@@ -205,6 +206,8 @@ public:
 		4>;
 
 	using product_generator_type = tobor::v1_1::world_generator::product_group_generator<board_generator_type, state_generator_type>;
+
+	using graphics_type = tobor::v1_1::tobor_graphics<GameController::world_type, GameController::positions_of_pieces_type>;
 
 private:
 	MainWindow* mainWindow;

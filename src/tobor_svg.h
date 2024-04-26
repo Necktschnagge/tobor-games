@@ -2245,11 +2245,14 @@ namespace tobor {
 			virtual ~ball_piece_drawer() {}
 		};
 
-		template<class Positions_Of_Pieces_Type_T>
+		template<class World_Type, class Positions_Of_Pieces_Type_T>
 		class tobor_graphics {
 		public:
 
+			using world_type = World_Type;
+
 			using positions_of_pieces_type = Positions_Of_Pieces_Type_T;
+			
 
 			using cell_id_type = typename positions_of_pieces_type::cell_id_type;
 
@@ -2285,7 +2288,7 @@ namespace tobor {
 				const coloring& c,
 				piece_shape_selection shape
 			) {
-				std::unique_ptr<piece_drawer<tobor::v1_0::tobor_world<T...>>> piece_drawer;
+				std::unique_ptr<piece_drawer<tobor::v1_1::dynamic_rectangle_world<T...>>> piece_drawer;
 				if (shape == piece_shape_selection::BALL) {
 					piece_drawer = std::make_unique<ball_piece_drawer<tobor::v1_0::tobor_world<T...>>>();
 				}

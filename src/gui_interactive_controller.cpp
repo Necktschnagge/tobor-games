@@ -288,8 +288,6 @@ tobor::v1_0::tobor_graphics<GameController::positions_of_pieces_type>::coloring 
 
 void GuiInteractiveController::refreshSVG()
 {
-	using graphics = tobor::v1_1::tobor_graphics<GameController::positions_of_pieces_type>;
-
 	if (interactive_mode == InteractiveMode::GAME_INTERACTIVE || interactive_mode == InteractiveMode::SOLVER_INTERACTIVE_STEPS) {
 
 		auto permutated_color_vector = current_color_vector;
@@ -298,21 +296,21 @@ void GuiInteractiveController::refreshSVG()
 			permutated_color_vector.colors[i] = current_color_vector.colors[gameHistory.back().colorPermutation[i]];
 		}
 
-		graphics::coloring coloring =
+		graphics_type::coloring coloring =
 			make_coloring(
 				permutated_color_vector,
 				std::make_integer_sequence<GameController::piece_quantity_type::int_type, GameController::piece_quantity_type::COUNT_ALL_PIECES>{}
 		);
 
-		graphics::piece_shape_selection shape{ graphics::piece_shape_selection::BALL };
+		graphics_type::piece_shape_selection shape{ graphics_type::piece_shape_selection::BALL };
 
 		if (mainWindow->shapeSelectionItems.getSelectedShape() == mainWindow->shapeSelectionItems.duck) {
-			shape = graphics::piece_shape_selection::DUCK;
+			shape = graphics_type::piece_shape_selection::DUCK;
 		}
 		// else default ball.
 
 		std::string example_svg_string =
-			graphics::draw_tobor_world(
+			graphics_type::draw_tobor_world(
 				gameHistory.back().tobor_world,
 				gameHistory.back().path.back(),
 				gameHistory.back().target_cell,
@@ -592,7 +590,7 @@ void GuiInteractiveController::highlightGeneratedTargetCells()
 		}
 	);
 
-	std::string svg_string = tobor::v1_1::tobor_graphics<GameController::positions_of_pieces_type>::draw_tobor_world_with_cell_markers(
+	std::string svg_string = graphics_type::draw_tobor_world_with_cell_markers(
 		world,
 		comfort_cell_id_vector
 	);
@@ -675,7 +673,7 @@ void GameController::startSolver(QMainWindow* mw) {
 	mw->repaint();
 
 	for (std::size_t i{ 0 }; i < all_state_paths_partitioned.size(); ++i) {
-		all_state_paths_partitioned[i];
+		//all_state_paths_partitioned[i];
 	}
 
 	// classify optimal paths...

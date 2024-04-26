@@ -69,6 +69,10 @@ namespace tobor {
 
 		public:
 
+			static constexpr int_cell_id_type narrow(const int_size_type& x) {
+				return static_cast<int_cell_id_type>(x);
+			}
+
 			/* ctors et. al. **************************************************************************************/
 
 			dynamic_rectangle_world() : x_size(0), y_size(0) {}
@@ -121,8 +125,11 @@ namespace tobor {
 
 				for (auto y = y_begin; y != y_end; ++y) {
 					for (auto x = x_begin; x != x_end; ++x) {
-						const int_size_type id = coordinates_to_cell_id(x, y);
-						const int_size_type transposed_id = coordinates_to_transposed_cell_id(x, y);
+						const int_cell_id_type x_narrow{ narrow(x) };
+						const int_cell_id_type y_narrow{ narrow(y) };
+
+						const int_cell_id_type id = coordinates_to_cell_id(x_narrow, y_narrow);
+						const int_cell_id_type transposed_id = coordinates_to_transposed_cell_id(x_narrow, y_narrow);
 
 						north_wall_by_transposed_id(transposed_id) = true;
 						east_wall_by_id(id) = true;
@@ -219,7 +226,7 @@ namespace tobor {
 			*	@details cell_id must be a non-negative integer less than \a count_cells(). Otherwise behaviour is undefined.
 			*/
 			inline bool blocked(int_cell_id_type cell_id) const {
-				auto transposed_id = id_to_transposed_id(cell_id);
+				auto transposed_id = cell_id_to_transposed_cell_id(cell_id);
 				return west_wall_by_id(cell_id) && east_wall_by_id(cell_id) && south_wall_by_transposed_id(transposed_id) && north_wall_by_transposed_id(transposed_id);
 			}
 
@@ -229,7 +236,7 @@ namespace tobor {
 			inline int_size_type blocked_cells() const noexcept {
 				int_size_type counter{ 0 };
 				for (int_size_type cell_id = 0; cell_id < count_cells(); ++cell_id) {
-					counter += blocked(cell_id); //## need to cast here, note loop must use greater type since for breaks on overflow of smaller type.
+					counter += blocked(narrow(cell_id)); //## need to cast here, note loop must use greater type since for breaks on overflow of smaller type.
 				}
 				return counter;
 			}
@@ -310,7 +317,7 @@ namespace tobor {
 			/* ctors */
 
 			min_size_cell_id() : id(0) {}
-			
+
 			min_size_cell_id(int_cell_id_type id) : id(id) {}
 
 			min_size_cell_id(const min_size_cell_id&) = default;
@@ -336,7 +343,7 @@ namespace tobor {
 			/* getter */
 
 			inline int_cell_id_type get_id() const noexcept { return id; }
-			
+
 			inline int_cell_id_type get_id(const world_type&) const noexcept { return id; }
 
 			inline int_cell_id_type get_transposed_id(const world_type& world) const noexcept { return world.cell_id_to_transposed_cell_id(id); }
