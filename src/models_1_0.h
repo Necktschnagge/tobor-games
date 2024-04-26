@@ -16,8 +16,14 @@
 namespace tobor {
 
 	namespace v1_1 {
+
+		// only for friend declarations!, ### resolve this, there should not be access to private member -> hence remove all friendships in positions_of_pieces
+
 		template<class Position_Of_Pieces_T, class Quick_Move_Cache_T, class Piece_Move_Type>
 		class move_one_piece_calculator;
+
+		template <class Move_One_Piece_Calculator>
+		class distance_exploration;
 	}
 
 	namespace v1_0 {
@@ -516,6 +522,9 @@ namespace tobor {
 
 			template<class Positions_Of_Pieces_Type_T>
 			friend class tobor_graphics;
+
+			template <class Move_One_Piece_Calculator>
+			friend class ::tobor::v1_1::distance_exploration;
 
 		public:
 
