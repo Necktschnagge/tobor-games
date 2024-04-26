@@ -945,7 +945,7 @@ namespace tobor {
 
 					}
 					// sort and unique "new" states
-					std::sort(std::execution::par, reachable_states_by_distance.back().begin(), reachable_states_by_distance.back.end());
+					std::sort(std::execution::par, reachable_states_by_distance.back().begin(), reachable_states_by_distance.back().end());
 					reachable_states_by_distance.back().erase(
 						unique(std::execution::par, reachable_states_by_distance.back().begin(), reachable_states_by_distance.back().end()),
 						reachable_states_by_distance.back().end()
