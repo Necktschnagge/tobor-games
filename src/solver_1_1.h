@@ -932,7 +932,7 @@ namespace tobor {
 							}
 							else {
 								// optimized case:
-								if (candidates_for_successor_states[index_candidate].successor_state.piece_positions[index_candidate / 4] == target_cell) {
+								if (candidates_for_successor_states[index_candidate].successor_state.raw()[index_candidate / 4] == target_cell) {
 									// does not work for sorted final pieces! In that case we do not know where the moved piece is located.
 									optimal_path_length = expand_level_index + 1;
 								}
