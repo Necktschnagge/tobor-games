@@ -748,7 +748,7 @@ namespace tobor {
 							*/
 							(
 								reachable_states_by_distance[optimal_path_length][i],
-								bigraph::node_links()
+								typename bigraph::node_links()
 							)
 						);
 						//destination.map[reachable_states_by_distance[optimal_path_length][i]] = bigraph::node_links(); do the insert instead.
