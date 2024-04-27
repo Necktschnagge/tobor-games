@@ -1237,7 +1237,7 @@ namespace tobor {
 					if (contains(pair.second.labels, label_index)) {
 						auto iter = destination.map.insert(
 							destination.map.end(),
-							std::make_pair(pair.first, simple_state_bigraph<positions_of_pieces_type, State_Label_Type>::node_links())
+							std::make_pair(pair.first, typename simple_state_bigraph<positions_of_pieces_type, State_Label_Type>::node_links())
 						);
 						std::copy_if(pair.second.predecessors.cbegin(), pair.second.predecessors.cend(), std::inserter(iter->second.predecessors, iter->second.predecessors.end()), has_label);
 						std::copy_if(pair.second.successors.cbegin(), pair.second.successors.cend(), std::inserter(iter->second.successors, iter->second.successors.end()), has_label);
