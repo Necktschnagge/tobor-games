@@ -675,7 +675,18 @@ namespace tobor {
 
 			static constexpr size_type SIZE_TYPE_MAX{ std::numeric_limits<size_type>::max() };
 
-			using move_candidate = typename tobor::v1_0::state_graph_node<positions_of_pieces_type, piece_move_type>::move_candidate;
+			struct move_candidate {
+
+				/** The move consisting of piece_id and direction. */
+				piece_move_type move;
+
+				/** The successor state */
+				positions_of_pieces_type successor_state;
+
+				move_candidate(const piece_move_type& move, positions_of_pieces_type successor) : move(move), successor_state(successor) {}
+
+			};
+
 
 		private:
 			std::vector<std::vector<positions_of_pieces_type>> reachable_states_by_distance;
@@ -719,7 +730,7 @@ namespace tobor {
 				if (optimal_path_length == SIZE_TYPE_MAX) {
 					throw 0;
 				}
-				using bigraph = simple_state_bigraph<positions_of_pieces_type>;
+				using bigraph = simple_state_bigraph<positions_of_pieces_type, State_Label_Type>;
 
 				//std::vector<bool> flagged_states(reachable_states_by_distance[optimal_path_length].size(), false);
 				//std::vector<bool> next_flagged_states;
@@ -728,13 +739,20 @@ namespace tobor {
 				for (std::size_t i{ 0 }; i < reachable_states_by_distance[optimal_path_length].size(); ++i) {
 					if (reachable_states_by_distance[optimal_path_length][i].is_final(target_cell)) {
 						//flagged_states[i] = true;
+
 						destination.map.insert(
 							destination.map.end(),
-							std::make_pair(
+							std::pair
+							<typename bigraph::state_type, typename bigraph::node_links>
+							/*
+							*/
+							(
 								reachable_states_by_distance[optimal_path_length][i],
 								bigraph::node_links()
 							)
 						);
+						//destination.map[reachable_states_by_distance[optimal_path_length][i]] = bigraph::node_links(); do the insert instead.
+
 						states.push_back(reachable_states_by_distance[optimal_path_length][i]);
 					}
 				}
@@ -749,9 +767,9 @@ namespace tobor {
 					for (const auto& state : states) {
 						auto vec = engine.predecessor_states(state);
 						possible_edges.reserve(possible_edges.size() + vec.size());
-						std::transform(std::execution::par, vec.cbegin(), vec.cend(), [&](const positions_of_pieces_type& pred_state) {
+						for (const positions_of_pieces_type& pred_state : vec) {
 							possible_edges.emplace_back(pred_state, state);
-							});
+						}
 					}
 					// sort by from-state
 					std::sort(possible_edges.begin(), possible_edges.end());
@@ -892,6 +910,8 @@ namespace tobor {
 
 					for (std::size_t expand_index_inside_level = 0; expand_index_inside_level < reachable_states_by_distance[expand_level_index].size(); ++expand_index_inside_level) {
 
+						auto& current_state{ reachable_states_by_distance[expand_level_index][expand_index_inside_level] };
+
 						std::vector<move_candidate> candidates_for_successor_states; // can be array with fixed size(?)
 
 						// compute all successor state candidates:
@@ -899,7 +919,7 @@ namespace tobor {
 							for (direction direction_iter = direction::begin(); direction_iter < direction::end(); ++direction_iter) {
 								candidates_for_successor_states.emplace_back(
 									piece_move_type(pid, direction_iter),
-									engine.successor_state(reachable_states_by_distance[expand_level_index][expand_index_inside_level], pid, direction_iter)
+									engine.successor_state(current_state, pid, direction_iter)
 								);
 							}
 						}
@@ -919,7 +939,7 @@ namespace tobor {
 							index_candidate < static_cast<typename std::vector<move_candidate>::size_type>(4) * positions_of_pieces_type::COUNT_TARGET_PIECES;
 							++index_candidate
 							) {
-							if (!candidates_for_successor_states[index_candidate].is_true_move) {
+							if (candidates_for_successor_states[index_candidate].successor_state == current_state) {
 								continue;
 							}
 
@@ -1031,12 +1051,21 @@ namespace tobor {
 				const simple_state_bigraph<positions_of_pieces_type, State_Label_Type>& source,
 				std::vector<state_path<positions_of_pieces_type>> all_state_paths,
 				state_path_vector_type& depth_first_path
-				) {
-				if (source.map[depth_first_path.back()].successors.empty()) {
+				//, const typename simple_state_bigraph<positions_of_pieces_type, State_Label_Type>::map_type::const_iterator& current_state_iter /* not end */
+			) {
+				auto iter = source.map.find(depth_first_path.back());
+
+				if (iter == source.map.cend()) {
+					return; // Never reached by logic when used correctly.
+				}
+
+				if (
+					iter->second.successors.empty()
+					) {
 					all_state_paths.emplace_back(depth_first_path);
 					return;
 				}
-				for (const auto& succ : source.map[depth_first_path.back()].successors) {
+				for (const auto& succ : iter->second.successors) {
 					depth_first_path.push_back(succ);
 					extract_all_state_paths_helper(source, all_state_paths, depth_first_path);
 					depth_first_path.pop_back();
@@ -1223,8 +1252,9 @@ namespace tobor {
 				std::vector<state_path<positions_of_pieces_type>> all_state_paths;
 
 				for (auto iter = source.map.cbegin(); iter != source.map.cend(); ++iter) {
+					state_path_vector_type depth_first_path{ iter->first };
 					if (iter->second.predecessors.empty()) {
-						extract_all_state_paths_helper(source, all_state_paths, std::vector<positions_of_pieces_type>{iter->first});
+						extract_all_state_paths_helper(source, all_state_paths, depth_first_path);
 					}
 				}
 				return all_state_paths;

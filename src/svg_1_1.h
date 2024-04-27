@@ -63,7 +63,7 @@ namespace tobor {
 
 		};
 
-	
+
 
 		template<class World_Type>
 		class piece_drawer {
@@ -114,8 +114,8 @@ namespace tobor {
 				duck->stroke() = "black";
 				duck->stroke_width() = std::to_string(dss.PIECE_LINE_WIDTH);
 
-				const auto CELL_CORNER_SOUTH_WEST_x = dss.LEFT_PADDING + dss.CELL_WIDTH * cell.get_x_coord();
-				const auto CELL_CORNER_SOUTH_WEST_y = dss.TOP_PADDING + dss.CELL_HEIGHT * (tobor_world.get_vertical_size() - cell.get_y_coord());
+				const auto CELL_CORNER_SOUTH_WEST_x = dss.LEFT_PADDING + dss.CELL_WIDTH * cell.get_x_coord(tobor_world);
+				const auto CELL_CORNER_SOUTH_WEST_y = dss.TOP_PADDING + dss.CELL_HEIGHT * (tobor_world.get_vertical_size() - cell.get_y_coord(tobor_world));
 
 				const auto CANVAS_X_SIZE = dss.CELL_WIDTH - 2 * dss.HORIZONTAL_PIECE_PADDING;
 				const auto CANVAS_Y_SIZE = dss.CELL_HEIGHT - 2 * dss.VERTICAL_PIECE_PADDING;
@@ -231,8 +231,8 @@ namespace tobor {
 				marker->stroke() = "black";
 				marker->stroke_width() = std::to_string(dss.PIECE_LINE_WIDTH);
 
-				const auto CELL_CORNER_SOUTH_WEST_x = dss.LEFT_PADDING + dss.CELL_WIDTH * cell.get_x_coord();
-				const auto CELL_CORNER_SOUTH_WEST_y = dss.TOP_PADDING + dss.CELL_HEIGHT * (tobor_world.get_vertical_size() - cell.get_y_coord());
+				const auto CELL_CORNER_SOUTH_WEST_x = dss.LEFT_PADDING + dss.CELL_WIDTH * cell.get_x_coord(tobor_world);
+				const auto CELL_CORNER_SOUTH_WEST_y = dss.TOP_PADDING + dss.CELL_HEIGHT * (tobor_world.get_vertical_size() - cell.get_y_coord(tobor_world));
 
 				const auto CANVAS_X_SIZE = dss.CELL_WIDTH - 2 * dss.HORIZONTAL_PIECE_PADDING;
 				const auto CANVAS_Y_SIZE = dss.CELL_HEIGHT - 2 * dss.VERTICAL_PIECE_PADDING;
@@ -341,6 +341,10 @@ namespace tobor {
 
 
 			using cell_id_type = typename positions_of_pieces_type::cell_id_type;
+
+			using cell_size_int = typename cell_id_type::int_cell_id_type;
+
+			using cell_narrow_int = typename cell_id_type::int_cell_id_type;
 
 			using pieces_quantity_type = typename positions_of_pieces_type::pieces_quantity_type;
 
@@ -516,7 +520,6 @@ namespace tobor {
 				return vertical_wall_element;
 			}
 
-			template<class cell_id_type>
 			inline static std::unique_ptr<svg::svg_path> fill_whole_cell(
 				const world_type& tobor_world,
 				const drawing_style_sheet& dss,
@@ -530,8 +533,8 @@ namespace tobor {
 				whole_cell->stroke_width() = "0";
 
 				auto start_at_north_west = std::make_shared<svg::svg_path_elements::M<double>>(
-					dss.LEFT_PADDING + dss.CELL_WIDTH * cell_id.get_x_coord(),
-					dss.TOP_PADDING + dss.CELL_HEIGHT * (tobor_world.get_vertical_size() - cell_id.get_y_coord() - 1)
+					dss.LEFT_PADDING + dss.CELL_WIDTH * cell_id.get_x_coord(tobor_world),
+					dss.TOP_PADDING + dss.CELL_HEIGHT * (tobor_world.get_vertical_size() - cell_id.get_y_coord(tobor_world) - 1)
 				);
 
 				auto go_east = std::make_shared<svg::svg_path_elements::l<double>>(
@@ -557,30 +560,19 @@ namespace tobor {
 				const world_type& tobor_world,
 				const drawing_style_sheet& dss
 			) {
-				
-				using cell_id_int_type = typename cell_id_type::int_type;
 
 				auto blocked_cells = std::make_unique<svg::svg_compound>();
 
-				for (cell_id_int_type cell_id{ 0 }; cell_id < tobor_world.count_cells(); ++cell_id) {
-					const auto universal_cell_id = cell_id_type::create_by_id(cell_id, tobor_world);
+				for (cell_size_int raw_id{ 0 }; raw_id < tobor_world.count_cells(); ++raw_id) {
 
-					if (
-						tobor_world.west_wall_by_id(cell_id) &&
-						tobor_world.east_wall_by_id(cell_id) &&
-						tobor_world.south_wall_by_transposed_id(universal_cell_id.get_transposed_id()) &&
-						tobor_world.north_wall_by_transposed_id(universal_cell_id.get_transposed_id())
-						) {
+					const cell_id_type cell_id = cell_id_type::create_by_id(raw_id, tobor_world);
+					const cell_narrow_int nid{ world_type::narrow(raw_id) };
+					const cell_narrow_int ntid{ cell_id.get_transposed_id(tobor_world) };
 
-						auto block = fill_whole_cell(
-							tobor_world,
-							dss,
-							universal_cell_id,
-							"black"
-						);
+					if (tobor_world.west_wall_by_id(nid) && tobor_world.east_wall_by_id(nid) && tobor_world.south_wall_by_transposed_id(ntid) && tobor_world.north_wall_by_transposed_id(ntid)) {
 
+						auto block = fill_whole_cell(tobor_world, dss, cell_id, "black");
 						blocked_cells->elements.push_back(std::move(block));
-
 					}
 				}
 
@@ -590,14 +582,10 @@ namespace tobor {
 			inline static std::unique_ptr<svg::svg_generator> draw_walls(const world_type& tobor_world, const drawing_style_sheet& dss) {
 				auto svg_walls = std::make_unique<svg::svg_compound>();
 
-				using int_type = typename cell_id_type::int_type;
-
 				// horizontal walls:
-				for (int_type x = 0; x < tobor_world.get_horizontal_size(); ++x) {
-					for (int_type y = 0; y <= tobor_world.get_vertical_size(); ++y) {
-						if (
-							tobor_world.south_wall_by_transposed_id(cell_id_type::create_by_coordinates(x, y, tobor_world).get_transposed_id())
-							) {
+				for (cell_size_int x = 0; x < tobor_world.get_horizontal_size(); ++x) {
+					for (cell_size_int y = 0; y <= tobor_world.get_vertical_size(); ++y) {
+						if (tobor_world.south_wall_by_transposed_id(tobor_world.coordinates_to_transposed_cell_id(world_type::narrow(x), world_type::narrow(y)))) {
 							// ! Note that y exceeds its natural range by 1. But it is okay, since we operate on an infinite repeating 2D landscape
 							svg_walls->elements.push_back(get_horizontal_south_wall(tobor_world, dss, x, y));
 						}
@@ -605,18 +593,14 @@ namespace tobor {
 				}
 
 				// vertical walls:
-				for (int_type x = 0; x <= tobor_world.get_horizontal_size(); ++x) {
-					for (int_type y = 0; y < tobor_world.get_vertical_size(); ++y) {
-						if (
-							tobor_world.west_wall_by_id(cell_id_type::create_by_coordinates(x, y, tobor_world).get_id())
-							) {
+				for (cell_size_int x = 0; x <= tobor_world.get_horizontal_size(); ++x) {
+					for (cell_size_int y = 0; y < tobor_world.get_vertical_size(); ++y) {
+						if (tobor_world.west_wall_by_id(tobor_world.coordinates_to_cell_id(world_type::narrow(x), world_type::narrow(y)))) {
 							// ! Note that y exceeds its natural range by 1. But it is okay, since we operate on an infinite repeating 2D landscape
 							svg_walls->elements.push_back(get_vertical_west_wall(tobor_world, dss, x, y));
 						}
 					}
 				}
-
-
 				return svg_walls;
 			}
 
