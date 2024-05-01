@@ -399,6 +399,230 @@ namespace tobor {
 
 		using default_positions_of_pieces = positions_of_pieces<default_pieces_quantity, default_min_size_cell_id, false, true>;
 
+		/**
+		*	@brief Contains the information where the pieces are located on the game board.
+		*
+		*	@details It only distinguishes the target piece from non target pieces.
+		*			Non target pieces cannot be distiguished. They are kept sorted acending by their cell ids.
+		*/
+		template <class Pieces_Quantity_Type, class Cell_Id_Type_T, bool SORTED_TARGET_PIECES_V, bool SORTED_NON_TARGET_PIECES_V>
+		class augmented_positions_of_pieces {
+
+		public:
+
+			using pieces_quantity_type = Pieces_Quantity_Type;
+
+			using cell_id_type = Cell_Id_Type_T;
+
+			using world_type = typename cell_id_type::world_type;
+
+			// cell_id_type::int_type for cell ids
+
+
+			// here it should not use a dependent name without alias-defining it in the class itself!
+			// like piece_id_int_type, we already defined class piece_id as a wrapper.
+
+			static constexpr typename pieces_quantity_type::int_type COUNT_TARGET_PIECES{ Pieces_Quantity_Type::COUNT_TARGET_PIECES };
+
+			static constexpr typename pieces_quantity_type::int_type COUNT_NON_TARGET_PIECES{ Pieces_Quantity_Type::COUNT_NON_TARGET_PIECES };
+
+			static constexpr typename pieces_quantity_type::int_type COUNT_ALL_PIECES{ Pieces_Quantity_Type::COUNT_ALL_PIECES };
+
+			static constexpr bool SORTED_TARGET_PIECES{ SORTED_TARGET_PIECES_V };
+
+			static constexpr bool SORTED_NON_TARGET_PIECES{ SORTED_NON_TARGET_PIECES_V };
+
+			using target_pieces_array_type = std::array<cell_id_type, COUNT_TARGET_PIECES>;
+
+			using non_target_pieces_array_type = std::array<cell_id_type, COUNT_NON_TARGET_PIECES>;
+
+			using all_pieces_array_type = std::array<cell_id_type, COUNT_ALL_PIECES>;
+
+			using permutation_type = std::array<std::size_t, COUNT_ALL_PIECES>;
+
+		private:
+
+			/**
+			*	@brief Cell ids of the target piece(s) and non-target piece.
+			*	@details Both sections {TARGET_PIECES : NON_TARGET_PIECES} need to be ordered by < all the time if specified so by template arguments.
+			*
+			*/
+			all_pieces_array_type piece_positions;
+
+			permutation_type permutation;
+
+			inline static void reset_perm(permutation_type& perm) {
+				for (std::size_t i = 0; i < COUNT_ALL_PIECES; ++i)
+					perm[i] = i;
+			}
+
+			template<class Aggregation_Type>
+			inline static void apply_perm(const permutation_type& p, Aggregation_Type& target) {
+				auto update = Aggregation_Type(target);
+				for (std::size_t i{ 0 }; i < p.size(); ++i) {
+					update[i] = target[p[i]];
+				}
+				target = update;
+			}
+		public:
+
+			inline void reset_permutation() {
+				reset_perm(permutation);
+			}
+
+			/**
+			*	@brief Creates an object when cell positions of the pieces are given.
+			*	@param p_non_target_pieces Does not need to be sorted when passed to this constructor.
+			*/
+			augmented_positions_of_pieces(const target_pieces_array_type& target_pieces, const non_target_pieces_array_type& non_target_pieces) {
+				std::copy_n(target_pieces.begin(), COUNT_TARGET_PIECES, piece_positions.begin());
+				std::copy_n(non_target_pieces.begin(), COUNT_NON_TARGET_PIECES, piece_positions.begin() + COUNT_TARGET_PIECES);// can use other containers too, not only array type
+				reset_permutation();
+				sort_pieces();
+			}
+
+			augmented_positions_of_pieces(const augmented_positions_of_pieces&) = default;
+
+			inline augmented_positions_of_pieces& operator = (const augmented_positions_of_pieces&) = default;
+
+			augmented_positions_of_pieces(augmented_positions_of_pieces&&) = default; //## need to make the other valid
+
+			inline augmented_positions_of_pieces& operator = (augmented_positions_of_pieces&&) = default; //## need to make the other valid
+
+			inline const all_pieces_array_type& raw() const { return piece_positions; }
+
+			bool operator< (const augmented_positions_of_pieces& another) const noexcept {
+				return piece_positions < another.piece_positions;
+			}
+
+			bool operator== (const augmented_positions_of_pieces& another) const noexcept {
+				return piece_positions == another.piece_positions;
+			}
+
+			inline typename std::array<cell_id_type, COUNT_ALL_PIECES>::const_iterator target_pieces_cbegin() const {
+				return piece_positions.cbegin();
+			};
+
+			inline typename std::array<cell_id_type, COUNT_ALL_PIECES>::iterator target_pieces_begin() {
+				return piece_positions.begin();
+			};
+
+			inline typename std::array<cell_id_type, COUNT_ALL_PIECES>::const_iterator target_pieces_cend() const {
+				return piece_positions.cbegin() + COUNT_TARGET_PIECES;
+			};
+
+			inline typename std::array<cell_id_type, COUNT_ALL_PIECES>::iterator target_pieces_end() {
+				return piece_positions.begin() + COUNT_TARGET_PIECES;
+			};
+
+			inline typename std::array<cell_id_type, COUNT_ALL_PIECES>::const_iterator non_target_pieces_cbegin() const {
+				return target_pieces_cend();
+			};
+
+			inline typename std::array<cell_id_type, COUNT_ALL_PIECES>::iterator non_target_pieces_begin() {
+				return target_pieces_end();
+			};
+
+			inline typename std::array<cell_id_type, COUNT_ALL_PIECES>::const_iterator non_target_pieces_cend() const {
+				return piece_positions.cend();
+			};
+
+			inline typename std::array<cell_id_type, COUNT_ALL_PIECES>::iterator non_target_pieces_end() {
+				return piece_positions.end();
+			};
+
+			inline void sort_pieces() {
+				if constexpr ((!SORTED_TARGET_PIECES || COUNT_TARGET_PIECES <= 1) && (!SORTED_NON_TARGET_PIECES || COUNT_NON_TARGET_PIECES <= 1)) {
+					return;
+				}
+				permutation_type p_new;
+				reset_perm(p_new);
+				if constexpr (SORTED_TARGET_PIECES && !(COUNT_TARGET_PIECES <= 1)) {
+					//std::sort(target_pieces_begin(), target_pieces_end());
+					std::sort(p_new.begin(), p_new.begin() + COUNT_TARGET_PIECES, [](const std::size_t& l, const std::size_t& r) {
+						return piece_positions[l] < piece_positions[r];
+						});
+				}
+				if constexpr (SORTED_NON_TARGET_PIECES && !(COUNT_NON_TARGET_PIECES <= 1)) {
+					std::sort(p_new.begin() + COUNT_TARGET_PIECES, p_new.begin() + COUNT_ALL_PIECES, [](const std::size_t& l, const std::size_t& r) {
+						return piece_positions[l] < piece_positions[r];
+						});
+				}
+				apply_perm(p_new, piece_positions);
+				apply_perm(p_new, permutation);
+			}
+
+			inline bool is_final(const cell_id_type& target_cell) const {
+				for (auto iter = target_pieces_cbegin(); iter != target_pieces_cend(); ++iter) {
+					if (*iter == target_cell)
+						return true;
+				}
+				return false;
+			}
+
+			inline std::size_t count_changed_pieces(const augmented_positions_of_pieces& another) const {
+				std::size_t counter{ 0 };
+				if constexpr (SORTED_TARGET_PIECES) {
+					auto iter = target_pieces_cbegin();
+					auto jter = another.target_pieces_cbegin();
+					while (iter != target_pieces_cend() && jter != another.target_pieces_cend()) {
+						if (*iter == *jter) {
+							++iter;
+							++jter;
+						}
+						else if (*iter < *jter) {
+							++iter;
+							++counter;
+						}
+						else
+							++jter;
+					}
+					counter += (target_pieces_cend() - iter);
+				}
+				else {
+					for (
+						auto iter = target_pieces_cbegin(), jter = another.target_pieces_cbegin();
+						iter != target_pieces_cend();
+						++iter, ++jter
+						)
+					{
+						if (*iter != *jter)
+							++counter;
+					}
+				}
+				if constexpr (SORTED_NON_TARGET_PIECES) {
+					auto iter = non_target_pieces_cbegin();
+					auto jter = another.non_target_pieces_cbegin();
+					while (iter != non_target_pieces_cend() && jter != another.non_target_pieces_cend()) {
+						if (*iter == *jter) {
+							++iter;
+							++jter;
+						}
+						else if (*iter < *jter) {
+							++iter;
+							++counter;
+						}
+						else
+							++jter;
+					}
+					counter += (non_target_pieces_cend() - iter);
+				}
+				else {
+					for (
+						auto iter = non_target_pieces_cbegin(), jter = another.non_target_pieces_cbegin();
+						iter != non_target_pieces_cend();
+						++iter, ++jter
+						)
+					{
+						if (*iter != *jter)
+							++counter;
+					}
+				}
+				return counter;
+			}
+		};
+
+
 		template <class Pieces_Quantity_Type>
 		using piece_id = tobor::v1_0::piece_id<Pieces_Quantity_Type>;
 

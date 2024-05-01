@@ -916,32 +916,6 @@ namespace tobor {
 				return result;
 			}
 
-			/*
-			inline std::vector<bool> colored_footprint() const {
-
-				std::array<vector_type::const_iterator, pieces_quantity_type::COUNT_ALL_PIECES> color_next;
-
-				for (auto& iter : color_next) {
-					iter = move_vector.cbegin();
-				}
-
-				while (true) {
-					uint8_t i = 0;
-					bool IS_NORTH_OR_SOUTH = 0;
-					bool
-					while (color_next[i] != move_vector.cend() && color_next[i]->pid.value != i) {
-						++color_next[i];
-					}
-					if (color_next[i] != move_vector.cend()) {
-
-						++color_next[i];
-					}
-				}
-
-				... to much effort in coding for a footprint. will also probably take longer computation time.
-			}
-			*/
-
 			inline move_path color_sorted_footprint() const {
 				auto result = move_path(*this);
 
