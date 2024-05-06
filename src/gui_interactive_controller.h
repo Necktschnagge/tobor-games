@@ -52,13 +52,13 @@ public:
 
 	using quick_move_cache_type = tobor::v1_1::quick_move_cache<world_type>;
 
-	using move_one_piece_calculator_type = tobor::v1_1::move_one_piece_calculator<positions_of_pieces_type, quick_move_cache_type, piece_move_type>;
+	using move_one_piece_calculator_type = tobor::v1_1::move_one_piece_calculator<cell_id_type, quick_move_cache_type, piece_move_type>;
 
 	//using state_graph_node_type = tobor::v1_0::state_graph_node<positions_of_pieces_type, piece_move_type>;
 
 	//using partial_state_graph_type = tobor::v1_0::partial_state_graph<move_one_piece_calculator_type, state_graph_node_type>;
 
-	using distance_exploration_type = tobor::v1_1::distance_exploration<move_one_piece_calculator_type>;
+	using distance_exploration_type = tobor::v1_1::distance_exploration<move_one_piece_calculator_type, positions_of_pieces_type>;
 
 	using move_path_type = tobor::v1_1::move_path<piece_move_type>;
 

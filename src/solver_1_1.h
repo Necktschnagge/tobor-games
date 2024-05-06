@@ -158,32 +158,34 @@ namespace tobor {
 		/**
 		*	@brief Calculates successor states by calcualting successor cell of single pieces for moving in a given direction.
 		*/
-		template<class Quick_Move_Cache_T, class Piece_Move_Type>
+		template<class Cell_Id_Type, class Quick_Move_Cache_T, class Piece_Move_Type>
 		class move_one_piece_calculator { // logic engine // move_engine
 		public:
 
-			using positions_of_pieces_type = Position_Of_Pieces_T; // remove #### this from template. every fucntion should be template to use different pop types over the same pieces quantity.
-			using cell_id_type = typename positions_of_pieces_type::cell_id_type;
-			using world_type = typename positions_of_pieces_type::world_type;
-
-			using cell_id_int_type = typename cell_id_type::int_cell_id_type;
-
+			//using positions_of_pieces_type = Position_Of_Pieces_T; // remove #### this from template. every fucntion should be template to use different pop types over the same pieces quantity.
+			// for every template we must check type compatibility with world (---> int types) and pieces quantity (--> vector length, )
 
 			using quick_move_cache_type = Quick_Move_Cache_T;
 
+			using world_type = typename quick_move_cache_type::world_type;
+
+			using cell_id_type = Cell_Id_Type;
+
+			using cell_id_int_type = typename cell_id_type::int_cell_id_type;
 
 			using piece_move_type = Piece_Move_Type;
+
 			using piece_id_type = typename piece_move_type::piece_id_type;
 
-			static_assert(
-				std::is_same<typename positions_of_pieces_type::world_type, typename quick_move_cache_type::world_type>::value,
-				"Incompatible template arguments. typename Position_Of_Pieces_T::world_type must equal typenname Quick_Move_Cache_T::world_type"
-				);
+			//static_assert(
+			//	std::is_same<typename positions_of_pieces_type::world_type, typename quick_move_cache_type::world_type>::value,
+			//	"Incompatible template arguments. typename Position_Of_Pieces_T::world_type must equal typenname Quick_Move_Cache_T::world_type"
+			//	);
 
-			static_assert(
-				std::is_same<typename positions_of_pieces_type::pieces_quantity_type, typename piece_move_type::pieces_quantity_type>::value,
-				"Incompatible template arguments. typename Position_Of_Pieces_T::pieces_quantity_type must equal typenname Piece_Move_Type::pieces_quantity_type"
-				);
+			//static_assert(
+			//	std::is_same<typename positions_of_pieces_type::pieces_quantity_type, typename piece_move_type::pieces_quantity_type>::value,
+			//	"Incompatible template arguments. typename Position_Of_Pieces_T::pieces_quantity_type must equal typenname Piece_Move_Type::pieces_quantity_type"
+			//	);
 
 			struct arithmetic_error {
 
@@ -247,9 +249,10 @@ namespace tobor {
 			/**
 			*	@brief Calculates the successor cell to reach starting at \p start_cell moving in given direction until any obstacle (wall or piece).
 			*/
+			template<class Position_Of_Pieces_Type>
 			inline cell_id_int_type next_cell_max_move_raw(
 				const cell_id_int_type& raw_start_cell_id,
-				const positions_of_pieces_type& state,
+				const Position_Of_Pieces_Type& state,
 				const direction& d
 			) const {
 				cell_id_int_type raw_next_cell_id{ cache.get(d, raw_start_cell_id) };
@@ -273,9 +276,10 @@ namespace tobor {
 			/**
 			*	@brief Calculates the successor cell to reach starting at \p start_cell moving in given direction until any obstacle (wall or piece).
 			*/
+			template<class Position_Of_Pieces_Type>
 			inline cell_id_type next_cell_max_move(
 				const cell_id_type& start_cell,
-				const positions_of_pieces_type& state,
+				const Position_Of_Pieces_Type& state,
 				const id_getter_type& get_raw_id,
 				const cell_id_creator& create_cell_id_by,
 				const cache_direction_getter& get_cache_direction
@@ -290,9 +294,10 @@ namespace tobor {
 			/**
 			*	@brief Calculates the successor cell to reach starting at \p start_cell moving in given direction until any obstacle (wall or piece).
 			*/
+			template<class Position_Of_Pieces_Type>
 			inline cell_id_type next_cell_max_move(
 				const cell_id_type& start_cell,
-				const positions_of_pieces_type& state,
+				const Position_Of_Pieces_Type& state,
 				const direction& d
 			) const {
 				const cell_id_int_type raw_start_cell_id{ start_cell.get_raw_id(d,my_world) };
@@ -302,6 +307,7 @@ namespace tobor {
 				return cell_id_type::create_by_raw_id(d, raw_next_cell_id, my_world);
 			}
 
+#if false
 			/**
 			*	@brief Calculates the successor cell to reach starting at \p start_cell moving in given direction until any obstacle (wall or piece).
 			*/
@@ -319,12 +325,14 @@ namespace tobor {
 
 				return create_cell_id_by(raw_next_cell_id, my_world);
 			}
+#endif
 
-			inline std::vector<positions_of_pieces_type> predecessor_states(
-				const positions_of_pieces_type& state,
+			template<class Position_Of_Pieces_Type>
+			inline std::vector<Position_Of_Pieces_Type> predecessor_states(
+				const Position_Of_Pieces_Type& state,
 				const typename piece_move_type::piece_id_type& _piece_id,
 				const direction& _direction_from
-			){
+			) {
 				const cell_id_type start_cell{ state.piece_positions[_piece_id.value] };
 
 				const cell_id_int_type raw_start_cell_id{ start_cell.get_raw_id(_direction_from, my_world) };
@@ -335,7 +343,7 @@ namespace tobor {
 					!_direction_from
 				);
 
-				auto result = std::vector<positions_of_pieces_type>(
+				auto result = std::vector<Position_Of_Pieces_Type>(
 					raw_start_cell_id > raw_far_id ?
 					raw_start_cell_id - raw_far_id :
 					raw_far_id - raw_start_cell_id,
@@ -352,11 +360,12 @@ namespace tobor {
 				return result;
 			}
 
-			inline std::vector<positions_of_pieces_type> predecessor_states(
-				const positions_of_pieces_type& state,
+			template<class Position_Of_Pieces_Type>
+			inline std::vector<Position_Of_Pieces_Type> predecessor_states(
+				const Position_Of_Pieces_Type& state,
 				const typename piece_move_type::piece_id_type& _piece_id)
 			{
-				auto result = std::vector<positions_of_pieces_type>();
+				auto result = std::vector<Position_Of_Pieces_Type>();
 				result.reserve(static_cast<std::size_t>(my_world.get_horizontal_size() + my_world.get_vertical_size()) * 2);
 				for (direction d = direction::begin(); d != direction::end(); ++d) {
 					auto part = predecessor_states(state, _piece_id, d);
@@ -366,8 +375,9 @@ namespace tobor {
 				return result;
 			}
 
-			inline std::vector<positions_of_pieces_type> predecessor_states(const positions_of_pieces_type& state) {
-				auto result = std::vector<positions_of_pieces_type>();
+			template<class Position_Of_Pieces_Type>
+			inline std::vector<Position_Of_Pieces_Type> predecessor_states(const Position_Of_Pieces_Type& state) {
+				auto result = std::vector<Position_Of_Pieces_Type>();
 				result.reserve(
 					static_cast<std::size_t>(my_world.get_horizontal_size() + my_world.get_vertical_size()) * 2 * piece_id_type::pieces_quantity_type::COUNT_ALL_PIECES
 				);
@@ -379,8 +389,9 @@ namespace tobor {
 				return result;
 			} // should add a function returning void but taking an insert iterator
 
-			inline positions_of_pieces_type successor_state(const positions_of_pieces_type& state, const typename piece_move_type::piece_id_type& _piece_id, const direction& _direction) const {
-				positions_of_pieces_type result(state);
+			template<class Position_Of_Pieces_Type>
+			inline Position_Of_Pieces_Type successor_state(const Position_Of_Pieces_Type& state, const typename piece_move_type::piece_id_type& _piece_id, const direction& _direction) const {
+				Position_Of_Pieces_Type result(state);
 
 				result.piece_positions[_piece_id.value] = next_cell_max_move(state.piece_positions[_piece_id.value], state, _direction);
 				result.sort_pieces();
@@ -388,15 +399,18 @@ namespace tobor {
 				return result;
 			}
 
-			inline std::pair<positions_of_pieces_type, bool> successor_state(const positions_of_pieces_type& state, const piece_move_type& move) const {
+			template<class Position_Of_Pieces_Type>
+			inline std::pair<Position_Of_Pieces_Type, bool> successor_state(const Position_Of_Pieces_Type& state, const piece_move_type& move) const {
 				return successor_state(state, move.pid, move.dir);
 			}
 
-			inline positions_of_pieces_type state_plus_move(const positions_of_pieces_type& state, const piece_move_type& move) const {
+			template<class Position_Of_Pieces_Type>
+			inline Position_Of_Pieces_Type state_plus_move(const Position_Of_Pieces_Type& state, const piece_move_type& move) const {
 				return successor_state(state, move).first;
 			}
 
-			inline piece_move_type state_minus_state(const positions_of_pieces_type& to_state, const positions_of_pieces_type& from_state) const {
+			template<class Position_Of_Pieces_Type>
+			inline piece_move_type state_minus_state(const Position_Of_Pieces_Type& to_state, const Position_Of_Pieces_Type& from_state) const {
 				if (from_state == to_state) { // no move error
 
 					typename arithmetic_error::no_move no_move_exception;
@@ -499,13 +513,13 @@ namespace tobor {
 		};
 
 
-		template <class Move_One_Piece_Calculator>
+		template <class Move_One_Piece_Calculator, class Positions_Of_Pieces_Type>
 		class distance_exploration {
 
 		public:
 			using move_one_piece_calculator_type = Move_One_Piece_Calculator;
 
-			using positions_of_pieces_type = typename Move_One_Piece_Calculator::positions_of_pieces_type;
+			using positions_of_pieces_type = Positions_Of_Pieces_Type; // check compatibility with Move_One_Piece_Calc! #### via static assert 
 
 			using piece_move_type = typename move_one_piece_calculator_type::piece_move_type;
 
@@ -528,8 +542,6 @@ namespace tobor {
 			};
 
 			class exploration_policy {
-				template <class Move_One_Piece_Calculator>
-				friend class distance_exploration;
 
 				size_type _state_count_threshold{ 0 };
 				size_type _max_depth{ 0 };
@@ -552,6 +564,11 @@ namespace tobor {
 				static constexpr exploration_policy FORCE_EXPLORATION_STATE_THRESHOLD_UNTIL_DEPTH(size_type state_count_threshold, size_type max_depth) { return exploration_policy(std::max(state_count_threshold, 1), max_depth); }
 
 				inline bool operator ==(const exploration_policy& another) const noexcept { return _state_count_threshold == another._state_count_threshold && _max_depth == another._max_depth; }
+
+				inline size_type state_count_threshold() const { return _state_count_threshold; }
+
+				inline size_type max_depth() const { return _max_depth; }
+
 			};
 
 		private:
@@ -737,8 +754,8 @@ namespace tobor {
 
 				for (size_type expand_level_index{ INDEX_LAST_EXPLORATION };
 					expand_level_index < optimal_depth
-					&& expand_level_index < policy._max_depth /* policy abort*/
-					&& states_counter < policy._state_count_threshold /* policy abort*/;
+					&& expand_level_index < policy.max_depth() /* policy abort*/
+					&& states_counter < policy.state_count_threshold() /* policy abort*/;
 					++expand_level_index) {
 
 					if (_reachable_states_by_distance[expand_level_index].size() == 0) {
