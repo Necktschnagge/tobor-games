@@ -94,6 +94,12 @@ public:
 
 		std::vector<std::vector<state_path_type_solver>> partitioned_state_paths;
 
+		std::vector<std::vector<state_path_type_interactive>> partitioned_augmented_state_paths;
+
+		std::vector<std::vector<move_path_type>> partitioned_color_aware_move_paths;
+
+		std::vector<std::vector<std::pair<state_path_type_interactive, move_path_type>>> partitioned_pairs; // should replace the two above
+
 	public:
 		solver_environment(const positions_of_pieces_type_solver& initial_state) :
 			selected_solution_index(0),
@@ -103,12 +109,15 @@ public:
 			partitioned_state_paths()
 		{}
 
-		inline void run(const GameController& controller, std::function<void(const std::string&)> status_callback = nullptr) {
+		[[nodiscard]] inline bool run(const GameController& controller, std::function<void(const std::string&)> status_callback = nullptr, std::size_t MAX_DEPTH = distance_exploration_type::SIZE_TYPE_MAX) {
 
 			// explore...
 			if (status_callback) status_callback("Exploring state space until target...");
-			distance_explorer.explore_until_target(controller._move_engine, controller._target_cell);
+			auto optimal_depth = distance_explorer.explore_until_target(controller._move_engine, controller._target_cell, MAX_DEPTH);
 			// ### inside this call, log every distance level as a progress bar
+			if (optimal_depth == decltype(distance_explorer)::SIZE_TYPE_MAX) {
+				return false;
+			}
 
 
 			if (status_callback) status_callback("Extracting solution state graph...");
@@ -134,31 +143,46 @@ public:
 
 			if (status_callback) status_callback("Generating move_paths ...");
 			for (std::size_t i{ 0 }; i < partitioned_state_paths.size(); ++i) {
+
+				partitioned_augmented_state_paths.emplace_back();
+				partitioned_color_aware_move_paths.emplace_back();
+				partitioned_pairs.emplace_back();
+
 				for (const auto& state_path : partitioned_state_paths[i]) {
-					auto mp = tobor::v1_1::move_path<piece_move_type>(state_path, controller._move_engine);
 
-					using aug_state = tobor::v1_1::augmented_positions_of_pieces<piece_quantity_type, cell_id_type, true, true>;
+					auto color_agnostic_move_path = tobor::v1_1::move_path<piece_move_type>(state_path, controller._move_engine);
 
-					auto initial_state_aug = aug_state(); // need a constructor copying from another state?
+					partitioned_augmented_state_paths.back().push_back(
+						color_agnostic_move_path.apply(controller.current_state(), controller._move_engine)
+					);
 
-					auto s_path = mp.apply(initial_state_aug, controller._move_engine);
+					partitioned_color_aware_move_paths.back().push_back(
+						move_path_type::extract_unsorted_move_path(partitioned_augmented_state_paths.back().back(), controller._move_engine)
+					);
+
+					partitioned_pairs.back().emplace_back(partitioned_augmented_state_paths.back().back(), partitioned_color_aware_move_paths.back().back());
 				}
 			}
 
-			// classify optimal paths...
-			//optional_classified_move_paths.reset();
-			//optional_classified_move_paths.emplace();
-			//auto& classified_move_paths{ optional_classified_move_paths.value() };
-			//
-			//for (const auto& pair : optimal_paths_map) {
-			//	classified_move_paths[pair.first] = move_path_type::interleaving_partitioning(pair.second);
-			//	for (auto& equivalence_class : classified_move_paths[pair.first]) {
-			//		std::sort(equivalence_class.begin(), equivalence_class.end(), move_path_type::antiprettiness_relation);
-			//	}
-			//}
-			(void)optimal_depth;
+			if (status_callback) status_callback("Prettiness sorting inside equivalence classes...");
+			for (auto& equivalence_class : partitioned_color_aware_move_paths) {
+				std::sort(equivalence_class.begin(), equivalence_class.end(), move_path_type::antiprettiness_relation);
+			}
+			for (auto& equivalence_class : partitioned_pairs) {
+				std::sort(equivalence_class.begin(), equivalence_class.end(), [](const auto& pair_l, const auto& pair_r) { return move_path_type::antiprettiness_relation(pair_l.second, pair_r.second); });
+			}
+
+			return true;
+		}
+
+		inline void select_solution(const std::size_t& index) {
+			selected_solution_index = index;
+			if (!(selected_solution_index < partition_bigraphs.size())) {
+				selected_solution_index = 0;
+			}
 		}
 	};
+
 private:
 
 	/* data */
@@ -215,46 +239,53 @@ public:
 	/* modifying */
 
 	inline uint8_t move(const piece_id_type& piece_id, const tobor::v1_0::direction& direction) {
-		if (is_final()) return 1;
+		if (_solver) return 4;
+
+		if (is_final()) return 2;
 
 		auto next_state = _move_engine.successor_state(current_state(), piece_id, direction);
 
-		if (next_state == current_state()) return 2;
+		if (next_state == current_state()) return 1;
 
 		_path += next_state;
+
+		return 0;
 	}
 
 	inline void undo() {
+		if (_solver) return; // or stop solver if undoing out of solver (?)
+
 		if (_path.vector().size() > 1) {
 			_path.vector().pop_back();
 		}
 	}
 
-	move_path_type& get_selected_solution_representant(std::size_t index);
-
 	void start_solver(std::function<void(const std::string&)> status_callback = nullptr);
 
-	void stopSolver() {
-
-		_solver_begin_index = 0;
-
-		optional_classified_move_paths.reset();
-		selected_solution_index = 0;
-	}
-
-	void moveBySolver(bool forward);
-
-	inline void selectSolution(const std::size_t& index) {
-		selected_solution_index = index;
-		// selects a solution from the list of solutions
-	}
-
-	inline void resetSolverSteps() {
+	inline void reset_solver_steps() {
 		// go back to solver_begin_index
-		_path.erase(_path.begin() + _solver_begin_index, _path.end());
+		_path.vector().erase(_path.vector().begin() + _solver_begin_index, _path.vector().end());
 	}
+
+	void stop_solver() {
+		_solver_begin_index = 0;
+		_solver.reset();
+	}
+
+	inline void select_solution(const std::size_t& index) {
+		if (_solver) {
+			_solver.value().select_solution(index);
+			reset_solver_steps();
+		}
+	}
+
+	void move_by_solver(bool forward);
 
 	~GameController() {}
+	
+	// todo: functions below:
+
+	//move_path_type& get_selected_solution_representant(std::size_t index); no longer supported!
 
 	// must implement copy / move ctor and operator=
 };

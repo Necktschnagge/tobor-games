@@ -1140,7 +1140,7 @@ namespace tobor {
 			const vector_type& vector() const { return move_vector; }
 
 			template<class Position_Of_Pieces_Type, class Move_Once_Piece_Calculator_Type>
-			inline state_path<Position_Of_Pieces_Type> apply(const Position_Of_Pieces_Type& initial_state, const Move_Once_Piece_Calculator_Type& move_engine) {
+			[[nodiscard]] inline state_path<Position_Of_Pieces_Type> apply(const Position_Of_Pieces_Type& initial_state, const Move_Once_Piece_Calculator_Type& move_engine) {
 				state_path<Position_Of_Pieces_Type> result;
 				result.vector().reserve(move_vector.size() + 1);
 				result.vector().push_back(initial_state);

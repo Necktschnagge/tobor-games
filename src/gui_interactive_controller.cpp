@@ -230,7 +230,7 @@ void GuiInteractiveController::stopGame() {
 
 void GuiInteractiveController::moveBySolver(bool forward)
 {
-	gameHistory.back().moveBySolver(forward);
+	gameHistory.back().move_by_solver(forward);
 
 }
 
@@ -266,7 +266,7 @@ void GuiInteractiveController::selectPieceByColorId(const std::size_t& color_id)
 		color_id
 	);
 
-	const typename decltype(iter)::difference_type index{ iter - gameHistory.back().color_permutation().cbegin()};
+	const typename decltype(iter)::difference_type index{ iter - gameHistory.back().color_permutation().cbegin() };
 
 	if (iter == gameHistory.back().color_permutation().cend())
 		throw std::logic_error("Illegal color_id.");
@@ -471,7 +471,12 @@ void GuiInteractiveController::undo() {
 
 void GuiInteractiveController::startSolver()
 {
-	gameHistory.back().start_solver(mainWindow);
+	auto showMessage = [&](const std::string& m) {
+		mainWindow->statusBar()->showMessage(m.c_str());
+		mainWindow->repaint();
+		};
+
+	gameHistory.back().start_solver(showMessage);
 	interactive_mode = InteractiveMode::SOLVER_INTERACTIVE_STEPS;
 	viewSolutionPaths();
 	refreshAll();
@@ -480,7 +485,7 @@ void GuiInteractiveController::startSolver()
 void GuiInteractiveController::stopSolver()
 {
 	interactive_mode = InteractiveMode::GAME_INTERACTIVE;
-	gameHistory.back().stopSolver();
+	gameHistory.back().stop_solver();
 	viewSolutionPaths();
 	refreshAll();
 }
@@ -490,8 +495,8 @@ void GuiInteractiveController::selectSolution(std::size_t index)
 	if (interactive_mode != InteractiveMode::SOLVER_INTERACTIVE_STEPS) {
 		return showErrorDialog("Cannot select any solver solution when not in solver mode!");
 	}
-	gameHistory.back().selectSolution(index);
-	gameHistory.back().resetSolverSteps();
+	gameHistory.back().select_solution(index);
+	gameHistory.back().reset_solver_steps();
 }
 
 void GuiInteractiveController::viewSolutionPaths() // this has to be improved!!!
@@ -520,7 +525,7 @@ void GuiInteractiveController::viewSolutionPaths() // this has to be improved!!!
 	auto permutated_color_vector = current_color_vector;
 
 	for (std::size_t i{ 0 }; i < current_color_vector.colors.size(); ++i) {
-		permutated_color_vector.colors[i] = current_color_vector.colors[gameHistory.back()._color_permutation[i]];
+		permutated_color_vector.colors[i] = current_color_vector.colors[gameHistory.back().color_permutation()[i]];
 	}
 
 	for (const auto& pair : gameHistory.back().optional_classified_move_paths.value()) {
@@ -591,6 +596,7 @@ void GuiInteractiveController::highlightGeneratedTargetCells()
 	mainWindow->ui->statusbar->showMessage(m);
 }
 
+#if false
 GameController::move_path_type& GameController::get_selected_solution_representant(std::size_t index) {
 	for (auto& pair : optional_classified_move_paths.value()) {
 		//for (auto& equi_class : pair.second) {
@@ -618,6 +624,7 @@ GameController::move_path_type& GameController::get_selected_solution_representa
 	}
 	return optional_classified_move_paths.value().begin()->second.front().front();
 }
+#endif
 
 void GameController::start_solver(std::function<void(const std::string&)> status_callback) {
 	/* callback looks like this:
@@ -628,34 +635,29 @@ void GameController::start_solver(std::function<void(const std::string&)> status
 
 	_solver_begin_index = _path.vector().size();
 
-	_solver.value().run(*this, status_callback);
+	if (!_solver.value().run(*this, status_callback)) {
+		// error dialog message!!!####
+		return stop_solver();
+	}
 
-	throw 0;
-
-	mw->statusBar()->showMessage("Done");
-	mw->repaint();
+	if (status_callback) status_callback("Successfully executed solver.");
 }
 
-void GameController::moveBySolver(bool forward) {
+void GameController::move_by_solver(bool forward) {
+	if (!_solver) return;
 
-	auto& move_path = get_selected_solution_representant(selected_solution_index);
+	const auto index_next_move = _path.vector().size() - _solver_begin_index;
 
-	qDebug() << "move by solver: path length " << move_path.vector().size();
-
-	const auto index_next_move = _path.size() - _solver_begin_index;
-
-	qDebug() << "move by solver: index next move " << index_next_move;
+	const auto index_next_state = index_next_move + 1;
 
 	if (forward) {
 		if (is_final())
 			return;
-		move(move_path.vector()[index_next_move].pid, move_path.vector()[index_next_move].dir);
+		_path += _solver.value().partitioned_pairs[_solver.value().selected_solution_index][0].first.vector()[index_next_state];
 	}
 	else { // back
 		if (index_next_move == 0) // already at solver start
 			return;
-		_path.pop_back();
+		_path.vector().pop_back();
 	}
-
-	//selected_solution_index
 }

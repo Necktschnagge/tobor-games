@@ -570,7 +570,7 @@ namespace tobor {
 		public:
 
 			template<class Iter>
-			inline positions_of_pieces(Iter1 target_pieces_begin) {
+			inline positions_of_pieces(Iter target_pieces_begin) {
 				std::copy_n(target_pieces_begin, COUNT_ALL_PIECES, piece_positions.begin());
 				sort_pieces();
 			}

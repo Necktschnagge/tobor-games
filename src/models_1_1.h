@@ -475,7 +475,7 @@ namespace tobor {
 			}
 
 			template<class Iter>
-			inline augmented_positions_of_pieces(Iter1 target_pieces_begin) {
+			inline augmented_positions_of_pieces(Iter target_pieces_begin) {
 				std::copy_n(target_pieces_begin, COUNT_ALL_PIECES, piece_positions.begin());
 				reset_permutation();
 				sort_pieces();
