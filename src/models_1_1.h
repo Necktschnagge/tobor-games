@@ -466,6 +466,8 @@ namespace tobor {
 			}
 		public:
 
+			inline const permutation_type& get_permutation() const { return permutation; } // ### rename members!
+
 			inline void reset_permutation() {
 				reset_perm(permutation);
 			}
@@ -638,6 +640,7 @@ namespace tobor {
 
 		using default_piece_move = piece_move<default_piece_id>;
 
+#if false
 		template<class Position_Of_Pieces_T>
 		using state_path = tobor::v1_0::state_path<Position_Of_Pieces_T>;
 		// has to be reviewed again! ###
@@ -645,6 +648,7 @@ namespace tobor {
 		template<class Piece_Move_Type>
 		using move_path = tobor::v1_0::move_path<Piece_Move_Type>;
 		// has to be reviewed again! ###
+#endif
 
 	}
 }
