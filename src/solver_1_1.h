@@ -159,7 +159,7 @@ namespace tobor {
 		*	@brief Calculates successor states by calcualting successor cell of single pieces for moving in a given direction.
 		*/
 		template<class Position_Of_Pieces_T, class Quick_Move_Cache_T, class Piece_Move_Type>
-		class move_one_piece_calculator { // logic engine
+		class move_one_piece_calculator { // logic engine // move_engine
 		public:
 
 			using positions_of_pieces_type = Position_Of_Pieces_T;
@@ -319,7 +319,7 @@ namespace tobor {
 				return create_cell_id_by(raw_next_cell_id, my_world);
 			}
 
-
+#if false
 			/**
 			*	@brief Calculates the successor cell to reach starting at \p start_cell moving west until obstacle.
 			*/
@@ -415,6 +415,7 @@ namespace tobor {
 
 				return std::make_pair(cell_id_type::create_by_transposed_id(next_cell, my_world), true);
 			}
+#endif
 
 			inline std::vector<positions_of_pieces_type> predecessor_states(
 				const positions_of_pieces_type& state,
@@ -475,7 +476,7 @@ namespace tobor {
 				return result;
 			} // should add a function returning void but taking an insert iterator
 
-
+#if false
 			[[deprecated]] inline std::pair<positions_of_pieces_type, bool> successor_state_deprecated(
 				const positions_of_pieces_type& state,
 				const typename piece_move_type::piece_id_type& _piece_id,
@@ -511,6 +512,7 @@ namespace tobor {
 
 				return std::make_pair(next_state, true);
 			}
+#endif
 
 			inline positions_of_pieces_type successor_state(
 				const positions_of_pieces_type& state,
@@ -574,29 +576,9 @@ namespace tobor {
 
 			}
 
-			inline bool is_target_state(const positions_of_pieces_type& state, const cell_id_type& target_cell) const {
-				return state.is_final(target_cell); // ### wrapper to be deleted
-			}
-
 		};
 
 		using default_move_one_piece_calculator = move_one_piece_calculator<default_positions_of_pieces, default_quick_move_cache, default_piece_move>;
-
-		/*
-				template<class Positions_Of_Pieces_Type>
-				class backward_graph {
-				public:
-					using positions_of_pieces_type = Positions_Of_Pieces_Type;
-
-
-
-					struct graph_node {
-						positions_of_pieces_type state;
-						//std::size_t;
-					};
-
-				};
-		*/
 
 		template<class State_Type, class State_Label_Type = void>
 		class simple_state_bigraph;
