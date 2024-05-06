@@ -15,6 +15,17 @@
 
 namespace tobor {
 
+	namespace v1_1 {
+
+		// only for friend declarations!, ### resolve this, there should not be access to private member -> hence remove all friendships in positions_of_pieces
+
+		template<class Position_Of_Pieces_T, class Quick_Move_Cache_T, class Piece_Move_Type>
+		class move_one_piece_calculator;
+
+		template <class Move_One_Piece_Calculator>
+		class distance_exploration;
+	}
+
 	namespace v1_0 {
 
 		class division_by_2_error : public std::logic_error { // OK
@@ -63,6 +74,8 @@ namespace tobor {
 			inline static direction SOUTH() { return encoding::SOUTH; }
 			inline static direction WEST() { return encoding::WEST; }
 
+			inline bool is_id_direction() const noexcept { return (value & (encoding::EAST | encoding::WEST)); }
+			inline bool is_transposed_id_direction() const noexcept { return (value & (encoding::NORTH | encoding::SOUTH)); }
 
 			/* usage like an iterator over directions: */
 			inline static direction begin() { return encoding::NORTH; }
@@ -73,12 +86,16 @@ namespace tobor {
 
 
 			/* comparison operators */
-			inline bool operator<(const direction& another) { return this->value < another.value; }
-			inline bool operator==(const direction& another) { return this->value == another.value; }
+			//inline bool operator<(const direction& another) { return this->value < another.value; }
+			//inline bool operator==(const direction& another) { return this->value == another.value; }
+			inline std::strong_ordering operator<=>(const direction& another) const { return value <=> another.value; }
+
 
 
 			/* access via conversion to underlying type */
 			inline operator int_type() const { return value; }
+
+			inline int_type get() const noexcept { return value; }
 
 			inline operator std::string() const {
 				switch (value) {
@@ -93,6 +110,10 @@ namespace tobor {
 				default:
 					return " ";
 				}
+			}
+
+			direction operator!() const noexcept {
+				return direction(((value << 2) | (value >> 2)) ^ (value));
 			}
 
 		};
@@ -475,7 +496,7 @@ namespace tobor {
 		};
 
 		template<uint8_t COUNT_TARGET_PIECES_V, uint8_t COUNT_NON_TARGET_PIECES_V>
-		using uint8_t_pieces_quantity = pieces_quantity< uint8_t, COUNT_TARGET_PIECES_V, COUNT_NON_TARGET_PIECES_V>;
+		using uint8_t_pieces_quantity = pieces_quantity<uint8_t, COUNT_TARGET_PIECES_V, COUNT_NON_TARGET_PIECES_V>;
 
 		using default_pieces_quantity = pieces_quantity<uint8_t, 1, 3>;
 
@@ -487,7 +508,7 @@ namespace tobor {
 		*			Non target pieces cannot be distiguished. They are kept sorted acending by their cell ids.
 		*/
 		template <class Pieces_Quantity_Type = default_pieces_quantity, class Cell_Id_Type_T = default_cell_id, bool SORTED_TARGET_PIECES_V = true, bool SORTED_NON_TARGET_PIECES_V = true>
-		class positions_of_pieces { // OK
+		class positions_of_pieces {
 			// ## alternative implementation using std::vector instead of array, as non-template variant
 
 			template <class Move_One_Piece_Calculator, class State_Graph_Node>
@@ -496,8 +517,14 @@ namespace tobor {
 			template<class Position_Of_Pieces_T, class Quick_Move_Cache_T, class Piece_Move_Type>
 			friend class move_one_piece_calculator;
 
+			template<class Position_Of_Pieces_T, class Quick_Move_Cache_T, class Piece_Move_Type>
+			friend class ::tobor::v1_1::move_one_piece_calculator;
+
 			template<class Positions_Of_Pieces_Type_T>
 			friend class tobor_graphics;
+
+			template <class Move_One_Piece_Calculator>
+			friend class ::tobor::v1_1::distance_exploration;
 
 		public:
 
@@ -560,6 +587,8 @@ namespace tobor {
 
 			inline positions_of_pieces& operator = (positions_of_pieces&&) = default;
 
+			inline const all_pieces_array_type& raw() const { return piece_positions; }
+
 			bool operator< (const positions_of_pieces& another) const noexcept {
 				return piece_positions < another.piece_positions;
 			}
@@ -616,6 +645,67 @@ namespace tobor {
 						return true;
 				}
 				return false;
+			}
+
+			inline std::size_t count_changed_pieces(const positions_of_pieces& another) const {
+				std::size_t counter{ 0 };
+				if constexpr (SORTED_TARGET_PIECES) {
+					auto iter = target_pieces_cbegin();
+					auto jter = another.target_pieces_cbegin();
+					while (iter != target_pieces_cend() && jter != another.target_pieces_cend()) {
+						if (*iter == *jter) {
+							++iter;
+							++jter;
+						}
+						else if (*iter < *jter) {
+							++iter;
+							++counter;
+						}
+						else
+							++jter;
+					}
+					counter += (target_pieces_cend() - iter);
+				}
+				else {
+					for (
+						auto iter = target_pieces_cbegin(), jter = another.target_pieces_cbegin();
+						iter != target_pieces_cend();
+						++iter, ++jter
+						)
+					{
+						if (*iter != *jter)
+							++counter;
+					}
+				}
+				if constexpr (SORTED_NON_TARGET_PIECES) {
+					auto iter = non_target_pieces_cbegin();
+					auto jter = another.non_target_pieces_cbegin();
+					while (iter != non_target_pieces_cend() && jter != another.non_target_pieces_cend()) {
+						if (*iter == *jter) {
+							++iter;
+							++jter;
+						}
+						else if (*iter < *jter) {
+							++iter;
+							++counter;
+						}
+						else
+							++jter;
+					}
+					counter += (non_target_pieces_cend() - iter);
+				}
+				else {
+					for (
+						auto iter = non_target_pieces_cbegin(), jter = another.non_target_pieces_cbegin();
+						iter != non_target_pieces_cend();
+						++iter, ++jter
+						)
+					{
+						if (*iter != *jter)
+							++counter;
+					}
+				}
+				return counter;
 			}
 		};
 
@@ -711,6 +801,9 @@ namespace tobor {
 
 			state_path() {}
 
+			state_path(const vector_type& v) : state_vector(v) {}
+
+
 			vector_type& vector() { return state_vector; }
 
 			inline void make_canonical() {
@@ -753,6 +846,7 @@ namespace tobor {
 					);
 					return copy;
 				}
+				// ### error case of non-matching paths is missing here!
 			}
 
 		};
@@ -789,7 +883,9 @@ namespace tobor {
 			const vector_type& vector() const { return move_vector; }
 
 			inline move_path operator +(const move_path& another) {
-				move_path copy{ *this };
+				move_path copy;
+				copy.move_vector.reserve(move_vector.size() + another.move_vector.size());
+				std::copy(move_vector.cbegin(), move_vector.cend(), std::back_inserter(copy.move_vector));
 				std::copy(another.move_vector.cbegin(), another.move_vector.cend(), std::back_inserter(copy.move_vector));
 				return copy;
 			}
@@ -819,32 +915,6 @@ namespace tobor {
 
 				return result;
 			}
-
-			/*
-			inline std::vector<bool> colored_footprint() const {
-
-				std::array<vector_type::const_iterator, pieces_quantity_type::COUNT_ALL_PIECES> color_next;
-
-				for (auto& iter : color_next) {
-					iter = move_vector.cbegin();
-				}
-
-				while (true) {
-					uint8_t i = 0;
-					bool IS_NORTH_OR_SOUTH = 0;
-					bool
-					while (color_next[i] != move_vector.cend() && color_next[i]->pid.value != i) {
-						++color_next[i];
-					}
-					if (color_next[i] != move_vector.cend()) {
-
-						++color_next[i];
-					}
-				}
-
-				... to much effort in coding for a footprint. will also probably take longer computation time.
-			}
-			*/
 
 			inline move_path color_sorted_footprint() const {
 				auto result = move_path(*this);

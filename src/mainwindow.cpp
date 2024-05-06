@@ -9,7 +9,7 @@
 
 #include "./ui_mainwindow.h"
 #include "gui_interactive_controller.h"
-#include "solver.h"
+#include "all_solver.h"
 #include "tobor_svg.h"
 
 #include "spdlog/spdlog.h"
@@ -180,8 +180,6 @@ void MainWindow::on_actionBack_triggered()
 void MainWindow::on_actionStart_Solver_triggered()
 {
 	ui->statusbar->showMessage("starting solver...");
-	//update(); //repaint();
-	//ui->statusbar->update();
 	repaint();
 	guiInteractiveController.startSolver();
 }

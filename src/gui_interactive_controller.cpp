@@ -224,8 +224,6 @@ void GuiInteractiveController::stopGame() {
 		return showErrorDialog("This action should not be available.");
 	}
 
-	gameHistory.back().lazyFreeSolverData();
-
 	interactive_mode = InteractiveMode::NO_GAME;
 	refreshAll();
 }
@@ -276,22 +274,9 @@ void GuiInteractiveController::selectPieceByColorId(const std::size_t& color_id)
 	setPieceId(index);
 }
 
-template<class T, GameController::piece_quantity_type::int_type ... Index_Sequence>
-tobor::v1_0::tobor_graphics<GameController::positions_of_pieces_type>::coloring make_coloring(
-	T& permutated_color_vector,
-	std::integer_sequence<GameController::piece_quantity_type::int_type, Index_Sequence...>
-) {
-	auto coloring = tobor::v1_0::tobor_graphics<GameController::positions_of_pieces_type>::coloring{
-		(permutated_color_vector.colors[Index_Sequence].getSVGColorString()) ...
-	};
-	return coloring;
-}
-
 
 void GuiInteractiveController::refreshSVG()
 {
-	using graphics = tobor::v1_0::tobor_graphics<GameController::positions_of_pieces_type>;
-
 	if (interactive_mode == InteractiveMode::GAME_INTERACTIVE || interactive_mode == InteractiveMode::SOLVER_INTERACTIVE_STEPS) {
 
 		auto permutated_color_vector = current_color_vector;
@@ -300,21 +285,21 @@ void GuiInteractiveController::refreshSVG()
 			permutated_color_vector.colors[i] = current_color_vector.colors[gameHistory.back().colorPermutation[i]];
 		}
 
-		graphics::coloring coloring =
+		graphics_type::coloring coloring =
 			make_coloring(
 				permutated_color_vector,
 				std::make_integer_sequence<GameController::piece_quantity_type::int_type, GameController::piece_quantity_type::COUNT_ALL_PIECES>{}
 		);
 
-		graphics::piece_shape_selection shape{ graphics::piece_shape_selection::BALL };
+		graphics_type::piece_shape_selection shape{ graphics_type::piece_shape_selection::BALL };
 
 		if (mainWindow->shapeSelectionItems.getSelectedShape() == mainWindow->shapeSelectionItems.duck) {
-			shape = graphics::piece_shape_selection::DUCK;
+			shape = graphics_type::piece_shape_selection::DUCK;
 		}
 		// else default ball.
 
 		std::string example_svg_string =
-			graphics::draw_tobor_world(
+			graphics_type::draw_tobor_world(
 				gameHistory.back().tobor_world,
 				gameHistory.back().path.back(),
 				gameHistory.back().target_cell,
@@ -594,7 +579,7 @@ void GuiInteractiveController::highlightGeneratedTargetCells()
 		}
 	);
 
-	std::string svg_string = tobor::v1_0::tobor_graphics<GameController::positions_of_pieces_type>::draw_tobor_world_with_cell_markers(
+	std::string svg_string = graphics_type::draw_tobor_world_with_cell_markers(
 		world,
 		comfort_cell_id_vector
 	);
@@ -636,35 +621,65 @@ GameController::move_path_type& GameController::get_selected_solution_representa
 
 void GameController::startSolver(QMainWindow* mw) {
 
+	using pct = tobor::v1_1::path_classificator<positions_of_pieces_type>;
+
 	// set solver begin
 	solver_begin_index = path.size();
 
-	// build graph
-	optional_solver_state_graph.emplace(currentState());
-	partial_state_graph_type& graph{ optional_solver_state_graph.value() };
-	graph.explore_until_optimal_solution_distance(move_one_piece_calculator, target_cell);
-	graph.remove_dead_states(target_cell);
+	// explore...
+	auto optimal_depth = distance_explorer.explore_until_target(move_one_piece_calculator, target_cell);
 
-	mw->statusBar()->showMessage("Extracting solution paths...");
+	tobor::v1_1::simple_state_bigraph<positions_of_pieces_type, std::vector<bool>> bigraph; // ### inside this call, log every distance level as a progress bar
+
+	mw->statusBar()->showMessage("Extracting solution state graph...");
 	mw->repaint();
 
-	// optimal paths
-	std::map<positions_of_pieces_type, std::vector<move_path_type>> optimal_paths_map{ graph.optimal_move_paths(target_cell) };
+	distance_explorer.get_simple_bigraph(move_one_piece_calculator, target_cell, bigraph);
 
-	mw->statusBar()->showMessage("Classifying solution paths...");
+	mw->statusBar()->showMessage("Partition state graph...");
 	mw->repaint();
+
+	std::size_t count_partitions = pct::make_state_graph_path_partitioning(bigraph);
+
+	mw->statusBar()->showMessage("Extracting subgraph for each partition...");
+	mw->repaint();
+
+	std::vector<tobor::v1_1::simple_state_bigraph<positions_of_pieces_type, void>> partitions;
+	for (std::size_t i{ 0 }; i < count_partitions; ++i) {
+		partitions.emplace_back();
+		pct::extract_subgraph_by_label(bigraph, i, partitions.back());
+	}
+
+	mw->statusBar()->showMessage("Generating state_paths ...");
+	mw->repaint();
+
+	std::vector<std::vector<tobor::v1_1::state_path<positions_of_pieces_type>>> all_state_paths_partitioned;
+	for (std::size_t i{ 0 }; i < partitions.size(); ++i) {
+		all_state_paths_partitioned.emplace_back(pct::extract_all_state_paths(partitions[i]));
+	}
+
+	mw->statusBar()->showMessage("Generating move_paths ...");
+	mw->repaint();
+
+	for (std::size_t i{ 0 }; i < all_state_paths_partitioned.size(); ++i) {
+		//all_state_paths_partitioned[i];
+	}
 
 	// classify optimal paths...
-	optional_classified_move_paths.reset();
-	optional_classified_move_paths.emplace();
-	auto& classified_move_paths{ optional_classified_move_paths.value() };
+	//optional_classified_move_paths.reset();
+	//optional_classified_move_paths.emplace();
+	//auto& classified_move_paths{ optional_classified_move_paths.value() };
+	//
+	//for (const auto& pair : optimal_paths_map) {
+	//	classified_move_paths[pair.first] = move_path_type::interleaving_partitioning(pair.second);
+	//	for (auto& equivalence_class : classified_move_paths[pair.first]) {
+	//		std::sort(equivalence_class.begin(), equivalence_class.end(), move_path_type::antiprettiness_relation);
+	//	}
+	//}
+	(void)optimal_depth;
 
-	for (const auto& pair : optimal_paths_map) {
-		classified_move_paths[pair.first] = move_path_type::interleaving_partitioning(pair.second);
-		for (auto& equivalence_class : classified_move_paths[pair.first]) {
-			std::sort(equivalence_class.begin(), equivalence_class.end(), move_path_type::antiprettiness_relation);
-		}
-	}
+	throw 0;
+
 	mw->statusBar()->showMessage("Done");
 	mw->repaint();
 }
