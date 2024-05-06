@@ -569,15 +569,25 @@ namespace tobor {
 
 		public:
 
+			template<class Iter>
+			inline positions_of_pieces(Iter1 target_pieces_begin) {
+				std::copy_n(target_pieces_begin, COUNT_ALL_PIECES, piece_positions.begin());
+				sort_pieces();
+			}
+
+			template<class Iter1, class Iter2>
+			inline positions_of_pieces(Iter1 target_pieces_begin, Iter2 non_target_pieces_begin) {
+				std::copy_n(target_pieces_begin, COUNT_TARGET_PIECES, piece_positions.begin());
+				std::copy_n(non_target_pieces_begin, COUNT_NON_TARGET_PIECES, piece_positions.begin() + COUNT_TARGET_PIECES);
+				sort_pieces();
+			}
+
 			/**
 			*	@brief Creates an object when cell positions of the pieces are given.
 			*	@param p_non_target_pieces Does not need to be sorted when passed to this constructor.
 			*/
-			positions_of_pieces(const target_pieces_array_type& target_pieces, const non_target_pieces_array_type& non_target_pieces) {
-				std::copy_n(target_pieces.begin(), COUNT_TARGET_PIECES, piece_positions.begin());
-				std::copy_n(non_target_pieces.begin(), COUNT_NON_TARGET_PIECES, piece_positions.begin() + COUNT_TARGET_PIECES);
-				sort_pieces();
-			}
+			positions_of_pieces(const target_pieces_array_type& target_pieces, const non_target_pieces_array_type& non_target_pieces) : positions_of_pieces(target_pieces.cbegin(), non_target_pieces.cbegin())
+			{}
 
 			positions_of_pieces(const positions_of_pieces&) = default;
 

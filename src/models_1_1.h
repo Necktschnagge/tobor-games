@@ -440,6 +440,8 @@ namespace tobor {
 
 			using permutation_type = std::array<std::size_t, COUNT_ALL_PIECES>;
 
+			using naked_type = positions_of_pieces<pieces_quantity_type, cell_id_type, SORTED_TARGET_PIECES, SORTED_NON_TARGET_PIECES>;
+
 		private:
 
 			/**
@@ -472,16 +474,30 @@ namespace tobor {
 				reset_perm(permutation);
 			}
 
+			template<class Iter>
+			inline augmented_positions_of_pieces(Iter1 target_pieces_begin) {
+				std::copy_n(target_pieces_begin, COUNT_ALL_PIECES, piece_positions.begin());
+				reset_permutation();
+				sort_pieces();
+			}
+
+			template<class Iter1, class Iter2>
+			inline augmented_positions_of_pieces(Iter1 target_pieces_begin, Iter2 non_target_pieces_begin) {
+				std::copy_n(target_pieces_begin, COUNT_TARGET_PIECES, piece_positions.begin());
+				std::copy_n(non_target_pieces_begin, COUNT_NON_TARGET_PIECES, piece_positions.begin() + COUNT_TARGET_PIECES);
+				reset_permutation();
+				sort_pieces();
+			}
+
 			/**
 			*	@brief Creates an object when cell positions of the pieces are given.
 			*	@param p_non_target_pieces Does not need to be sorted when passed to this constructor.
 			*/
-			augmented_positions_of_pieces(const target_pieces_array_type& target_pieces, const non_target_pieces_array_type& non_target_pieces) {
-				std::copy_n(target_pieces.begin(), COUNT_TARGET_PIECES, piece_positions.begin());
-				std::copy_n(non_target_pieces.begin(), COUNT_NON_TARGET_PIECES, piece_positions.begin() + COUNT_TARGET_PIECES);// can use other containers too, not only array type
-				reset_permutation();
-				sort_pieces();
-			}
+			augmented_positions_of_pieces(const target_pieces_array_type& target_pieces, const non_target_pieces_array_type& non_target_pieces) : augmented_positions_of_pieces(target_pieces.cbegin(), non_target_pieces.cbegin())
+			{}
+
+			augmented_positions_of_pieces(const naked_type& pop) : augmented_positions_of_pieces(pop.target_pieces_cbegin())
+			{}
 
 			augmented_positions_of_pieces(const augmented_positions_of_pieces&) = default;
 
@@ -621,6 +637,10 @@ namespace tobor {
 					}
 				}
 				return counter;
+			}
+
+			inline naked_type naked() const {
+				return naked_type(target_pieces_cbegin());
 			}
 		};
 

@@ -332,7 +332,7 @@ namespace tobor {
 				const Position_Of_Pieces_Type& state,
 				const typename piece_move_type::piece_id_type& _piece_id,
 				const direction& _direction_from
-			) {
+			) const {
 				const cell_id_type start_cell{ state.piece_positions[_piece_id.value] };
 
 				const cell_id_int_type raw_start_cell_id{ start_cell.get_raw_id(_direction_from, my_world) };
@@ -363,8 +363,8 @@ namespace tobor {
 			template<class Position_Of_Pieces_Type>
 			inline std::vector<Position_Of_Pieces_Type> predecessor_states(
 				const Position_Of_Pieces_Type& state,
-				const typename piece_move_type::piece_id_type& _piece_id)
-			{
+				const typename piece_move_type::piece_id_type& _piece_id
+			) const {
 				auto result = std::vector<Position_Of_Pieces_Type>();
 				result.reserve(static_cast<std::size_t>(my_world.get_horizontal_size() + my_world.get_vertical_size()) * 2);
 				for (direction d = direction::begin(); d != direction::end(); ++d) {
@@ -376,7 +376,7 @@ namespace tobor {
 			}
 
 			template<class Position_Of_Pieces_Type>
-			inline std::vector<Position_Of_Pieces_Type> predecessor_states(const Position_Of_Pieces_Type& state) {
+			inline std::vector<Position_Of_Pieces_Type> predecessor_states(const Position_Of_Pieces_Type& state) const {
 				auto result = std::vector<Position_Of_Pieces_Type>();
 				result.reserve(
 					static_cast<std::size_t>(my_world.get_horizontal_size() + my_world.get_vertical_size()) * 2 * piece_id_type::pieces_quantity_type::COUNT_ALL_PIECES
@@ -647,7 +647,7 @@ namespace tobor {
 
 			template<class Iterator_Type>
 			inline void add_all_nontrivial_successor_states(
-				move_one_piece_calculator_type& engine,
+				const move_one_piece_calculator_type& engine,
 				const positions_of_pieces_type& current_state,
 				Iterator_Type destination
 			) {
@@ -667,7 +667,7 @@ namespace tobor {
 
 			template<class Iterator_Type>
 			inline bool add_all_nontrivial_successor_states(
-				move_one_piece_calculator_type& engine,
+				const move_one_piece_calculator_type& engine,
 				const positions_of_pieces_type& current_state,
 				const cell_id_type& target_cell,
 				Iterator_Type destination
@@ -741,7 +741,7 @@ namespace tobor {
 			* Caller guarantees that target_cell has not yet been found if NOT_YET_FOUND_GUARANTEED == true.
 			*/
 			inline size_type explore_until_target(
-				move_one_piece_calculator_type& engine,
+				const move_one_piece_calculator_type& engine,
 				const cell_id_type& target_cell,
 				const exploration_policy& policy,
 				const bool NOT_YET_FOUND_GUARANTEED = false
@@ -850,15 +850,15 @@ namespace tobor {
 				}
 			}
 
-			inline size_type explore_until_target(move_one_piece_calculator_type& engine, const cell_id_type& target_cell) {
+			inline size_type explore_until_target(const move_one_piece_calculator_type& engine, const cell_id_type& target_cell) {
 				return optimal_path_length(engine, target_cell, exploration_policy::FORCE_EXPLORATION_UNRESTRICTED(), 0);
 			}
 
-			inline size_type explore_until_target(move_one_piece_calculator_type& engine, const cell_id_type& target_cell, const size_type& max_depth) {
+			inline size_type explore_until_target(const move_one_piece_calculator_type& engine, const cell_id_type& target_cell, const size_type& max_depth) {
 				return optimal_path_length(engine, target_cell, exploration_policy::FORCE_EXPLORATION_UNTIL_DEPTH(max_depth), 0);
 			}
 
-			inline size_type optimal_path_length(move_one_piece_calculator_type& engine, const cell_id_type& target_cell, const exploration_policy& policy = exploration_policy::ONLY_EXPLORED(), const size_type& min_length_hint = 0) {
+			inline size_type optimal_path_length(const move_one_piece_calculator_type& engine, const cell_id_type& target_cell, const exploration_policy& policy = exploration_policy::ONLY_EXPLORED(), const size_type& min_length_hint = 0) {
 				// checking cache...
 				const auto iter = _optimal_path_length_map.find(target_cell);
 
@@ -909,7 +909,7 @@ namespace tobor {
 
 			template<class State_Label_Type>
 			void get_simple_bigraph(
-				move_one_piece_calculator_type& engine,
+				const move_one_piece_calculator_type& engine,
 				const cell_id_type& target_cell,
 				simple_state_bigraph<positions_of_pieces_type, State_Label_Type>& destination,
 				const exploration_policy& policy = exploration_policy::ONLY_EXPLORED(),
@@ -1041,10 +1041,27 @@ namespace tobor {
 				state_vector.erase(state_vector.begin() + i + 1, state_vector.end());
 			}
 
-			inline state_path operator +(const state_path& another) {
+			inline state_path operator +(const state_path& another) const {
 				state_path copy{ *this };
 				std::copy(another.state_vector.cbegin(), another.state_vector.cend(), std::back_inserter(copy.state_vector));
 				return copy;
+			}
+
+			inline state_path operator +(const positions_of_pieces_type& s) const {
+				state_path copy{ *this };
+				copy.vector().push_back(s);
+				return copy;
+			}
+
+			inline state_path& operator +=(const state_path& another) {
+				state_vector.reserve(state_vector.size() + another.state_vector.size());
+				std::copy(another.state_vector.cbegin(), another.state_vector.cend(), std::back_inserter(state_vector));
+				return *this;
+			}
+
+			inline state_path& operator +=(const positions_of_pieces_type& s) {
+				state_vector.push_back(s);
+				return *this;
 			}
 
 			inline state_path operator *(const state_path& another) {
