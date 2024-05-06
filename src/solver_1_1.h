@@ -634,6 +634,10 @@ namespace tobor {
 			using map_type = std::map<state_type, node_links>;
 
 			map_type map;
+
+			inline void clear() {
+				return map.clear();
+			}
 		};
 
 		//template<uint64_t MAX_DISTANCE, uint64_t MAX_WIDTH>
@@ -687,37 +691,366 @@ namespace tobor {
 
 			};
 
+			class exploration_policy {
+				template <class Move_One_Piece_Calculator>
+				friend class distance_exploration;
+
+				size_type _state_count_threshold{ 0 };
+				size_type _max_depth{ 0 };
+
+				constexpr  exploration_policy(size_type state_count_threshold, size_type max_depth) : _state_count_threshold(state_count_threshold), _max_depth(max_depth) {}
+
+			public:
+				exploration_policy() = delete;
+
+				static constexpr exploration_policy ONLY_CASHED() { return exploration_policy(0, 0); }
+
+				static constexpr exploration_policy ONLY_EXPLORED() { return exploration_policy(0, SIZE_TYPE_MAX); }
+
+				static constexpr exploration_policy FORCE_EXPLORATION_UNRESTRICTED() { return exploration_policy(SIZE_TYPE_MAX, SIZE_TYPE_MAX); }
+
+				static constexpr exploration_policy FORCE_EXPLORATION_UNTIL_DEPTH(size_type max_depth) { return exploration_policy(SIZE_TYPE_MAX, max_depth); }
+
+				static constexpr exploration_policy FORCE_EXPLORATION_STATE_THRESHOLD(size_type state_count_threshold) { return exploration_policy(std::max(state_count_threshold, 1), SIZE_TYPE_MAX); }
+
+				static constexpr exploration_policy FORCE_EXPLORATION_STATE_THRESHOLD_UNTIL_DEPTH(size_type state_count_threshold, size_type max_depth) { return exploration_policy(std::max(state_count_threshold, 1), max_depth); }
+
+				inline bool operator ==(const exploration_policy& another) const noexcept { return _state_count_threshold == another._state_count_threshold && _max_depth == another._max_depth; }
+			};
 
 		private:
-			std::vector<std::vector<positions_of_pieces_type>> reachable_states_by_distance;
+
+			using target_distance_map_type = std::map<cell_id_type, size_type>;
+
+			using states_vector = std::vector<positions_of_pieces_type>;
+
+			/**
+			* conditions:
+			*	- guaranteed to have .size() > 0
+			*	- the first entry _reachable_states_by_distance[0] has always length 1 and contains the initial state
+			*/
+			std::vector<states_vector> _reachable_states_by_distance;
 
 			// number of steps needed by any optimal solution
-			size_type optimal_path_length;
+			//size_type _optimal_path_length;
 
+			/**
+			* maps target cells to their minimal distance from initial state
+			*/
+			target_distance_map_type _optimal_path_length_map;
+
+			bool _entirely_explored{ false };
+
+			inline void sort_unique(const typename std::vector<states_vector>::size_type& index /* new states index */) {
+				std::sort(std::execution::par, _reachable_states_by_distance[index].begin(), _reachable_states_by_distance[index].end());
+				_reachable_states_by_distance[index].erase(
+					unique(std::execution::par, _reachable_states_by_distance[index].begin(), _reachable_states_by_distance[index].end()),
+					_reachable_states_by_distance[index].end()
+				);
+			}
+
+			inline void erase_seen_before(const typename std::vector<states_vector>::size_type& index /* new states index */) {
+
+				using sub_iterator = typename std::vector<positions_of_pieces_type>::iterator;
+				std::vector<sub_iterator> check_iterators;
+				sub_iterator check_next = _reachable_states_by_distance[index].begin();
+				sub_iterator free_next = _reachable_states_by_distance[index].begin();
+
+				for (size_type i = 0; i < index; ++i) {
+					check_iterators.emplace_back(_reachable_states_by_distance[i].begin());
+				}
+			continue_outer_loop:
+				while (check_next != _reachable_states_by_distance[index].end()) {
+					for (size_type i_level = 0; i_level < check_iterators.size(); ++i_level) {
+						while (
+							(check_iterators[i_level] != _reachable_states_by_distance[i_level].end())
+							&&
+							(*(check_iterators[i_level]) < *check_next)
+							)
+						{
+							++check_iterators[i_level];
+						}
+						if (
+							(check_iterators[i_level] != _reachable_states_by_distance[i_level].end())
+							&&
+							*check_iterators[i_level] == *check_next
+							)
+						{
+							++check_next; // already found current state. Do not keep it.
+							goto continue_outer_loop;
+						}
+					}
+
+					// here we know *check_next is indeed a state never found before.
+					if (free_next != check_next) {
+						*free_next = *check_next;
+					}
+					++free_next;
+					++check_next;
+				}
+				// shrink the vector by the elements already found earlier.
+				_reachable_states_by_distance[index].erase(free_next, _reachable_states_by_distance[index].end());
+			}
+
+			template<class Iterator_Type>
+			inline void add_all_nontrivial_successor_states(
+				move_one_piece_calculator_type& engine,
+				const positions_of_pieces_type& current_state,
+				Iterator_Type destination
+			) {
+				// compute all successor state candidates:
+				for (typename piece_move_type::piece_id_type::int_type pid = 0; pid < positions_of_pieces_type::COUNT_ALL_PIECES; ++pid) {
+					for (direction direction_iter = direction::begin(); direction_iter < direction::end(); ++direction_iter) {
+
+						const auto succ = engine.successor_state(current_state, pid, direction_iter);
+
+						if (!(succ == current_state)) {
+							*destination = succ;
+							++destination;
+						}
+					}
+				}
+			}
+
+			template<class Iterator_Type>
+			inline bool add_all_nontrivial_successor_states(
+				move_one_piece_calculator_type& engine,
+				const positions_of_pieces_type& current_state,
+				const cell_id_type& target_cell,
+				Iterator_Type destination
+			) {
+				bool found_final_state{ false };
+
+				constexpr size_type COUNT_SUCC_CANDIDATES{ static_cast<size_type>(4) * positions_of_pieces_type::COUNT_ALL_PIECES };
+				constexpr size_type COUNT_SUCC_CANDIDATES_WITH_TARGET_PIECE_MOVED{ static_cast<typename std::vector<move_candidate>::size_type>(4) * positions_of_pieces_type::COUNT_TARGET_PIECES };
+
+				std::vector<move_candidate> candidates_for_successor_states;
+				candidates_for_successor_states.reserve(COUNT_SUCC_CANDIDATES);
+
+				// compute all successor state candidates:
+				for (typename piece_move_type::piece_id_type::int_type pid = 0; pid < positions_of_pieces_type::COUNT_ALL_PIECES; ++pid) {
+					for (direction direction_iter = direction::begin(); direction_iter < direction::end(); ++direction_iter) {
+						candidates_for_successor_states.emplace_back(
+							piece_move_type(pid, direction_iter),
+							engine.successor_state(current_state, pid, direction_iter)
+						);
+					}
+				}
+
+				/* order of candidates:
+				 piece 0: N E S W      <- target pieces come first!
+				 piece 1: N E S W
+				 ...
+				 piece last: N E S W
+				*/
+
+
+				typename std::vector<move_candidate>::size_type index_candidate{ 0 };
+
+				// only check if reached goal for candidates arising from moved target pieces:
+				for (; index_candidate < COUNT_SUCC_CANDIDATES_WITH_TARGET_PIECE_MOVED; ++index_candidate) {
+					if (candidates_for_successor_states[index_candidate].successor_state == current_state) {
+						continue;
+					}
+
+					if constexpr (positions_of_pieces_type::SORTED_TARGET_PIECES) {
+						// general case:
+						if (candidates_for_successor_states[index_candidate].successor_state.is_final(target_cell)) {
+							found_final_state = true;
+							break;
+						}
+
+					}
+					else {
+						// optimized case:
+						if (candidates_for_successor_states[index_candidate].successor_state.raw()[index_candidate / 4] == target_cell) {
+							// does not work for sorted final pieces! In that case we do not know where the moved piece is located.
+							found_final_state = true;
+							break;
+						}
+					}
+
+					*destination = (candidates_for_successor_states[index_candidate].successor_state);
+					++destination;
+				}
+				// add successor states to destination without check for final state:
+				for (; index_candidate < candidates_for_successor_states.size(); ++index_candidate) {
+					if (candidates_for_successor_states[index_candidate].successor_state == current_state) {
+						continue;
+					}
+					*destination = (candidates_for_successor_states[index_candidate].successor_state);
+					++destination;
+				}
+				return found_final_state;
+			}
+
+			/**
+			* Caller guarantees that target_cell has not yet been found if NOT_YET_FOUND_GUARANTEED == true.
+			*/
+			inline size_type explore_until_target(
+				move_one_piece_calculator_type& engine,
+				const cell_id_type& target_cell,
+				const exploration_policy& policy,
+				const bool NOT_YET_FOUND_GUARANTEED = false
+			) {
+				const size_type INDEX_LAST_EXPLORATION{ _reachable_states_by_distance.size() - 1 };
+
+				size_type optimal_depth{ SIZE_TYPE_MAX }; // guaranteed not yet found if  NOT_YET_FOUND_GUARANTEED == true
+
+				size_type states_counter{ count_states() };
+
+				for (size_type expand_level_index{ INDEX_LAST_EXPLORATION };
+					expand_level_index < optimal_depth
+					&& expand_level_index < policy._max_depth /* policy abort*/
+					&& states_counter < policy._state_count_threshold /* policy abort*/;
+					++expand_level_index) {
+
+					if (_reachable_states_by_distance[expand_level_index].size() == 0) {
+						_entirely_explored = true;
+						return SIZE_TYPE_MAX; // no more states to find
+					}
+
+					_reachable_states_by_distance.emplace_back();
+					_reachable_states_by_distance[expand_level_index + 1].reserve(_reachable_states_by_distance[expand_level_index].size() * 3 + 10);
+
+					for (std::size_t expand_index_inside_level = 0; expand_index_inside_level < _reachable_states_by_distance[expand_level_index].size(); ++expand_index_inside_level) {
+
+						if (
+							add_all_nontrivial_successor_states(engine, _reachable_states_by_distance[expand_level_index][expand_index_inside_level], target_cell, std::back_inserter(_reachable_states_by_distance.back()))
+							)
+						{
+							optimal_depth = expand_level_index + 1;
+						}
+					}
+
+					sort_unique(expand_level_index + 1);
+					erase_seen_before(expand_level_index + 1);
+					_reachable_states_by_distance[expand_level_index + 1].shrink_to_fit();
+
+					states_counter += _reachable_states_by_distance[expand_level_index + 1].size();
+				}
+
+				// finalizing:
+				if (NOT_YET_FOUND_GUARANTEED)
+					if (optimal_depth != SIZE_TYPE_MAX) {
+						_optimal_path_length_map.insert(std::make_pair(target_cell, optimal_depth));
+					}
+				return optimal_depth;
+			}
 
 		public:
 			distance_exploration(const positions_of_pieces_type& initial_state) :
-				optimal_path_length(SIZE_TYPE_MAX)
-				//initial_state(initial_state)
+				//_optimal_path_length(SIZE_TYPE_MAX)
+				_optimal_path_length_map(),
+				_entirely_explored(false)
 			{
-				reachable_states_by_distance.emplace_back(std::vector<positions_of_pieces_type>{ initial_state });
+				_reachable_states_by_distance.emplace_back(std::vector<positions_of_pieces_type>{ initial_state });
 
 			}
 
-			inline size_type get_optimal_path_length() { return optimal_path_length; };
+			inline size_type count_states() const noexcept {
+				return std::accumulate(
+					std::begin(_reachable_states_by_distance),
+					std::end(_reachable_states_by_distance),
+					size_type(0),
+					[](const size_type& acc, const auto& el) { return acc + el.size(); });
+			}
 
-			inline std::vector<positions_of_pieces_type> optimal_final_states(const cell_id_type& target_cell) const {
-				std::vector<positions_of_pieces_type> result;
-				for (auto dist_iter = reachable_states_by_distance.cbegin(); dist_iter != reachable_states_by_distance.cend(); ++dist_iter) {
-					for (auto state_iter = dist_iter->cbegin(); state_iter != dist_iter->cend(); ++state_iter) {
-						if (*state_iter.is_final(target_cell)) {
-							result.push_back(*state_iter);
+			inline bool entirely_explored() const noexcept { return _entirely_explored; }
+
+			inline size_type exploration_depth() const noexcept { return _reachable_states_by_distance.size() - 1; }
+
+			/**
+			*
+			*/
+			inline void explore(
+				move_one_piece_calculator_type& engine,
+				const exploration_policy& policy
+			) {
+				const size_type INDEX_LAST_EXPLORATION{ _reachable_states_by_distance.size() - 1 };
+
+				size_type states_counter{ count_states() };
+
+				for (
+					size_type expand_level_index{ INDEX_LAST_EXPLORATION };
+					expand_level_index < policy._max_depth && states_counter < policy._state_count_threshold /* policy abort*/;
+					++expand_level_index
+					)
+				{
+					if (_reachable_states_by_distance[expand_level_index].size() == 0) {
+						_entirely_explored = true;
+						return; // no more states to find
+					}
+
+					_reachable_states_by_distance.emplace_back();
+					_reachable_states_by_distance[expand_level_index + 1].reserve(_reachable_states_by_distance[expand_level_index].size() * 3 + 10);
+
+					for (std::size_t expand_index_inside_level = 0; expand_index_inside_level < _reachable_states_by_distance[expand_level_index].size(); ++expand_index_inside_level) {
+						add_all_nontrivial_successor_states(engine, _reachable_states_by_distance[expand_level_index][expand_index_inside_level], std::back_inserter(_reachable_states_by_distance.back()));
+					}
+
+					sort_unique(expand_level_index + 1);
+					erase_seen_before(expand_level_index + 1);
+					_reachable_states_by_distance[expand_level_index + 1].shrink_to_fit();
+
+					states_counter += _reachable_states_by_distance[expand_level_index + 1].size();
+				}
+			}
+
+			inline size_type explore_until_target(move_one_piece_calculator_type& engine, const cell_id_type& target_cell) {
+				return optimal_path_length(engine, target_cell, exploration_policy::FORCE_EXPLORATION_UNRESTRICTED(), 0);
+			}
+
+			inline size_type explore_until_target(move_one_piece_calculator_type& engine, const cell_id_type& target_cell, const size_type& max_depth) {
+				return optimal_path_length(engine, target_cell, exploration_policy::FORCE_EXPLORATION_UNTIL_DEPTH(max_depth), 0);
+			}
+
+			inline size_type optimal_path_length(move_one_piece_calculator_type& engine, const cell_id_type& target_cell, const exploration_policy& policy = exploration_policy::ONLY_EXPLORED(), const size_type& min_length_hint = 0) {
+				// checking cache...
+				const auto iter = _optimal_path_length_map.find(target_cell);
+
+				if (iter != _optimal_path_length_map.cend()) {
+					return iter->second;
+				}
+				if (policy == exploration_policy::ONLY_CASHED()) {
+					return SIZE_TYPE_MAX;
+				}
+
+				// checking explored states...
+				for (size_type depth{ min_length_hint }; depth < _reachable_states_by_distance.size(); ++depth) {
+					for (const auto& state : _reachable_states_by_distance[depth]) {
+						if (state.is_final(target_cell)) {
+							if (min_length_hint == 0) { // only update cache if there was no hint
+								_optimal_path_length_map.insert(std::make_pair(target_cell, depth));
+							}
+							return depth;
 						}
 					}
-					if (!result.empty()) {
-						return result;
+				}
+				if (policy == exploration_policy::ONLY_EXPLORED()) {
+					return SIZE_TYPE_MAX;
+				}
+
+				// further exploration...
+				return explore_until_target(engine, target_cell, policy, min_length_hint == 0);
+			}
+
+
+
+
+			inline std::vector<positions_of_pieces_type> optimal_final_states(move_one_piece_calculator_type& engine, const cell_id_type& target_cell, const exploration_policy& policy = exploration_policy::ONLY_EXPLORED(), const size_type& min_length_hint = 0) {
+				std::vector<positions_of_pieces_type> result;
+				const size_type DEPTH{ optimal_path_length(engine, target_cell, policy, min_length_hint) };
+
+				if (!(DEPTH < _reachable_states_by_distance.size()))
+					return result;
+
+				for (auto state_iter = _reachable_states_by_distance[DEPTH].cbegin(); state_iter != _reachable_states_by_distance[DEPTH].cend(); ++state_iter) {
+					if (*state_iter.is_final(target_cell)) {
+						result.push_back(*state_iter);
 					}
 				}
+
 				return result;
 			}
 
@@ -725,38 +1058,41 @@ namespace tobor {
 			void get_simple_bigraph(
 				move_one_piece_calculator_type& engine,
 				const cell_id_type& target_cell,
-				simple_state_bigraph<positions_of_pieces_type, State_Label_Type>& destination
-			) {
-				if (optimal_path_length == SIZE_TYPE_MAX) {
-					throw 0;
-				}
+				simple_state_bigraph<positions_of_pieces_type, State_Label_Type>& destination,
+				const exploration_policy& policy = exploration_policy::ONLY_EXPLORED(),
+				const size_type& min_length_hint = 0
+				) {
 				using bigraph = simple_state_bigraph<positions_of_pieces_type, State_Label_Type>;
+				
+				destination.clear();
 
-				//std::vector<bool> flagged_states(reachable_states_by_distance[optimal_path_length].size(), false);
-				//std::vector<bool> next_flagged_states;
+				const size_type FINAL_DEPTH{ optimal_path_length(engine, target_cell, policy, min_length_hint) };
+
+				if (!(FINAL_DEPTH < _reachable_states_by_distance.size()))
+					return;
+
 				std::vector<positions_of_pieces_type> states;
 
-				for (std::size_t i{ 0 }; i < reachable_states_by_distance[optimal_path_length].size(); ++i) {
-					if (reachable_states_by_distance[optimal_path_length][i].is_final(target_cell)) {
-						//flagged_states[i] = true;
+				for (size_type i{ 0 }; i < _reachable_states_by_distance[FINAL_DEPTH].size(); ++i) {
+
+					const auto& s{ _reachable_states_by_distance[FINAL_DEPTH][i] };
+
+					if (s.is_final(target_cell)) {
 
 						destination.map.insert(
 							destination.map.end(),
-							std::pair
-							<typename bigraph::state_type, typename bigraph::node_links>
-							/*
-							*/
-							(
-								reachable_states_by_distance[optimal_path_length][i],
+							std::pair<typename bigraph::state_type, typename bigraph::node_links>(
+								_reachable_states_by_distance[FINAL_DEPTH][i],
 								typename bigraph::node_links()
 							)
 						);
-						//destination.map[reachable_states_by_distance[optimal_path_length][i]] = bigraph::node_links(); do the insert instead.
 
-						states.push_back(reachable_states_by_distance[optimal_path_length][i]);
+						states.push_back(s);
+
 					}
 				}
-				std::size_t backward_explore_distance = optimal_path_length;
+
+				std::size_t backward_explore_distance = FINAL_DEPTH;
 
 				while (backward_explore_distance > 0) {
 					--backward_explore_distance;
@@ -766,7 +1102,7 @@ namespace tobor {
 					// all maybe-edges
 					for (const auto& state : states) {
 						auto vec = engine.predecessor_states(state);
-						possible_edges.reserve(possible_edges.size() + vec.size());
+						//possible_edges.reserve(possible_edges.size() + vec.size());
 						for (const positions_of_pieces_type& pred_state : vec) {
 							possible_edges.emplace_back(pred_state, state);
 						}
@@ -779,10 +1115,10 @@ namespace tobor {
 
 					possible_edges.erase(
 						std::remove_if(possible_edges.begin(), possible_edges.end(), [&](const std::pair<positions_of_pieces_type, positions_of_pieces_type>& edge) {
-							while (compare_index < reachable_states_by_distance[backward_explore_distance].size() && reachable_states_by_distance[backward_explore_distance][compare_index] < edge.first) {
+							while (compare_index < _reachable_states_by_distance[backward_explore_distance].size() && _reachable_states_by_distance[backward_explore_distance][compare_index] < edge.first) {
 								++compare_index;
 							}
-							if (compare_index < reachable_states_by_distance[backward_explore_distance].size() && reachable_states_by_distance[backward_explore_distance][compare_index] == edge.first) {
+							if (compare_index < _reachable_states_by_distance[backward_explore_distance].size() && _reachable_states_by_distance[backward_explore_distance][compare_index] == edge.first) {
 								return false; // do not remove edge
 							}
 							return true; // remove edge
@@ -807,217 +1143,7 @@ namespace tobor {
 				}
 			}
 
-			inline std::vector<positions_of_pieces_type> optimal_final_states(const cell_id_type& target_cell, size_type min_distance_level) const {
-				std::vector<positions_of_pieces_type> result;
-				if (!(min_distance_level < reachable_states_by_distance.size())) {
-					return result;
-				}
-				auto dist_iter = reachable_states_by_distance.cbegin() + min_distance_level;
-				for (; dist_iter != reachable_states_by_distance.cend(); ++dist_iter) {
-					for (auto state_iter = dist_iter->cbegin(); state_iter != dist_iter->cend(); ++state_iter) {
-						if (*state_iter.is_final(target_cell)) {
-							result.push_back(*state_iter);
-						}
-					}
-					if (!result.empty()) {
-						return result;
-					}
-				}
-				return result;
-			}
-
-			/*
-			inline std::map<positions_of_pieces_type, std::vector<move_path_type>> optimal_move_paths(const cell_id_type& target_cell) {
-				throw "not implemented";
-				std::map<positions_of_pieces_type, std::vector<move_path_type>> result;
-				for (auto iter = ps_map.begin(); iter != ps_map.end(); ++iter) {
-					auto& state{ iter->first };
-					if (state.is_final(target_cell)) {
-						optimal_move_path_helper_back_to_front(iter, std::back_inserter(result[state]));
-					}
-				}
-				return result;
-			}
-
-
-			inline void remove_dead_states(const std::vector<map_iterator>& live_states) {
-				throw "behavior not defined yet";
-				for (const auto& map_it : live_states) {
-					++map_it->second.count_successors_where_this_is_one_optimal_predecessor;
-				}
-				std::vector<map_iterator> to_be_removed; // all iterators pointing to states where:   count_successors_where_this_is_one_optimal_predecessor == 0
-
-				for (auto iter = ps_map.begin(); iter != ps_map.end(); ++iter) {
-					if (iter->second.count_successors_where_this_is_one_optimal_predecessor == 0) {
-						to_be_removed.push_back(iter);
-					}
-				}
-
-				while (!to_be_removed.empty()) {
-					map_iterator removee = to_be_removed.back();
-					to_be_removed.pop_back();
-
-					for (auto iter = removee->second.optimal_predecessors.begin(); iter != removee->second.optimal_predecessors.end(); ++iter) {
-						auto& pred{ std::get<0>(*iter) };
-						--pred->second.count_successors_where_this_is_one_optimal_predecessor;
-						if (pred->second.count_successors_where_this_is_one_optimal_predecessor == 0) {
-							to_be_removed.push_back(pred);
-						}
-					}
-
-					ps_map.erase(removee);
-				}
-
-				for (const auto& map_it : live_states) {
-					--map_it->second.count_successors_where_this_is_one_optimal_predecessor;
-				}
-			}
-
-			inline void remove_dead_states(const cell_id_type& target_cell_defining_live_states) {
-				throw "not yet defined"
-					return remove_dead_states(optimal_final_state_iterators(target_cell_defining_live_states));
-			}
-			*/
-
 			// ### offer step-wise exploration instead of exploration until optimal.
-			inline void explore_until_optimal_solution_distance(
-				move_one_piece_calculator_type& engine,
-				const cell_id_type& target_cell
-			) {
-				const size_type INDEX_LAST_EXPLORATION{ reachable_states_by_distance.size() - 1 };
-
-				if (!(INDEX_LAST_EXPLORATION < optimal_path_length)) {
-					//Already executed exploration before. Any state to be explored would add states into map beyond the optimal path length
-					return;
-				}
-
-				if (reachable_states_by_distance[0][0].is_final(target_cell)) {
-					optimal_path_length = 0;
-					return;
-				}
-
-				for (size_type expand_level_index{ INDEX_LAST_EXPLORATION }; expand_level_index < optimal_path_length; ++expand_level_index) {
-
-					reachable_states_by_distance[expand_level_index].shrink_to_fit();
-
-					if (reachable_states_by_distance[expand_level_index].size() == 0) {
-						return; // no more states to find
-					}
-
-					reachable_states_by_distance.emplace_back();
-					reachable_states_by_distance[expand_level_index + 1].reserve(reachable_states_by_distance[expand_level_index].size() * 3 + 10);
-
-
-					for (std::size_t expand_index_inside_level = 0; expand_index_inside_level < reachable_states_by_distance[expand_level_index].size(); ++expand_index_inside_level) {
-
-						auto& current_state{ reachable_states_by_distance[expand_level_index][expand_index_inside_level] };
-
-						std::vector<move_candidate> candidates_for_successor_states; // can be array with fixed size(?)
-
-						// compute all successor state candidates:
-						for (typename piece_move_type::piece_id_type::int_type pid = 0; pid < positions_of_pieces_type::COUNT_ALL_PIECES; ++pid) {
-							for (direction direction_iter = direction::begin(); direction_iter < direction::end(); ++direction_iter) {
-								candidates_for_successor_states.emplace_back(
-									piece_move_type(pid, direction_iter),
-									engine.successor_state(current_state, pid, direction_iter)
-								);
-							}
-						}
-
-						/* order of candidates:
-						 piece 0: N E S W      <- target pieces come first!
-						 piece 1: N E S W
-						 ...
-						 piece last: N E S W
-						*/
-
-
-						// check if reached goal
-						for (
-							typename std::vector<move_candidate>::size_type index_candidate{ 0 };
-							// only check candidates arising from moved target pieces:
-							index_candidate < static_cast<typename std::vector<move_candidate>::size_type>(4) * positions_of_pieces_type::COUNT_TARGET_PIECES;
-							++index_candidate
-							) {
-							if (candidates_for_successor_states[index_candidate].successor_state == current_state) {
-								continue;
-							}
-
-							if constexpr (positions_of_pieces_type::SORTED_TARGET_PIECES) {
-								// general case:
-								if (candidates_for_successor_states[index_candidate].successor_state.is_final(target_cell)) {
-									optimal_path_length = expand_level_index + 1;
-								}
-
-							}
-							else {
-								// optimized case:
-								if (candidates_for_successor_states[index_candidate].successor_state.raw()[index_candidate / 4] == target_cell) {
-									// does not work for sorted final pieces! In that case we do not know where the moved piece is located.
-									optimal_path_length = expand_level_index + 1;
-								}
-							}
-
-							reachable_states_by_distance.back().emplace_back(candidates_for_successor_states[index_candidate].successor_state);
-
-						}
-						//....
-
-					}
-					// sort and unique "new" states
-					std::sort(std::execution::par, reachable_states_by_distance.back().begin(), reachable_states_by_distance.back().end());
-					reachable_states_by_distance.back().erase(
-						unique(std::execution::par, reachable_states_by_distance.back().begin(), reachable_states_by_distance.back().end()),
-						reachable_states_by_distance.back().end()
-					);
-					// delete states already seen before
-					{
-						using sub_iterator = typename std::vector<positions_of_pieces_type>::iterator;
-						std::vector<sub_iterator> check_iterators;
-						sub_iterator check_next = reachable_states_by_distance.back().begin();
-						sub_iterator free_next = reachable_states_by_distance.back().begin();
-
-						for (size_type i = 0; i < expand_level_index + 1; ++i) {
-							check_iterators.emplace_back(reachable_states_by_distance[i].begin());
-						}
-					continue_outer_loop:
-						while (check_next != reachable_states_by_distance.back().end()) {
-							for (size_type i_level = 0; i_level < check_iterators.size(); ++i_level) {
-								while (
-									(check_iterators[i_level] != reachable_states_by_distance[i_level].end())
-									&&
-									(*(check_iterators[i_level]) < *check_next)
-									)
-								{
-									++check_iterators[i_level];
-								}
-								if (
-									(check_iterators[i_level] != reachable_states_by_distance[i_level].end())
-									&&
-									*check_iterators[i_level] == *check_next
-									)
-								{
-									++check_next; // already found current state. Do not keep it.
-									goto continue_outer_loop;
-								}
-							}
-
-							// here we know *check_next is indeed a state never found before.
-							if (free_next != check_next) {
-								*free_next = *check_next;
-							}
-							++free_next;
-							++check_next;
-						}
-						// shrink the vector by the elements already found earlier.
-						reachable_states_by_distance.back().erase(free_next, reachable_states_by_distance.back().end());
-					}
-
-					reachable_states_by_distance[expand_level_index + 1].shrink_to_fit();
-
-				}
-			}
-
 		};
 
 		template<class Positions_Of_Pieces_Type>

@@ -627,7 +627,7 @@ void GameController::startSolver(QMainWindow* mw) {
 	solver_begin_index = path.size();
 
 	// explore...
-	distance_explorer.explore_until_optimal_solution_distance(move_one_piece_calculator, target_cell);
+	auto optimal_depth = distance_explorer.explore_until_target(move_one_piece_calculator, target_cell);
 
 	tobor::v1_1::simple_state_bigraph<positions_of_pieces_type, std::vector<bool>> bigraph; // ### inside this call, log every distance level as a progress bar
 
@@ -676,6 +676,7 @@ void GameController::startSolver(QMainWindow* mw) {
 	//		std::sort(equivalence_class.begin(), equivalence_class.end(), move_path_type::antiprettiness_relation);
 	//	}
 	//}
+	(void)optimal_depth;
 
 	throw 0;
 
