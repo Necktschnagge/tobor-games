@@ -411,7 +411,7 @@ namespace tobor {
 
 					typename arithmetic_error::no_move no_move_exception;
 
-					for (auto pid = typename piece_move_type::piece_id_type::begin(); pid < typename piece_move_type::piece_id_type::end(); ++pid) {
+					for (auto pid = piece_id_type::begin(); pid < piece_id_type::end(); ++pid) { 
 						for (auto dir = direction::begin(); dir < direction::end(); ++dir) {
 							if (state_plus_move(from_state, piece_move_type(pid, dir)) == to_state) {
 								no_move_exception.zero_moves.emplace_back(pid, dir);
@@ -424,7 +424,7 @@ namespace tobor {
 
 				typename arithmetic_error::multi_move multi_move_exception; // collect all valid moves
 
-				for (auto pid = typename piece_move_type::piece_id_type::begin(); pid < typename piece_move_type::piece_id_type::end(); ++pid) {
+				for (auto pid = piece_id_type::begin(); pid < piece_id_type::end(); ++pid) {
 					for (auto dir = direction::begin(); dir < direction::end(); ++dir) {
 						if (state_plus_move(from_state, piece_move_type(pid, dir)) == to_state) {
 							multi_move_exception.zero_moves.emplace_back(pid, dir);
@@ -570,6 +570,7 @@ namespace tobor {
 		private:
 
 			using target_distance_map_type = std::map<cell_id_type, size_type>;
+
 
 			using states_vector = std::vector<positions_of_pieces_type>;
 
