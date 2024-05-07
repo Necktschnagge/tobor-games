@@ -555,7 +555,7 @@ namespace tobor {
 
 				static constexpr exploration_policy FORCE_EXPLORATION_UNTIL_DEPTH(size_type max_depth) { return exploration_policy(SIZE_TYPE_MAX, max_depth); }
 
-				static constexpr exploration_policy FORCE_EXPLORATION_STATE_THRESHOLD(size_type state_count_threshold) { return exploration_policy(std::max(state_count_threshold, 1), SIZE_TYPE_MAX); }
+				static constexpr exploration_policy FORCE_EXPLORATION_STATE_THRESHOLD(size_type state_count_threshold) { return exploration_policy(std::max(state_count_threshold, size_type(1)), SIZE_TYPE_MAX); }
 
 				static constexpr exploration_policy FORCE_EXPLORATION_STATE_THRESHOLD_UNTIL_DEPTH(size_type state_count_threshold, size_type max_depth) { return exploration_policy(std::max(state_count_threshold, 1), max_depth); }
 
@@ -1137,7 +1137,7 @@ namespace tobor {
 					auto permutation_of_piece_id = augmented_state_path.vector()[i].get_permutation()[piece_id];
 
 					/*is it checked somewhere that no out of range can happen? ### */
-					result.move_vector.back().pid = static_cast<pieces_quantity_int_type>(permutation_of_piece_id);
+					result.move_vector.back().pid.value = static_cast<pieces_quantity_int_type>(permutation_of_piece_id);
 					//result.move_vector.back().pid = static_cast<decltype(result.move_vector.back().pid)>(permutation_of_piece_id);
 				}
 
