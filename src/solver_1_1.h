@@ -393,7 +393,7 @@ namespace tobor {
 			inline Position_Of_Pieces_Type successor_state(const Position_Of_Pieces_Type& state, const typename piece_move_type::piece_id_type& _piece_id, const direction& _direction) const {
 				Position_Of_Pieces_Type result(state);
 
-				result.piece_positions[_piece_id.value] = next_cell_max_move(state.piece_positions[_piece_id.value], state, _direction);
+				result.piece_positions()[_piece_id.value] = next_cell_max_move(state.piece_positions()[_piece_id.value], state, _direction);
 				result.sort_pieces();
 
 				return result;
@@ -1129,7 +1129,9 @@ namespace tobor {
 					result.move_vector.emplace_back(
 						move_engine.state_minus_state(augmented_state_path.vector()[i + 1], augmented_state_path.vector()[i]));
 					// roll back permutation
-					result.move_vector.back().pid = augmented_state_path.vector()[i].get_permutation()[result.move_vector.back().pid.value];
+					result.move_vector.back().pid = static_cast<decltype(result.move_vector.back().pid)
+					/*is it checked somewhere that no out of range can happen? ### */
+					>(augmented_state_path.vector()[i].get_permutation()[result.move_vector.back().pid.value]);
 				}
 
 				return result;

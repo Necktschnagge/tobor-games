@@ -281,6 +281,17 @@ public:
 
 	void move_by_solver(bool forward);
 
+	inline state_path_type_interactive path() const noexcept {
+		return _path;
+	}
+
+	inline const std::vector<std::vector<std::pair<state_path_type_interactive, move_path_type>>>& partitioned_pairs() const {
+		if (!_solver) {
+			throw 0;
+		}
+		return _solver.value().partitioned_pairs;
+	}
+
 	~GameController() {}
 	
 	// todo: functions below:

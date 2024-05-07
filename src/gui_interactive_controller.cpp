@@ -82,7 +82,7 @@ inline void startReferenceGame22Helper(X& guiInteractiveController) {
 
 		GameController::cell_id_type target_cell = GameController::cell_id_type::create_by_coordinates(9, 3, world);
 
-		GameController::positions_of_pieces_type_solver initial_state = GameController::positions_of_pieces_type(
+		GameController::positions_of_pieces_type_interactive initial_state = GameController::positions_of_pieces_type_interactive(
 			{
 				GameController::cell_id_type::create_by_coordinates(15, 15, world)
 			},
@@ -516,11 +516,9 @@ void GuiInteractiveController::viewSolutionPaths() // this has to be improved!!!
 		return;
 	}
 
-
 	QStringList qStringList;
 
-
-	std::size_t goal_counter{ 0 };
+	//std::size_t goal_counter{ 0 };
 
 	auto permutated_color_vector = current_color_vector;
 
@@ -528,35 +526,23 @@ void GuiInteractiveController::viewSolutionPaths() // this has to be improved!!!
 		permutated_color_vector.colors[i] = current_color_vector.colors[gameHistory.back().color_permutation()[i]];
 	}
 
-	for (const auto& pair : gameHistory.back().optional_classified_move_paths.value()) {
-		//const auto& goal_state{ pair.first };
-		const auto& equivalence_classes{ pair.second };
+	const auto& partitions{ gameHistory.back().partitioned_pairs() };
 
-		for (std::size_t i = 0; i < equivalence_classes.size(); ++i) {
-			QString s;
-			s = s + "[" + QString::number(goal_counter) + "]     ";
-			s = s + QString::number(i) + ": ";
-			for (const GameController::piece_move_type& m : equivalence_classes[i][0].vector()) {
+	for (std::size_t i{ 0 }; i < partitions.size(); ++i) {
+		QString s;
+		s = s + "[" + QString::number(i) + "]     ";
+		for (const GameController::piece_move_type& m : partitions[i][0].second.vector()) {
 
-				const char letter{ permutated_color_vector.colors[m.pid.value].UPPERCASE_shortcut_letter() };
+			const char letter{ permutated_color_vector.colors[m.pid.value].UPPERCASE_shortcut_letter() };
 
+			std::string color = std::string(1, letter);
 
-				std::string color = std::string(1, letter);
-				// please check #69 so that we may include tobor svg in this file's corresponding header to define coloring there....
+			s = s + "  " + QString::fromStdString(color) + QString::fromStdString(static_cast<std::string>(m.dir));
 
-				// the solution might be a "global" fixed coloring with full words and with Letter, 
-				// additionally a permutation which is applied anywhere before reading the colors,
-				// and which is also used at that position where GUI input is interpreted.
-
-				s = s + "  " + QString::fromStdString(color) + QString::fromStdString(static_cast<std::string>(m.dir));
-			}
-			s = s + "     (x" + QString::number(equivalence_classes[i].size()) + ")";
-			qStringList << s;
 		}
-		++goal_counter;
+		s = s + "     (" + QString::number(partitions[i].size()) + ")";
+		qStringList << s;
 	}
-
-
 
 	model->setStringList(qStringList);
 
@@ -572,7 +558,7 @@ void GuiInteractiveController::highlightGeneratedTargetCells()
 		return showErrorDialog("Target cell markers not supported without running a game");
 	}
 
-	auto& world{ gameHistory.back()._world };
+	const auto& world{ gameHistory.back().world() };
 
 	auto raw_cell_id_vector = productWorldGenerator.main().get_target_cell_id_vector(world);
 
