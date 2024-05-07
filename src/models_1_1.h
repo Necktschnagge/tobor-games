@@ -511,8 +511,6 @@ namespace tobor {
 
 			inline augmented_positions_of_pieces& operator = (augmented_positions_of_pieces&&) = default; //## need to make the other valid
 
-			inline const all_pieces_array_type& raw() const { return _piece_positions; }
-
 			bool operator< (const augmented_positions_of_pieces& another) const noexcept {
 				return _piece_positions < another._piece_positions;
 			}

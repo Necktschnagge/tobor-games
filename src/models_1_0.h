@@ -565,20 +565,20 @@ namespace tobor {
 			*	@details Both sections {TARGET_PIECES : NON_TARGET_PIECES} need to be ordered by < all the time if specified so by template arguments.
 			*
 			*/
-			all_pieces_array_type piece_positions;
+			all_pieces_array_type _piece_positions;
 
 		public:
 
 			template<class Iter>
 			inline positions_of_pieces(Iter target_pieces_begin) {
-				std::copy_n(target_pieces_begin, COUNT_ALL_PIECES, piece_positions.begin());
+				std::copy_n(target_pieces_begin, COUNT_ALL_PIECES, _piece_positions.begin());
 				sort_pieces();
 			}
 
 			template<class Iter1, class Iter2>
 			inline positions_of_pieces(Iter1 target_pieces_begin, Iter2 non_target_pieces_begin) {
-				std::copy_n(target_pieces_begin, COUNT_TARGET_PIECES, piece_positions.begin());
-				std::copy_n(non_target_pieces_begin, COUNT_NON_TARGET_PIECES, piece_positions.begin() + COUNT_TARGET_PIECES);
+				std::copy_n(target_pieces_begin, COUNT_TARGET_PIECES, _piece_positions.begin());
+				std::copy_n(non_target_pieces_begin, COUNT_NON_TARGET_PIECES, _piece_positions.begin() + COUNT_TARGET_PIECES);
 				sort_pieces();
 			}
 
@@ -597,30 +597,32 @@ namespace tobor {
 
 			inline positions_of_pieces& operator = (positions_of_pieces&&) = default;
 
-			inline const all_pieces_array_type& raw() const { return piece_positions; }
+			inline all_pieces_array_type& piece_positions() { return _piece_positions; } // ### do the same in the naked class
+			
+			inline const all_pieces_array_type& piece_positions() const { return _piece_positions; } // ### do the same in the naked class
 
 			bool operator< (const positions_of_pieces& another) const noexcept {
-				return piece_positions < another.piece_positions;
+				return _piece_positions < another._piece_positions;
 			}
 
 			bool operator== (const positions_of_pieces& another) const noexcept {
-				return piece_positions == another.piece_positions;
+				return _piece_positions == another._piece_positions;
 			}
 
 			inline typename std::array<cell_id_type, COUNT_ALL_PIECES>::const_iterator target_pieces_cbegin() const {
-				return piece_positions.cbegin();
+				return _piece_positions.cbegin();
 			};
 
 			inline typename std::array<cell_id_type, COUNT_ALL_PIECES>::iterator target_pieces_begin() {
-				return piece_positions.begin();
+				return _piece_positions.begin();
 			};
 
 			inline typename std::array<cell_id_type, COUNT_ALL_PIECES>::const_iterator target_pieces_cend() const {
-				return piece_positions.cbegin() + COUNT_TARGET_PIECES;
+				return _piece_positions.cbegin() + COUNT_TARGET_PIECES;
 			};
 
 			inline typename std::array<cell_id_type, COUNT_ALL_PIECES>::iterator target_pieces_end() {
-				return piece_positions.begin() + COUNT_TARGET_PIECES;
+				return _piece_positions.begin() + COUNT_TARGET_PIECES;
 			};
 
 			inline typename std::array<cell_id_type, COUNT_ALL_PIECES>::const_iterator non_target_pieces_cbegin() const {
@@ -632,11 +634,11 @@ namespace tobor {
 			};
 
 			inline typename std::array<cell_id_type, COUNT_ALL_PIECES>::const_iterator non_target_pieces_cend() const {
-				return piece_positions.cend();
+				return _piece_positions.cend();
 			};
 
 			inline typename std::array<cell_id_type, COUNT_ALL_PIECES>::iterator non_target_pieces_end() {
-				return piece_positions.end();
+				return _piece_positions.end();
 			};
 
 			inline void sort_pieces() {

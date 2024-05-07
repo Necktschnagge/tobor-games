@@ -231,7 +231,7 @@ namespace tobor {
 				cell_id_int_type raw_next_cell_id{ (cache.*get_cache_direction)(raw_start_cell_id) };
 
 				for (std::size_t i = 0; i < state.COUNT_ALL_PIECES; ++i) { // iterate over all pieces
-					const cell_id_int_type current_raw_id{ (state.piece_positions[i].*get_raw_id)(my_world) };
+					const cell_id_int_type current_raw_id{ (state.piece_positions()[i].*get_raw_id)(my_world) };
 
 					if (raw_start_cell_id < current_raw_id && current_raw_id <= raw_next_cell_id) {
 						raw_next_cell_id = current_raw_id - 1;
@@ -258,7 +258,7 @@ namespace tobor {
 				cell_id_int_type raw_next_cell_id{ cache.get(d, raw_start_cell_id) };
 
 				for (std::size_t i = 0; i < state.COUNT_ALL_PIECES; ++i) { // iterate over all pieces
-					const cell_id_int_type current_raw_id{ state.piece_positions[i].get_raw_id(d, my_world) };
+					const cell_id_int_type current_raw_id{ state.piece_positions()[i].get_raw_id(d, my_world) };
 
 					if (raw_start_cell_id < current_raw_id && current_raw_id <= raw_next_cell_id) {
 						raw_next_cell_id = current_raw_id - 1;
@@ -333,7 +333,7 @@ namespace tobor {
 				const typename piece_move_type::piece_id_type& _piece_id,
 				const direction& _direction_from
 			) const {
-				const cell_id_type start_cell{ state.piece_positions[_piece_id.value] };
+				const cell_id_type start_cell{ state.piece_positions()[_piece_id.value] };
 
 				const cell_id_int_type raw_start_cell_id{ start_cell.get_raw_id(_direction_from, my_world) };
 
@@ -354,7 +354,7 @@ namespace tobor {
 
 				auto iter = result.begin();
 				for (cell_id_int_type raw_id = raw_far_id; raw_id != raw_start_cell_id; raw_id += increment, ++iter) {
-					iter->piece_positions[_piece_id.value] = cell_id_type::create_by_raw_id(_direction_from, raw_id, my_world);
+					iter->piece_positions()[_piece_id.value] = cell_id_type::create_by_raw_id(_direction_from, raw_id, my_world);
 					iter->sort_pieces();
 				}
 				return result;
@@ -400,14 +400,10 @@ namespace tobor {
 			}
 
 			template<class Position_Of_Pieces_Type>
-			inline std::pair<Position_Of_Pieces_Type, bool> successor_state(const Position_Of_Pieces_Type& state, const piece_move_type& move) const {
-				return successor_state(state, move.pid, move.dir);
-			}
+			inline Position_Of_Pieces_Type successor_state(const Position_Of_Pieces_Type& state, const piece_move_type& move) const { return successor_state(state, move.pid, move.dir); }
 
 			template<class Position_Of_Pieces_Type>
-			inline Position_Of_Pieces_Type state_plus_move(const Position_Of_Pieces_Type& state, const piece_move_type& move) const {
-				return successor_state(state, move).first;
-			}
+			inline Position_Of_Pieces_Type state_plus_move(const Position_Of_Pieces_Type& state, const piece_move_type& move) const { return successor_state(state, move); }
 
 			template<class Position_Of_Pieces_Type>
 			inline piece_move_type state_minus_state(const Position_Of_Pieces_Type& to_state, const Position_Of_Pieces_Type& from_state) const {
@@ -1093,6 +1089,8 @@ namespace tobor {
 
 			using pieces_quantity_type = typename piece_move_type::pieces_quantity_type;
 
+			using pieces_quantity_int_type = typename pieces_quantity_type::int_type;
+
 		private:
 			vector_type move_vector;
 
@@ -1123,15 +1121,24 @@ namespace tobor {
 				const Move_Once_Piece_Calculator_Type& move_engine
 			)
 			{
+				using augmented_positions_of_pieces_type = augmented_positions_of_pieces<Pieces_Quantity_Type, Cell_Id_Type_T, SORTED_TARGET_PIECES_V, SORTED_NON_TARGET_PIECES_V>;
+				using permutation_type = typename augmented_positions_of_pieces_type::permutation_type;
+				using permutation_indexing_type = typename permutation_type::size_type;
+
+				static_assert(std::is_same<permutation_indexing_type, std::size_t>::value, "MSVC does not meet en.cppreference.com");
+
 				move_path result;
 
 				for (std::size_t i{ 0 }; i + 1 < augmented_state_path.vector().size(); ++i) {
 					result.move_vector.emplace_back(
 						move_engine.state_minus_state(augmented_state_path.vector()[i + 1], augmented_state_path.vector()[i]));
 					// roll back permutation
-					result.move_vector.back().pid = static_cast<decltype(result.move_vector.back().pid)
+					auto piece_id = result.move_vector.back().pid.value;
+					auto permutation_of_piece_id = augmented_state_path.vector()[i].get_permutation()[piece_id];
+
 					/*is it checked somewhere that no out of range can happen? ### */
-					>(augmented_state_path.vector()[i].get_permutation()[result.move_vector.back().pid.value]);
+					result.move_vector.back().pid = static_cast<pieces_quantity_int_type>(permutation_of_piece_id);
+					//result.move_vector.back().pid = static_cast<decltype(result.move_vector.back().pid)>(permutation_of_piece_id);
 				}
 
 				return result;
