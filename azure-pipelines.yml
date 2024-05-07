@@ -48,11 +48,11 @@ stages:
         name: $(the_name)
       
       steps:
-       - script: sudo apt-get update && sudo apt-get install qtbase5-dev libqt5svg5-dev
-         displayName: "Install Qt (Linux)"
+       - script: sudo apt-get update && sudo apt-get install qtbase5-dev libqt5svg5-dev libtbb-dev
+         displayName: "Install Qt + libtbb (Linux)"
          condition: and(succeeded(), eq( variables['Agent.OS'], 'Linux'))
-       - script: brew install qt@5 || brew install qt@5
-         displayName: "Install Qt (Darwin)"
+       - script: (brew install qt@5 || brew install qt@5) && brew install tbb
+         displayName: "Install Qt +tbb (Darwin)"
          condition: and(succeeded(), eq( variables['Agent.OS'], 'Darwin'))
        - script: |
           echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"

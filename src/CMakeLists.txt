@@ -38,6 +38,9 @@ endif()
 
 target_link_libraries(${PROJECT_NAME} PRIVATE Threads::Threads)
 
+target_link_libraries(${PROJECT_NAME} PRIVATE TBB::tbb)
+
+
 
 
 ############### Target Properties ###############
@@ -89,6 +92,8 @@ else()
 endif()
 
 target_link_libraries(${PROJECT_NAME_LIB} PRIVATE Threads::Threads)
+
+target_link_libraries(${PROJECT_NAME_LIB} PRIVATE TBB::tbb)
 
 
 
