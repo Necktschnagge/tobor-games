@@ -122,10 +122,10 @@ stages:
         name: $(the_name)
       
       steps:
-       - script: sudo apt-get update && sudo apt-get install build-essential libgl1-mesa-dev qt6-base-dev libqt6svg6 libqt6svg6-dev
+       - script: sudo apt-get update && sudo apt-get install build-essential libgl1-mesa-dev qt6-base-dev libqt6svg6 libqt6svg6-dev libtbb-dev
          displayName: "Install Qt (Linux)"
          condition: and(succeeded(), eq( variables['Agent.OS'], 'Linux'))
-       - script: brew install qt@6 || brew install qt@6
+       - script: (brew install qt@6 || brew install qt@6) && brew install tbb
          displayName: "Install Qt (Darwin)"
          condition: and(succeeded(), eq( variables['Agent.OS'], 'Darwin'))
        - script: |
