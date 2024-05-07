@@ -83,7 +83,9 @@ else()
 	find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets Svg)
 endif()
 
-find_package(TBB REQUIRED)
+if(NOT MSVC)
+	find_package(TBB REQUIRED)
+endif()
 
 ############### Sources ###############
 add_subdirectory(src)
