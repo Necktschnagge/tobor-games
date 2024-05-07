@@ -337,6 +337,11 @@ namespace tobor {
 
 				const cell_id_int_type raw_start_cell_id{ start_cell.get_raw_id(_direction_from, my_world) };
 
+				// need to check if we can stop here coming from _direction_from.
+				// return if there is no obstacle in opposite direction
+				if (next_cell_max_move_raw(raw_start_cell_id, state, !_direction_from) != raw_start_cell_id)
+					return std::vector<Position_Of_Pieces_Type>();
+
 				auto raw_far_id = next_cell_max_move_raw(
 					raw_start_cell_id,
 					state,
@@ -435,6 +440,8 @@ namespace tobor {
 				if (multi_move_exception.zero_moves.size() != 1) {
 					throw multi_move_exception;
 				}
+
+				// multi_move_exception.zero_moves.size() can also be zero ... Should it really fire multi-move then?
 
 				return multi_move_exception.zero_moves[0];
 
