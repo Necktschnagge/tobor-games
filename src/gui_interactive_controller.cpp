@@ -532,6 +532,7 @@ void GuiInteractiveController::viewSolutionPaths() // this has to be improved!!!
 		QString s;
 		s = s + "[" + QString::number(i) + "]     ";
 		for (const GameController::piece_move_type& m : partitions[i][0].second.vector()) {
+			//is not checked fore emptiness!!
 
 			const char letter{ permutated_color_vector.colors[m.pid.value].UPPERCASE_shortcut_letter() };
 

@@ -52,6 +52,26 @@ namespace tobor {
 
 			direction(int_type v) : value(v) {}
 
+			static constexpr uint8_t direct_access[17]{
+					0x10,
+					0b0100, // 1 -> 4 // 0 -> 2
+					0b1000, // 2 -> 8 // 1 -> 3
+					0x10,
+					0b0001, // 4 -> 1 // 2 -> 0
+					0x10,
+					0x10,
+					0x10,
+					0b0010, // 8 -> 2 // 3 -> 1
+					0x10,
+					0x10,
+					0x10,
+					0x10,
+					0x10,
+					0x10,
+					0x10,
+					0x10, // END -> END
+			};
+
 		public:
 			struct encoding {
 
@@ -112,9 +132,7 @@ namespace tobor {
 				}
 			}
 
-			direction operator!() const noexcept {
-				return direction(((value << 2) | (value >> 2)) ^ (value));
-			}
+			inline direction operator!() const noexcept { return direction(direct_access[value]); }
 
 		};
 
@@ -598,7 +616,7 @@ namespace tobor {
 			inline positions_of_pieces& operator = (positions_of_pieces&&) = default;
 
 			inline all_pieces_array_type& piece_positions() { return _piece_positions; } // ### do the same in the naked class
-			
+
 			inline const all_pieces_array_type& piece_positions() const { return _piece_positions; } // ### do the same in the naked class
 
 			bool operator< (const positions_of_pieces& another) const noexcept {

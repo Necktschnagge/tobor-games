@@ -340,7 +340,7 @@ namespace tobor {
 				auto raw_far_id = next_cell_max_move_raw(
 					raw_start_cell_id,
 					state,
-					!_direction_from
+					_direction_from
 				);
 
 				auto result = std::vector<Position_Of_Pieces_Type>(
@@ -411,7 +411,7 @@ namespace tobor {
 
 					typename arithmetic_error::no_move no_move_exception;
 
-					for (auto pid = piece_id_type::begin(); pid < piece_id_type::end(); ++pid) { 
+					for (auto pid = piece_id_type::begin(); pid < piece_id_type::end(); ++pid) {
 						for (auto dir = direction::begin(); dir < direction::end(); ++dir) {
 							if (state_plus_move(from_state, piece_move_type(pid, dir)) == to_state) {
 								no_move_exception.zero_moves.emplace_back(pid, dir);
@@ -923,12 +923,10 @@ namespace tobor {
 
 				std::vector<positions_of_pieces_type> states;
 
+				// fill states with all the final states
 				for (size_type i{ 0 }; i < _reachable_states_by_distance[FINAL_DEPTH].size(); ++i) {
-
 					const auto& s{ _reachable_states_by_distance[FINAL_DEPTH][i] };
-
 					if (s.is_final(target_cell)) {
-
 						destination.map.insert(
 							destination.map.end(),
 							std::pair<typename bigraph::state_type, typename bigraph::node_links>(
@@ -936,9 +934,7 @@ namespace tobor {
 								typename bigraph::node_links()
 							)
 						);
-
 						states.push_back(s);
-
 					}
 				}
 
@@ -1410,7 +1406,7 @@ namespace tobor {
 			template<class State_Label_Type>
 			static void extract_all_state_paths_helper(
 				const simple_state_bigraph<positions_of_pieces_type, State_Label_Type>& source,
-				std::vector<state_path<positions_of_pieces_type>> all_state_paths,
+				std::vector<state_path<positions_of_pieces_type>>& all_state_paths,
 				state_path_vector_type& depth_first_path
 				//, const typename simple_state_bigraph<positions_of_pieces_type, State_Label_Type>::map_type::const_iterator& current_state_iter /* not end */
 			) {
@@ -1531,6 +1527,7 @@ namespace tobor {
 							for (const auto& candidate : exploree->second.successors) {
 								const auto i_candidate = bigraph.map.find(candidate);
 								if (i_candidate == bigraph.map.end()) continue; // never happens by logic if bigraph is sound.
+								if (contains(i_candidate->second.labels, flag_index)) continue; // state already labeled as part of current equivalence class
 
 								for (const auto& successor : i_candidate->second.successors) {
 									auto i_successor = bigraph.map.find(successor);
@@ -1551,6 +1548,7 @@ namespace tobor {
 							for (const auto& candidate : exploree->second.predecessors) {
 								const auto i_candidate = bigraph.map.find(candidate);
 								if (i_candidate == bigraph.map.end()) continue; // never happens by logic if bigraph is sound.
+								if (contains(i_candidate->second.labels, flag_index)) continue; // state already labeled as part of current equivalence class
 
 								for (const auto& predecessor : i_candidate->second.predecessors) {
 									auto i_predecessor = bigraph.map.find(predecessor);
