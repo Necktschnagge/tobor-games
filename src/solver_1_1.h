@@ -350,7 +350,7 @@ namespace tobor {
 					state
 				);
 
-				const int8_t increment{ (raw_start_cell_id > raw_far_id) - (raw_start_cell_id < raw_far_id) };
+				const int8_t increment{ static_cast<int8_t>((raw_start_cell_id > raw_far_id) - (raw_start_cell_id < raw_far_id)) };
 
 				auto iter = result.begin();
 				for (cell_id_int_type raw_id = raw_far_id; raw_id != raw_start_cell_id; raw_id += increment, ++iter) {
