@@ -11,6 +11,7 @@
 #include <stdexcept>
 #include <iterator>
 #include <string>
+#include <execution>
 
 
 namespace tobor {
