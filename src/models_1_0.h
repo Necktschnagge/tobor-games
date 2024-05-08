@@ -12,6 +12,7 @@
 #include <iterator>
 #include <string>
 #include <execution>
+#include <compare>
 
 
 namespace tobor {
