@@ -15,12 +15,15 @@ stages:
    dependsOn: []
 
    jobs:
-    - job: Clang
+    - job: Clang_Qt_5
       timeoutInMinutes: 30
       strategy:
         matrix:
           ubuntu_20_04:
             imageName: "ubuntu-20.04"
+            the_name: "Azure Pipelines"
+          ubuntu_22_04:
+            imageName: "ubuntu-22.04"
             the_name: "Azure Pipelines"
 
       pool:
