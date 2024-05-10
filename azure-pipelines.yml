@@ -50,7 +50,7 @@ stages:
          displayName: "Run Tests on Linux / Mac OS"
          condition: and(succeeded(), ne( variables['Agent.OS'], 'Windows_NT'))
 
-    - job: "Clang + Qt_6"
+    - job: Clang_Qt_6
       timeoutInMinutes: 30
       strategy:
         matrix:
