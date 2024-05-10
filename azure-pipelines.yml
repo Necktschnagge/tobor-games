@@ -30,16 +30,13 @@ stages:
        - script: sudo apt-get update && sudo apt-get install clang-10 libstdc++-10-dev
          displayName: "Install Clang"
          condition: and(succeeded(), eq( variables['Agent.OS'], 'Linux'))
-       - script: export CXX="/usr/bin/clang++"
-         displayName: "Set Clang as default c++ compiler"
-         condition: and(succeeded(), eq( variables['Agent.OS'], 'Linux'))
-       - script: sudo apt-get update && sudo apt-get install qtbase5-dev libqt5svg5-dev libtbb-dev
+       - script: sudo apt-get install qtbase5-dev libqt5svg5-dev libtbb-dev
          displayName: "Install Qt + libtbb (Linux)"
          condition: and(succeeded(), eq( variables['Agent.OS'], 'Linux'))
        - script: git submodule update --init --recursive
          displayName: "Init Git Submodules"
          condition: succeeded()
-       - script: cmake -S . -B ./build/ -DUSE_QT6:BOOL=FALSE
+       - script: CXX="/usr/bin/clang++" cmake -S . -B ./build/ -DUSE_QT6:BOOL=FALSE
          displayName: "CMake: Create Project (Linux)"
          condition: and(succeeded(), eq( variables['Agent.OS'], 'Linux'))
        - script: cmake --build ./build --config Debug --verbose
