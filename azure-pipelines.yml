@@ -13,7 +13,7 @@ stages:
 
  - stage: Compile_and_Test
    dependsOn: []
-   
+
    jobs:
     - job: Clang
       timeoutInMinutes: 30
@@ -22,6 +22,7 @@ stages:
           ubuntu_20_04:
             imageName: "ubuntu-20.04"
             the_name: "Azure Pipelines"
+
       pool:
         vmImage: $(imageName)
         name: $(the_name)
@@ -45,6 +46,41 @@ stages:
        - script: cmake --build ./build --config Release --verbose
          displayName: "CMake: Compile and Link (Release)"
          condition: succeeded()
+       - script: ./build/test/TEST-$(project_name)
+         displayName: "Run Tests on Linux / Mac OS"
+         condition: and(succeeded(), ne( variables['Agent.OS'], 'Windows_NT'))
+
+    - job: "Clang + Qt_6"
+      timeoutInMinutes: 30
+      strategy:
+        matrix:
+          ubuntu_22_04:
+            imageName: "ubuntu-22.04"
+            the_name: "Azure Pipelines"
+
+      pool:
+        vmImage: $(imageName)
+        name: $(the_name)
+
+      steps:
+       - script: sudo apt-get update && sudo apt-get install build-essential libgl1-mesa-dev qt6-base-dev libqt6svg6 libqt6svg6-dev libtbb-dev
+         displayName: "Install Qt (Linux)"
+         condition: and(succeeded(), eq( variables['Agent.OS'], 'Linux'))
+       - script: git submodule update --init --recursive
+         displayName: "Init Git Submodules"
+         condition: succeeded()
+       - script: CXX="/usr/bin/clang++" cmake -S . -B ./build/
+         displayName: "CMake: Create Project (Darwin / Linux)"
+         condition: and(succeeded(), ne( variables['Agent.OS'], 'Windows_NT'))
+       - script: cmake --build ./build --config Debug --verbose
+         displayName: "CMake: Compile and Link (Debug)"
+         condition: succeeded()
+       - script: cmake --build ./build --config Release --verbose
+         displayName: "CMake: Compile and Link (Release)"
+         condition: succeeded()
+       - script: ./build/test/TEST-$(project_name)
+         displayName: "Run Tests on Linux / Mac OS"
+         condition: and(succeeded(), ne( variables['Agent.OS'], 'Windows_NT'))
 
     - job: Qt_5
       timeoutInMinutes: 30
@@ -57,23 +93,23 @@ stages:
           mac_12:
             imageName: "macOS-12"
             the_name: "Azure Pipelines"
-      
+
           mac_13:
             imageName: "macOS-13"
             the_name: "Azure Pipelines"
-      
+
           windows_2022:
             imageName: "windows-2022"
             the_name: "Azure Pipelines"
-      
+
           windows_2019:
             imageName: "windows-2019"
             the_name: "Azure Pipelines"
-      
+
       pool:
         vmImage: $(imageName)
         name: $(the_name)
-      
+
       steps:
        - script: sudo apt-get update && sudo apt-get install qtbase5-dev libqt5svg5-dev libtbb-dev
          displayName: "Install Qt + libtbb (Linux)"
@@ -128,27 +164,27 @@ stages:
           ubuntu_22_04:
             imageName: "ubuntu-22.04"
             the_name: "Azure Pipelines"
-      
+
           mac_12:
             imageName: "macOS-12"
             the_name: "Azure Pipelines"
-      
+
           mac_13:
             imageName: "macOS-13"
             the_name: "Azure Pipelines"
-      
+
           windows_2022:
             imageName: "windows-2022"
             the_name: "Azure Pipelines"
-      
+
           windows_2019:
             imageName: "windows-2019"
             the_name: "Azure Pipelines"
-      
+
       pool:
         vmImage: $(imageName)
         name: $(the_name)
-      
+
       steps:
        - script: sudo apt-get update && sudo apt-get install build-essential libgl1-mesa-dev qt6-base-dev libqt6svg6 libqt6svg6-dev libtbb-dev
          displayName: "Install Qt (Linux)"
