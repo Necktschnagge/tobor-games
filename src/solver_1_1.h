@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <limits>
 #include <execution>
+#include <numeric>
 
 class GameController; // for friend class declaration, to be removed
 
