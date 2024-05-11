@@ -72,11 +72,12 @@ stages:
        - script: git submodule update --init --recursive
          displayName: "Init Git Submodules"
          condition: succeeded()
-       - name: Install newer Clang
-         run: |
+       - script: |
           wget https://apt.llvm.org/llvm.sh
           chmod +x ./llvm.sh
           sudo ./llvm.sh 17
+         displayName: "Install newer Clang"
+         condition: succeeded()
        - script: CXX="/usr/bin/clang++-17" cmake -S . -B ./build/
          displayName: "CMake: Create Project (Darwin / Linux)"
          condition: and(succeeded(), ne( variables['Agent.OS'], 'Windows_NT'))
