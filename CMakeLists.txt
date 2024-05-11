@@ -54,11 +54,6 @@ set(THREADS_PREFER_PTHREAD_FLAG ON)
 
 if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
 		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libstdc++ -std=c++20")
-		SET (CMAKE_AR      "/usr/bin/llvm-ar")
-		SET (CMAKE_LINKER  "/usr/bin/llvm-link")
-		SET (CMAKE_NM      "/usr/bin/llvm-nm")
-		SET (CMAKE_OBJDUMP "/usr/bin/llvm-objdump")
-		SET (CMAKE_RANLIB  "/usr/bin/llvm-ranlib")
 		message("Clang Flags recognized")
 endif()
 
