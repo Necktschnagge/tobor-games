@@ -408,6 +408,12 @@ namespace tobor {
 		template <class Pieces_Quantity_Type, class Cell_Id_Type_T, bool SORTED_TARGET_PIECES_V, bool SORTED_NON_TARGET_PIECES_V>
 		class augmented_positions_of_pieces {
 
+			template <class INNER_Pieces_Quantity_Type, class INNER_Cell_Id_Type_T, bool INNER_SORTED_TARGET_PIECES_V, bool INNER_SORTED_NON_TARGET_PIECES_V>
+			friend inline void std::swap(
+				augmented_positions_of_pieces<INNER_Pieces_Quantity_Type, INNER_Cell_Id_Type_T, INNER_SORTED_TARGET_PIECES_V, INNER_SORTED_NON_TARGET_PIECES_V>&,
+				augmented_positions_of_pieces<INNER_Pieces_Quantity_Type, INNER_Cell_Id_Type_T, INNER_SORTED_TARGET_PIECES_V, INNER_SORTED_NON_TARGET_PIECES_V>&
+			);
+
 		public:
 
 			using pieces_quantity_type = Pieces_Quantity_Type;
@@ -469,7 +475,7 @@ namespace tobor {
 		public:
 
 			inline all_pieces_array_type& piece_positions() { return _piece_positions; } // ### do the same in the naked class
-			
+
 			inline const all_pieces_array_type& piece_positions() const { return _piece_positions; } // ### do the same in the naked class
 
 			inline const permutation_type& get_permutation() const { return _permutation; } // ### rename members!
@@ -673,4 +679,16 @@ namespace tobor {
 #endif
 
 	}
+	}
+
+namespace std {
+	template <class Pieces_Quantity_Type, class Cell_Id_Type, bool SORTED_TARGET_PIECES_V, bool SORTED_NON_TARGET_PIECES_V>
+	inline void swap(
+		tobor::v1_1::augmented_positions_of_pieces<Pieces_Quantity_Type, Cell_Id_Type, SORTED_TARGET_PIECES_V, SORTED_NON_TARGET_PIECES_V>& a,
+		tobor::v1_1::augmented_positions_of_pieces<Pieces_Quantity_Type, Cell_Id_Type, SORTED_TARGET_PIECES_V, SORTED_NON_TARGET_PIECES_V>& b
+	) {
+		std::swap(a._piece_positions, b._piece_positions);
+		std::swap(a._permutation, b._permutation);
+	}
+
 }
