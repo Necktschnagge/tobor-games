@@ -408,6 +408,12 @@ namespace tobor {
 		template <class Pieces_Quantity_Type, class Cell_Id_Type_T, bool SORTED_TARGET_PIECES_V, bool SORTED_NON_TARGET_PIECES_V>
 		class augmented_positions_of_pieces {
 
+			template <class INNER_Pieces_Quantity_Type, class INNER_Cell_Id_Type_T, bool INNER_SORTED_TARGET_PIECES_V, bool INNER_SORTED_NON_TARGET_PIECES_V>
+			friend void ::std::swap(
+				augmented_positions_of_pieces<INNER_Pieces_Quantity_Type, INNER_Cell_Id_Type_T, INNER_SORTED_TARGET_PIECES_V, INNER_SORTED_NON_TARGET_PIECES_V>&,
+				augmented_positions_of_pieces<INNER_Pieces_Quantity_Type, INNER_Cell_Id_Type_T, INNER_SORTED_TARGET_PIECES_V, INNER_SORTED_NON_TARGET_PIECES_V>&
+			);
+
 		public:
 
 			using pieces_quantity_type = Pieces_Quantity_Type;
@@ -440,6 +446,8 @@ namespace tobor {
 
 			using permutation_type = std::array<std::size_t, COUNT_ALL_PIECES>;
 
+			using naked_type = positions_of_pieces<pieces_quantity_type, cell_id_type, SORTED_TARGET_PIECES, SORTED_NON_TARGET_PIECES>;
+
 		private:
 
 			/**
@@ -447,9 +455,9 @@ namespace tobor {
 			*	@details Both sections {TARGET_PIECES : NON_TARGET_PIECES} need to be ordered by < all the time if specified so by template arguments.
 			*
 			*/
-			all_pieces_array_type piece_positions;
+			all_pieces_array_type _piece_positions;
 
-			permutation_type permutation;
+			permutation_type _permutation;
 
 			inline static void reset_perm(permutation_type& perm) {
 				for (std::size_t i = 0; i < COUNT_ALL_PIECES; ++i)
@@ -466,20 +474,40 @@ namespace tobor {
 			}
 		public:
 
+			inline all_pieces_array_type& piece_positions() { return _piece_positions; } // ### do the same in the naked class
+
+			inline const all_pieces_array_type& piece_positions() const { return _piece_positions; } // ### do the same in the naked class
+
+			inline const permutation_type& get_permutation() const { return _permutation; } // ### rename members!
+
 			inline void reset_permutation() {
-				reset_perm(permutation);
+				reset_perm(_permutation);
+			}
+
+			template<class Iter>
+			inline augmented_positions_of_pieces(Iter target_pieces_begin) {
+				std::copy_n(target_pieces_begin, COUNT_ALL_PIECES, _piece_positions.begin());
+				reset_permutation();
+				sort_pieces();
+			}
+
+			template<class Iter1, class Iter2>
+			inline augmented_positions_of_pieces(Iter1 target_pieces_begin, Iter2 non_target_pieces_begin) {
+				std::copy_n(target_pieces_begin, COUNT_TARGET_PIECES, _piece_positions.begin());
+				std::copy_n(non_target_pieces_begin, COUNT_NON_TARGET_PIECES, _piece_positions.begin() + COUNT_TARGET_PIECES);
+				reset_permutation();
+				sort_pieces();
 			}
 
 			/**
 			*	@brief Creates an object when cell positions of the pieces are given.
 			*	@param p_non_target_pieces Does not need to be sorted when passed to this constructor.
 			*/
-			augmented_positions_of_pieces(const target_pieces_array_type& target_pieces, const non_target_pieces_array_type& non_target_pieces) {
-				std::copy_n(target_pieces.begin(), COUNT_TARGET_PIECES, piece_positions.begin());
-				std::copy_n(non_target_pieces.begin(), COUNT_NON_TARGET_PIECES, piece_positions.begin() + COUNT_TARGET_PIECES);// can use other containers too, not only array type
-				reset_permutation();
-				sort_pieces();
-			}
+			augmented_positions_of_pieces(const target_pieces_array_type& target_pieces, const non_target_pieces_array_type& non_target_pieces) : augmented_positions_of_pieces(target_pieces.cbegin(), non_target_pieces.cbegin())
+			{}
+
+			augmented_positions_of_pieces(const naked_type& pop) : augmented_positions_of_pieces(pop.target_pieces_cbegin())
+			{}
 
 			augmented_positions_of_pieces(const augmented_positions_of_pieces&) = default;
 
@@ -489,30 +517,28 @@ namespace tobor {
 
 			inline augmented_positions_of_pieces& operator = (augmented_positions_of_pieces&&) = default; //## need to make the other valid
 
-			inline const all_pieces_array_type& raw() const { return piece_positions; }
-
 			bool operator< (const augmented_positions_of_pieces& another) const noexcept {
-				return piece_positions < another.piece_positions;
+				return _piece_positions < another._piece_positions;
 			}
 
 			bool operator== (const augmented_positions_of_pieces& another) const noexcept {
-				return piece_positions == another.piece_positions;
+				return _piece_positions == another._piece_positions;
 			}
 
 			inline typename std::array<cell_id_type, COUNT_ALL_PIECES>::const_iterator target_pieces_cbegin() const {
-				return piece_positions.cbegin();
+				return _piece_positions.cbegin();
 			};
 
 			inline typename std::array<cell_id_type, COUNT_ALL_PIECES>::iterator target_pieces_begin() {
-				return piece_positions.begin();
+				return _piece_positions.begin();
 			};
 
 			inline typename std::array<cell_id_type, COUNT_ALL_PIECES>::const_iterator target_pieces_cend() const {
-				return piece_positions.cbegin() + COUNT_TARGET_PIECES;
+				return _piece_positions.cbegin() + COUNT_TARGET_PIECES;
 			};
 
 			inline typename std::array<cell_id_type, COUNT_ALL_PIECES>::iterator target_pieces_end() {
-				return piece_positions.begin() + COUNT_TARGET_PIECES;
+				return _piece_positions.begin() + COUNT_TARGET_PIECES;
 			};
 
 			inline typename std::array<cell_id_type, COUNT_ALL_PIECES>::const_iterator non_target_pieces_cbegin() const {
@@ -524,11 +550,11 @@ namespace tobor {
 			};
 
 			inline typename std::array<cell_id_type, COUNT_ALL_PIECES>::const_iterator non_target_pieces_cend() const {
-				return piece_positions.cend();
+				return _piece_positions.cend();
 			};
 
 			inline typename std::array<cell_id_type, COUNT_ALL_PIECES>::iterator non_target_pieces_end() {
-				return piece_positions.end();
+				return _piece_positions.end();
 			};
 
 			inline void sort_pieces() {
@@ -539,17 +565,17 @@ namespace tobor {
 				reset_perm(p_new);
 				if constexpr (SORTED_TARGET_PIECES && !(COUNT_TARGET_PIECES <= 1)) {
 					//std::sort(target_pieces_begin(), target_pieces_end());
-					std::sort(p_new.begin(), p_new.begin() + COUNT_TARGET_PIECES, [](const std::size_t& l, const std::size_t& r) {
-						return piece_positions[l] < piece_positions[r];
+					std::sort(p_new.begin(), p_new.begin() + COUNT_TARGET_PIECES, [&](const std::size_t& l, const std::size_t& r) {
+						return _piece_positions[l] < _piece_positions[r];
 						});
 				}
 				if constexpr (SORTED_NON_TARGET_PIECES && !(COUNT_NON_TARGET_PIECES <= 1)) {
-					std::sort(p_new.begin() + COUNT_TARGET_PIECES, p_new.begin() + COUNT_ALL_PIECES, [](const std::size_t& l, const std::size_t& r) {
-						return piece_positions[l] < piece_positions[r];
+					std::sort(p_new.begin() + COUNT_TARGET_PIECES, p_new.begin() + COUNT_ALL_PIECES, [&](const std::size_t& l, const std::size_t& r) {
+						return _piece_positions[l] < _piece_positions[r];
 						});
 				}
-				apply_perm(p_new, piece_positions);
-				apply_perm(p_new, permutation);
+				apply_perm(p_new, _piece_positions);
+				apply_perm(p_new, _permutation);
 			}
 
 			inline bool is_final(const cell_id_type& target_cell) const {
@@ -620,6 +646,10 @@ namespace tobor {
 				}
 				return counter;
 			}
+
+			inline naked_type naked() const {
+				return naked_type(target_pieces_cbegin());
+			}
 		};
 
 
@@ -638,6 +668,7 @@ namespace tobor {
 
 		using default_piece_move = piece_move<default_piece_id>;
 
+#if false
 		template<class Position_Of_Pieces_T>
 		using state_path = tobor::v1_0::state_path<Position_Of_Pieces_T>;
 		// has to be reviewed again! ###
@@ -645,6 +676,19 @@ namespace tobor {
 		template<class Piece_Move_Type>
 		using move_path = tobor::v1_0::move_path<Piece_Move_Type>;
 		// has to be reviewed again! ###
+#endif
 
 	}
+	}
+
+namespace std {
+	template <class Pieces_Quantity_Type, class Cell_Id_Type, bool SORTED_TARGET_PIECES_V, bool SORTED_NON_TARGET_PIECES_V>
+	inline void swap(
+		tobor::v1_1::augmented_positions_of_pieces<Pieces_Quantity_Type, Cell_Id_Type, SORTED_TARGET_PIECES_V, SORTED_NON_TARGET_PIECES_V>& a,
+		tobor::v1_1::augmented_positions_of_pieces<Pieces_Quantity_Type, Cell_Id_Type, SORTED_TARGET_PIECES_V, SORTED_NON_TARGET_PIECES_V>& b
+	) {
+		std::swap(a._piece_positions, b._piece_positions);
+		std::swap(a._permutation, b._permutation);
+	}
+
 }

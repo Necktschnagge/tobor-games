@@ -936,7 +936,7 @@ namespace tobor {
 
 				/**
 				*	@brief The number of combinations to select \p count cells out of \p max_factor cells
-				*	max_factor * (max_factor-1) * ... * (max_factor - count + 1)
+				*	max_factor * (max_factor-1) * ... * (max_factor - count + 1) / ...
 				*/
 				static constexpr uint64_t combinations(const uint64_t& max_factor, const uint64_t& count) {
 					if (count == 0) {
@@ -1013,10 +1013,16 @@ namespace tobor {
 					return generator;
 				}
 
+				/**
+				*	@brief Returns a vector of size \p count_pieces where at every index there is a number [0.. count_cells)
+				*	@param selector is used to select one of all possible combinations, which are all numbered 0..
+				* 
+				*	@return vector with numbers sorted ascending, no number occurs twice
+				*/
 				std::vector<uint64_t> get_selected_indices(const uint64_t& count_pieces, const uint64_t& count_cells, uint64_t selector) {
 					std::vector<uint64_t> selected_indices;
 					uint64_t cell_index = 0;
-					for (uint64_t piece_id = 0; piece_id < count_pieces; ++piece_id) { // rename ROBOTS!!
+					for (uint64_t piece_id = 0; piece_id < count_pieces; ++piece_id) {
 						for (; cell_index < count_cells; ++cell_index) {
 							const auto SUB_COMBINATIONS{ combinations(count_cells - cell_index - 1, count_pieces - piece_id - 1) };
 							if (selector < SUB_COMBINATIONS) {

@@ -342,7 +342,7 @@ namespace tobor {
 
 			using cell_id_type = typename positions_of_pieces_type::cell_id_type;
 
-			using cell_size_int = typename cell_id_type::int_cell_id_type;
+			using cell_size_int = typename cell_id_type::int_size_type;
 
 			using cell_narrow_int = typename cell_id_type::int_cell_id_type;
 
@@ -638,7 +638,7 @@ namespace tobor {
 
 						//draw_duck_piece(tw, dss, pop.piece_positions[pid], true, c.colors[pid])
 
-						(*piece_drawer)(tw, dss, pop.raw()[pid], c.colors[pid])
+						(*piece_drawer)(tw, dss, pop.piece_positions()[pid], c.colors[pid])
 
 					);
 

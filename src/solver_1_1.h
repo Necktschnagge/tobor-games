@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <limits>
 #include <execution>
+#include <numeric>
 
 class GameController; // for friend class declaration, to be removed
 
@@ -158,32 +159,34 @@ namespace tobor {
 		/**
 		*	@brief Calculates successor states by calcualting successor cell of single pieces for moving in a given direction.
 		*/
-		template<class Position_Of_Pieces_T, class Quick_Move_Cache_T, class Piece_Move_Type>
+		template<class Cell_Id_Type, class Quick_Move_Cache_T, class Piece_Move_Type>
 		class move_one_piece_calculator { // logic engine // move_engine
 		public:
 
-			using positions_of_pieces_type = Position_Of_Pieces_T;
-			using cell_id_type = typename positions_of_pieces_type::cell_id_type;
-			using world_type = typename positions_of_pieces_type::world_type;
-
-			using cell_id_int_type = typename cell_id_type::int_cell_id_type;
-
+			//using positions_of_pieces_type = Position_Of_Pieces_T; // remove #### this from template. every fucntion should be template to use different pop types over the same pieces quantity.
+			// for every template we must check type compatibility with world (---> int types) and pieces quantity (--> vector length, )
 
 			using quick_move_cache_type = Quick_Move_Cache_T;
 
+			using world_type = typename quick_move_cache_type::world_type;
+
+			using cell_id_type = Cell_Id_Type;
+
+			using cell_id_int_type = typename cell_id_type::int_cell_id_type;
 
 			using piece_move_type = Piece_Move_Type;
+
 			using piece_id_type = typename piece_move_type::piece_id_type;
 
-			static_assert(
-				std::is_same<typename positions_of_pieces_type::world_type, typename quick_move_cache_type::world_type>::value,
-				"Incompatible template arguments. typename Position_Of_Pieces_T::world_type must equal typenname Quick_Move_Cache_T::world_type"
-				);
+			//static_assert(
+			//	std::is_same<typename positions_of_pieces_type::world_type, typename quick_move_cache_type::world_type>::value,
+			//	"Incompatible template arguments. typename Position_Of_Pieces_T::world_type must equal typenname Quick_Move_Cache_T::world_type"
+			//	);
 
-			static_assert(
-				std::is_same<typename positions_of_pieces_type::pieces_quantity_type, typename piece_move_type::pieces_quantity_type>::value,
-				"Incompatible template arguments. typename Position_Of_Pieces_T::pieces_quantity_type must equal typenname Piece_Move_Type::pieces_quantity_type"
-				);
+			//static_assert(
+			//	std::is_same<typename positions_of_pieces_type::pieces_quantity_type, typename piece_move_type::pieces_quantity_type>::value,
+			//	"Incompatible template arguments. typename Position_Of_Pieces_T::pieces_quantity_type must equal typenname Piece_Move_Type::pieces_quantity_type"
+			//	);
 
 			struct arithmetic_error {
 
@@ -198,7 +201,7 @@ namespace tobor {
 
 		private:
 
-			const world_type& my_world;
+			const world_type& my_world; // remove this, add member function returning the reference inside cache!!! #####
 
 			quick_move_cache_type cache;
 
@@ -219,16 +222,17 @@ namespace tobor {
 			/**
 			*	@brief Calculates the successor cell to reach starting at \p start_cell moving in given direction until any obstacle (wall or piece).
 			*/
+			template<class Position_Of_Pieces_Type>
 			inline cell_id_int_type next_cell_max_move_raw(
 				const cell_id_int_type& raw_start_cell_id,
-				const positions_of_pieces_type& state,
+				const Position_Of_Pieces_Type& state,
 				const id_getter_type& get_raw_id,
 				const cache_direction_getter& get_cache_direction
-			) {
+			) const {
 				cell_id_int_type raw_next_cell_id{ (cache.*get_cache_direction)(raw_start_cell_id) };
 
 				for (std::size_t i = 0; i < state.COUNT_ALL_PIECES; ++i) { // iterate over all pieces
-					const cell_id_int_type current_raw_id{ (state.piece_positions[i].*get_raw_id)(my_world) };
+					const cell_id_int_type current_raw_id{ (state.piece_positions()[i].*get_raw_id)(my_world) };
 
 					if (raw_start_cell_id < current_raw_id && current_raw_id <= raw_next_cell_id) {
 						raw_next_cell_id = current_raw_id - 1;
@@ -246,15 +250,16 @@ namespace tobor {
 			/**
 			*	@brief Calculates the successor cell to reach starting at \p start_cell moving in given direction until any obstacle (wall or piece).
 			*/
+			template<class Position_Of_Pieces_Type>
 			inline cell_id_int_type next_cell_max_move_raw(
 				const cell_id_int_type& raw_start_cell_id,
-				const positions_of_pieces_type& state,
+				const Position_Of_Pieces_Type& state,
 				const direction& d
 			) const {
 				cell_id_int_type raw_next_cell_id{ cache.get(d, raw_start_cell_id) };
 
 				for (std::size_t i = 0; i < state.COUNT_ALL_PIECES; ++i) { // iterate over all pieces
-					const cell_id_int_type current_raw_id{ state.piece_positions[i].get_raw_id(d, my_world) };
+					const cell_id_int_type current_raw_id{ state.piece_positions()[i].get_raw_id(d, my_world) };
 
 					if (raw_start_cell_id < current_raw_id && current_raw_id <= raw_next_cell_id) {
 						raw_next_cell_id = current_raw_id - 1;
@@ -272,13 +277,14 @@ namespace tobor {
 			/**
 			*	@brief Calculates the successor cell to reach starting at \p start_cell moving in given direction until any obstacle (wall or piece).
 			*/
+			template<class Position_Of_Pieces_Type>
 			inline cell_id_type next_cell_max_move(
 				const cell_id_type& start_cell,
-				const positions_of_pieces_type& state,
+				const Position_Of_Pieces_Type& state,
 				const id_getter_type& get_raw_id,
 				const cell_id_creator& create_cell_id_by,
 				const cache_direction_getter& get_cache_direction
-			) {
+			) const {
 				const cell_id_int_type raw_start_cell_id{ (start_cell.*get_raw_id)(my_world) };
 
 				const cell_id_int_type raw_next_cell_id{ next_cell_max_move_raw(raw_start_cell_id, state, get_raw_id,get_cache_direction) };
@@ -289,9 +295,10 @@ namespace tobor {
 			/**
 			*	@brief Calculates the successor cell to reach starting at \p start_cell moving in given direction until any obstacle (wall or piece).
 			*/
+			template<class Position_Of_Pieces_Type>
 			inline cell_id_type next_cell_max_move(
 				const cell_id_type& start_cell,
-				const positions_of_pieces_type& state,
+				const Position_Of_Pieces_Type& state,
 				const direction& d
 			) const {
 				const cell_id_int_type raw_start_cell_id{ start_cell.get_raw_id(d,my_world) };
@@ -301,6 +308,7 @@ namespace tobor {
 				return cell_id_type::create_by_raw_id(d, raw_next_cell_id, my_world);
 			}
 
+#if false
 			/**
 			*	@brief Calculates the successor cell to reach starting at \p start_cell moving in given direction until any obstacle (wall or piece).
 			*/
@@ -311,149 +319,59 @@ namespace tobor {
 			inline cell_id_type static_next_cell_max_move(
 				const cell_id_type& start_cell,
 				const positions_of_pieces_type& state
-			) {
+			) const {
 				const cell_id_int_type raw_start_cell_id{ (start_cell.*get_raw_id)(my_world) };
 
 				const cell_id_int_type raw_next_cell_id{ next_cell_max_move_raw(raw_start_cell_id, state, get_raw_id,get_cache_direction) };
 
 				return create_cell_id_by(raw_next_cell_id, my_world);
 			}
-
-#if false
-			/**
-			*	@brief Calculates the successor cell to reach starting at \p start_cell moving west until obstacle.
-			*/
-			[[deprecated]] inline std::pair<cell_id_type, bool> get_next_cell_on_west_move(const cell_id_type& start_cell, const positions_of_pieces_type& state) {
-				cell_id_int_type next_cell{ cache.get_west(start_cell.get_id()) };
-
-				// iterate over all pieces since they may appear as obstacle
-				for (std::size_t i = 0; i < state.COUNT_ALL_PIECES; ++i) { // iterate over all pieces
-					if (next_cell <= state.piece_positions[i].get_id() && state.piece_positions[i].get_id() < start_cell.get_id()) { // target piece
-						next_cell = state.piece_positions[i].get_id() + 1;
-					}
-				}
-				// may be improved for sorted states.
-
-				if (start_cell.get_id() == next_cell) { // no move possible by walls
-					return std::make_pair(cell_id_type::create_by_id(next_cell, my_world), false);
-				}
-
-				return std::make_pair(cell_id_type::create_by_id(next_cell, my_world), true);
-			}
-
-			/**
-			*	@brief Calculates the successor cell to reach starting at \p start_cell moving east until obstacle.
-			*/
-			[[deprecated]] inline std::pair<cell_id_type, bool> get_next_cell_on_east_move(const cell_id_type& start_cell, const positions_of_pieces_type& state) {
-
-				//decltype(cell_id_type::get_id) cell_id_type::* get_id_type = &cell_id_type::get_id;
-				//decltype(quick_move_cache::get_west) quick_move_cache::* next_cache_direction = &quick_move_cache::get_east;
-
-				cell_id_int_type next_cell{ cache.get_east(start_cell.get_id()) };
-
-				// iterate over all pieces since they may appear as obstacle
-
-				for (std::size_t i = 0; i < state.COUNT_ALL_PIECES; ++i) { // iterate over all pieces
-					if (start_cell.get_id() < state.piece_positions[i].get_id() && state.piece_positions[i].get_id() <= next_cell) { // target piece
-						next_cell = state.piece_positions[i].get_id() - 1;
-					}
-				}
-
-				if (start_cell.get_id() == next_cell) { // no move possible by walls
-					return std::make_pair(cell_id_type::create_by_id(next_cell, my_world), false);
-				}
-
-				return std::make_pair(cell_id_type::create_by_id(next_cell, my_world), true);
-			}
-
-			/**
-			*	@brief Calculates the successor cell to reach starting at \p start_cell moving south until obstacle.
-			*/
-			[[deprecated]] inline std::pair<cell_id_type, bool> get_next_cell_on_south_move(const cell_id_type& start_cell, const positions_of_pieces_type& state) {
-				cell_id_int_type next_cell{ cache.get_south(start_cell.get_transposed_id(my_world)) };
-
-				//if (start_cell.get_transposed_id() == next_cell) { // no move possible by walls
-				//	return std::make_pair(cell_id_type::create_by_transposed_id(next_cell, my_world), false);
-				//}
-
-				// iterate over all pieces since they may appear as obstacle
-
-				for (std::size_t i = 0; i < state.COUNT_ALL_PIECES; ++i) { // iterate over all pieces
-					if (next_cell <= state.piece_positions[i].get_transposed_id(my_world) && state.piece_positions[i].get_transposed_id(my_world) < start_cell.get_transposed_id(my_world)) { // target piece
-						next_cell = state.piece_positions[i].get_transposed_id(my_world) + 1;
-					}
-				}
-
-				if (start_cell.get_transposed_id(my_world) == next_cell) { // no move possible by walls
-					return std::make_pair(cell_id_type::create_by_transposed_id(next_cell, my_world), false);
-				}
-
-				return std::make_pair(cell_id_type::create_by_transposed_id(next_cell, my_world), true);
-			}
-
-			/**
-			*	@brief Calculates the successor cell to reach starting at \p start_cell moving north until obstacle.
-			*/
-			[[deprecated]] inline std::pair<cell_id_type, bool> get_next_cell_on_north_move(const cell_id_type& start_cell, const positions_of_pieces_type& state) {
-				cell_id_int_type next_cell{ cache.get_north(start_cell.get_transposed_id(my_world)) };
-
-				//if (start_cell.get_transposed_id() == next_cell) { // no move possible by walls
-				//	return std::make_pair(cell_id_type::create_by_transposed_id(next_cell, my_world), false);
-				//}
-
-				// iterate over all pieces since they may appear as obstacle
-
-				for (std::size_t i = 0; i < state.COUNT_ALL_PIECES; ++i) { // iterate over all pieces
-					if (start_cell.get_transposed_id(my_world) < state.piece_positions[i].get_transposed_id(my_world) && state.piece_positions[i].get_transposed_id(my_world) <= next_cell) { // target piece
-						next_cell = state.piece_positions[i].get_transposed_id(my_world) - 1;
-					}
-				}
-
-				if (start_cell.get_transposed_id(my_world) == next_cell) { // no move possible by walls
-					return std::make_pair(cell_id_type::create_by_transposed_id(next_cell, my_world), false);
-				}
-
-				return std::make_pair(cell_id_type::create_by_transposed_id(next_cell, my_world), true);
-			}
 #endif
 
-			inline std::vector<positions_of_pieces_type> predecessor_states(
-				const positions_of_pieces_type& state,
+			template<class Position_Of_Pieces_Type>
+			inline std::vector<Position_Of_Pieces_Type> predecessor_states(
+				const Position_Of_Pieces_Type& state,
 				const typename piece_move_type::piece_id_type& _piece_id,
-				const direction& _direction_from)
-			{
-				const cell_id_type start_cell{ state.piece_positions[_piece_id.value] };
+				const direction& _direction_from
+			) const {
+				const cell_id_type start_cell{ state.piece_positions()[_piece_id.value] };
 
 				const cell_id_int_type raw_start_cell_id{ start_cell.get_raw_id(_direction_from, my_world) };
+
+				// need to check if we can stop here coming from _direction_from.
+				// return if there is no obstacle in opposite direction
+				if (next_cell_max_move_raw(raw_start_cell_id, state, !_direction_from) != raw_start_cell_id)
+					return std::vector<Position_Of_Pieces_Type>();
 
 				auto raw_far_id = next_cell_max_move_raw(
 					raw_start_cell_id,
 					state,
-					!_direction_from
+					_direction_from
 				);
 
-				auto result = std::vector<positions_of_pieces_type>(
+				auto result = std::vector<Position_Of_Pieces_Type>(
 					raw_start_cell_id > raw_far_id ?
 					raw_start_cell_id - raw_far_id :
 					raw_far_id - raw_start_cell_id,
 					state
 				);
 
-				const int8_t increment{ (raw_start_cell_id > raw_far_id) - (raw_start_cell_id < raw_far_id) };
+				const int8_t increment{ static_cast<int8_t>((raw_start_cell_id > raw_far_id) - (raw_start_cell_id < raw_far_id)) };
 
 				auto iter = result.begin();
 				for (cell_id_int_type raw_id = raw_far_id; raw_id != raw_start_cell_id; raw_id += increment, ++iter) {
-					iter->piece_positions[_piece_id.value] = cell_id_type::create_by_raw_id(_direction_from, raw_id, my_world);
+					iter->piece_positions()[_piece_id.value] = cell_id_type::create_by_raw_id(_direction_from, raw_id, my_world);
 					iter->sort_pieces();
 				}
 				return result;
 			}
 
-			inline std::vector<positions_of_pieces_type> predecessor_states(
-				const positions_of_pieces_type& state,
-				const typename piece_move_type::piece_id_type& _piece_id)
-			{
-				auto result = std::vector<positions_of_pieces_type>();
+			template<class Position_Of_Pieces_Type>
+			inline std::vector<Position_Of_Pieces_Type> predecessor_states(
+				const Position_Of_Pieces_Type& state,
+				const typename piece_move_type::piece_id_type& _piece_id
+			) const {
+				auto result = std::vector<Position_Of_Pieces_Type>();
 				result.reserve(static_cast<std::size_t>(my_world.get_horizontal_size() + my_world.get_vertical_size()) * 2);
 				for (direction d = direction::begin(); d != direction::end(); ++d) {
 					auto part = predecessor_states(state, _piece_id, d);
@@ -463,8 +381,9 @@ namespace tobor {
 				return result;
 			}
 
-			inline std::vector<positions_of_pieces_type> predecessor_states(const positions_of_pieces_type& state) {
-				auto result = std::vector<positions_of_pieces_type>();
+			template<class Position_Of_Pieces_Type>
+			inline std::vector<Position_Of_Pieces_Type> predecessor_states(const Position_Of_Pieces_Type& state) const {
+				auto result = std::vector<Position_Of_Pieces_Type>();
 				result.reserve(
 					static_cast<std::size_t>(my_world.get_horizontal_size() + my_world.get_vertical_size()) * 2 * piece_id_type::pieces_quantity_type::COUNT_ALL_PIECES
 				);
@@ -476,78 +395,29 @@ namespace tobor {
 				return result;
 			} // should add a function returning void but taking an insert iterator
 
-#if false
-			[[deprecated]] inline std::pair<positions_of_pieces_type, bool> successor_state_deprecated(
-				const positions_of_pieces_type& state,
-				const typename piece_move_type::piece_id_type& _piece_id,
-				const direction& _direction)
-			{
-				positions_of_pieces_type next_state{ state };
-				auto& cell_to_be_moved = next_state.piece_positions[_piece_id.value];
-				std::pair<cell_id_type, bool> next_cell_paired_true_move;
-				switch (_direction.operator tobor::v1_0::direction::int_type())
-				{
-				case direction::encoding::EAST:
-					next_cell_paired_true_move = get_next_cell_on_east_move(cell_to_be_moved, state);
-					break;
-				case direction::encoding::WEST:
-					next_cell_paired_true_move = get_next_cell_on_west_move(cell_to_be_moved, state);
-					break;
-				case direction::encoding::SOUTH:
-					next_cell_paired_true_move = get_next_cell_on_south_move(cell_to_be_moved, state);
-					break;
-				case direction::encoding::NORTH:
-					next_cell_paired_true_move = get_next_cell_on_north_move(cell_to_be_moved, state);
-					break;
-				default:
-					return std::make_pair(state, false);
-					break;  // error
-				}
-				if (!next_cell_paired_true_move.second) {
-					return std::make_pair(state, false);
-				}
+			template<class Position_Of_Pieces_Type>
+			inline Position_Of_Pieces_Type successor_state(const Position_Of_Pieces_Type& state, const typename piece_move_type::piece_id_type& _piece_id, const direction& _direction) const {
+				Position_Of_Pieces_Type result(state);
 
-				next_state.piece_positions[_piece_id.value] = next_cell_paired_true_move.first;
-				next_state.sort_pieces();
-
-				return std::make_pair(next_state, true);
-			}
-#endif
-
-			inline positions_of_pieces_type successor_state(
-				const positions_of_pieces_type& state,
-				const typename piece_move_type::piece_id_type& _piece_id,
-				const direction& _direction
-			) const {
-				positions_of_pieces_type result(state);
-
-				result.piece_positions[_piece_id.value] = next_cell_max_move(
-					state.piece_positions[_piece_id.value],
-					state,
-					_direction
-				);
+				result.piece_positions()[_piece_id.value] = next_cell_max_move(state.piece_positions()[_piece_id.value], state, _direction);
 				result.sort_pieces();
 
 				return result;
 			}
 
-			inline std::pair<positions_of_pieces_type, bool> successor_state(
-				const positions_of_pieces_type& state,
-				const piece_move_type& move)
-			{
-				return successor_state(state, move.pid, move.dir);
-			}
+			template<class Position_Of_Pieces_Type>
+			inline Position_Of_Pieces_Type successor_state(const Position_Of_Pieces_Type& state, const piece_move_type& move) const { return successor_state(state, move.pid, move.dir); }
 
-			inline positions_of_pieces_type state_plus_move(const positions_of_pieces_type& state, const piece_move_type& move) {
-				return successor_state(state, move).first;
-			}
+			template<class Position_Of_Pieces_Type>
+			inline Position_Of_Pieces_Type state_plus_move(const Position_Of_Pieces_Type& state, const piece_move_type& move) const { return successor_state(state, move); }
 
-			inline piece_move_type state_minus_state(const positions_of_pieces_type& to_state, const positions_of_pieces_type& from_state) {
+			template<class Position_Of_Pieces_Type>
+			inline piece_move_type state_minus_state(const Position_Of_Pieces_Type& to_state, const Position_Of_Pieces_Type& from_state) const {
 				if (from_state == to_state) { // no move error
 
 					typename arithmetic_error::no_move no_move_exception;
 
-					for (auto pid = typename piece_move_type::piece_id_type::begin(); pid < typename piece_move_type::piece_id_type::end(); ++pid) {
+					for (auto pid = piece_id_type::begin(); pid < piece_id_type::end(); ++pid) {
 						for (auto dir = direction::begin(); dir < direction::end(); ++dir) {
 							if (state_plus_move(from_state, piece_move_type(pid, dir)) == to_state) {
 								no_move_exception.zero_moves.emplace_back(pid, dir);
@@ -560,7 +430,7 @@ namespace tobor {
 
 				typename arithmetic_error::multi_move multi_move_exception; // collect all valid moves
 
-				for (auto pid = typename piece_move_type::piece_id_type::begin(); pid < typename piece_move_type::piece_id_type::end(); ++pid) {
+				for (auto pid = piece_id_type::begin(); pid < piece_id_type::end(); ++pid) {
 					for (auto dir = direction::begin(); dir < direction::end(); ++dir) {
 						if (state_plus_move(from_state, piece_move_type(pid, dir)) == to_state) {
 							multi_move_exception.zero_moves.emplace_back(pid, dir);
@@ -571,6 +441,8 @@ namespace tobor {
 				if (multi_move_exception.zero_moves.size() != 1) {
 					throw multi_move_exception;
 				}
+
+				// multi_move_exception.zero_moves.size() can also be zero ... Should it really fire multi-move then?
 
 				return multi_move_exception.zero_moves[0];
 
@@ -645,13 +517,13 @@ namespace tobor {
 		};
 
 
-		template <class Move_One_Piece_Calculator>
+		template <class Move_One_Piece_Calculator, class Positions_Of_Pieces_Type>
 		class distance_exploration {
 
 		public:
 			using move_one_piece_calculator_type = Move_One_Piece_Calculator;
 
-			using positions_of_pieces_type = typename Move_One_Piece_Calculator::positions_of_pieces_type;
+			using positions_of_pieces_type = Positions_Of_Pieces_Type; // check compatibility with Move_One_Piece_Calc! #### via static assert 
 
 			using piece_move_type = typename move_one_piece_calculator_type::piece_move_type;
 
@@ -674,8 +546,6 @@ namespace tobor {
 			};
 
 			class exploration_policy {
-				template <class Move_One_Piece_Calculator>
-				friend class distance_exploration;
 
 				size_type _state_count_threshold{ 0 };
 				size_type _max_depth{ 0 };
@@ -693,16 +563,22 @@ namespace tobor {
 
 				static constexpr exploration_policy FORCE_EXPLORATION_UNTIL_DEPTH(size_type max_depth) { return exploration_policy(SIZE_TYPE_MAX, max_depth); }
 
-				static constexpr exploration_policy FORCE_EXPLORATION_STATE_THRESHOLD(size_type state_count_threshold) { return exploration_policy(std::max(state_count_threshold, 1), SIZE_TYPE_MAX); }
+				static constexpr exploration_policy FORCE_EXPLORATION_STATE_THRESHOLD(size_type state_count_threshold) { return exploration_policy(std::max(state_count_threshold, size_type(1)), SIZE_TYPE_MAX); }
 
-				static constexpr exploration_policy FORCE_EXPLORATION_STATE_THRESHOLD_UNTIL_DEPTH(size_type state_count_threshold, size_type max_depth) { return exploration_policy(std::max(state_count_threshold, 1), max_depth); }
+				static constexpr exploration_policy FORCE_EXPLORATION_STATE_THRESHOLD_UNTIL_DEPTH(size_type state_count_threshold, size_type max_depth) { return exploration_policy(std::max(state_count_threshold, size_type(1)), max_depth); }
 
 				inline bool operator ==(const exploration_policy& another) const noexcept { return _state_count_threshold == another._state_count_threshold && _max_depth == another._max_depth; }
+
+				inline size_type state_count_threshold() const { return _state_count_threshold; }
+
+				inline size_type max_depth() const { return _max_depth; }
+
 			};
 
 		private:
 
 			using target_distance_map_type = std::map<cell_id_type, size_type>;
+
 
 			using states_vector = std::vector<positions_of_pieces_type>;
 
@@ -724,9 +600,9 @@ namespace tobor {
 			bool _entirely_explored{ false };
 
 			inline void sort_unique(const typename std::vector<states_vector>::size_type& index /* new states index */) {
-				std::sort(std::execution::par, _reachable_states_by_distance[index].begin(), _reachable_states_by_distance[index].end());
+				std::sort(/*std::execution::par,*/ _reachable_states_by_distance[index].begin(), _reachable_states_by_distance[index].end());
 				_reachable_states_by_distance[index].erase(
-					unique(std::execution::par, _reachable_states_by_distance[index].begin(), _reachable_states_by_distance[index].end()),
+					unique(/*std::execution::par,*/ _reachable_states_by_distance[index].begin(), _reachable_states_by_distance[index].end()),
 					_reachable_states_by_distance[index].end()
 				);
 			}
@@ -776,7 +652,7 @@ namespace tobor {
 
 			template<class Iterator_Type>
 			inline void add_all_nontrivial_successor_states(
-				move_one_piece_calculator_type& engine,
+				const move_one_piece_calculator_type& engine,
 				const positions_of_pieces_type& current_state,
 				Iterator_Type destination
 			) {
@@ -796,7 +672,7 @@ namespace tobor {
 
 			template<class Iterator_Type>
 			inline bool add_all_nontrivial_successor_states(
-				move_one_piece_calculator_type& engine,
+				const move_one_piece_calculator_type& engine,
 				const positions_of_pieces_type& current_state,
 				const cell_id_type& target_cell,
 				Iterator_Type destination
@@ -870,7 +746,7 @@ namespace tobor {
 			* Caller guarantees that target_cell has not yet been found if NOT_YET_FOUND_GUARANTEED == true.
 			*/
 			inline size_type explore_until_target(
-				move_one_piece_calculator_type& engine,
+				const move_one_piece_calculator_type& engine,
 				const cell_id_type& target_cell,
 				const exploration_policy& policy,
 				const bool NOT_YET_FOUND_GUARANTEED = false
@@ -883,8 +759,8 @@ namespace tobor {
 
 				for (size_type expand_level_index{ INDEX_LAST_EXPLORATION };
 					expand_level_index < optimal_depth
-					&& expand_level_index < policy._max_depth /* policy abort*/
-					&& states_counter < policy._state_count_threshold /* policy abort*/;
+					&& expand_level_index < policy.max_depth() /* policy abort*/
+					&& states_counter < policy.state_count_threshold() /* policy abort*/;
 					++expand_level_index) {
 
 					if (_reachable_states_by_distance[expand_level_index].size() == 0) {
@@ -979,15 +855,15 @@ namespace tobor {
 				}
 			}
 
-			inline size_type explore_until_target(move_one_piece_calculator_type& engine, const cell_id_type& target_cell) {
+			inline size_type explore_until_target(const move_one_piece_calculator_type& engine, const cell_id_type& target_cell) {
 				return optimal_path_length(engine, target_cell, exploration_policy::FORCE_EXPLORATION_UNRESTRICTED(), 0);
 			}
 
-			inline size_type explore_until_target(move_one_piece_calculator_type& engine, const cell_id_type& target_cell, const size_type& max_depth) {
+			inline size_type explore_until_target(const move_one_piece_calculator_type& engine, const cell_id_type& target_cell, const size_type& max_depth) {
 				return optimal_path_length(engine, target_cell, exploration_policy::FORCE_EXPLORATION_UNTIL_DEPTH(max_depth), 0);
 			}
 
-			inline size_type optimal_path_length(move_one_piece_calculator_type& engine, const cell_id_type& target_cell, const exploration_policy& policy = exploration_policy::ONLY_EXPLORED(), const size_type& min_length_hint = 0) {
+			inline size_type optimal_path_length(const move_one_piece_calculator_type& engine, const cell_id_type& target_cell, const exploration_policy& policy = exploration_policy::ONLY_EXPLORED(), const size_type& min_length_hint = 0) {
 				// checking cache...
 				const auto iter = _optimal_path_length_map.find(target_cell);
 
@@ -1038,14 +914,14 @@ namespace tobor {
 
 			template<class State_Label_Type>
 			void get_simple_bigraph(
-				move_one_piece_calculator_type& engine,
+				const move_one_piece_calculator_type& engine,
 				const cell_id_type& target_cell,
 				simple_state_bigraph<positions_of_pieces_type, State_Label_Type>& destination,
 				const exploration_policy& policy = exploration_policy::ONLY_EXPLORED(),
 				const size_type& min_length_hint = 0
-				) {
+			) {
 				using bigraph = simple_state_bigraph<positions_of_pieces_type, State_Label_Type>;
-				
+
 				destination.clear();
 
 				const size_type FINAL_DEPTH{ optimal_path_length(engine, target_cell, policy, min_length_hint) };
@@ -1055,12 +931,10 @@ namespace tobor {
 
 				std::vector<positions_of_pieces_type> states;
 
+				// fill states with all the final states
 				for (size_type i{ 0 }; i < _reachable_states_by_distance[FINAL_DEPTH].size(); ++i) {
-
 					const auto& s{ _reachable_states_by_distance[FINAL_DEPTH][i] };
-
 					if (s.is_final(target_cell)) {
-
 						destination.map.insert(
 							destination.map.end(),
 							std::pair<typename bigraph::state_type, typename bigraph::node_links>(
@@ -1068,9 +942,7 @@ namespace tobor {
 								typename bigraph::node_links()
 							)
 						);
-
 						states.push_back(s);
-
 					}
 				}
 
@@ -1128,6 +1000,391 @@ namespace tobor {
 			// ### offer step-wise exploration instead of exploration until optimal.
 		};
 
+		template<class Position_Of_Pieces_T = default_positions_of_pieces>
+		class state_path {
+		public:
+
+			using positions_of_pieces_type = Position_Of_Pieces_T;
+
+			using vector_type = std::vector<positions_of_pieces_type>;
+
+		private:
+
+			vector_type state_vector;
+
+		public:
+
+			state_path() {}
+
+			state_path(const vector_type& v) : state_vector(v) {}
+
+			const vector_type& vector() const { return state_vector; }
+
+			vector_type& vector() { return state_vector; }
+
+			inline void make_canonical() {
+
+				typename vector_type::size_type count_duplicates{ 0 };
+				typename vector_type::size_type i = 0;
+
+				while (i + count_duplicates + 1 < state_vector.size()) {
+					if (state_vector[i] == state_vector[i + count_duplicates + 1]) {
+						++count_duplicates;
+					}
+					else {
+						if (count_duplicates)
+							state_vector[i + 1] = state_vector[i + count_duplicates + 1];
+						++i;
+					}
+				}
+
+				// now i + count_duplicates + 1 == state_vector.size()
+				state_vector.erase(state_vector.begin() + i + 1, state_vector.end());
+			}
+
+			inline state_path operator +(const state_path& another) const {
+				state_path copy{ *this };
+				std::copy(another.state_vector.cbegin(), another.state_vector.cend(), std::back_inserter(copy.state_vector));
+				return copy;
+			}
+
+			inline state_path operator +(const positions_of_pieces_type& s) const {
+				state_path copy{ *this };
+				copy.vector().push_back(s);
+				return copy;
+			}
+
+			inline state_path& operator +=(const state_path& another) {
+				state_vector.reserve(state_vector.size() + another.state_vector.size());
+				std::copy(another.state_vector.cbegin(), another.state_vector.cend(), std::back_inserter(state_vector));
+				return *this;
+			}
+
+			inline state_path& operator +=(const positions_of_pieces_type& s) {
+				state_vector.push_back(s);
+				return *this;
+			}
+
+			inline state_path operator *(const state_path& another) {
+				if (another.state_vector.empty())
+					return *this;
+				if (this->state_vector.empty())
+					return another;
+				if (state_vector.back() == another.state_vector.front()) {
+					state_path copy = *this;
+					std::copy(
+						another.state_vector.cbegin() + 1,
+						another.state_vector.cend(),
+						std::back_inserter(copy.state_vector)
+					);
+					return copy;
+				}
+				// ### error case of non-matching paths is missing here!
+			}
+
+		};
+
+		template<class Piece_Move_Type = default_piece_move>
+		class move_path {
+
+		public:
+			using piece_move_type = Piece_Move_Type;
+
+			using vector_type = std::vector<piece_move_type>;
+
+			using pieces_quantity_type = typename piece_move_type::pieces_quantity_type;
+
+			using pieces_quantity_int_type = typename pieces_quantity_type::int_type;
+
+		private:
+			vector_type move_vector;
+
+		public:
+
+			move_path() {}
+
+			move_path(std::size_t n) : move_vector(n, piece_move_type()) {}
+
+			move_path(const move_path&) = default;
+
+			move_path& operator=(const move_path&) = default;
+
+			move_path(move_path&&) = default;
+
+			move_path& operator=(move_path&&) = default;
+
+			template<class Position_Of_Pieces_Type, class Move_Once_Piece_Calculator_Type>
+			explicit move_path(const state_path<Position_Of_Pieces_Type>& s_path, const Move_Once_Piece_Calculator_Type& move_engine) {
+				for (std::size_t i{ 0 }; i + 1 < s_path.vector().size(); ++i) {
+					move_vector.emplace_back(move_engine.state_minus_state(s_path.vector()[i + 1], s_path.vector()[i]));
+				}
+			}
+
+			template <class Pieces_Quantity_Type, class Cell_Id_Type_T, bool SORTED_TARGET_PIECES_V, bool SORTED_NON_TARGET_PIECES_V, class Move_Once_Piece_Calculator_Type>
+			inline static move_path extract_unsorted_move_path(
+				const state_path<augmented_positions_of_pieces<Pieces_Quantity_Type, Cell_Id_Type_T, SORTED_TARGET_PIECES_V, SORTED_NON_TARGET_PIECES_V>>& augmented_state_path,
+				const Move_Once_Piece_Calculator_Type& move_engine
+			)
+			{
+				using augmented_positions_of_pieces_type = augmented_positions_of_pieces<Pieces_Quantity_Type, Cell_Id_Type_T, SORTED_TARGET_PIECES_V, SORTED_NON_TARGET_PIECES_V>;
+				using permutation_type = typename augmented_positions_of_pieces_type::permutation_type;
+				using permutation_indexing_type = typename permutation_type::size_type;
+
+				static_assert(std::is_same<permutation_indexing_type, std::size_t>::value, "MSVC does not meet en.cppreference.com");
+
+				move_path result;
+
+				for (std::size_t i{ 0 }; i + 1 < augmented_state_path.vector().size(); ++i) {
+					result.move_vector.emplace_back(
+						move_engine.state_minus_state(augmented_state_path.vector()[i + 1], augmented_state_path.vector()[i]));
+					// roll back permutation
+					auto piece_id = result.move_vector.back().pid.value;
+					auto permutation_of_piece_id = augmented_state_path.vector()[i].get_permutation()[piece_id];
+
+					/*is it checked somewhere that no out of range can happen? ### */
+					result.move_vector.back().pid.value = static_cast<pieces_quantity_int_type>(permutation_of_piece_id);
+					//result.move_vector.back().pid = static_cast<decltype(result.move_vector.back().pid)>(permutation_of_piece_id);
+				}
+
+				return result;
+			}
+
+			vector_type& vector() { return move_vector; }
+
+			const vector_type& vector() const { return move_vector; }
+
+			template<class Position_Of_Pieces_Type, class Move_Once_Piece_Calculator_Type>
+			[[nodiscard]] inline state_path<Position_Of_Pieces_Type> apply(const Position_Of_Pieces_Type& initial_state, const Move_Once_Piece_Calculator_Type& move_engine) {
+				state_path<Position_Of_Pieces_Type> result;
+				result.vector().reserve(move_vector.size() + 1);
+				result.vector().push_back(initial_state);
+
+				for (std::size_t i{ 0 }; i < move_vector.size(); ++i) {
+					result.vector().push_back(move_engine.state_plus_move(result.vector().back(), move_vector[i]));
+				}
+
+				return result;
+			}
+
+			inline move_path operator +(const move_path& another) {
+				move_path copy;
+				copy.move_vector.reserve(move_vector.size() + another.move_vector.size());
+				std::copy(move_vector.cbegin(), move_vector.cend(), std::back_inserter(copy.move_vector));
+				std::copy(another.move_vector.cbegin(), another.move_vector.cend(), std::back_inserter(copy.move_vector));
+				return copy;
+			}
+
+			inline bool operator==(const move_path& another) const {
+				return move_vector == another.move_vector;
+			}
+
+			inline bool operator<(const move_path& another) const {
+				return move_vector < another.move_vector;
+			}
+
+			inline std::vector<move_path> syntactic_interleaving_neighbours() {
+				if (move_vector.size() < 2) {
+					return std::vector<move_path>();
+				}
+
+				auto result = std::vector<move_path>(move_vector.size() - 1, *this);
+				auto iter = result.begin();
+				for (std::size_t i{ 0 }; i + 1 < move_vector.size(); ++i) {
+					if (!(move_vector[i] == move_vector[i + 1])) {
+						std::swap(iter->move_vector[i], iter->move_vector[i + 1]);
+						++iter;
+					}
+				}
+				result.erase(iter, result.end());
+
+				return result;
+			}
+
+			inline move_path color_sorted_footprint() const {
+				auto result = move_path(*this);
+
+				std::stable_sort(
+					result.vector().begin(),
+					result.vector().end(),
+					[](const piece_move_type& left, const piece_move_type& right) { return left.pid < right.pid; }
+				);
+
+				return result;
+			}
+
+			inline bool is_interleaving_neighbour(const move_path& another) const {
+				if (vector().size() != another.vector().size()) {
+					return false;
+				}
+
+				typename vector_type::size_type i{ 0 };
+
+				while (i + 1 < vector().size()) { // looking for the switched positions i, i+1
+
+					if (!(vector()[i] == another.vector()[i])) {
+						// here it must be switched i, i+1 and the rest must be equal to return true...
+
+						return
+							vector()[i] == another.vector()[i + 1] &&
+							vector()[i + 1] == another.vector()[i] &&
+							std::equal(
+								vector().cbegin() + i + 2,
+								vector().cend(),
+								another.vector().cbegin() + i + 2
+							);
+					}
+
+					++i;
+				}
+				return false;
+			}
+
+			inline static std::vector<std::vector<move_path>> interleaving_partitioning_improved(const std::vector<move_path>& paths) {
+				std::vector<std::vector<move_path>> equivalence_classes;
+
+				using pair_type = std::pair<move_path, uint8_t>; // divide this into two vectors(?)
+
+				using flagged_paths_type = std::vector<pair_type>;
+				using flagged_paths_iterator = typename flagged_paths_type::iterator;
+
+
+				//static constexpr uint8_t EXPLORED{ 0b10 };
+				static constexpr uint8_t REACHED{ 0b01 };
+
+				flagged_paths_type flagged_paths;
+				flagged_paths.reserve(paths.size());
+				std::transform(paths.cbegin(), paths.cend(), std::back_inserter(flagged_paths), [](const move_path& mp) { return std::make_pair(mp, 0); });
+
+				std::sort(flagged_paths.begin(), flagged_paths.end()); // lexicographical sorting of paths by piece_id, then direction.
+
+				flagged_paths_iterator remaining_end{ flagged_paths.end() };
+
+				while (flagged_paths.begin() != remaining_end) { // while there are path not yet put into some equivalence class
+					std::size_t diff = remaining_end - flagged_paths.begin();
+					(void)diff;
+					equivalence_classes.emplace_back();
+					auto& equiv_class{ equivalence_classes.back() };
+					equiv_class.reserve(remaining_end - flagged_paths.begin());
+
+					flagged_paths.front().second = REACHED;
+					equiv_class.push_back(flagged_paths.front().first);
+
+					std::set<std::size_t> indices_to_explore;
+
+					indices_to_explore.insert(0);
+
+					while (!indices_to_explore.empty()) {
+
+						std::size_t current_exploration_index = *indices_to_explore.cbegin();
+						indices_to_explore.erase(indices_to_explore.cbegin());
+
+						std::vector<move_path> neighbour_candidates = flagged_paths[current_exploration_index].first.syntactic_interleaving_neighbours();
+
+						std::sort(neighbour_candidates.begin(), neighbour_candidates.end()); // lex sorting of move paths.
+
+						flagged_paths_iterator search_begin{ flagged_paths.begin() };
+
+						for (auto& candidate : neighbour_candidates) {
+
+							search_begin = std::lower_bound( // find in sorted vector
+								search_begin,
+								remaining_end,
+								std::make_pair(candidate, std::size_t(0)),
+								[](const auto& l, const auto& r) {
+									return l.first < r.first;
+								}
+							);
+
+							if (search_begin == remaining_end) {
+								break;
+							}
+
+							if (search_begin->first == candidate && !(search_begin->second & REACHED)) {
+								// if found candidate and not reached before
+
+								equiv_class.emplace_back(candidate);
+								search_begin->second |= REACHED;
+								indices_to_explore.insert(search_begin - flagged_paths.begin());
+							}
+
+						}
+					}
+
+					remaining_end = std::remove_if(
+						flagged_paths.begin(),
+						remaining_end,
+						[](const pair_type& pair) {
+							return pair.second & REACHED;
+						}
+					);
+					equiv_class.shrink_to_fit();
+				}
+				if (paths.size() != flagged_paths.size()) {
+					auto x = paths.size() - flagged_paths.size();
+					(void)x;
+				}
+
+				return equivalence_classes;
+			}
+
+			inline static std::vector<std::vector<move_path>> interleaving_partitioning(const std::vector<move_path>& paths) {
+
+				static constexpr bool USE_IMPROVEMENT{ true };
+
+				if constexpr (USE_IMPROVEMENT) {
+					return interleaving_partitioning_improved(paths);
+				}
+				else {
+					std::vector<std::vector<move_path>> equivalence_classes;
+
+					for (const auto& p : paths) {
+
+						std::vector<std::size_t> indices; // all indices of matching equivalence classes
+						for (std::size_t i{ 0 }; i < equivalence_classes.size(); ++i) {
+							auto& ec{ equivalence_classes[i] };
+							for (const auto& el : ec) {
+								if (el.is_interleaving_neighbour(p)) {
+									indices.push_back(i);
+									break;
+								}
+							}
+						}
+
+						if (indices.empty()) {
+							equivalence_classes.emplace_back();
+							equivalence_classes.back().push_back(p);
+						}
+						else {
+							equivalence_classes[indices[0]].emplace_back(p);
+							for (std::size_t j = indices.size() - 1; j != 0; --j) {
+								std::copy(
+									equivalence_classes[indices[j]].cbegin(),
+									equivalence_classes[indices[j]].cend(),
+									std::back_inserter(equivalence_classes[indices[0]])
+								);
+								equivalence_classes.erase(equivalence_classes.begin() + indices[j]);
+							}
+						}
+					}
+					return equivalence_classes;
+				}
+			}
+
+			std::size_t changes() const {
+				std::size_t counter{ 0 };
+				for (std::size_t i = 0; i + 1 < move_vector.size(); ++i) {
+					counter += !(move_vector[i].pid == move_vector[i + 1].pid);
+				}
+				return counter;
+			}
+
+			inline static bool antiprettiness_relation(const move_path& l, const move_path& r) {
+				return l.changes() < r.changes();
+			}
+
+		};
+
+
 		template<class Positions_Of_Pieces_Type>
 		class path_classificator {
 
@@ -1157,7 +1414,7 @@ namespace tobor {
 			template<class State_Label_Type>
 			static void extract_all_state_paths_helper(
 				const simple_state_bigraph<positions_of_pieces_type, State_Label_Type>& source,
-				std::vector<state_path<positions_of_pieces_type>> all_state_paths,
+				std::vector<state_path<positions_of_pieces_type>>& all_state_paths,
 				state_path_vector_type& depth_first_path
 				//, const typename simple_state_bigraph<positions_of_pieces_type, State_Label_Type>::map_type::const_iterator& current_state_iter /* not end */
 			) {
@@ -1278,6 +1535,7 @@ namespace tobor {
 							for (const auto& candidate : exploree->second.successors) {
 								const auto i_candidate = bigraph.map.find(candidate);
 								if (i_candidate == bigraph.map.end()) continue; // never happens by logic if bigraph is sound.
+								if (contains(i_candidate->second.labels, flag_index)) continue; // state already labeled as part of current equivalence class
 
 								for (const auto& successor : i_candidate->second.successors) {
 									auto i_successor = bigraph.map.find(successor);
@@ -1298,6 +1556,7 @@ namespace tobor {
 							for (const auto& candidate : exploree->second.predecessors) {
 								const auto i_candidate = bigraph.map.find(candidate);
 								if (i_candidate == bigraph.map.end()) continue; // never happens by logic if bigraph is sound.
+								if (contains(i_candidate->second.labels, flag_index)) continue; // state already labeled as part of current equivalence class
 
 								for (const auto& predecessor : i_candidate->second.predecessors) {
 									auto i_predecessor = bigraph.map.find(predecessor);
