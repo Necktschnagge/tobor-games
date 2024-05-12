@@ -64,11 +64,22 @@ public:
 
 	struct solver_environment {
 
+		struct piece_change_decoration {
+			std::size_t min_piece_change_distance;
+			std::vector<positions_of_pieces_type_solver> optimal_successors;
+			std::size_t count_total_paths_from_here;
+		};
+
+		using piece_change_decoration_vector = std::vector<piece_change_decoration>;
+
 		using distance_exploration_type = tobor::v1_1::distance_exploration<move_one_piece_calculator_type, positions_of_pieces_type_solver>;
 
 		using bigraph_type = tobor::v1_1::simple_state_bigraph<positions_of_pieces_type_solver, std::vector<bool>>;
 
 		using naked_bigraph_type = tobor::v1_1::simple_state_bigraph<positions_of_pieces_type_solver, void>;
+		
+		using piece_change_bigraph_type = tobor::v1_1::simple_state_bigraph<positions_of_pieces_type_interactive, piece_change_decoration_vector>;
+		// ### use this instead of generating every path.
 
 		using path_classificator_type = tobor::v1_1::path_classificator<positions_of_pieces_type_solver>;
 
