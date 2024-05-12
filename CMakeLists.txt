@@ -53,7 +53,7 @@ set(CMAKE_CXX_EXTENSIONS False)
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 
 if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libstdc++ -std=c++20")
+		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libstdc++")
 		message("Clang Flags recognized")
 endif()
 
