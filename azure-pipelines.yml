@@ -31,21 +31,18 @@ stages:
         name: $(the_name)
 
       steps:
-       - script: |
-          wget https://apt.llvm.org/llvm.sh
-          chmod +x ./llvm.sh
-          sudo ./llvm.sh 17
+       - script: sudo su -c "bash -s -- 17 <(wget -qO- https://apt.llvm.org/llvm.sh)" root
          displayName: "Install newer Clang"
          condition: succeeded()
        - script: sudo apt-get install qtbase5-dev libqt5svg5-dev libtbb-dev
          displayName: "Install Qt + libtbb (Linux)"
-         condition: and(succeeded(), eq( variables['Agent.OS'], 'Linux'))
+         condition: succeeded()
        - script: git submodule update --init --recursive
          displayName: "Init Git Submodules"
          condition: succeeded()
-       - script: CXX="/usr/bin/clang++-17" cmake -S . -B ./build/ -DUSE_QT6:BOOL=FALSE
+       - script: (CC="/usr/bin/clang-17"; CXX="/usr/bin/clang++-17"; cmake -S . -B ./build/ -DUSE_QT6:BOOL=FALSE)
          displayName: "CMake: Create Project (Linux)"
-         condition: and(succeeded(), eq( variables['Agent.OS'], 'Linux'))
+         condition: succeeded()
        - script: cmake --build ./build --config Debug --verbose
          displayName: "CMake: Compile and Link (Debug)"
          condition: succeeded()
@@ -54,7 +51,7 @@ stages:
          condition: succeeded()
        - script: ./build/test/TEST-$(project_name)
          displayName: "Run Tests on Linux / Mac OS"
-         condition: and(succeeded(), ne( variables['Agent.OS'], 'Windows_NT'))
+         condition: succeeded()
 
     - job: Clang_17_Qt_6
       timeoutInMinutes: 30
@@ -71,19 +68,16 @@ stages:
       steps:
        - script: sudo apt-get update && sudo apt-get install build-essential libgl1-mesa-dev qt6-base-dev libqt6svg6 libqt6svg6-dev libtbb-dev
          displayName: "Install Qt (Linux)"
-         condition: and(succeeded(), eq( variables['Agent.OS'], 'Linux'))
+         condition: succeeded()
        - script: git submodule update --init --recursive
          displayName: "Init Git Submodules"
          condition: succeeded()
-       - script: |
-          wget https://apt.llvm.org/llvm.sh
-          chmod +x ./llvm.sh
-          sudo ./llvm.sh 17
+       - script: sudo su -c "bash -s -- 17 <(wget -qO- https://apt.llvm.org/llvm.sh)" root
          displayName: "Install newer Clang"
          condition: succeeded()
-       - script: CXX="/usr/bin/clang++-17" cmake -S . -B ./build/
+       - script: (CC="/usr/bin/clang-17"; CXX="/usr/bin/clang++-17"; cmake -S . -B ./build/)
          displayName: "CMake: Create Project (Darwin / Linux)"
-         condition: and(succeeded(), ne( variables['Agent.OS'], 'Windows_NT'))
+         condition: succeeded()
        - script: cmake --build ./build --config Debug --verbose
          displayName: "CMake: Compile and Link (Debug)"
          condition: succeeded()
@@ -92,7 +86,7 @@ stages:
          condition: succeeded()
        - script: ./build/test/TEST-$(project_name)
          displayName: "Run Tests on Linux / Mac OS"
-         condition: and(succeeded(), ne( variables['Agent.OS'], 'Windows_NT'))
+         condition: succeeded()
 
     - job: Qt_5
       timeoutInMinutes: 30
