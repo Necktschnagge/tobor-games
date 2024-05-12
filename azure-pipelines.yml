@@ -31,7 +31,10 @@ stages:
         name: $(the_name)
 
       steps:
-       - script: sudo su -c "bash -s -- 17 <(wget -qO- https://apt.llvm.org/llvm.sh)" root
+       - script: |
+          wget https://apt.llvm.org/llvm.sh
+          chmod +x ./llvm.sh
+          sudo ./llvm.sh 17
          displayName: "Install newer Clang"
          condition: succeeded()
        - script: sudo apt-get install qtbase5-dev libqt5svg5-dev libtbb-dev
@@ -72,7 +75,10 @@ stages:
        - script: git submodule update --init --recursive
          displayName: "Init Git Submodules"
          condition: succeeded()
-       - script: sudo su -c "bash -s -- 17 <(wget -qO- https://apt.llvm.org/llvm.sh)" root
+       - script: |
+          wget https://apt.llvm.org/llvm.sh
+          chmod +x ./llvm.sh
+          sudo ./llvm.sh 17
          displayName: "Install newer Clang"
          condition: succeeded()
        - script: (CC="/usr/bin/clang-17"; CXX="/usr/bin/clang++-17"; cmake -S . -B ./build/)
