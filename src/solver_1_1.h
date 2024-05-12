@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <limits>
 #include <execution>
+#include <numeric>
 
 class GameController; // for friend class declaration, to be removed
 
@@ -599,9 +600,9 @@ namespace tobor {
 			bool _entirely_explored{ false };
 
 			inline void sort_unique(const typename std::vector<states_vector>::size_type& index /* new states index */) {
-				std::sort(std::execution::par, _reachable_states_by_distance[index].begin(), _reachable_states_by_distance[index].end());
+				std::sort(/*std::execution::par,*/ _reachable_states_by_distance[index].begin(), _reachable_states_by_distance[index].end());
 				_reachable_states_by_distance[index].erase(
-					unique(std::execution::par, _reachable_states_by_distance[index].begin(), _reachable_states_by_distance[index].end()),
+					unique(/*std::execution::par,*/ _reachable_states_by_distance[index].begin(), _reachable_states_by_distance[index].end()),
 					_reachable_states_by_distance[index].end()
 				);
 			}
