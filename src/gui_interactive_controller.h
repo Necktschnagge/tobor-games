@@ -67,7 +67,17 @@ public:
 		struct piece_change_decoration {
 			std::size_t min_piece_change_distance;
 			std::vector<positions_of_pieces_type_solver> optimal_successors;
-			std::size_t count_total_paths_from_here;
+			//std::size_t count_total_paths_from_here;
+
+			piece_change_decoration(
+				std::size_t min_piece_change_distance,
+				std::vector<positions_of_pieces_type_solver> optimal_successors
+				//, std::size_t count_total_paths_from_here
+			) :
+				min_piece_change_distance(min_piece_change_distance),
+				optimal_successors(optimal_successors)
+				//, count_total_paths_from_here(count_total_paths_from_here)
+			{}
 		};
 
 		using piece_change_decoration_vector = std::vector<piece_change_decoration>;
@@ -77,7 +87,9 @@ public:
 		using bigraph_type = tobor::v1_1::simple_state_bigraph<positions_of_pieces_type_solver, std::vector<bool>>;
 
 		using naked_bigraph_type = tobor::v1_1::simple_state_bigraph<positions_of_pieces_type_solver, void>;
-		
+
+		using pretty_evaluation_bigraph_type = tobor::v1_1::simple_state_bigraph<positions_of_pieces_type_solver, piece_change_decoration_vector>;
+
 		using piece_change_bigraph_type = tobor::v1_1::simple_state_bigraph<positions_of_pieces_type_interactive, piece_change_decoration_vector>;
 		// ### use this instead of generating every path.
 
@@ -101,7 +113,7 @@ public:
 
 		bigraph_type bigraph;
 
-		std::vector<naked_bigraph_type> partition_bigraphs;
+		std::vector<pretty_evaluation_bigraph_type> partition_bigraphs;
 
 		std::vector<std::vector<state_path_type_solver>> partitioned_state_paths;
 
@@ -110,6 +122,36 @@ public:
 		std::vector<std::vector<move_path_type>> partitioned_color_aware_move_paths;
 
 		std::vector<std::vector<std::pair<state_path_type_interactive, move_path_type>>> partitioned_pairs; // should replace the two above
+
+		/**
+		*	@brief Explores from map_iter recursively to final states and build decorations from final states to initial states
+		*/
+		void prettiness_decoration_helper(pretty_evaluation_bigraph_type& pretty_evaluation_bigraph, pretty_evaluation_bigraph_type::map_iterator_type map_iter) {
+			if (!map_iter->second.labels.empty()) {
+				return; // this map entry and all reachable direct and indirect successor states must have decorated correctly
+			}
+			if (map_iter->second.successors.empty()) {
+				// This is a final state, not yet decorated.
+				for (std::size_t n{ 0 }; n < piece_quantity_type::COUNT_ALL_PIECES; ++n) {
+					map_iter->second.labels.emplace_back(
+						0, // 0 piece changes left when in final state
+						std::vector<positions_of_pieces_type_solver>() // no successors
+					);
+				}
+				return;
+			}
+			// we now have an undecorated state that is not final.
+			//first make sure all successors have been decorated:
+			for (const auto& succ : map_iter->second.successors) {
+				auto map_jter = pretty_evaluation_bigraph.map.find(succ);
+				if (map_jter == pretty_evaluation_bigraph.map.end()) {
+					throw 0; //#### error in bigraph. invalid bigraph.
+				}
+				prettiness_decoration_helper(pretty_evaluation_bigraph, map_jter);
+			}
+			//now calculate current state's decoration using the successor decorations.
+
+		}
 
 	public:
 		solver_environment(const positions_of_pieces_type_solver& initial_state) :
@@ -134,10 +176,12 @@ public:
 			if (status_callback) status_callback("Extracting solution state graph...");
 			distance_explorer.get_simple_bigraph(controller._move_engine, controller._target_cell, bigraph);
 
+			// bigraph is now a sub - bigraph of exploration space where all states are decorated with an empty std::vector<bool>
 
 			if (status_callback) status_callback("Partition state graph...");
 			std::size_t count_partitions = path_classificator_type::make_state_graph_path_partitioning(bigraph);
 
+			// bigraph decoration std::vector<bool> now assigns a "color" (= index of vector where bit is set true) to every state of a partition of solution paths
 
 			if (status_callback) status_callback("Extracting subgraph for each partition...");
 			for (std::size_t i{ 0 }; i < count_partitions; ++i) {
@@ -145,12 +189,29 @@ public:
 				path_classificator_type::extract_subgraph_by_label(bigraph, i, partition_bigraphs.back());
 			}
 
+			// Now in partition_bigraphs there is for each color i.e. partition a separate bigraph
+
+			if (status_callback) status_callback("Decorating each partition subgraph for prettiness evaluation...");
+			for (std::size_t i{ 0 }; i < partition_bigraphs.size(); ++i) {
+				// make sure labels are cleared
+				for (auto iter = partition_bigraphs[i].map.begin(); iter != partition_bigraphs[i].map.end(); ++iter) {
+					iter->second.labels.clear();
+				}
+				for (auto iter = partition_bigraphs[i].map.begin(); iter != partition_bigraphs[i].map.end(); ++iter) {
+
+				}
+
+				path_classificator_type::extract_subgraph_by_label(bigraph, i, partition_bigraphs.back());
+			}
+
+
 
 			if (status_callback) status_callback("Generating state_paths ...");
 			for (std::size_t i{ 0 }; i < partition_bigraphs.size(); ++i) {
 				partitioned_state_paths.emplace_back(path_classificator_type::extract_all_state_paths(partition_bigraphs[i]));
 			}
 
+			//
 
 			if (status_callback) status_callback("Generating move_paths ...");
 			for (std::size_t i{ 0 }; i < partitioned_state_paths.size(); ++i) {
@@ -304,7 +365,7 @@ public:
 	}
 
 	~GameController() {}
-	
+
 	// todo: functions below:
 
 	//move_path_type& get_selected_solution_representant(std::size_t index); no longer supported!

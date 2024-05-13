@@ -486,6 +486,8 @@ namespace tobor {
 			};
 
 			using map_type = std::map<state_type, node_links>;
+			
+			using map_iterator_type = typename map_type::iterator;
 
 			map_type map;
 
