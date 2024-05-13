@@ -57,6 +57,11 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
 		message("Clang Flags recognized")
 endif()
 
+if (CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
+		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libstdc++")
+		message("AppleClang Flags recognized")
+endif()
+
 if (WIN32 AND NOT (MSYS OR MINGW))
         set(CMAKE_CXX_FLAGS_RELEASE "/MT /O2 /Ob2 /DNDEBUG") #what do all these flags mean?
         set(CMAKE_CXX_FLAGS_DEBUG "/MTd /Zi /Ob0 /Od /RTC1")
