@@ -88,7 +88,7 @@ public:
 
 		using naked_bigraph_type = tobor::v1_1::simple_state_bigraph<positions_of_pieces_type_solver, void>;
 
-		using pretty_evaluation_bigraph_type = tobor::v1_1::simple_state_bigraph<positions_of_pieces_type_solver, piece_change_decoration_vector>;
+		using pretty_evaluation_bigraph_type = tobor::v1_1::simple_state_bigraph<positions_of_pieces_type_interactive, piece_change_decoration_vector>;
 
 		using piece_change_bigraph_type = tobor::v1_1::simple_state_bigraph<positions_of_pieces_type_interactive, piece_change_decoration_vector>;
 		// ### use this instead of generating every path.
@@ -113,7 +113,9 @@ public:
 
 		bigraph_type bigraph;
 
-		std::vector<pretty_evaluation_bigraph_type> partition_bigraphs;
+		std::vector<naked_bigraph_type> partition_bigraphs;
+
+		std::vector<pretty_evaluation_bigraph_type> partition_bigraphs_decorated;
 
 		std::vector<std::vector<state_path_type_solver>> partitioned_state_paths;
 
@@ -150,6 +152,31 @@ public:
 				prettiness_decoration_helper(pretty_evaluation_bigraph, map_jter);
 			}
 			//now calculate current state's decoration using the successor decorations.
+			for (std::size_t i{ 0 }; i < piece_quantity_type::COUNT_ALL_PIECES; ++i) {
+				map_iter->second.labels.emplace_back(
+					0, // 0 piece changes left when in final state
+					std::vector<positions_of_pieces_type_solver>() // no successors
+				);
+				std::vector<pretty_evaluation_bigraph_type::map_iterator_type> succ_iters;
+				for (const auto& succ : map_iter->second.successors) {
+					auto map_jter = pretty_evaluation_bigraph.map.find(succ);
+					if (map_jter == pretty_evaluation_bigraph.map.end()) {
+						throw 0; //#### error in bigraph. invalid bigraph.
+					}
+					prettiness_decoration_helper(pretty_evaluation_bigraph, map_jter);
+					succ_iters.push_back(map_jter);
+				}
+
+
+				// move piece i in all directions,
+				// check if succ states are contained in this bigraph.
+				// if a state is contained
+				for (const auto& succ : map_iter->second.successors) {
+
+				}
+
+
+			}
 
 		}
 
@@ -187,7 +214,11 @@ public:
 			for (std::size_t i{ 0 }; i < count_partitions; ++i) {
 				partition_bigraphs.emplace_back();
 				path_classificator_type::extract_subgraph_by_label(bigraph, i, partition_bigraphs.back());
+				
+				partition_bigraphs_decorated.emplace_back();
+
 			}
+
 
 			// Now in partition_bigraphs there is for each color i.e. partition a separate bigraph
 
