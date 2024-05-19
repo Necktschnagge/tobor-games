@@ -40,7 +40,7 @@ public:
 
 	using cell_id_type = tobor::v1_0::universal_cell_id<world_type>;
 
-	using piece_quantity_type = tobor::v1_0::pieces_quantity<uint8_t, 1, 3>;
+	using piece_quantity_type = tobor::v1_0::pieces_quantity<uint8_t, 1, 10>;
 
 	using piece_id_type = tobor::v1_0::piece_id<piece_quantity_type>;
 
