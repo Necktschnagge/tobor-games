@@ -1723,7 +1723,7 @@ namespace tobor {
 
 				auto iter_destination_map_initial_state = destination_bigraph.map.insert(
 					destination_bigraph.map.begin(),
-					std::make_pair(initial_state_destination, destination_bigraph_type::node_links())
+					std::make_pair(initial_state_destination, typename destination_bigraph_type::node_links())
 				);
 
 				//auto iter = source_initial_state_iterator;
@@ -1763,7 +1763,7 @@ namespace tobor {
 
 					//auto& destination_succ_map_value = destination_bigraph.map[similar_successor_state]; // insert successor state, if not present
 					auto [destination_succ_map_iter, inserted_destination_succ] = destination_bigraph.map.insert(
-						std::make_pair(similar_successor_state, destination_bigraph_type::node_links())
+						std::make_pair(similar_successor_state, typename destination_bigraph_type::node_links())
 					); // insert successor state, if not present
 
 					//destination_succ_map_value.predecessors.insert(destination_curr_state); // insert predecessor state, if not present
