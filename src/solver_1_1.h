@@ -1690,7 +1690,7 @@ namespace tobor {
 					destination_map_iterator destination_map_it;
 
 				};
-				
+
 				destination_bigraph.clear();
 
 				// find the initial state in source bigraph:
@@ -1758,18 +1758,14 @@ namespace tobor {
 
 					if (insert_took_place) {
 						// found a new simulation_link, so recursive df exploration has to be made there:
-						df_exploration_stack.emplace_back();
+						df_exploration_stack.emplace_back(); // invalidates current
 						simulation_copy_df_record& sub{ df_exploration_stack.back() };
 
-						sub.source_map_it = source_bigraph.map.find(source_succ_state);
+						sub.source_map_it = source_bigraph.map.find(source_succ_state); // ### not yet checked for end iterator!!!
 						sub.source_succ_it = sub.source_map_it->second.successors.cbegin();
 						sub.destination_map_it = destination_succ_map_iter;
 					}
-
-
 				}
-
-
 			}
 		};
 
