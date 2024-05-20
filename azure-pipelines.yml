@@ -95,6 +95,7 @@ stages:
          condition: succeeded()
 
     - job: Qt_5
+      dependsOn: [Qt_6]
       timeoutInMinutes: 30
       strategy:
         matrix:
