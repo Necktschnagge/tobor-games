@@ -653,6 +653,8 @@ namespace tobor {
 		};
 
 
+		using default_augmented_positions_of_pieces = augmented_positions_of_pieces< default_pieces_quantity, default_min_size_cell_id, false, false>;
+
 		template <class Pieces_Quantity_Type>
 		using piece_id = tobor::v1_0::piece_id<Pieces_Quantity_Type>;
 
@@ -679,7 +681,7 @@ namespace tobor {
 #endif
 
 	}
-	}
+}
 
 namespace std {
 	template <class Pieces_Quantity_Type, class Cell_Id_Type, bool SORTED_TARGET_PIECES_V, bool SORTED_NON_TARGET_PIECES_V>

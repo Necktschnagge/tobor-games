@@ -489,6 +489,8 @@ namespace tobor {
 			
 			using map_iterator_type = typename map_type::iterator;
 
+			using map_const_iterator_type = typename map_type::const_iterator;
+
 			map_type map;
 
 			inline void clear() {
@@ -1627,6 +1629,28 @@ namespace tobor {
 					}
 				}
 				return all_state_paths;
+			}
+
+			/**
+			*	@brief requires single initial state in source bigraph
+			*/
+			template<class Source_PoP_Type, class Source_Decoration_Type, class Destination_PoP_Type, class Destination_Decoration_Type>
+			inline static void bigraph_simultaion_copy(
+				const tobor::v1_1::simple_state_bigraph<Source_PoP_Type, Source_Decoration_Type>& source_bigraph,
+				tobor::v1_1::simple_state_bigraph<Destination_PoP_Type, Destination_Decoration_Type>& destination_bigraph,
+				const Destination_PoP_Type& initial_state_destination
+			) {
+				destination_bigraph.map.clear();
+
+				tobor::v1_1::simple_state_bigraph<Source_PoP_Type, Source_Decoration_Type>::map_const_iterator_type source_initial_state_iterator{ source_bigraph.map.cend() };
+
+				for (auto iter = source_bigraph.map.cbegin(); iter != source_bigraph.map.cend(); ++iter) {
+					if (iter->second.predecessors.empty()) {
+						if (source_initial_state_iterator != source_bigraph.map.cend()) {
+							throw 0; // error: more than 1 initial state
+						}
+					}
+				}
 			}
 
 		};
