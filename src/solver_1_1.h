@@ -1683,19 +1683,20 @@ namespace tobor {
 				using destination_map_iterator = typename destination_bigraph_type::map_iterator_type;
 
 
-				using sst = typename source_bigraph_type::state_set_type;
+				using sst = std::set<typename source_bigraph_type::state_type>;
+				//using sst = typename source_bigraph_type::state_set_type;
 				using source_state_set_const_iterator = typename sst::const_iterator;
 				//using source_state_set_const_iterator = typename source_bigraph_type::state_set_type::const_iterator;
 
 				struct simulation_copy_df_record {
 
-					using source_bigraph_type = tobor::v1_1::simple_state_bigraph<Source_PoP_Type, Source_Decoration_Type>;
-					using destination_bigraph_type = tobor::v1_1::simple_state_bigraph<Destination_PoP_Type, Destination_Decoration_Type>;
+					//using source_bigraph_type = tobor::v1_1::simple_state_bigraph<Source_PoP_Type, Source_Decoration_Type>;
+					//using destination_bigraph_type = tobor::v1_1::simple_state_bigraph<Destination_PoP_Type, Destination_Decoration_Type>;
 
-					using source_map_const_iterator = typename source_bigraph_type::map_const_iterator_type;
-					using destination_map_iterator = typename destination_bigraph_type::map_iterator_type;
+					//using source_map_const_iterator = typename source_bigraph_type::map_const_iterator_type;
+					//using destination_map_iterator = typename destination_bigraph_type::map_iterator_type;
 
-					using source_state_set_const_iterator = typename source_bigraph_type::state_set_type::const_iterator;
+					//using source_state_set_const_iterator = typename source_bigraph_type::state_set_type::const_iterator;
 
 					source_map_const_iterator source_map_it;
 					source_state_set_const_iterator source_succ_it;
