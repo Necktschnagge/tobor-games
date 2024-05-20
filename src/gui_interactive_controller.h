@@ -130,7 +130,7 @@ public:
 		*/
 		void prettiness_decoration_helper(pretty_evaluation_bigraph_type& pretty_evaluation_bigraph, pretty_evaluation_bigraph_type::map_iterator_type map_iter) {
 			if (!map_iter->second.labels.empty()) {
-				return; // this map entry and all reachable direct and indirect successor states must have decorated correctly
+				return; // this map entry and all reachable direct and indirect successor states must have been decorated correctly
 			}
 			if (map_iter->second.successors.empty()) {
 				// This is a final state, not yet decorated.
@@ -171,9 +171,9 @@ public:
 				// move piece i in all directions,
 				// check if succ states are contained in this bigraph.
 				// if a state is contained
-				for (const auto& succ : map_iter->second.successors) {
-
-				}
+				//for (const auto& succ : map_iter->second.successors) {
+				//
+				//}
 
 
 			}
@@ -214,26 +214,26 @@ public:
 			for (std::size_t i{ 0 }; i < count_partitions; ++i) {
 				partition_bigraphs.emplace_back();
 				path_classificator_type::extract_subgraph_by_label(bigraph, i, partition_bigraphs.back());
-				
-				partition_bigraphs_decorated.emplace_back();
 
+				// Justification. Note that the following does not work because extracting subgraph cannot work on different state types (solver vs interactive state type)
+				//path_classificator_type::extract_subgraph_by_label(bigraph, i, partition_bigraphs_decorated.back());
 			}
+
+			//partition_bigraphs_decorated = std::vector<pretty_evaluation_bigraph_type>(count_partitions, pretty_evaluation_bigraph_type());
 
 
 			// Now in partition_bigraphs there is for each color i.e. partition a separate bigraph
 
 			if (status_callback) status_callback("Decorating each partition subgraph for prettiness evaluation...");
 			for (std::size_t i{ 0 }; i < partition_bigraphs.size(); ++i) {
-				// make sure labels are cleared
-				for (auto iter = partition_bigraphs[i].map.begin(); iter != partition_bigraphs[i].map.end(); ++iter) {
-					iter->second.labels.clear();
-				}
-				for (auto iter = partition_bigraphs[i].map.begin(); iter != partition_bigraphs[i].map.end(); ++iter) {
 
-				}
-
-				path_classificator_type::extract_subgraph_by_label(bigraph, i, partition_bigraphs.back());
+				// simulation copy here
+				partition_bigraphs_decorated.emplace_back();
+				tobor::v1_1::bigraph_operations::bigraph_simulation_copy(partition_bigraphs[i], partition_bigraphs_decorated[i], controller.current_state(), controller._move_engine);
 			}
+
+			//// TODO here: evaluate path prettiness statewise in partition_bigraphs_decorated[i]
+
 
 
 

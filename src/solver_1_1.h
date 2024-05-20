@@ -4,6 +4,7 @@
 #include "solver_1_0.h"
 
 #include <map>
+#include <set>
 #include <array>
 #include <algorithm>
 #include <limits>
@@ -450,7 +451,7 @@ namespace tobor {
 
 		};
 
-		using default_move_one_piece_calculator = move_one_piece_calculator<default_positions_of_pieces, default_quick_move_cache, default_piece_move>;
+		using default_move_one_piece_calculator = move_one_piece_calculator<default_min_size_cell_id, default_quick_move_cache, default_piece_move>;
 
 		template<class State_Type, class State_Label_Type = void>
 		class simple_state_bigraph;
@@ -477,16 +478,20 @@ namespace tobor {
 		public:
 			using state_type = State_Type;
 
+			using state_set_type = std::set<state_type>;
+
 			using state_label_type = State_Label_Type;
 
 			struct node_links {
-				std::set<state_type> predecessors;
-				std::set<state_type> successors;
+
+				state_set_type predecessors;
+				state_set_type successors;
 				state_label_type labels;
+
 			};
 
 			using map_type = std::map<state_type, node_links>;
-			
+
 			using map_iterator_type = typename map_type::iterator;
 
 			using map_const_iterator_type = typename map_type::const_iterator;
@@ -1610,8 +1615,8 @@ namespace tobor {
 							destination.map.end(),
 							std::make_pair(pair.first, typename simple_state_bigraph<positions_of_pieces_type, State_Label_Type>::node_links())
 						);
-						std::copy_if(pair.second.predecessors.cbegin(), pair.second.predecessors.cend(), std::inserter(iter->second.predecessors, iter->second.predecessors.end()), has_label);
-						std::copy_if(pair.second.successors.cbegin(), pair.second.successors.cend(), std::inserter(iter->second.successors, iter->second.successors.end()), has_label);
+						std::copy_if(pair.second.predecessors.cbegin(), pair.second.predecessors.cend(), std::back_inserter(iter->second.predecessors), has_label);
+						std::copy_if(pair.second.successors.cbegin(), pair.second.successors.cend(), std::back_inserter(iter->second.successors), has_label);
 					}
 				}
 			}
@@ -1631,29 +1636,159 @@ namespace tobor {
 				return all_state_paths;
 			}
 
+
+		};
+
+		class bigraph_operations {
+
+			//template<
+			//	class Source_PoP_Type,
+			//	class Source_Decoration_Type,
+			//	class Destination_PoP_Type,
+			//	class Destination_Decoration_Type,
+			//	class Cell_Id_T,
+			//	class Quick_Move_Cache_T,
+			//	class Piece_Move_T
+			//>
+
+
+		public:
 			/**
 			*	@brief requires single initial state in source bigraph
 			*/
-			template<class Source_PoP_Type, class Source_Decoration_Type, class Destination_PoP_Type, class Destination_Decoration_Type>
-			inline static void bigraph_simultaion_copy(
-				const tobor::v1_1::simple_state_bigraph<Source_PoP_Type, Source_Decoration_Type>& source_bigraph,
-				tobor::v1_1::simple_state_bigraph<Destination_PoP_Type, Destination_Decoration_Type>& destination_bigraph,
-				const Destination_PoP_Type& initial_state_destination
-			) {
-				destination_bigraph.map.clear();
+			template<
+				class Source_PoP_Type,
+				class Source_Decoration_Type,
+				class Destination_PoP_Type,
+				class Destination_Decoration_Type,
+				class Cell_Id_T,
+				class Quick_Move_Cache_T,
+				class Piece_Move_T
+			>
+				requires std::same_as<typename Source_PoP_Type::cell_id_type, Cell_Id_T>&&
+			std::same_as<typename Destination_PoP_Type::cell_id_type, Cell_Id_T>
+				inline static void bigraph_simulation_copy(
+					const tobor::v1_1::simple_state_bigraph<Source_PoP_Type, Source_Decoration_Type>& source_bigraph,
+					tobor::v1_1::simple_state_bigraph<Destination_PoP_Type, Destination_Decoration_Type>& destination_bigraph,
+					const Destination_PoP_Type& initial_state_destination,
+					const move_one_piece_calculator<Cell_Id_T, Quick_Move_Cache_T, Piece_Move_T>& engine
 
-				tobor::v1_1::simple_state_bigraph<Source_PoP_Type, Source_Decoration_Type>::map_const_iterator_type source_initial_state_iterator{ source_bigraph.map.cend() };
+				) {
+				using source_bigraph_type = tobor::v1_1::simple_state_bigraph<Source_PoP_Type, Source_Decoration_Type>;
+				using destination_bigraph_type = tobor::v1_1::simple_state_bigraph<Destination_PoP_Type, Destination_Decoration_Type>;
 
+				//using source_map_const_iterator = typename source_bigraph_type::map_const_iterator_type;
+				using source_map_const_iterator = typename source_bigraph_type::map_type::const_iterator;
+
+				using destination_map_iterator = typename destination_bigraph_type::map_iterator_type;
+
+
+				using sst = typename source_bigraph_type::state_set_type;
+				using source_state_set_const_iterator = typename sst::const_iterator;
+				//using source_state_set_const_iterator = typename source_bigraph_type::state_set_type::const_iterator;
+
+				struct simulation_copy_df_record {
+
+					using source_bigraph_type = tobor::v1_1::simple_state_bigraph<Source_PoP_Type, Source_Decoration_Type>;
+					using destination_bigraph_type = tobor::v1_1::simple_state_bigraph<Destination_PoP_Type, Destination_Decoration_Type>;
+
+					using source_map_const_iterator = typename source_bigraph_type::map_const_iterator_type;
+					using destination_map_iterator = typename destination_bigraph_type::map_iterator_type;
+
+					using source_state_set_const_iterator = typename source_bigraph_type::state_set_type::const_iterator;
+
+					source_map_const_iterator source_map_it;
+					source_state_set_const_iterator source_succ_it;
+					destination_map_iterator destination_map_it;
+
+				};
+
+				//using activation_record = simulation_copy_df_record<Source_PoP_Type, Source_Decoration_Type, Destination_PoP_Type, Destination_Decoration_Type, Cell_Id_T, Quick_Move_Cache_T, Piece_Move_T>;
+
+				using activation_record = simulation_copy_df_record;
+
+				destination_bigraph.clear();
+
+				// find the initial state in source bigraph:
+				source_map_const_iterator source_initial_state_iterator{ source_bigraph.map.cend() };
 				for (auto iter = source_bigraph.map.cbegin(); iter != source_bigraph.map.cend(); ++iter) {
 					if (iter->second.predecessors.empty()) {
 						if (source_initial_state_iterator != source_bigraph.map.cend()) {
 							throw 0; // error: more than 1 initial state
 						}
+						source_initial_state_iterator = iter;
 					}
 				}
-			}
 
+				auto iter_destination_map_initial_state = destination_bigraph.map.insert(
+					destination_bigraph.map.begin(),
+					std::make_pair(initial_state_destination, destination_bigraph_type::node_links())
+				);
+
+				//auto iter = source_initial_state_iterator;
+
+				std::map<Source_PoP_Type, std::set<Destination_PoP_Type>> simulation_links;
+
+
+				std::vector<activation_record> df_exploration_stack;
+				df_exploration_stack.emplace_back();
+
+				df_exploration_stack.back().source_map_it = source_initial_state_iterator;
+				df_exploration_stack.back().source_succ_it = source_initial_state_iterator->second.successors.cbegin();
+				df_exploration_stack.back().destination_map_it = iter_destination_map_initial_state;
+
+				simulation_links[source_initial_state_iterator->first].insert(iter_destination_map_initial_state->first);
+
+
+				while (!df_exploration_stack.empty()) {
+					activation_record& current{ df_exploration_stack.back() };
+
+					if (current.source_succ_it == current.source_map_it->second.successors.cend()) {
+						// all successors have been explored here
+						df_exploration_stack.pop_back();
+						continue;
+					}
+
+					const auto& source_curr_state{ current.source_map_it->first };
+					const auto& source_succ_state{ *current.source_succ_it };
+					auto& destination_curr_state{ current.destination_map_it->first };
+
+					++current.source_succ_it;
+
+					Piece_Move_T move{ engine.state_minus_state(source_succ_state, source_curr_state) };
+
+					Destination_PoP_Type similar_successor_state = engine.state_plus_move(destination_curr_state, move);
+
+
+					//auto& destination_succ_map_value = destination_bigraph.map[similar_successor_state]; // insert successor state, if not present
+					auto [destination_succ_map_iter, inserted_destination_succ] = destination_bigraph.map.insert(
+						std::make_pair(similar_successor_state, destination_bigraph_type::node_links())
+					); // insert successor state, if not present
+
+					//destination_succ_map_value.predecessors.insert(destination_curr_state); // insert predecessor state, if not present
+					destination_succ_map_iter->second.predecessors.insert(destination_curr_state); // insert predecessor state, if not present
+
+					current.destination_map_it->second.successors.insert(similar_successor_state); // insert successor state, if not present
+
+					auto [pos, insert_took_place] = simulation_links[source_succ_state].insert(similar_successor_state);
+
+					if (insert_took_place) {
+						// found a new simulation_link, so recursive df exploration has to be made there:
+						df_exploration_stack.emplace_back();
+						activation_record& sub{ df_exploration_stack.back() };
+
+						sub.source_map_it = source_bigraph.map.find(source_succ_state);
+						sub.source_succ_it = sub.source_map_it->second.successors.cbegin();
+						sub.destination_map_it = destination_succ_map_iter;
+					}
+
+
+				}
+
+
+			}
 		};
+
 
 	}
 
