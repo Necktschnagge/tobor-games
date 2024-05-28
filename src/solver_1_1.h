@@ -1641,19 +1641,8 @@ namespace tobor {
 		};
 
 		class bigraph_operations {
-
-			//template<
-			//	class Source_PoP_Type,
-			//	class Source_Decoration_Type,
-			//	class Destination_PoP_Type,
-			//	class Destination_Decoration_Type,
-			//	class Cell_Id_T,
-			//	class Quick_Move_Cache_T,
-			//	class Piece_Move_T
-			//>
-
-
 		public:
+
 			/**
 			*	@brief requires single initial state in source bigraph
 			*/
