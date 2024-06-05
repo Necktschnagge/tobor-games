@@ -9,6 +9,13 @@
 
 namespace tobor {
 
+	template<uint64_t X>
+	constexpr uint64_t FACULTY{ X * FACULTY<X - 1> };
+
+	template<>
+	constexpr uint64_t FACULTY<0>{ 1 };
+
+
 	namespace v1_0 {
 
 		namespace world_generator {
@@ -91,7 +98,7 @@ namespace tobor {
 				};
 
 			private:
-				// standard generator:
+				// standard product_generator:
 				// 4 times: select a quadrant
 				// 6 permutations
 				// 4 board rotation
@@ -129,8 +136,8 @@ namespace tobor {
 					return gcd(y % x, x);
 				}
 
-				//static_assert(gcd(STANDARD_GENERATOR, CYCLIC_GROUP_SIZE) == 1, "check generator");
-				//static_assert(gcd(SECOND_GENERATOR, CYCLIC_GROUP_SIZE) == 1, "check generator");
+				//static_assert(gcd(STANDARD_GENERATOR, CYCLIC_GROUP_SIZE) == 1, "check product_generator");
+				//static_assert(gcd(SECOND_GENERATOR, CYCLIC_GROUP_SIZE) == 1, "check product_generator");
 
 				inline uint64_t& increment_generator_until_gcd_1() {
 					while (gcd(generator, CYCLIC_GROUP_SIZE) != 1) {
@@ -447,7 +454,7 @@ namespace tobor {
 				positions_of_pieces_type get_positions_of_pieces(const world_type& world) {
 
 					if (world.count_cells() != BOARD_SIZE) {
-						throw board_size_condition_violation(board_size_condition_violation::reason_code::BOARD_SIZE); 	// write a test for board generator to always fulfill the condition !
+						throw board_size_condition_violation(board_size_condition_violation::reason_code::BOARD_SIZE); 	// write a test for board product_generator to always fulfill the condition !
 					}
 
 					if (world.blocked_cells() != BLOCKED_CELLS) {
@@ -546,14 +553,14 @@ namespace tobor {
 					return side_generator;
 				}
 
-				// add counter / generator here if wanted. for random access
+				// add counter / product_generator here if wanted. for random access
 
 
-				// main Group generator size M
+				// main Group product_generator size M
 
-				// side Group generator size N
+				// side Group product_generator size N
 
-				// generator standard 1
+				// product_generator standard 1
 
 				// counter k in 0..M*N
 
@@ -602,7 +609,7 @@ namespace tobor {
 			};
 
 			class dynamic_generator {
-				// select a generator, an input, give generated board as output.
+				// select a product_generator, an input, give generated board as output.
 			};
 
 		}
@@ -614,7 +621,7 @@ namespace tobor {
 			class original_4_of_16 {
 			public:
 
-				using world_type = tobor::v1_1::dynamic_rectangle_world<uint16_t,uint8_t>;
+				using world_type = tobor::v1_1::dynamic_rectangle_world<uint16_t, uint8_t>;
 
 				using cell_id_type = tobor::v1_1::min_size_cell_id<world_type>;
 
@@ -689,7 +696,7 @@ namespace tobor {
 				};
 
 			private:
-				// standard generator:
+				// standard product_generator:
 				// 4 times: select a quadrant
 				// 6 permutations
 				// 4 board rotation
@@ -727,8 +734,8 @@ namespace tobor {
 					return gcd(y % x, x);
 				}
 
-				//static_assert(gcd(STANDARD_GENERATOR, CYCLIC_GROUP_SIZE) == 1, "check generator");
-				//static_assert(gcd(SECOND_GENERATOR, CYCLIC_GROUP_SIZE) == 1, "check generator");
+				//static_assert(gcd(STANDARD_GENERATOR, CYCLIC_GROUP_SIZE) == 1, "check product_generator");
+				//static_assert(gcd(SECOND_GENERATOR, CYCLIC_GROUP_SIZE) == 1, "check product_generator");
 
 				inline uint64_t& increment_generator_until_gcd_1() {
 					while (gcd(generator, CYCLIC_GROUP_SIZE) != 1) {
@@ -771,6 +778,30 @@ namespace tobor {
 					std::swap(result[2], result[2 + permutation % 2]);
 					return result;
 				}
+
+
+				template<class Aggregation_Type>
+				inline static void raw_permutation(Aggregation_Type& permutation, std::size_t index, uint64_t permutation_strategy_int, uint64_t permutation_size) {
+
+					while (permutation_size > 1) {
+						const std::size_t SWAP_INFO{ permutation_strategy_int % permutation_size };
+						std::swap(permutation[index], permutation[index + SWAP_INFO]);
+
+						++index;
+						permutation_strategy_int /= permutation_size;
+					}
+				}
+
+
+				template<class Aggregation_Type, uint64_t PERMUTATION_SIZE>
+				Aggregation_Type obtain_permutation(const Aggregation_Type& original_ordered_colors) {
+					Aggregation_Type result = original_ordered_colors;
+					uint64_t permutation_strategy_int = counter * SECOND_GENERATOR % FACULTY<PERMUTATION_SIZE>;
+					raw_permutation(result, 0, permutation_strategy_int);
+					return result;
+				}
+
+
 
 				inline uint64_t get_counter() {
 					return counter;
@@ -1016,7 +1047,7 @@ namespace tobor {
 				/**
 				*	@brief Returns a vector of size \p count_pieces where at every index there is a number [0.. count_cells)
 				*	@param selector is used to select one of all possible combinations, which are all numbered 0..
-				* 
+				*
 				*	@return vector with numbers sorted ascending, no number occurs twice
 				*/
 				std::vector<uint64_t> get_selected_indices(const uint64_t& count_pieces, const uint64_t& count_cells, uint64_t selector) {
@@ -1057,7 +1088,7 @@ namespace tobor {
 				positions_of_pieces_type get_positions_of_pieces(const world_type& world) {
 
 					if (world.count_cells() != BOARD_SIZE) {
-						throw board_size_condition_violation(board_size_condition_violation::reason_code::BOARD_SIZE); 	// write a test for board generator to always fulfill the condition !
+						throw board_size_condition_violation(board_size_condition_violation::reason_code::BOARD_SIZE); 	// write a test for board product_generator to always fulfill the condition !
 					}
 
 					if (world.blocked_cells() != BLOCKED_CELLS) {
@@ -1156,14 +1187,14 @@ namespace tobor {
 					return side_generator;
 				}
 
-				// add counter / generator here if wanted. for random access
+				// add counter / product_generator here if wanted. for random access
 
 
-				// main Group generator size M
+				// main Group product_generator size M
 
-				// side Group generator size N
+				// side Group product_generator size N
 
-				// generator standard 1
+				// product_generator standard 1
 
 				// counter k in 0..M*N
 
@@ -1212,7 +1243,7 @@ namespace tobor {
 			};
 
 			class dynamic_generator {
-				// select a generator, an input, give generated board as output.
+				// select a product_generator, an input, give generated board as output.
 			};
 
 		}

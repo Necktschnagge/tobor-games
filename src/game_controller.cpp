@@ -38,11 +38,12 @@ void GameController::start_solver(std::function<void(const std::string&)> status
 	mw->statusBar()->showMessage("Extracting solution state graph...");
 	mw->repaint();
 	*/
-	_solver.emplace(current_state().naked());
+
+	_solver.emplace(current_state(),_target_cell,_move_engine, status_callback);
 
 	_solver_begin_index = _path.vector().size();
 
-	if (!_solver.value().run(*this, status_callback)) {
+	if (_solver.value().solutions_size() == 0) {
 		// error dialog message!!!####
 		return stop_solver();
 	}
@@ -60,7 +61,7 @@ void GameController::move_by_solver(bool forward) {
 	if (forward) {
 		if (is_final())
 			return;
-		_path += _solver.value().partitioned_pairs[_solver.value().selected_solution_index][0].first.vector()[index_next_state];
+		_path += _solver.value().get_solution_state_path(_solution_index).vector()[index_next_state];
 	}
 	else { // back
 		if (index_next_move == 0) // already at solver start

@@ -2,6 +2,8 @@
 
 class GameController; // to be removed! ps_map is private, this is needed for friend class to work. Find another solution.
 
+
+#include "game_factory.h"
 #include "game_controller.h"
 
 #include "world_generator.h"
@@ -65,11 +67,13 @@ private:
 
 	InteractiveMode interactive_mode;
 
-	std::list<GameController> gameHistory;
+	std::shared_ptr<GameController> current_game; /// check all positions where used!!!! #######
+
+	std::vector<std::shared_ptr<GameFactory>> game_history_222;
+
+	OriginalGameFactory<GameController::piece_quantity_type> next_factory;
 
 	GameController::piece_id_type selected_piece_id{ 0 };
-
-	product_generator_type productWorldGenerator;
 
 	std::mt19937 generator;
 
@@ -97,7 +101,7 @@ public:
 	GuiInteractiveController(MainWindow* mainWindow) :
 		mainWindow(mainWindow),
 		interactive_mode(InteractiveMode::NO_GAME),
-		productWorldGenerator()
+		next_factory()
 	{
 		std::random_device rd;
 
@@ -106,10 +110,11 @@ public:
 		std::uniform_int_distribution<uint64_t> distribution_on_uint64_board(0, board_generator_type::CYCLIC_GROUP_SIZE);
 		std::uniform_int_distribution<uint64_t> distribution_on_uint64_pieces(0, product_generator_type::side_group_generator_type::CYCLIC_GROUP_SIZE);
 
-		productWorldGenerator.main().set_counter(distribution_on_uint64_board(generator));
-		productWorldGenerator.side().set_counter(distribution_on_uint64_pieces(generator));
+		next_factory.product_generator().main().set_counter(distribution_on_uint64_board(generator));
+		next_factory.product_generator().side().set_counter(distribution_on_uint64_pieces(generator));
 
-		//originalGenerator.set_counter(distribution_on_uint64(generator));
+
+		//originalGenerator.set_counter(distribution_on_uint64(product_generator));
 
 		//originalGenerator.set_counter(73021); // 72972 73021
 
