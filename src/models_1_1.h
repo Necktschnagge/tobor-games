@@ -563,7 +563,13 @@ namespace tobor {
 
 			template<class U, class ... T>
 			inline void feedback_helper(const permutation_type& p, U& x, T& ... xs) {
-				x = static_cast<U>(p[x]);
+				// need inverse of permutation.
+				for (typename pieces_quantity_type::int_type i{ 0 }; i < p.size(); ++i) {
+					if (p[i] == x) {
+						x = i;
+						break;
+					}
+				}
 				feedback_helper(p, xs...);
 			}
 

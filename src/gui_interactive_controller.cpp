@@ -350,6 +350,7 @@ void GuiInteractiveController::movePiece(const tobor::v1_0::direction& direction
 	case GuiInteractiveController::InteractiveMode::GAME_INTERACTIVE:
 
 		current_game->move_feedback(selected_piece_id, direction); // here we need to update selected piece_id because of reordering. or we need to store colors...
+		mainWindow->statusBar()->showMessage(QString::fromStdString(std::to_string((unsigned int)(selected_piece_id.value))));
 
 		refreshAll();
 
@@ -448,9 +449,9 @@ void GuiInteractiveController::viewSolutionPaths() // this has to be improved!!!
 
 	auto permutated_color_vector = current_color_vector;
 
-	for (std::size_t i{ 0 }; i < current_color_vector.colors.size(); ++i) {
-		permutated_color_vector.colors[i] = current_color_vector.colors[current_game->current_state().get_permutation()[i]];
-	}
+	//for (std::size_t i{ 0 }; i < current_color_vector.colors.size(); ++i) {
+	//	permutated_color_vector.colors[i] = current_color_vector.colors[current_game->solver_begin_state().get_permutation()[i]];
+	//}
 
 	const auto& partitions{ current_game->optimal_solutions() /* get solver's move path for displaying on the upper right of main window */ };
 

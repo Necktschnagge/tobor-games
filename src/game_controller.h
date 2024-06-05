@@ -21,7 +21,7 @@ private:
 
 	std::optional<SolverEnvironment> _solver;
 
-	std::size_t _solver_begin_index;
+	std::size_t _solver_begin_index; // index of the first state where the solver moves to. == _path.vector().size() in case of solver-initial state
 
 	std::size_t _solution_index;
 
@@ -56,7 +56,13 @@ public:
 
 	/* non-modifying */
 
-	const positions_of_pieces_type_interactive& current_state() const { return _path.vector().back(); }
+	inline const positions_of_pieces_type_interactive& current_state() const { return _path.vector().back(); }
+
+	inline const positions_of_pieces_type_interactive& solver_begin_state() const {
+		if (!_solver)
+			return _path.vector().back();
+		return _path.vector()[_solver_begin_index - 1];
+	}
 
 	inline bool is_final() const { return current_state().is_final(_target_cell); }
 
