@@ -55,25 +55,20 @@ public:
 
 		std::vector<typename piece_quantity_type::int_type> initial_color_permutation;
 
+		for (typename piece_quantity_type::int_type i = 0; i < piece_quantity_type::COUNT_ALL_PIECES; ++i) { // build neutral permutation
+			initial_color_permutation.push_back(i);
+		}
 
 		if constexpr (piece_quantity_type::COUNT_ALL_PIECES == 4) {
-
 			initial_color_permutation = _product_generator.main().obtain_standard_4_coloring_permutation(initial_color_permutation);
-
 		}
 		else {
-
-			for (typename piece_quantity_type::int_type i = 0; i < piece_quantity_type::COUNT_ALL_PIECES; ++i) { // build neutral permutation
-				initial_color_permutation.push_back(i);
-			}
-
 			initial_color_permutation = _product_generator.main().obtain_permutation<std::vector<piece_quantity_type::int_type>, piece_quantity_type::COUNT_ALL_PIECES>(initial_color_permutation);
-
 		}
 
 		return std::make_shared<GameController>(
 			world,
-			_product_generator.side().get_positions_of_pieces(world),
+			_product_generator.side().get_positions_of_pieces(world).apply_permutation(initial_color_permutation),
 			_product_generator.main().get_target_cell()
 		);
 	}

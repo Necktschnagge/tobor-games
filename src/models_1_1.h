@@ -464,9 +464,9 @@ namespace tobor {
 					perm[i] = i;
 			}
 
-			template<class Aggregation_Type>
-			inline static void apply_perm(const permutation_type& p, Aggregation_Type& target) {
-				auto update = Aggregation_Type(target);
+			template<class Aggregation_Type1, class Aggregation_Type2>
+			inline static void apply_perm(const Aggregation_Type1& p, Aggregation_Type2& target) {
+				auto update = Aggregation_Type2(target);
 				for (std::size_t i{ 0 }; i < p.size(); ++i) {
 					update[i] = target[p[i]];
 				}
@@ -480,8 +480,9 @@ namespace tobor {
 
 			inline const permutation_type& get_permutation() const { return _permutation; } // ### rename members!
 
-			inline void reset_permutation() {
+			inline augmented_positions_of_pieces& reset_permutation() {
 				reset_perm(_permutation);
+				return *this;
 			}
 
 			template<class Iter>
@@ -557,7 +558,18 @@ namespace tobor {
 				return _piece_positions.end();
 			};
 
-			inline void sort_pieces() {
+
+			inline void feedback_helper(const permutation_type&) {}
+
+			template<class U, class ... T>
+			inline void feedback_helper(const permutation_type& p, U& x, T& ... xs) {
+				x = static_cast<U>(p[x]);
+				feedback_helper(p, xs...);
+			}
+
+
+			template<class ... T>
+			inline void sort_pieces(T&... piece_ids) {
 				if constexpr ((!SORTED_TARGET_PIECES || COUNT_TARGET_PIECES <= 1) && (!SORTED_NON_TARGET_PIECES || COUNT_NON_TARGET_PIECES <= 1)) {
 					return;
 				}
@@ -576,6 +588,15 @@ namespace tobor {
 				}
 				apply_perm(p_new, _piece_positions);
 				apply_perm(p_new, _permutation);
+
+				//(piece_ids = p_new[piece_ids]; ...);
+				feedback_helper(p_new, piece_ids...);
+			}
+
+			template<class AggregationType>
+			inline augmented_positions_of_pieces& apply_permutation(const AggregationType& permutation) {
+				apply_perm(permutation, _permutation);
+				return *this;
 			}
 
 			inline bool is_final(const cell_id_type& target_cell) const {

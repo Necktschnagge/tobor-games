@@ -92,10 +92,10 @@ namespace tobor {
 					}
 				}
 				{
-					go_east[VECTOR_SIZE - 1] = VECTOR_SIZE - 1;
-					go_north[VECTOR_SIZE - 1] = VECTOR_SIZE - 1;
+					go_east[VECTOR_SIZE - 1] = static_cast<cell_id_int_type>(VECTOR_SIZE - 1);
+					go_north[VECTOR_SIZE - 1] = static_cast<cell_id_int_type>(VECTOR_SIZE - 1);
 
-					cell_id_int_type id = VECTOR_SIZE - 1;
+					cell_id_int_type id{ static_cast<cell_id_int_type>(VECTOR_SIZE - 1) };
 					do {
 						--id;
 						if (board.east_wall_by_id(id)) {
@@ -402,6 +402,16 @@ namespace tobor {
 
 				result.piece_positions()[_piece_id.value] = next_cell_max_move(state.piece_positions()[_piece_id.value], state, _direction);
 				result.sort_pieces();
+
+				return result;
+			}
+
+			template<class Position_Of_Pieces_Type>
+			inline Position_Of_Pieces_Type successor_state_feedback(const Position_Of_Pieces_Type& state, typename piece_move_type::piece_id_type& _piece_id, const direction& _direction) const {
+				Position_Of_Pieces_Type result(state);
+
+				result.piece_positions()[_piece_id.value] = next_cell_max_move(state.piece_positions()[_piece_id.value], state, _direction);
+				result.sort_pieces(_piece_id.value);
 
 				return result;
 			}

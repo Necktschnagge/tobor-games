@@ -170,7 +170,7 @@ namespace tobor {
 				}
 
 				template<class Aggregation_Type>
-				Aggregation_Type obtain_standard_4_coloring_permutation(const Aggregation_Type& original_ordered_colors) {
+				Aggregation_Type obtain_standard_4_coloring_permutation(const Aggregation_Type& original_ordered_colors) const {
 					Aggregation_Type result = original_ordered_colors;
 					auto permutation = (counter * SECOND_GENERATOR % CYCLIC_GROUP_SIZE) / (CYCLIC_GROUP_SIZE / (4 * 3 * 2));
 					std::swap(result[0], result[permutation % 4]);
@@ -768,7 +768,7 @@ namespace tobor {
 				}
 
 				template<class Aggregation_Type>
-				Aggregation_Type obtain_standard_4_coloring_permutation(const Aggregation_Type& original_ordered_colors) {
+				Aggregation_Type obtain_standard_4_coloring_permutation(const Aggregation_Type& original_ordered_colors) const {
 					Aggregation_Type result = original_ordered_colors;
 					auto permutation = (counter * SECOND_GENERATOR % CYCLIC_GROUP_SIZE) / (CYCLIC_GROUP_SIZE / (4 * 3 * 2));
 					std::swap(result[0], result[permutation % 4]);
@@ -1050,7 +1050,7 @@ namespace tobor {
 				*
 				*	@return vector with numbers sorted ascending, no number occurs twice
 				*/
-				std::vector<uint64_t> get_selected_indices(const uint64_t& count_pieces, const uint64_t& count_cells, uint64_t selector) {
+				static std::vector<uint64_t> get_selected_indices(const uint64_t& count_pieces, const uint64_t& count_cells, uint64_t selector) {
 					std::vector<uint64_t> selected_indices;
 					uint64_t cell_index = 0;
 					for (uint64_t piece_id = 0; piece_id < count_pieces; ++piece_id) {
@@ -1085,7 +1085,13 @@ namespace tobor {
 				}
 
 				// need to define these types, where is the dependency map?
-				positions_of_pieces_type get_positions_of_pieces(const world_type& world) {
+				/**
+				*	@brief
+				*
+				*	@details The raw cell ids are ordered ascending by <. So using a sorting positions_of_pieces_type will sort with neutral permutation.
+				*
+				*/
+				positions_of_pieces_type get_positions_of_pieces(const world_type& world) const {
 
 					if (world.count_cells() != BOARD_SIZE) {
 						throw board_size_condition_violation(board_size_condition_violation::reason_code::BOARD_SIZE); 	// write a test for board product_generator to always fulfill the condition !
@@ -1183,7 +1189,15 @@ namespace tobor {
 					return main_generator;
 				}
 
+				const Main_Group_Generator_Type& main() const {
+					return main_generator;
+				}
+
 				Side_Group_Generator_Type& side() {
+					return side_generator;
+				}
+
+				const Side_Group_Generator_Type& side() const {
 					return side_generator;
 				}
 

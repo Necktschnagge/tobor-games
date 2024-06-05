@@ -35,7 +35,12 @@ struct EngineTypeSet {
 
 
 class SolverEnvironment : public EngineTypeSet {
+public:
 
+	using optimal_solutions_vector = std::vector<std::pair<state_path_type_interactive, move_path_type>>;
+
+
+private:
 	struct piece_change_decoration {
 		static constexpr std::size_t MAX{ std::numeric_limits<std::size_t>::max() };
 
@@ -66,7 +71,6 @@ class SolverEnvironment : public EngineTypeSet {
 
 	using path_classificator_type = tobor::v1_1::path_classificator<positions_of_pieces_type_solver>;
 
-	using optimal_solutions_vector = std::vector<std::pair<state_path_type_interactive, move_path_type>>;
 
 
 
@@ -345,7 +349,7 @@ public:
 		_distance_explorer(initial_state.naked()),
 		_optimal_solutions()
 	{
-		run_solver_toolchain(status_callback, MAX_DEPTH, true);
+		run_solver_toolchain(status_callback, MAX_DEPTH, 0);
 	}
 
 	/**
@@ -371,5 +375,8 @@ public:
 		return _optimal_solutions[index].first;
 	}
 
+	optimal_solutions_vector optimal_solutions() const {
+		return _optimal_solutions;
+	}
 };
 

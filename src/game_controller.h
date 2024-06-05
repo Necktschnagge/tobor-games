@@ -72,6 +72,20 @@ public:
 
 	/* modifying */
 
+	inline uint8_t move_feedback(piece_id_type& piece_id, const tobor::v1_0::direction& direction) {
+		if (_solver) return 4;
+
+		if (is_final()) return 2;
+
+		auto next_state = _move_engine.successor_state_feedback(current_state(), piece_id, direction);
+
+		if (next_state == current_state()) return 1;
+
+		_path += next_state;
+
+		return 0;
+	}
+
 	inline uint8_t move(const piece_id_type& piece_id, const tobor::v1_0::direction& direction) {
 		if (_solver) return 4;
 
@@ -117,6 +131,13 @@ public:
 
 	inline state_path_type_interactive path() const noexcept {
 		return _path;
+	}
+
+	inline auto optimal_solutions() const {
+		if (_solver) {
+			return _solver.value().optimal_solutions();
+		}
+		return SolverEnvironment::optimal_solutions_vector();
 	}
 
 	~GameController() {}
