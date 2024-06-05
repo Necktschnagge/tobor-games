@@ -11,6 +11,8 @@ public:
 
 	[[nodiscard]] virtual std::shared_ptr<GameController> create() const = 0;
 
+	virtual ~GameFactory() {}
+
 };
 
 
