@@ -192,7 +192,7 @@ void GuiInteractiveController::selectPieceByColorId(const std::size_t& color_id)
 		color_id
 	);
 
-	const typename decltype(iter)::difference_type index{ iter - current_game->current_state().get_permutation().cbegin() };
+	const GameController::piece_quantity_type::int_type index{ iter - current_game->current_state().get_permutation().cbegin() };
 
 	if (iter == current_game->current_state().get_permutation().cend())
 		throw std::logic_error("Illegal color_id.");
