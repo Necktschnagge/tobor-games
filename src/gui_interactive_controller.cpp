@@ -187,17 +187,13 @@ void GuiInteractiveController::selectPieceByColorId(const std::size_t& color_id)
 	auto iter = std::find(
 		current_game->current_state().get_permutation().cbegin(),
 		current_game->current_state().get_permutation().cend(),
-		//current_game->color_permutation().cbegin(),
-		//current_game->color_permutation().cend(),
 		color_id
 	);
-
-	const GameController::piece_quantity_type::int_type index{ iter - current_game->current_state().get_permutation().cbegin() };
 
 	if (iter == current_game->current_state().get_permutation().cend())
 		throw std::logic_error("Illegal color_id.");
 
-	setPieceId(index);
+	setPieceId(static_cast<GameController::piece_quantity_type::int_type>(iter - current_game->current_state().get_permutation().cbegin()));
 }
 
 
