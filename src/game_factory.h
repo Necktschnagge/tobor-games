@@ -63,7 +63,7 @@ public:
 			initial_color_permutation = _product_generator.main().obtain_standard_4_coloring_permutation(initial_color_permutation);
 		}
 		else {
-			initial_color_permutation = _product_generator.main().obtain_permutation<std::vector<piece_quantity_type::int_type>, piece_quantity_type::COUNT_ALL_PIECES>(initial_color_permutation);
+			initial_color_permutation = _product_generator.main().obtain_permutation<std::vector<typename piece_quantity_type::int_type>, piece_quantity_type::COUNT_ALL_PIECES>(initial_color_permutation);
 		}
 
 		return std::make_shared<GameController>(
