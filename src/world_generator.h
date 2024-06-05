@@ -10,10 +10,10 @@
 namespace tobor {
 
 	template<uint64_t X>
-	constexpr uint64_t FACULTY{ X * FACULTY<X - 1> };
+	inline constexpr uint64_t FACULTY{ X * FACULTY<X - 1> };
 
 	template<>
-	constexpr uint64_t FACULTY<0>{ 1 };
+	inline constexpr uint64_t FACULTY<0>{ 1 };
 
 
 	namespace v1_0 {
