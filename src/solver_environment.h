@@ -343,9 +343,9 @@ public:
 		//, bool explicilty_create_all_optimal_solution_paths = false // select prettiness evaluation.
 	) :
 		_initial_state(initial_state),
-		_status_code(0),
 		_target_cell(target_cell),
 		_move_engine(move_engine),
+		_status_code(0),
 		_distance_explorer(initial_state.naked()),
 		_optimal_solutions()
 	{
