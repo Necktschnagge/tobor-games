@@ -1018,6 +1018,8 @@ namespace tobor {
 			}
 
 			// ### offer step-wise exploration instead of exploration until optimal.
+
+			inline const std::vector<states_vector>& exploration_space() const { return _reachable_states_by_distance; }
 		};
 
 		template<class Position_Of_Pieces_T = default_positions_of_pieces>

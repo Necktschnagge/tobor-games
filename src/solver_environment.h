@@ -2,6 +2,9 @@
 
 #include "all_solver.h"
 
+#include <QtLogging>
+#include <QDebug>
+
 #include <functional>
 #include <optional>
 
@@ -320,6 +323,11 @@ private:
 
 		// explore...
 		if (status_callback) status_callback("Exploring state space until target...");
+		_distance_explorer.explore(_move_engine, SolverEnvironment::distance_exploration_type::exploration_policy::FORCE_EXPLORATION_UNRESTRICTED());
+		for (std::size_t i = 0; i < _distance_explorer.exploration_space().size(); ++i) {
+			qDebug() << i << "   :   " << _distance_explorer.exploration_space()[i].size() << "\n";
+		}
+
 		auto optimal_depth = _distance_explorer.explore_until_target(_move_engine, _target_cell, MAX_DEPTH);
 		// ### inside this call, log every distance level as a progress bar
 
