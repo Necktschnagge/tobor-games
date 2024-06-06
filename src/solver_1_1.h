@@ -842,7 +842,7 @@ namespace tobor {
 			*
 			*/
 			inline void explore(
-				move_one_piece_calculator_type& engine,
+				const move_one_piece_calculator_type& engine,
 				const exploration_policy& policy
 			) {
 				const size_type INDEX_LAST_EXPLORATION{ _reachable_states_by_distance.size() - 1 };
@@ -851,7 +851,7 @@ namespace tobor {
 
 				for (
 					size_type expand_level_index{ INDEX_LAST_EXPLORATION };
-					expand_level_index < policy._max_depth && states_counter < policy._state_count_threshold /* policy abort*/;
+					expand_level_index < policy.max_depth() && states_counter < policy.state_count_threshold() /* policy abort*/;
 					++expand_level_index
 					)
 				{
