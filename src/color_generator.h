@@ -80,17 +80,17 @@ namespace tobor {
 			static color_vector get_standard_coloring(uint8_t count_colors) {
 				color_vector v;
 
-				v.colors.emplace_back(0xFF, 0x00, 0x00, "red", "&red", 'r');
+				v.colors.emplace_back(0xFF, 0x00, 0xFF, "magenta", "&magenta", 'm');
 				v.colors.emplace_back(0x00, 0xFF, 0x00, "green", "&green", 'g');
-				v.colors.emplace_back(0x00, 0x00, 0xFF, "blue", "&blue", 'b');
-
-				v.colors.emplace_back(0xFF, 0xFF, 0x00, "yellow", "&yellow", 'y');
-
-				v.colors.emplace_back(0xFF, 0x90, 0x00, "orange", "&orange", 'o');
-				v.colors.emplace_back(0x90, 0x00, 0xFF, "purple", "&purple", 'p');
 
 				v.colors.emplace_back(0x00, 0xFF, 0xFF, "cyan", "&cyan", 'c');
-				v.colors.emplace_back(0xFF, 0x00, 0xFF, "magenta", "&magenta", 'm');
+				v.colors.emplace_back(0xFF, 0xFF, 0x00, "yellow", "&yellow", 'y');
+				v.colors.emplace_back(0xFF, 0x90, 0x00, "orange", "&orange", 'o');
+
+				v.colors.emplace_back(0x00, 0x00, 0xFF, "blue", "&blue", 'b');
+				v.colors.emplace_back(0x90, 0x00, 0xFF, "purple", "&purple", 'p');
+				v.colors.emplace_back(0xFF, 0x00, 0x00, "red", "&red", 'r');
+
 
 				v.colors.emplace_back(0xcf, 0xcf, 0xcf, "light grey", "&light grey", 'l');
 				v.colors.emplace_back(0x47, 0x47, 0x47, "dark grey", "&dark grey", 'd');
