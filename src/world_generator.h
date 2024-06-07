@@ -794,10 +794,10 @@ namespace tobor {
 
 
 				template<class Aggregation_Type, uint64_t PERMUTATION_SIZE>
-				Aggregation_Type obtain_permutation(const Aggregation_Type& original_ordered_colors) {
+				Aggregation_Type obtain_permutation(const Aggregation_Type& original_ordered_colors) const {
 					Aggregation_Type result = original_ordered_colors;
 					uint64_t permutation_strategy_int = counter * SECOND_GENERATOR % FACULTY<PERMUTATION_SIZE>;
-					raw_permutation(result, 0, permutation_strategy_int);
+					raw_permutation(result, 0, permutation_strategy_int, PERMUTATION_SIZE);
 					return result;
 				}
 
