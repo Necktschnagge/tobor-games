@@ -787,8 +787,10 @@ namespace tobor {
 						const std::size_t SWAP_INFO{ permutation_strategy_int % permutation_size };
 						std::swap(permutation[index], permutation[index + SWAP_INFO]);
 
-						++index;
 						permutation_strategy_int /= permutation_size;
+
+						++index;
+						--permutation_size;
 					}
 				}
 

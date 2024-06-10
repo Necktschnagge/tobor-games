@@ -149,14 +149,20 @@ public:
 
 	[[nodiscard]] virtual std::shared_ptr<GameController> create() const override {
 
-		world_type world{ get22Game() };
+		///#### this is not ok for release, Gamefactory should be a template where parameters are at least the piece quantities, than add a general factory which handles thingts dynamically.
 
-		cell_id_type target_cell{ cell_id_type::create_by_coordinates(9, 3, world) };
+		if constexpr (GameController::piece_quantity_type::COUNT_TARGET_PIECES != 1 || GameController::piece_quantity_type::COUNT_NON_TARGET_PIECES != 3) {
+			return nullptr;
+		}
+		else {
+			world_type world{ get22Game() };
 
-		positions_of_pieces_type_interactive initial_state = positions_of_pieces_type_interactive(
-			{
-				cell_id_type::create_by_coordinates(15, 15, world)
-			},
+			cell_id_type target_cell{ cell_id_type::create_by_coordinates(9, 3, world) };
+
+			positions_of_pieces_type_interactive initial_state = positions_of_pieces_type_interactive(
+				{
+					cell_id_type::create_by_coordinates(15, 15, world)
+				},
 			{
 				cell_id_type::create_by_coordinates(1,0, world),
 				cell_id_type::create_by_coordinates(12,14, world),
@@ -164,7 +170,8 @@ public:
 			}
 			);
 
-		return std::make_shared<GameController>(world, initial_state, target_cell);
+			return std::make_shared<GameController>(world, initial_state, target_cell);
+		}
 	}
 
 };

@@ -1604,6 +1604,151 @@ namespace tobor {
 				return flag_index;
 			}
 
+			/**
+			*	@brief
+			*	@return Number of partitions found
+			*/
+			static std::size_t make_state_graph_path_partitioning_fixed(simple_state_bigraph<positions_of_pieces_type, std::vector<bool>>& bigraph) {
+				/*
+				std::vector<position_of_pieces_type> initials;
+				std::vector<position_of_pieces_type> finals;
+
+				for (auto& entry : bigraph.map) {
+					entry.second.labels.clear();
+					if (entry.second.predecessors.empty()) {
+						initials.push_back(entry.first);
+					}
+					if (entry.second.successors.empty()) {
+						finals.push_back(entry.first);
+					}
+				}
+				*/
+
+				std::size_t flag_index{ 0 };
+				for (auto iter = bigraph.map.begin(); iter != bigraph.map.end(); ++iter) {
+					/* while there is a state not being part of any path partition */
+					if (iter->second.labels.empty()) {
+						// found iter pointing to a state not belonging to any partition/ i.e. has no label
+
+						std::vector<decltype(bigraph.map.begin())> exploration_iterator_stack; // collect iterators for elements in partition
+						exploration_iterator_stack.reserve(bigraph.map.size());
+						exploration_iterator_stack.push_back(iter);
+
+						// add new label to *iter state and to all state on some initial path.
+						set_flag(iter->second.labels, flag_index, true);
+
+						{
+							auto i_back = iter;
+							while (!i_back->second.predecessors.empty()) { // can be optimized
+								i_back = bigraph.map.find(*i_back->second.predecessors.begin());
+								// i_back != end() /* assured by logic, also check it here (?)*/
+								if (i_back == bigraph.map.end()) break;
+								set_flag(i_back->second.labels, flag_index, true);
+								exploration_iterator_stack.push_back(i_back);
+							}
+						}
+						{
+							auto i_forward = iter;
+							while (!i_forward->second.successors.empty()) { // can be optimized
+								i_forward = bigraph.map.find(*i_forward->second.successors.begin());
+								if (i_forward == bigraph.map.end()) break;
+								// i_forward != end() /* assured by logic, also check it here (?)*/
+								set_flag(i_forward->second.labels, flag_index, true);
+								exploration_iterator_stack.push_back(i_forward);
+							}
+						}
+
+						// add all other states to this partition which can be reached by true interleaving:
+
+						/*
+						Theory:
+							A new element can be found from two common states embracing an interleaving
+								A	---->	B1
+								-			-
+								-			-
+								->			->
+								B2	---->	C
+
+							wlog we already know B1 but not B2. B2 can be found exploring from A and exploring from C
+
+							use the following algorithm
+							Put all known states into a stack.
+							while stack not empty pop and explore from that element, always explore in both directions
+								if found any new state of same partition, push it onto the stack.
+							loop until stack empty.
+
+							This way all states of the same partition will be found.
+
+							::PROOF:: fairly simple, using contradiction:
+
+							Assume Partition = A setunion B
+							where all A have been found, but none of B.
+							Since all of b are reachable by statewise interleaving from A,
+							there must be some b2 and a1 ---> a2 ---> a3 such that also a1 ---> b2 ---> a3.
+							So assuming b2 was not found when the stack got empty.
+							This means that when a3 was popped, at this moment a1 has not yet been found.
+							Otherwise exploration would have found also b2.
+							So a1 was found after a3 was popped.
+							a1 explored after a1 found, a1 found after a3 popped, a3 popped after a3 found.
+							Thus, a1 explored after a3 found.
+							Hence b2 was found when a1 got explored. Contradiction.
+						*/
+						while (!exploration_iterator_stack.empty()) {
+							auto exploree = exploration_iterator_stack.back();
+							exploration_iterator_stack.pop_back();
+
+							for (const auto& candidate : exploree->second.successors) {
+								const auto i_candidate = bigraph.map.find(candidate);
+								if (i_candidate == bigraph.map.end()) continue; // never happens by logic if bigraph is sound.
+								if (contains(i_candidate->second.labels, flag_index)) continue; // state already labeled as part of current equivalence class
+
+								for (const auto& successor : i_candidate->second.successors) {
+									auto i_successor = bigraph.map.find(successor);
+									if (i_successor == bigraph.map.end()) continue; // never happens by logic if bigraph is sound.
+
+									if (contains(i_successor->second.labels, flag_index)) {
+										if (exploree->first.count_changed_pieces(i_successor->first) == 2) { // true interleaving
+											// accept candidate here:
+											exploration_iterator_stack.push_back(i_candidate);
+											set_flag(i_candidate->second.labels, flag_index);
+											goto candidate_accepted_1;
+										}
+									}
+								}
+							candidate_accepted_1:
+								(void)0;
+							}
+							for (const auto& candidate : exploree->second.predecessors) {
+								const auto i_candidate = bigraph.map.find(candidate);
+								if (i_candidate == bigraph.map.end()) continue; // never happens by logic if bigraph is sound.
+								if (contains(i_candidate->second.labels, flag_index)) continue; // state already labeled as part of current equivalence class
+
+								for (const auto& predecessor : i_candidate->second.predecessors) {
+									auto i_predecessor = bigraph.map.find(predecessor);
+									if (i_predecessor == bigraph.map.end()) continue; // never happens by logic if bigraph is sound.
+
+									if (contains(i_predecessor->second.labels, flag_index)) {
+										if (exploree->first.count_changed_pieces(i_predecessor->first) == 2) { // true interleaving
+											// accept candidate here:
+											exploration_iterator_stack.push_back(i_candidate);
+											set_flag(i_candidate->second.labels, flag_index);
+											goto candidate_accepted_2;
+										}
+									}
+								}
+							candidate_accepted_2:
+								(void)0;
+							}
+						}
+
+						++flag_index;
+					}
+
+				}
+
+				return flag_index;
+			}
+
 			template<class State_Label_Type>
 			static void extract_subgraph_by_label(
 				const simple_state_bigraph<positions_of_pieces_type, std::vector<bool>>& source,
