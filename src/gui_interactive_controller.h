@@ -10,9 +10,6 @@ class GameController; // to be removed! ps_map is private, this is needed for fr
 #include "color_generator.h"
 #include "svg_1_1.h"
 
-// #include "tobor_svg.h" produces error
-
-
 #include <QMainWindow>
 #include <QXmlStreamReader>
 #include <QSvgRenderer>
