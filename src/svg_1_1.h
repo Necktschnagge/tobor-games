@@ -1,6 +1,6 @@
 #pragma once
 
-#include "tobor_svg.h"
+#include "svg_1_0.h"
 
 
 namespace tobor {
@@ -24,8 +24,7 @@ namespace tobor {
 			namespace svg_path_elements {
 
 				using namespace ::tobor::v1_0::svg::svg_path_elements;
-				//template <class Number>
-				//using M = tobor::v1_0::svg::svg_path_elements::Number>;
+
 			}
 
 			using svg_path = tobor::v1_0::svg::svg_path;
@@ -33,37 +32,7 @@ namespace tobor {
 		}
 
 
-		struct drawing_style_sheet {
-			double HALF_GRID_LINE_WIDTH{ 1.5 };
-
-			double HALF_WALL_LINE_WIDTH{ 5 };
-			double WALL_CORNER_STRETCH{ 0.6 };
-
-
-			double PIECE_LINE_WIDTH{ 0.3 * HALF_WALL_LINE_WIDTH };
-
-			double VERTICAL_PIECE_PADDING{ HALF_WALL_LINE_WIDTH * 3 };
-			double HORIZONTAL_PIECE_PADDING{ HALF_WALL_LINE_WIDTH * 3 };
-
-			double PIECE_FOOT_THICKNESS_FACTOR{ 0.15 };
-
-			double PIECE_HEAD_X_RADIUS_FACTOR{ 0.3 };
-			double PIECE_HEAD_Y_RADIUS_FACTOR{ 0.2 };
-
-			double PIECE_HEAD_AXIS_ROTATION{ -50 };
-
-			// each cell is 100 x 100
-			// on each side we define a padding of 50. -> canvas is 1700 ^2
-			double CELL_HEIGHT{ 100.0 };
-			double CELL_WIDTH{ CELL_HEIGHT };
-			double LEFT_PADDING{ 0.5 * CELL_HEIGHT };
-			double RIGHT_PADDING{ 0.5 * CELL_HEIGHT };
-			double TOP_PADDING{ 0.5 * CELL_HEIGHT };
-			double BOTTOM_PADDING{ 0.5 * CELL_HEIGHT };
-
-		};
-
-
+		using drawing_style_sheet = tobor::v1_0::drawing_style_sheet;
 
 		template<class World_Type>
 		class piece_drawer {
