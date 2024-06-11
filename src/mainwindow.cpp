@@ -9,7 +9,7 @@
 
 #include "./ui_mainwindow.h"
 #include "gui_interactive_controller.h"
-#include "solver.h"
+#include "solver_1_0.h"
 #include "tobor_svg.h"
 
 #include "spdlog/spdlog.h"
