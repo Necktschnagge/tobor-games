@@ -28,7 +28,7 @@ else()
 endif()
 message("Tobor:  Parameters:  USE_QT6 set to:  ${USE_QT6}")
 
-ADD_DEFINITIONS(-DQT_NO_KEYWORDS) #turn off Qt's keywords: especially emit() does not work in combination with TBB
+
 
 ############### Preprocessor Macros ###############
 add_compile_definitions(GIT_REPOSITORY_URL="https://github.com/Necktschnagge/tobor-games")
