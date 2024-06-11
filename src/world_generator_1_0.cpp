@@ -27,6 +27,7 @@ void tobor::v1_0::world_generator::original_4_of_16::set_wall_corners(world_type
 		world.south_wall_by_transposed_id(cell_id.get_transposed_id()) = true;
 	}
 }
+
 void tobor::v1_0::world_generator::original_4_of_16::set_red_planet_0(world_type& world) {
 	world.block_center_cells(2, 2);
 	auto bottom = cell_id_type::create_by_coordinates(0, 4, world);
@@ -45,7 +46,6 @@ void tobor::v1_0::world_generator::original_4_of_16::set_red_planet_0(world_type
 		{ planet }      // SE
 	);
 }
-
 
 void tobor::v1_0::world_generator::original_4_of_16::set_red_planet_1(world_type& world) {
 	world.block_center_cells(2, 2);
@@ -66,7 +66,6 @@ void tobor::v1_0::world_generator::original_4_of_16::set_red_planet_1(world_type
 	);
 }
 
-
 void tobor::v1_0::world_generator::original_4_of_16::set_red_planet_2(world_type& world) {
 	world.block_center_cells(2, 2);
 	auto bottom = cell_id_type::create_by_coordinates(0, 6, world);
@@ -85,7 +84,6 @@ void tobor::v1_0::world_generator::original_4_of_16::set_red_planet_2(world_type
 		{ gear }        // SE
 	);
 }
-
 
 void tobor::v1_0::world_generator::original_4_of_16::set_red_planet_3(world_type& world) {
 	world.block_center_cells(2, 2);
@@ -106,7 +104,6 @@ void tobor::v1_0::world_generator::original_4_of_16::set_red_planet_3(world_type
 	);
 }
 
-
 void tobor::v1_0::world_generator::original_4_of_16::set_green_planet_0(world_type& world) {
 	auto left = cell_id_type::create_by_coordinates(5, 0, world);
 	auto bottom = cell_id_type::create_by_coordinates(0, 5, world);
@@ -125,7 +122,6 @@ void tobor::v1_0::world_generator::original_4_of_16::set_green_planet_0(world_ty
 		{ planet }              // SE
 	);
 }
-
 
 void tobor::v1_0::world_generator::original_4_of_16::set_green_planet_1(world_type& world) {
 	auto left = cell_id_type::create_by_coordinates(7, 0, world);
@@ -146,7 +142,6 @@ void tobor::v1_0::world_generator::original_4_of_16::set_green_planet_1(world_ty
 	);
 }
 
-
 void tobor::v1_0::world_generator::original_4_of_16::set_green_planet_2(world_type& world) {
 	auto left = cell_id_type::create_by_coordinates(7, 0, world);
 	auto bottom = cell_id_type::create_by_coordinates(0, 5, world);
@@ -165,7 +160,6 @@ void tobor::v1_0::world_generator::original_4_of_16::set_green_planet_2(world_ty
 		{ planet }              // SE
 	);
 }
-
 
 void tobor::v1_0::world_generator::original_4_of_16::set_green_planet_3(world_type& world) {
 	auto left = cell_id_type::create_by_coordinates(4, 0, world);
@@ -186,7 +180,6 @@ void tobor::v1_0::world_generator::original_4_of_16::set_green_planet_3(world_ty
 	);
 }
 
-
 void tobor::v1_0::world_generator::original_4_of_16::set_blue_planet_0(world_type& world) {
 	auto bottom = cell_id_type::create_by_coordinates(0, 5, world);
 	auto left = cell_id_type::create_by_coordinates(6, 0, world);
@@ -204,7 +197,6 @@ void tobor::v1_0::world_generator::original_4_of_16::set_blue_planet_0(world_typ
 		{ moon }        // SE
 	);
 }
-
 
 void tobor::v1_0::world_generator::original_4_of_16::set_blue_planet_1(world_type& world)
 {
@@ -224,7 +216,6 @@ void tobor::v1_0::world_generator::original_4_of_16::set_blue_planet_1(world_typ
 		{ planet }      // SE
 	);
 }
-
 
 void tobor::v1_0::world_generator::original_4_of_16::set_blue_planet_2(world_type& world) {
 	auto bottom = cell_id_type::create_by_coordinates(0, 6, world);
@@ -262,7 +253,6 @@ void tobor::v1_0::world_generator::original_4_of_16::set_blue_planet_3(world_typ
 	);
 }
 
-
 void tobor::v1_0::world_generator::original_4_of_16::set_yellow_planet_0(world_type& world) {
 	auto bottom = cell_id_type::create_by_coordinates(0, 5, world);
 	auto left = cell_id_type::create_by_coordinates(3, 0, world);
@@ -280,7 +270,6 @@ void tobor::v1_0::world_generator::original_4_of_16::set_yellow_planet_0(world_t
 		{ gear }        // SE
 	);
 }
-
 
 void tobor::v1_0::world_generator::original_4_of_16::set_yellow_planet_1(world_type& world) {
 	auto bottom = cell_id_type::create_by_coordinates(0, 2, world);
@@ -300,7 +289,6 @@ void tobor::v1_0::world_generator::original_4_of_16::set_yellow_planet_1(world_t
 	);
 }
 
-
 void tobor::v1_0::world_generator::original_4_of_16::set_yellow_planet_2(world_type& world) {
 	auto bottom = cell_id_type::create_by_coordinates(0, 4, world);
 	auto left = cell_id_type::create_by_coordinates(5, 0, world);
@@ -319,7 +307,6 @@ void tobor::v1_0::world_generator::original_4_of_16::set_yellow_planet_2(world_t
 	);
 }
 
-
 void tobor::v1_0::world_generator::original_4_of_16::set_yellow_planet_3(world_type& world) {
 	auto bottom = cell_id_type::create_by_coordinates(0, 4, world);
 	auto left = cell_id_type::create_by_coordinates(6, 0, world);
@@ -337,7 +324,6 @@ void tobor::v1_0::world_generator::original_4_of_16::set_yellow_planet_3(world_t
 		{ gear }        // SE
 	);
 }
-
 
 void tobor::v1_0::world_generator::original_4_of_16::create_quadrants(std::array<std::vector<world_type>, 4>& all_quadrants) {
 
@@ -363,7 +349,6 @@ void tobor::v1_0::world_generator::original_4_of_16::create_quadrants(std::array
 
 }
 
-
 tobor::v1_0::world_generator::original_4_of_16::world_type
 tobor::v1_0::world_generator::original_4_of_16::get_quadrant(std::size_t planet_color, std::size_t quadrant_index) {
 	static std::optional<std::array<std::vector<world_type>, 4>> quadrants;
@@ -374,8 +359,6 @@ tobor::v1_0::world_generator::original_4_of_16::get_quadrant(std::size_t planet_
 	}
 	return quadrants.value()[planet_color][quadrant_index];
 }
-
-
 
 void tobor::v1_0::world_generator::original_4_of_16::copy_walls_turned(const world_type& source, uint8_t rotation, world_type& destination) {
 	rotation %= 4;
@@ -388,7 +371,6 @@ void tobor::v1_0::world_generator::original_4_of_16::copy_walls_turned(const wor
 		destination.south_wall_by_transposed_id(i) |= turned.south_wall_by_transposed_id(i);
 	}
 }
-
 
 tobor::v1_0::world_generator::original_4_of_16::world_type
 tobor::v1_0::world_generator::original_4_of_16::get_world(uint64_t select_aligned_world, uint64_t rotation) {
@@ -433,5 +415,3 @@ tobor::v1_0::world_generator::original_4_of_16::get_world(uint64_t select_aligne
 	return aligned_result;
 
 }
-
-
