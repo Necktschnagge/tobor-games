@@ -1,6 +1,8 @@
 variables:
  - name: project_name
    value: Tobor
+ - name: USE_ARTIFICIAL_BUILD_DEPENDENCIES
+   value: true
 
 trigger:
   branches:
@@ -16,7 +18,8 @@ stages:
 
    jobs:
     - job: Qt_5___Clang_17
-      dependsOn: [Qt_6, Qt_5]
+      ${{ if eq(variables.USE_ARTIFICIAL_BUILD_DEPENDENCIES, true) }}:
+        dependsOn: [Qt_6, Qt_5]
       timeoutInMinutes: 30
       strategy:
         matrix:
@@ -58,7 +61,8 @@ stages:
          condition: succeeded()
 
     - job: Qt_6___Clang_17
-      dependsOn: [Qt_6, Qt_5]
+      ${{ if eq(variables.USE_ARTIFICIAL_BUILD_DEPENDENCIES, true) }}:
+        dependsOn: [Qt_6, Qt_5]
       timeoutInMinutes: 30
       strategy:
         matrix:
@@ -97,7 +101,8 @@ stages:
          condition: succeeded()
 
     - job: Qt_5
-      dependsOn: [Qt_6]
+      ${{ if eq(variables.USE_ARTIFICIAL_BUILD_DEPENDENCIES, true) }}:
+        dependsOn: [Qt_6]
       timeoutInMinutes: 30
       strategy:
         matrix:
