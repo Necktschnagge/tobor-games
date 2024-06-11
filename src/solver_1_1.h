@@ -1609,6 +1609,9 @@ namespace tobor {
 			*	@return Number of partitions found
 			*/
 			static std::size_t make_state_graph_path_partitioning_fixed(simple_state_bigraph<positions_of_pieces_type, std::vector<bool>>& bigraph) {
+
+				//### fix the coloring here!!!!
+
 				/*
 				std::vector<position_of_pieces_type> initials;
 				std::vector<position_of_pieces_type> finals;
