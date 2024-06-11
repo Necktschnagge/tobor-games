@@ -17,7 +17,7 @@
 
 namespace tobor {
 
-	namespace v1_0 {
+	namespace v1_1 {
 
 		namespace svg {
 
