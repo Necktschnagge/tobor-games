@@ -2,7 +2,7 @@ variables:
  - name: project_name
    value: Tobor
  - name: USE_ARTIFICIAL_BUILD_DEPENDENCIES
-   value: true
+   value: false
 
 trigger:
   branches:
