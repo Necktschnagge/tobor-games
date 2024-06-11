@@ -8,7 +8,7 @@
 
 #include <QStringListModel>
 
-#include "tobor_svg.h" // has to be reordered!
+#include "svg_1_0.h" // has to be reordered!
 
 #include <stdexcept>
 

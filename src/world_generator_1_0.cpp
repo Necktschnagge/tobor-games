@@ -1,6 +1,6 @@
 #include "predefined.h"
 
-#include "world_generator.h"
+#include "world_generator_1_0.h"
 
 void tobor::v1_0::world_generator::original_4_of_16::set_wall_corners(world_type& world, const std::vector<cell_id_type>& W_wall, const std::vector<cell_id_type>& S_wall, const std::vector<cell_id_type>& NW_corners, const std::vector<cell_id_type>& NE_corners, const std::vector<cell_id_type>& SW_corners, const std::vector<cell_id_type>& SE_corners)
 {
