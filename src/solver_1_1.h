@@ -11,7 +11,7 @@ class GameController; // for friend class declaration, to be removed
 
 namespace tobor {
 
-	namespace v1_0 {
+	namespace v1_1 {
 
 		// ### alternative board representation is just two sorted vectors of indices where there are walls, additionally you can uniformly encode pieces like walls, in this case double walls left and right, or top and bottom.
 
