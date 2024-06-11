@@ -46,6 +46,7 @@ void tobor::v1_1::world_generator::original_4_of_16::set_red_planet_0(world_type
 		{ planet }      // SE
 	);
 }
+
 void tobor::v1_1::world_generator::original_4_of_16::set_red_planet_1(world_type& world) {
 	world.block_center_cells(2, 2);
 	auto left = cell_id_type::create_by_coordinates(5, 0, world);
@@ -102,7 +103,6 @@ void tobor::v1_1::world_generator::original_4_of_16::set_red_planet_3(world_type
 		{ planet }      // SE
 	);
 }
-
 
 void tobor::v1_1::world_generator::original_4_of_16::set_green_planet_0(world_type& world) {
 	auto left = cell_id_type::create_by_coordinates(5, 0, world);
@@ -179,7 +179,6 @@ void tobor::v1_1::world_generator::original_4_of_16::set_green_planet_3(world_ty
 		{ moon }                // SE
 	);
 }
-
 
 void tobor::v1_1::world_generator::original_4_of_16::set_blue_planet_0(world_type& world) {
 	auto bottom = cell_id_type::create_by_coordinates(0, 5, world);
@@ -361,7 +360,6 @@ tobor::v1_1::world_generator::original_4_of_16::get_quadrant(std::size_t planet_
 	return quadrants.value()[planet_color][quadrant_index];
 }
 
-
 void tobor::v1_1::world_generator::original_4_of_16::copy_walls_turned(const world_type& source, uint8_t rotation, world_type& destination) {
 	rotation %= 4;
 	auto turned = source;
@@ -374,7 +372,6 @@ void tobor::v1_1::world_generator::original_4_of_16::copy_walls_turned(const wor
 		destination.south_wall_by_transposed_id(i_narrow) |= turned.south_wall_by_transposed_id(i_narrow);
 	}
 }
-
 
 tobor::v1_1::world_generator::original_4_of_16::world_type
 tobor::v1_1::world_generator::original_4_of_16::get_world(uint64_t select_aligned_world, uint64_t rotation) {
@@ -417,5 +414,4 @@ tobor::v1_1::world_generator::original_4_of_16::get_world(uint64_t select_aligne
 	}
 
 	return aligned_result;
-
 }
