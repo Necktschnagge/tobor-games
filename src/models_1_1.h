@@ -15,7 +15,7 @@
 
 namespace tobor {
 
-	namespace v1_0 {
+	namespace v1_1 {
 
 		class division_by_2_error : public std::logic_error { // OK
 			inline static const char MESSAGE[]{ "Wrong remainder on division by 2" };
