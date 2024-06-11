@@ -1,6 +1,6 @@
 #pragma once
 
-#include "all_solver.h"
+#include "solver_1_1.h"
 
 #include <functional>
 #include <optional>

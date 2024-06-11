@@ -9,7 +9,7 @@
 
 #include "./ui_mainwindow.h"
 #include "gui_interactive_controller.h"
-#include "all_solver.h"
+#include "solver_1_1.h"
 
 #include "spdlog/spdlog.h"
 #include "spdlog/sinks/qt_sinks.h"
