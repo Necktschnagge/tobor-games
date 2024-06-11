@@ -6,7 +6,7 @@ class GameController; // to be removed! ps_map is private, this is needed for fr
 #include "game_factory.h"
 #include "game_controller.h"
 
-#include "world_generator.h"
+#include "world_generator_1_1.h" // remove here? only needed in factory!
 #include "color_generator.h"
 #include "svg_1_1.h"
 

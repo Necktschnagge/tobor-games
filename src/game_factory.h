@@ -1,7 +1,7 @@
 #pragma once
 
 #include "game_controller.h"
-#include "world_generator.h"
+#include "world_generator_1_1.h"
 
 #include <memory>
 
