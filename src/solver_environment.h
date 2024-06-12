@@ -71,11 +71,6 @@ private:
 
 	using path_classificator_type = tobor::v1_1::path_classificator<positions_of_pieces_type_solver>;
 
-
-
-
-	//std::size_t selected_solution_index;
-
 	positions_of_pieces_type_interactive _initial_state;
 
 	cell_id_type _target_cell;
