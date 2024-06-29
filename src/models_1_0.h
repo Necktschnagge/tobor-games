@@ -18,16 +18,17 @@
 
 namespace tobor {
 
+/*
 	namespace v1_1 {
 
 		// only for friend declarations!, ### resolve this, there should not be access to private member -> hence remove all friendships in positions_of_pieces
-
 		template<class CIT, class Quick_Move_Cache_T, class Piece_Move_Type>
 		class move_one_piece_calculator;
 
 		template <class Move_One_Piece_Calculator, class PoP_T>
 		class distance_exploration;
 	}
+*/
 
 	namespace v1_0 {
 
@@ -55,7 +56,7 @@ namespace tobor {
 
 			direction(int_type v) : value(v) {}
 
-			static constexpr uint8_t direct_access[17]{
+			static constexpr uint8_t direction_invert_array[17]{
 					0x10,
 					0b0100, // 1 -> 4 // 0 -> 2
 					0b1000, // 2 -> 8 // 1 -> 3
@@ -87,9 +88,12 @@ namespace tobor {
 				static_assert(NORTH != EAST, "piece_move: NORTH == EAST");
 				static_assert(NORTH != SOUTH, "piece_move: NORTH == SOUTH");
 				static_assert(NORTH != WEST, "piece_move: NORTH == WEST");
+				static_assert(NORTH != END, "piece_move: NORTH == END");
 				static_assert(EAST != SOUTH, "piece_move: EAST == SOUTH");
 				static_assert(EAST != WEST, "piece_move: EAST == WEST");
+				static_assert(EAST != END, "piece_move: EAST == END");
 				static_assert(SOUTH != WEST, "piece_move: SOUTH == WEST");
+				static_assert(SOUTH != END, "piece_move: SOUTH == END");
 			};
 
 			inline static direction NORTH() { return encoding::NORTH; }
@@ -109,8 +113,6 @@ namespace tobor {
 
 
 			/* comparison operators */
-			//inline bool operator<(const direction& another) { return this->value < another.value; }
-			//inline bool operator==(const direction& another) { return this->value == another.value; }
 			inline std::strong_ordering operator<=>(const direction& another) const { return value <=> another.value; }
 
 
@@ -135,7 +137,7 @@ namespace tobor {
 				}
 			}
 
-			inline direction operator!() const noexcept { return direction(direct_access[value]); }
+			inline direction operator!() const noexcept { return direction(direction_invert_array[value]); }
 
 		};
 
@@ -532,21 +534,6 @@ namespace tobor {
 		class positions_of_pieces {
 			// ## alternative implementation using std::vector instead of array, as non-template variant
 
-			template <class Move_One_Piece_Calculator, class State_Graph_Node>
-			friend class partial_state_graph;
-
-			template<class Position_Of_Pieces_T, class Quick_Move_Cache_T, class Piece_Move_Type>
-			friend class move_one_piece_calculator;
-
-			template<class Position_Of_Pieces_T, class Quick_Move_Cache_T, class Piece_Move_Type>
-			friend class ::tobor::v1_1::move_one_piece_calculator;
-
-			template<class Positions_Of_Pieces_Type_T>
-			friend class tobor_graphics;
-
-			template <class Move_One_Piece_Calculator, class PoP_T>
-			friend class ::tobor::v1_1::distance_exploration;
-
 		public:
 
 			template <class INNER_Pieces_Quantity_Type, class INNER_Cell_Id_Type, bool INNER_SORTED_TARGET_PIECES_V, bool INNER_SORTED_NON_TARGET_PIECES_V>
@@ -561,17 +548,13 @@ namespace tobor {
 
 			using world_type = typename cell_id_type::world_type;
 
-			// cell_id_type::int_type for cell ids
+			using pieces_quantity_int_type = typename pieces_quantity_type::int_type;
 
+			static constexpr pieces_quantity_int_type COUNT_TARGET_PIECES{ Pieces_Quantity_Type::COUNT_TARGET_PIECES };
 
-			// here it should not use a dependent name without alias-defining it in the class itself!
-			// like piece_id_int_type, we already defined class piece_id as a wrapper.
+			static constexpr pieces_quantity_int_type COUNT_NON_TARGET_PIECES{ Pieces_Quantity_Type::COUNT_NON_TARGET_PIECES };
 
-			static constexpr typename pieces_quantity_type::int_type COUNT_TARGET_PIECES{ Pieces_Quantity_Type::COUNT_TARGET_PIECES };
-
-			static constexpr typename pieces_quantity_type::int_type COUNT_NON_TARGET_PIECES{ Pieces_Quantity_Type::COUNT_NON_TARGET_PIECES };
-
-			static constexpr typename pieces_quantity_type::int_type COUNT_ALL_PIECES{ Pieces_Quantity_Type::COUNT_ALL_PIECES };
+			static constexpr pieces_quantity_int_type COUNT_ALL_PIECES{ Pieces_Quantity_Type::COUNT_ALL_PIECES };
 
 			static constexpr bool SORTED_TARGET_PIECES{ SORTED_TARGET_PIECES_V };
 
@@ -582,8 +565,6 @@ namespace tobor {
 			using non_target_pieces_array_type = std::array<cell_id_type, COUNT_NON_TARGET_PIECES>;
 
 			using all_pieces_array_type = std::array<cell_id_type, COUNT_ALL_PIECES>;
-
-			//using coloring_type_uint64 = std::array<uint64_t, COUNT_ALL_PIECES>;
 
 		private:
 

@@ -1,41 +1,124 @@
 #include "gtest/gtest.h"
 
-#include "../src/solver_1_0.h"
+#include "../src/models_1_0.h"
 
 #include <type_traits>
 #include <array>
 
-
-
-
-TEST(engine, create_wall_type_bool_conversion) {
+TEST(division_by_2_error, create_what) {
 	ASSERT_NO_THROW(
-		auto t_wall = tobor::v1_0::wall_type(true);
-	(void)t_wall;
-		auto f_wall = tobor::v1_0::wall_type(false);
-	(void)f_wall;
+		tobor::v1_0::division_by_2_error error;
+	const char* m = error.what();
+	(void)m;
+
 	);
 }
 
-TEST(engine, create_world) {
+TEST(blocked_center_error, create_what) {
+	ASSERT_NO_THROW(
+		tobor::v1_0::blocked_center_error error;
+	const char* m = error.what();
+	(void)m;
+	);
+}
+
+TEST(direction, default_ctor) {
+	static_assert(std::is_default_constructible<tobor::v1_0::direction>::value == false, "direction default constructible");
+
+	ASSERT_TRUE(true);
+}
+
+TEST(direction, invert) {
+
+	ASSERT_TRUE(!tobor::v1_0::direction::NORTH() == tobor::v1_0::direction::SOUTH());
+	ASSERT_TRUE(!tobor::v1_0::direction::EAST() == tobor::v1_0::direction::WEST());
+	ASSERT_TRUE(!tobor::v1_0::direction::SOUTH() == tobor::v1_0::direction::NORTH());
+	ASSERT_TRUE(!tobor::v1_0::direction::WEST() == tobor::v1_0::direction::EAST());
+
+}
+
+TEST(direction, iterator_and_order) {
+
+	std::vector<tobor::v1_0::direction> all;
+
+	ASSERT_NO_THROW(
+		for (auto siter = tobor::v1_0::direction::begin(); siter != tobor::v1_0::direction::end(); ++siter) {
+			auto x = siter->get();
+			(void)x;
+			all.push_back(*siter);
+		}
+	);
+
+	ASSERT_TRUE(
+		std::is_sorted(all.cbegin(), all.cend())
+	);
+}
+
+TEST(wall, create_wall_type_std_constructor) {
+	static_assert(std::is_default_constructible<tobor::v1_0::wall_type>::value == false, "wall type default constructible");
+
+	ASSERT_TRUE(true);
+}
+
+TEST(wall, create_wall_type_bool_conversion) {
+	auto t_wall = tobor::v1_0::wall_type(true);
+	ASSERT_TRUE(static_cast<bool>(t_wall));
+	auto f_wall = tobor::v1_0::wall_type(false);
+	ASSERT_FALSE(static_cast<bool>(f_wall));
+}
+
+TEST(tobor_world, create_world) {
 	ASSERT_NO_THROW(
 		tobor::v1_0::tobor_world world;
 	);
 }
 
-TEST(engine, create_universal_field_id) {
+TEST(universal_cell_id, create) {
 	ASSERT_NO_THROW(
 		auto cell_id = tobor::v1_0::universal_cell_id();
 	(void)cell_id;
 	);
 }
 
-TEST(engine, universal_field_id_consistency) {
-	// ### check that id conversion has no inconsistencies...
+TEST(universal_cell_id, consistency) {
+	// TODO check that id conversion has no inconsistencies...
+	ASSERT_TRUE(true);
+}
+
+TEST(positions_of_pieces, create) {
+
 	ASSERT_NO_THROW(
-		auto field_id = 0;
-		(void)field_id;
+
+		auto w = tobor::v1_0::tobor_world world(10, 10);
+
+	auto raw = std::vector<tobor::v1_0::default_cell_id>(4, tobor::v1_0::universal_cell_id<>());
+
+	raw[0].set_id(33, w);
+	raw[1].set_id(70, w);
+	raw[2].set_id(12, w);
+	raw[3].set_id(87, w);
+
+
+	auto pop = tobor::v1_0::positions_of_pieces<
+		tobor::v1_0::default_pieces_quantity,
+		tobor::v1_0::default_cell_id,
+		false,
+		false
+	>(raw.cbegin());
+	(void)pop;
+
 	);
+
+	static_assert(std::is_default_constructible<tobor::v1_0::positions_of_pieces<>>::value == false, "positions_of_pieces default constructible");
+
+}
+
+
+TEST(piece_id, create) {
+
+	auto x = tobor::v1_0::piece_id pid(7);
+
+	EXPECT_EQUAL(x.value, 7);
 }
 
 
