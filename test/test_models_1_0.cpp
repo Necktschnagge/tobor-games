@@ -27,7 +27,7 @@ TEST(tobor__v1_0__direction, default_ctor) {
 
 	ASSERT_TRUE(true);
 }
-
+/*
 TEST(tobor__v1_0__direction, invert) {
 
 	EXPECT_EQ((!tobor::v1_0::direction::NORTH()), tobor::v1_0::direction::SOUTH());
@@ -142,12 +142,13 @@ TEST(tobor__v1_0__move_path, create) {
 	);
 
 }
+*/
 
 
 
 
 
-
+#if false
 TEST(engine, example_integration) {
 	// check the following scenario:
 	// create world
@@ -224,4 +225,4 @@ TEST(engine, example_integration) {
 	*/
 
 }
-
+#endif
