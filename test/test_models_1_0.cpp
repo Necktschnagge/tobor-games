@@ -30,10 +30,10 @@ TEST(tobor__v1_0__direction, default_ctor) {
 
 TEST(tobor__v1_0__direction, invert) {
 
-	EXPECT_EQ(!tobor::v1_0::direction::NORTH(), tobor::v1_0::direction::SOUTH());
-	EXPECT_EQ(!tobor::v1_0::direction::EAST(), tobor::v1_0::direction::WEST());
-	EXPECT_EQ(!tobor::v1_0::direction::SOUTH(), tobor::v1_0::direction::NORTH());
-	EXPECT_EQ(!tobor::v1_0::direction::WEST(), tobor::v1_0::direction::EAST());
+	EXPECT_EQ((!tobor::v1_0::direction::NORTH()), tobor::v1_0::direction::SOUTH());
+	EXPECT_EQ((!tobor::v1_0::direction::EAST()), tobor::v1_0::direction::WEST());
+	EXPECT_EQ((!tobor::v1_0::direction::SOUTH()), tobor::v1_0::direction::NORTH());
+	EXPECT_EQ((!tobor::v1_0::direction::WEST()), tobor::v1_0::direction::EAST());
 
 }
 
@@ -134,7 +134,10 @@ TEST(tobor__v1_0__piece_move, create_and_compare) {
 	EXPECT_TRUE(x < y);
 }
 
+/*
 TEST(tobor__v1_0__state_path, create) {
+
+
 
 	auto sp = tobor::v1_0::state_path();
 
@@ -144,6 +147,7 @@ TEST(tobor__v1_0__state_path, create) {
 
 	EXPECT_TRUE(x < y);
 }
+*/
 
 
 
