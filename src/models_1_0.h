@@ -20,22 +20,35 @@ namespace tobor {
 
 	namespace v1_0 {
 
+		/**
+		*	@brief An error to be thrown when a number is of wrong remainder class on division by 2.
+		*/
 		class division_by_2_error : public std::logic_error { // OK
 			inline static const char MESSAGE[]{ "Wrong remainder on division by 2" };
 		public:
 			division_by_2_error() : std::logic_error(MESSAGE) {}
 		};
 
+
+		/**
+		*	@brief An error to be thrown when there are too many blocked cells in the center of a game board.
+		*/
 		class blocked_center_error : public std::logic_error { // OK
 			inline static const char MESSAGE[]{ "Blocking too many cells." };
 		public:
 			blocked_center_error() : std::logic_error(MESSAGE) {}
 		};
 
+
+		/**
+		*	@brief Represents one of the four directions NORTH, EAST, SOUTH, WEST, or none of them, called END.
+		*/
 		class direction {
 		public:
 
+			/** underlying integer type */
 			using int_type = uint8_t;
+
 			using type = direction;
 
 		private:
@@ -65,6 +78,15 @@ namespace tobor {
 			};
 
 		public:
+
+			direction(const direction&) = default;
+
+			direction(direction&&) = default;
+
+			direction& operator=(const direction&) = default;
+
+			direction& operator=(direction&&) = default;
+
 			struct encoding {
 
 				static constexpr int_type NORTH{ 1 << 0 };
@@ -72,6 +94,7 @@ namespace tobor {
 				static constexpr int_type SOUTH{ 1 << 2 };
 				static constexpr int_type WEST{ 1 << 3 };
 				static constexpr int_type END{ 1 << 4 };
+				static constexpr int_type NONE{ END };
 
 				static_assert(NORTH != EAST, "piece_move: NORTH == EAST");
 				static_assert(NORTH != SOUTH, "piece_move: NORTH == SOUTH");
@@ -82,52 +105,56 @@ namespace tobor {
 				static_assert(EAST != END, "piece_move: EAST == END");
 				static_assert(SOUTH != WEST, "piece_move: SOUTH == WEST");
 				static_assert(SOUTH != END, "piece_move: SOUTH == END");
+				static_assert(WEST != END, "piece_move: WEST == END");
 			};
 
 			inline static direction NORTH() { return encoding::NORTH; }
 			inline static direction EAST() { return encoding::EAST; }
 			inline static direction SOUTH() { return encoding::SOUTH; }
 			inline static direction WEST() { return encoding::WEST; }
+			inline static direction NONE() { return encoding::NONE; }
 
 			inline bool is_id_direction() const noexcept { return (value & (encoding::EAST | encoding::WEST)); }
 			inline bool is_transposed_id_direction() const noexcept { return (value & (encoding::NORTH | encoding::SOUTH)); }
 
-			/* usage like an iterator over directions: */
+			/* use it like an iterator over directions: */
 			inline static direction begin() { return encoding::NORTH; }
 			inline static direction end() { return encoding::END; }
 
 			inline direction& operator++() { value <<= 1; return *this; }
 			inline direction operator++(int) { direction c = *this; value <<= 1; return c; }
 
-
-			/* comparison operators */
 			inline std::strong_ordering operator<=>(const direction& another) const { return value <=> another.value; }
 
-
-
-			/* access via conversion to underlying type */
-			inline operator int_type() const { return value; }
-
+			/** Conversion to underlying integer type */
 			inline int_type get() const noexcept { return value; }
+			inline operator int_type() const noexcept { return value; }
 
-			inline operator std::string() const {
+			inline char to_char() const {
 				switch (value) {
 				case encoding::NORTH:
-					return "N";
+					return 'N';
 				case encoding::EAST:
-					return "E";
+					return 'E';
 				case encoding::SOUTH:
-					return "S";
+					return 'S';
 				case encoding::WEST:
-					return "W";
+					return 'W';
 				default:
-					return " ";
+					return ' ';
 				}
 			}
 
+			inline operator std::string() const {
+				char x = to_char();
+				return std::string(&x, 1);
+			}
+
+			/** Returns the opposite direction. */
 			inline direction operator!() const noexcept { return direction(direction_invert_array[value]); }
 
 		};
+
 
 		/**
 		*	@brief One single boolean wall
@@ -142,7 +169,7 @@ namespace tobor {
 
 			wall_type(bool p_is_wall) : is_wall(p_is_wall) {}
 
-			operator const bool& () const {
+			operator bool() const {
 				return is_wall;
 			}
 
@@ -158,7 +185,7 @@ namespace tobor {
 
 		/**
 		*
-		*	@brief Represents the game's entire board, stating which fields are separated by walls.
+		*	@brief Represents the game's entire board, stating which cells are separated by walls.
 		*	@details Does NOT contain any information about where pieces are located.
 		*
 		*/

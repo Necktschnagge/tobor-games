@@ -43,9 +43,9 @@ TEST(direction, iterator_and_order) {
 
 	ASSERT_NO_THROW(
 		for (auto siter = tobor::v1_0::direction::begin(); siter != tobor::v1_0::direction::end(); ++siter) {
-			auto x = siter->get();
+			auto x = siter.get();
 			(void)x;
-			all.push_back(*siter);
+			all.push_back(siter);
 		}
 	);
 
