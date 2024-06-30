@@ -1117,13 +1117,13 @@ namespace tobor {
 			using pieces_quantity_int_type = typename pieces_quantity_type::int_type;
 
 		private:
-			vector_type move_vector;
+			vector_type _move_vector;
 
 		public:
 
 			move_path() {}
 
-			move_path(std::size_t n) : move_vector(n, piece_move_type()) {}
+			move_path(std::size_t n) : _move_vector(n, piece_move_type()) {}
 
 			move_path(const move_path&) = default;
 
@@ -1136,7 +1136,7 @@ namespace tobor {
 			template<class Position_Of_Pieces_Type, class Move_Once_Piece_Calculator_Type>
 			explicit move_path(const state_path<Position_Of_Pieces_Type>& s_path, const Move_Once_Piece_Calculator_Type& move_engine) {
 				for (std::size_t i{ 0 }; i + 1 < s_path.vector().size(); ++i) {
-					move_vector.emplace_back(move_engine.state_minus_state(s_path.vector()[i + 1], s_path.vector()[i]));
+					_move_vector.emplace_back(move_engine.state_minus_state(s_path.vector()[i + 1], s_path.vector()[i]));
 				}
 			}
 
@@ -1155,32 +1155,32 @@ namespace tobor {
 				move_path result;
 
 				for (std::size_t i{ 0 }; i + 1 < augmented_state_path.vector().size(); ++i) {
-					result.move_vector.emplace_back(
+					result._move_vector.emplace_back(
 						move_engine.state_minus_state(augmented_state_path.vector()[i + 1], augmented_state_path.vector()[i]));
 					// roll back permutation
-					auto piece_id = result.move_vector.back().pid.value;
+					auto piece_id = result._move_vector.back().pid.value;
 					auto permutation_of_piece_id = augmented_state_path.vector()[i].get_permutation()[piece_id];
 
 					/*is it checked somewhere that no out of range can happen? ### */
-					result.move_vector.back().pid.value = static_cast<pieces_quantity_int_type>(permutation_of_piece_id);
-					//result.move_vector.back().pid = static_cast<decltype(result.move_vector.back().pid)>(permutation_of_piece_id);
+					result._move_vector.back().pid.value = static_cast<pieces_quantity_int_type>(permutation_of_piece_id);
+					//result._move_vector.back().pid = static_cast<decltype(result._move_vector.back().pid)>(permutation_of_piece_id);
 				}
 
 				return result;
 			}
 
-			vector_type& vector() { return move_vector; }
+			vector_type& vector() { return _move_vector; }
 
-			const vector_type& vector() const { return move_vector; }
+			const vector_type& vector() const { return _move_vector; }
 
 			template<class Position_Of_Pieces_Type, class Move_Once_Piece_Calculator_Type>
 			[[nodiscard]] inline state_path<Position_Of_Pieces_Type> apply(const Position_Of_Pieces_Type& initial_state, const Move_Once_Piece_Calculator_Type& move_engine) const {
 				state_path<Position_Of_Pieces_Type> result;
-				result.vector().reserve(move_vector.size() + 1);
+				result.vector().reserve(_move_vector.size() + 1);
 				result.vector().push_back(initial_state);
 
-				for (std::size_t i{ 0 }; i < move_vector.size(); ++i) {
-					result.vector().push_back(move_engine.state_plus_move(result.vector().back(), move_vector[i]));
+				for (std::size_t i{ 0 }; i < _move_vector.size(); ++i) {
+					result.vector().push_back(move_engine.state_plus_move(result.vector().back(), _move_vector[i]));
 				}
 
 				return result;
@@ -1188,30 +1188,30 @@ namespace tobor {
 
 			inline move_path operator +(const move_path& another) {
 				move_path copy;
-				copy.move_vector.reserve(move_vector.size() + another.move_vector.size());
-				std::copy(move_vector.cbegin(), move_vector.cend(), std::back_inserter(copy.move_vector));
-				std::copy(another.move_vector.cbegin(), another.move_vector.cend(), std::back_inserter(copy.move_vector));
+				copy._move_vector.reserve(_move_vector.size() + another._move_vector.size());
+				std::copy(_move_vector.cbegin(), _move_vector.cend(), std::back_inserter(copy._move_vector));
+				std::copy(another._move_vector.cbegin(), another._move_vector.cend(), std::back_inserter(copy._move_vector));
 				return copy;
 			}
 
 			inline bool operator==(const move_path& another) const {
-				return move_vector == another.move_vector;
+				return _move_vector == another._move_vector;
 			}
 
 			inline bool operator<(const move_path& another) const {
-				return move_vector < another.move_vector;
+				return _move_vector < another._move_vector;
 			}
 
 			inline std::vector<move_path> syntactic_interleaving_neighbours() {
-				if (move_vector.size() < 2) {
+				if (_move_vector.size() < 2) {
 					return std::vector<move_path>();
 				}
 
-				auto result = std::vector<move_path>(move_vector.size() - 1, *this);
+				auto result = std::vector<move_path>(_move_vector.size() - 1, *this);
 				auto iter = result.begin();
-				for (std::size_t i{ 0 }; i + 1 < move_vector.size(); ++i) {
-					if (!(move_vector[i] == move_vector[i + 1])) {
-						std::swap(iter->move_vector[i], iter->move_vector[i + 1]);
+				for (std::size_t i{ 0 }; i + 1 < _move_vector.size(); ++i) {
+					if (!(_move_vector[i] == _move_vector[i + 1])) {
+						std::swap(iter->_move_vector[i], iter->_move_vector[i + 1]);
 						++iter;
 					}
 				}
@@ -1392,8 +1392,8 @@ namespace tobor {
 
 			std::size_t changes() const {
 				std::size_t counter{ 0 };
-				for (std::size_t i = 0; i + 1 < move_vector.size(); ++i) {
-					counter += !(move_vector[i].pid == move_vector[i + 1].pid);
+				for (std::size_t i = 0; i + 1 < _move_vector.size(); ++i) {
+					counter += !(_move_vector[i].pid == _move_vector[i + 1].pid);
 				}
 				return counter;
 			}

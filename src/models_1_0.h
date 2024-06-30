@@ -829,13 +829,13 @@ namespace tobor {
 			using pieces_quantity_type = typename piece_move_type::pieces_quantity_type;
 
 		private:
-			vector_type move_vector;
+			vector_type _move_vector;
 
 		public:
 
 			move_path() {}
 
-			move_path(std::size_t n) : move_vector(n, piece_move_type()) {}
+			move_path(std::size_t n) : _move_vector(n, piece_move_type()) {}
 
 			move_path(const move_path&) = default;
 
@@ -845,36 +845,36 @@ namespace tobor {
 
 			move_path& operator=(move_path&&) = default;
 
-			vector_type& vector() { return move_vector; }
+			vector_type& vector() { return _move_vector; }
 
-			const vector_type& vector() const { return move_vector; }
+			const vector_type& vector() const { return _move_vector; }
 
 			inline move_path operator +(const move_path& another) {
 				move_path copy;
-				copy.move_vector.reserve(move_vector.size() + another.move_vector.size());
-				std::copy(move_vector.cbegin(), move_vector.cend(), std::back_inserter(copy.move_vector));
-				std::copy(another.move_vector.cbegin(), another.move_vector.cend(), std::back_inserter(copy.move_vector));
+				copy._move_vector.reserve(_move_vector.size() + another._move_vector.size());
+				std::copy(_move_vector.cbegin(), _move_vector.cend(), std::back_inserter(copy._move_vector));
+				std::copy(another._move_vector.cbegin(), another._move_vector.cend(), std::back_inserter(copy._move_vector));
 				return copy;
 			}
 
 			inline bool operator==(const move_path& another) const {
-				return move_vector == another.move_vector;
+				return _move_vector == another._move_vector;
 			}
 
 			inline bool operator<(const move_path& another) const {
-				return move_vector < another.move_vector;
+				return _move_vector < another._move_vector;
 			}
 
 			inline std::vector<move_path> syntactic_interleaving_neighbours() {
-				if (move_vector.size() < 2) {
+				if (_move_vector.size() < 2) {
 					return std::vector<move_path>();
 				}
 
-				auto result = std::vector<move_path>(move_vector.size() - 1, *this);
+				auto result = std::vector<move_path>(_move_vector.size() - 1, *this);
 				auto iter = result.begin();
-				for (std::size_t i{ 0 }; i + 1 < move_vector.size(); ++i) {
-					if (!(move_vector[i] == move_vector[i + 1])) {
-						std::swap(iter->move_vector[i], iter->move_vector[i + 1]);
+				for (std::size_t i{ 0 }; i + 1 < _move_vector.size(); ++i) {
+					if (!(_move_vector[i] == _move_vector[i + 1])) {
+						std::swap(iter->_move_vector[i], iter->_move_vector[i + 1]);
 						++iter;
 					}
 				}
@@ -1055,8 +1055,8 @@ namespace tobor {
 
 			std::size_t changes() const {
 				std::size_t counter{ 0 };
-				for (std::size_t i = 0; i + 1 < move_vector.size(); ++i) {
-					counter += !(move_vector[i].pid == move_vector[i + 1].pid);
+				for (std::size_t i = 0; i + 1 < _move_vector.size(); ++i) {
+					counter += !(_move_vector[i].pid == _move_vector[i + 1].pid);
 				}
 				return counter;
 			}
