@@ -73,7 +73,6 @@ TEST(tobor__v1_0__tobor_world, create_world) {
 	);
 }
 
-/*
 TEST(tobor__v1_0__universal_cell_id, create) {
 	EXPECT_NO_THROW(
 		auto cell_id = tobor::v1_0::universal_cell_id();
@@ -116,6 +115,7 @@ TEST(tobor__v1_0__positions_of_pieces, create) {
 	static_assert(std::is_default_constructible<pop_type>::value == false, "positions_of_pieces default constructible");
 }
 
+/*
 TEST(tobor__v1_0__piece_id, create) {
 
 	auto x = tobor::v1_0::piece_id(7);
