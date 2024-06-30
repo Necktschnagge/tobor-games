@@ -2,9 +2,9 @@
 
 class GameController; // to be removed! ps_map is private, this is needed for friend class to work. Find another solution.
 
-#include "solver.h" // ..., tobor::v1_0::tobor_world
+#include "solver_1_0.h" // ..., tobor::v1_0::tobor_world
 
-#include "world_generator.h"
+#include "world_generator_1_0.h"
 #include "color_generator.h"
 
 // #include "tobor_svg.h" produces error

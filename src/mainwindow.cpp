@@ -9,8 +9,8 @@
 
 #include "./ui_mainwindow.h"
 #include "gui_interactive_controller.h"
-#include "solver.h"
-#include "tobor_svg.h"
+#include "solver_1_0.h"
+#include "svg_1_0.h"
 
 #include "spdlog/spdlog.h"
 #include "spdlog/sinks/qt_sinks.h"
