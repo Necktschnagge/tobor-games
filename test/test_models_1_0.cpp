@@ -27,7 +27,6 @@ TEST(tobor__v1_0__direction, default_ctor) {
 
 	ASSERT_TRUE(true);
 }
-/*
 TEST(tobor__v1_0__direction, invert) {
 
 	EXPECT_EQ((!tobor::v1_0::direction::NORTH()), tobor::v1_0::direction::SOUTH());
@@ -74,6 +73,7 @@ TEST(tobor__v1_0__tobor_world, create_world) {
 	);
 }
 
+/*
 TEST(tobor__v1_0__universal_cell_id, create) {
 	EXPECT_NO_THROW(
 		auto cell_id = tobor::v1_0::universal_cell_id();
