@@ -1020,7 +1020,7 @@ namespace tobor {
 			// ### offer step-wise exploration instead of exploration until optimal.
 		};
 
-		template<class Position_Of_Pieces_T = default_positions_of_pieces>
+		template<class Position_Of_Pieces_T>
 		class state_path {
 		public:
 
@@ -1030,41 +1030,41 @@ namespace tobor {
 
 		private:
 
-			vector_type state_vector;
+			vector_type _state_vector;
 
 		public:
 
 			state_path() {}
 
-			state_path(const vector_type& v) : state_vector(v) {}
+			state_path(const vector_type& v) : _state_vector(v) {}
 
-			const vector_type& vector() const { return state_vector; }
+			const vector_type& vector() const { return _state_vector; }
 
-			vector_type& vector() { return state_vector; }
+			vector_type& vector() { return _state_vector; }
 
 			inline void make_canonical() {
 
 				typename vector_type::size_type count_duplicates{ 0 };
 				typename vector_type::size_type i = 0;
 
-				while (i + count_duplicates + 1 < state_vector.size()) {
-					if (state_vector[i] == state_vector[i + count_duplicates + 1]) {
+				while (i + count_duplicates + 1 < _state_vector.size()) {
+					if (_state_vector[i] == _state_vector[i + count_duplicates + 1]) {
 						++count_duplicates;
 					}
 					else {
 						if (count_duplicates)
-							state_vector[i + 1] = state_vector[i + count_duplicates + 1];
+							_state_vector[i + 1] = _state_vector[i + count_duplicates + 1];
 						++i;
 					}
 				}
 
-				// now i + count_duplicates + 1 == state_vector.size()
-				state_vector.erase(state_vector.begin() + i + 1, state_vector.end());
+				// now i + count_duplicates + 1 == _state_vector.size()
+				_state_vector.erase(_state_vector.begin() + i + 1, _state_vector.end());
 			}
 
 			inline state_path operator +(const state_path& another) const {
 				state_path copy{ *this };
-				std::copy(another.state_vector.cbegin(), another.state_vector.cend(), std::back_inserter(copy.state_vector));
+				std::copy(another._state_vector.cbegin(), another._state_vector.cend(), std::back_inserter(copy._state_vector));
 				return copy;
 			}
 
@@ -1075,27 +1075,27 @@ namespace tobor {
 			}
 
 			inline state_path& operator +=(const state_path& another) {
-				state_vector.reserve(state_vector.size() + another.state_vector.size());
-				std::copy(another.state_vector.cbegin(), another.state_vector.cend(), std::back_inserter(state_vector));
+				_state_vector.reserve(_state_vector.size() + another._state_vector.size());
+				std::copy(another._state_vector.cbegin(), another._state_vector.cend(), std::back_inserter(_state_vector));
 				return *this;
 			}
 
 			inline state_path& operator +=(const positions_of_pieces_type& s) {
-				state_vector.push_back(s);
+				_state_vector.push_back(s);
 				return *this;
 			}
 
 			inline state_path operator *(const state_path& another) {
-				if (another.state_vector.empty())
+				if (another._state_vector.empty())
 					return *this;
-				if (this->state_vector.empty())
+				if (this->_state_vector.empty())
 					return another;
-				if (state_vector.back() == another.state_vector.front()) {
+				if (_state_vector.back() == another._state_vector.front()) {
 					state_path copy = *this;
 					std::copy(
-						another.state_vector.cbegin() + 1,
-						another.state_vector.cend(),
-						std::back_inserter(copy.state_vector)
+						another._state_vector.cbegin() + 1,
+						another._state_vector.cend(),
+						std::back_inserter(copy._state_vector)
 					);
 					return copy;
 				}

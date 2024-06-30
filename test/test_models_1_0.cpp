@@ -5,8 +5,8 @@
 #include <type_traits>
 #include <array>
 
-TEST(division_by_2_error, create_what) {
-	ASSERT_NO_THROW(
+TEST(tobor__v1_0__division_by_2_error, create_what) {
+	EXPECT_NO_THROW(
 		tobor::v1_0::division_by_2_error error;
 	const char* m = error.what();
 	(void)m;
@@ -14,34 +14,34 @@ TEST(division_by_2_error, create_what) {
 	);
 }
 
-TEST(blocked_center_error, create_what) {
-	ASSERT_NO_THROW(
+TEST(tobor__v1_0__blocked_center_error, create_what) {
+	EXPECT_NO_THROW(
 		tobor::v1_0::blocked_center_error error;
 	const char* m = error.what();
 	(void)m;
 	);
 }
 
-TEST(direction, default_ctor) {
+TEST(tobor__v1_0__direction, default_ctor) {
 	static_assert(std::is_default_constructible<tobor::v1_0::direction>::value == false, "direction default constructible");
 
 	ASSERT_TRUE(true);
 }
 
-TEST(direction, invert) {
+TEST(tobor__v1_0__direction, invert) {
 
-	ASSERT_TRUE(!tobor::v1_0::direction::NORTH() == tobor::v1_0::direction::SOUTH());
-	ASSERT_TRUE(!tobor::v1_0::direction::EAST() == tobor::v1_0::direction::WEST());
-	ASSERT_TRUE(!tobor::v1_0::direction::SOUTH() == tobor::v1_0::direction::NORTH());
-	ASSERT_TRUE(!tobor::v1_0::direction::WEST() == tobor::v1_0::direction::EAST());
+	EXPECT_EQ(!tobor::v1_0::direction::NORTH(), tobor::v1_0::direction::SOUTH());
+	EXPECT_EQ(!tobor::v1_0::direction::EAST(), tobor::v1_0::direction::WEST());
+	EXPECT_EQ(!tobor::v1_0::direction::SOUTH(), tobor::v1_0::direction::NORTH());
+	EXPECT_EQ(!tobor::v1_0::direction::WEST(), tobor::v1_0::direction::EAST());
 
 }
 
-TEST(direction, iterator_and_order) {
+TEST(tobor__v1_0__direction, iterator_and_order) {
 
 	std::vector<tobor::v1_0::direction> all;
 
-	ASSERT_NO_THROW(
+	EXPECT_NO_THROW(
 		for (auto siter = tobor::v1_0::direction::begin(); siter != tobor::v1_0::direction::end(); ++siter) {
 			auto x = siter.get();
 			(void)x;
@@ -49,14 +49,40 @@ TEST(direction, iterator_and_order) {
 		}
 	);
 
-	ASSERT_TRUE(
+	EXPECT_TRUE(
 		std::is_sorted(all.cbegin(), all.cend())
 	);
 }
 
-TEST(wall, create_wall_type_std_constructor) {
+TEST(tobor__v1_0__wall, create_wall_type_std_constructor) {
 	static_assert(std::is_default_constructible<tobor::v1_0::wall>::value == false, "wall type default constructible");
 
+	ASSERT_TRUE(true);
+}
+
+
+TEST(tobor__v1_0__wall, create_wall_type_bool_conversion) {
+	auto t_wall = tobor::v1_0::wall(true);
+	EXPECT_TRUE(static_cast<bool>(t_wall));
+	auto f_wall = tobor::v1_0::wall(false);
+	EXPECT_FALSE(static_cast<bool>(f_wall));
+}
+
+TEST(tobor__v1_0__tobor_world, create_world) {
+	EXPECT_NO_THROW(
+		tobor::v1_0::tobor_world world;
+	);
+}
+
+TEST(tobor__v1_0__universal_cell_id, create) {
+	EXPECT_NO_THROW(
+		auto cell_id = tobor::v1_0::universal_cell_id();
+	(void)cell_id;
+	);
+}
+
+TEST(tobor__v1_0__universal_cell_id, consistency) {
+	// TODO check that id conversion has no inconsistencies...
 	ASSERT_TRUE(true);
 }
 
@@ -65,39 +91,13 @@ TEST(tobor__v1_0__pieces_quantity, create_wall_type_bool_conversion) {
 	EXPECT_EQ(pq_type::COUNT_ALL_PIECES, 6);
 	EXPECT_EQ(pq_type::COUNT_TARGET_PIECES, 1);
 	EXPECT_EQ(pq_type::COUNT_NON_TARGET_PIECES, 5);
-
 }
 
-TEST(tobor__v1_0__wall, create_wall_type_bool_conversion) {
-	auto t_wall = tobor::v1_0::wall(true);
-	ASSERT_TRUE(static_cast<bool>(t_wall));
-	auto f_wall = tobor::v1_0::wall(false);
-	ASSERT_FALSE(static_cast<bool>(f_wall));
-}
-
-TEST(tobor__v1_0__tobor_world, create_world) {
-	ASSERT_NO_THROW(
-		tobor::v1_0::tobor_world world;
-	);
-}
-
-TEST(universal_cell_id, create) {
-	ASSERT_NO_THROW(
-		auto cell_id = tobor::v1_0::universal_cell_id();
-	(void)cell_id;
-	);
-}
-
-TEST(universal_cell_id, consistency) {
-	// TODO check that id conversion has no inconsistencies...
-	ASSERT_TRUE(true);
-}
-
-TEST(positions_of_pieces, create) {
+TEST(tobor__v1_0__positions_of_pieces, create) {
 
 	using pop_type = tobor::v1_0::positions_of_pieces<tobor::v1_0::default_pieces_quantity, tobor::v1_0::default_cell_id, false, false>;
 
-	ASSERT_NO_THROW(
+	EXPECT_NO_THROW(
 		auto w = tobor::v1_0::default_world(10, 10);
 
 	auto raw = std::vector<tobor::v1_0::default_cell_id>(4, tobor::v1_0::default_cell_id());
@@ -114,17 +114,38 @@ TEST(positions_of_pieces, create) {
 	);
 
 	static_assert(std::is_default_constructible<pop_type>::value == false, "positions_of_pieces default constructible");
-
 }
 
-/*
-TEST(piece_id, create) {
+TEST(tobor__v1_0__piece_id, create) {
 
-	auto x = tobor::v1_0::piece_id pid(7);
+	auto x = tobor::v1_0::piece_id(7);
 
-	ASSERT_EQUAL(x.value, 7);
+	EXPECT_EQ(x.value, 7);
 }
-*/
+
+TEST(tobor__v1_0__piece_move, create_and_compare) {
+
+	auto x = tobor::v1_0::piece_move(tobor::v1_0::piece_id(7), tobor::v1_0::direction::SOUTH());
+	auto y = tobor::v1_0::piece_move(tobor::v1_0::piece_id(8), tobor::v1_0::direction::NORTH());
+
+	EXPECT_EQ(x.pid, 7);
+	EXPECT_EQ(y.dir, tobor::v1_0::direction::NORTH());
+
+	EXPECT_TRUE(x < y);
+}
+
+TEST(tobor__v1_0__state_path, create) {
+
+	auto sp = tobor::v1_0::state_path();
+
+	sp.
+	EXPECT_EQ(x.pid, 7);
+	EXPECT_EQ(y.dir, tobor::v1_0::direction::NORTH());
+
+	EXPECT_TRUE(x < y);
+}
+
+
 
 
 
