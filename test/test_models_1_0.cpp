@@ -115,7 +115,6 @@ TEST(tobor__v1_0__positions_of_pieces, create) {
 	static_assert(std::is_default_constructible<pop_type>::value == false, "positions_of_pieces default constructible");
 }
 
-/*
 TEST(tobor__v1_0__piece_id, create) {
 
 	auto x = tobor::v1_0::piece_id(7);
@@ -142,6 +141,7 @@ TEST(tobor__v1_0__move_path, create) {
 	);
 
 }
+/*
 */
 
 
