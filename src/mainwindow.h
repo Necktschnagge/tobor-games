@@ -131,7 +131,7 @@ private Q_SLOTS:
 private:
 	Ui::MainWindow* ui;
 	GuiInteractiveController guiInteractiveController;
-	friend class GuiInteractiveController;
+	friend class GuiInteractiveController; // try to remove friends here ###
 	friend class ControlKeyEventAgent;
 
 	SvgViewToolchain svgViewToolchain;

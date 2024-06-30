@@ -18,18 +18,6 @@
 
 namespace tobor {
 
-/*
-	namespace v1_1 {
-
-		// only for friend declarations!, ### resolve this, there should not be access to private member -> hence remove all friendships in positions_of_pieces
-		template<class CIT, class Quick_Move_Cache_T, class Piece_Move_Type>
-		class move_one_piece_calculator;
-
-		template <class Move_One_Piece_Calculator, class PoP_T>
-		class distance_exploration;
-	}
-*/
-
 	namespace v1_0 {
 
 		class division_by_2_error : public std::logic_error { // OK
