@@ -55,19 +55,27 @@ TEST(direction, iterator_and_order) {
 }
 
 TEST(wall, create_wall_type_std_constructor) {
-	static_assert(std::is_default_constructible<tobor::v1_0::wall_type>::value == false, "wall type default constructible");
+	static_assert(std::is_default_constructible<tobor::v1_0::wall>::value == false, "wall type default constructible");
 
 	ASSERT_TRUE(true);
 }
 
-TEST(wall, create_wall_type_bool_conversion) {
-	auto t_wall = tobor::v1_0::wall_type(true);
+TEST(tobor__v1_0__pieces_quantity, create_wall_type_bool_conversion) {
+	using pq_type = tobor::v1_0::pieces_quantity<uint16_t, 1, 5>;
+	EXPECT_EQ(pq_type::COUNT_ALL_PIECES, 6);
+	EXPECT_EQ(pq_type::COUNT_TARGET_PIECES, 1);
+	EXPECT_EQ(pq_type::COUNT_NON_TARGET_PIECES, 5);
+
+}
+
+TEST(tobor__v1_0__wall, create_wall_type_bool_conversion) {
+	auto t_wall = tobor::v1_0::wall(true);
 	ASSERT_TRUE(static_cast<bool>(t_wall));
-	auto f_wall = tobor::v1_0::wall_type(false);
+	auto f_wall = tobor::v1_0::wall(false);
 	ASSERT_FALSE(static_cast<bool>(f_wall));
 }
 
-TEST(tobor_world, create_world) {
+TEST(tobor__v1_0__tobor_world, create_world) {
 	ASSERT_NO_THROW(
 		tobor::v1_0::tobor_world world;
 	);

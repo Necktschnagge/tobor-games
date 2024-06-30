@@ -23,7 +23,7 @@ namespace tobor {
 		/**
 		*	@brief An error to be thrown when a number is of wrong remainder class on division by 2.
 		*/
-		class division_by_2_error : public std::logic_error { // OK
+		class division_by_2_error : public std::logic_error {
 			inline static const char MESSAGE[]{ "Wrong remainder on division by 2" };
 		public:
 			division_by_2_error() : std::logic_error(MESSAGE) {}
@@ -33,7 +33,7 @@ namespace tobor {
 		/**
 		*	@brief An error to be thrown when there are too many blocked cells in the center of a game board.
 		*/
-		class blocked_center_error : public std::logic_error { // OK
+		class blocked_center_error : public std::logic_error {
 			inline static const char MESSAGE[]{ "Blocking too many cells." };
 		public:
 			blocked_center_error() : std::logic_error(MESSAGE) {}
@@ -159,28 +159,24 @@ namespace tobor {
 		/**
 		*	@brief One single boolean wall
 		*/
-		class wall_type { // OK
+		class wall {
 
-			bool is_wall;
+			bool _is_wall;
 
 		public:
 
-			using type = wall_type;
+			using type = wall;
 
-			wall_type(bool p_is_wall) : is_wall(p_is_wall) {}
+			wall(bool is_wall) : _is_wall(is_wall) {}
 
-			operator bool() const {
-				return is_wall;
-			}
+			operator bool() const { return _is_wall; }
 
-			operator bool& () {
-				return is_wall;
-			}
+			operator bool& () { return _is_wall; }
 
 		};
 
 
-		using wall_vector = std::vector<wall_type>; // OK
+		using wall_vector = std::vector<wall>; // OK
 
 
 		/**
@@ -190,7 +186,7 @@ namespace tobor {
 		*
 		*/
 		template <class Int_Type_T = std::size_t>
-		class tobor_world { // OK
+		class tobor_world {
 		public:
 
 			using int_type = Int_Type_T;
@@ -320,35 +316,35 @@ namespace tobor {
 
 			/* wall accessors **************************************************************************************/
 
-			inline wall_type& south_wall_by_transposed_id(int_type transposed_id) noexcept {
+			inline wall& south_wall_by_transposed_id(int_type transposed_id) noexcept {
 				return h_walls[transposed_id];
 			}
 
-			inline const wall_type& south_wall_by_transposed_id(int_type transposed_id) const noexcept {
+			inline const wall& south_wall_by_transposed_id(int_type transposed_id) const noexcept {
 				return h_walls[transposed_id];
 			}
 
-			inline wall_type& north_wall_by_transposed_id(int_type transposed_id) noexcept {
+			inline wall& north_wall_by_transposed_id(int_type transposed_id) noexcept {
 				return h_walls[transposed_id + 1];
 			}
 
-			inline const wall_type& north_wall_by_transposed_id(int_type transposed_id) const noexcept {
+			inline const wall& north_wall_by_transposed_id(int_type transposed_id) const noexcept {
 				return h_walls[transposed_id + 1];
 			}
 
-			inline wall_type& west_wall_by_id(int_type id) noexcept {
+			inline wall& west_wall_by_id(int_type id) noexcept {
 				return v_walls[id];
 			}
 
-			inline const wall_type& west_wall_by_id(int_type id) const noexcept {
+			inline const wall& west_wall_by_id(int_type id) const noexcept {
 				return v_walls[id];
 			}
 
-			inline wall_type& east_wall_by_id(int_type id) noexcept {
+			inline wall& east_wall_by_id(int_type id) noexcept {
 				return v_walls[id + 1];
 			}
 
-			inline const wall_type& east_wall_by_id(int_type id) const noexcept {
+			inline const wall& east_wall_by_id(int_type id) const noexcept {
 				return v_walls[id + 1];
 			}
 
@@ -419,6 +415,7 @@ namespace tobor {
 		*
 		*	@details This version calculates all three cell id types when set and stores all of them.
 					It is the least memory efficient way but may reduce computation time (not yet tested!).
+					Reading different kind of ids does not require a game board object.
 		*/
 		template<class World_Type_T = default_world>
 		class universal_cell_id { // OK, add some memory-efficient variant!
@@ -518,6 +515,9 @@ namespace tobor {
 
 		using default_cell_id = universal_cell_id<>;
 
+		/**
+		*	@brief Stores the number of target pieces and non-target pieces statically.
+		*/
 		template<class Int_Type_T, Int_Type_T COUNT_TARGET_PIECES_V, Int_Type_T COUNT_NON_TARGET_PIECES_V>
 		struct pieces_quantity {
 			using int_type = Int_Type_T;
@@ -541,9 +541,6 @@ namespace tobor {
 
 		/**
 		*	@brief Contains the information where the pieces are located on the game board.
-		*
-		*	@details It only distinguishes the target piece from non target pieces.
-		*			Non target pieces cannot be distiguished. They are kept sorted acending by their cell ids.
 		*/
 		template <class Pieces_Quantity_Type = default_pieces_quantity, class Cell_Id_Type_T = default_cell_id, bool SORTED_TARGET_PIECES_V = true, bool SORTED_NON_TARGET_PIECES_V = true>
 		class positions_of_pieces {
@@ -746,7 +743,9 @@ namespace tobor {
 
 		using default_positions_of_pieces = positions_of_pieces<default_pieces_quantity, default_cell_id, false, true>;
 
-
+		/**
+		* 
+		*/
 		template <class Pieces_Quantity_Type = default_pieces_quantity>
 		struct piece_id {
 

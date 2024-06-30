@@ -28,9 +28,9 @@ namespace tobor {
 			inline operator bool() const noexcept { return is_transposed; };
 		};
 
-		using wall_type = tobor::v1_0::wall_type;
+		using wall = tobor::v1_0::wall;
 
-		using wall_vector = std::vector<wall_type>;
+		using wall_vector = std::vector<wall>;
 
 		/**
 		*
@@ -178,35 +178,35 @@ namespace tobor {
 
 			/* wall accessors **************************************************************************************/
 
-			inline wall_type& south_wall_by_transposed_id(int_cell_id_type transposed_id) noexcept {
+			inline wall& south_wall_by_transposed_id(int_cell_id_type transposed_id) noexcept {
 				return h_walls[transposed_id];
 			}
 
-			inline const wall_type& south_wall_by_transposed_id(int_cell_id_type transposed_id) const noexcept {
+			inline const wall& south_wall_by_transposed_id(int_cell_id_type transposed_id) const noexcept {
 				return h_walls[transposed_id];
 			}
 
-			inline wall_type& north_wall_by_transposed_id(int_cell_id_type transposed_id) noexcept {
+			inline wall& north_wall_by_transposed_id(int_cell_id_type transposed_id) noexcept {
 				return h_walls[transposed_id + 1]; // ### need casting to size_type
 			}
 
-			inline const wall_type& north_wall_by_transposed_id(int_cell_id_type transposed_id) const noexcept {
+			inline const wall& north_wall_by_transposed_id(int_cell_id_type transposed_id) const noexcept {
 				return h_walls[transposed_id + 1]; // ### need casting to size_type
 			}
 
-			inline wall_type& west_wall_by_id(int_cell_id_type id) noexcept {
+			inline wall& west_wall_by_id(int_cell_id_type id) noexcept {
 				return v_walls[id];
 			}
 
-			inline const wall_type& west_wall_by_id(int_cell_id_type id) const noexcept {
+			inline const wall& west_wall_by_id(int_cell_id_type id) const noexcept {
 				return v_walls[id];
 			}
 
-			inline wall_type& east_wall_by_id(int_cell_id_type id) noexcept {
+			inline wall& east_wall_by_id(int_cell_id_type id) noexcept {
 				return v_walls[id + 1]; // ### need casting to size_type
 			}
 
-			inline const wall_type& east_wall_by_id(int_cell_id_type id) const noexcept {
+			inline const wall& east_wall_by_id(int_cell_id_type id) const noexcept {
 				return v_walls[id + 1]; // ### need casting to size_type
 			}
 

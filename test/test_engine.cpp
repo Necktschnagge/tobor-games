@@ -10,9 +10,9 @@
 
 TEST(engine, create_wall_type_bool_conversion) {
 	ASSERT_NO_THROW(
-		auto t_wall = tobor::v1_0::wall_type(true);
+		auto t_wall = tobor::v1_0::wall(true);
 	(void)t_wall;
-		auto f_wall = tobor::v1_0::wall_type(false);
+		auto f_wall = tobor::v1_0::wall(false);
 	(void)f_wall;
 	);
 }
