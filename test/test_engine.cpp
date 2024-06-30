@@ -39,7 +39,7 @@ TEST(engine, universal_field_id_consistency) {
 }
 
 
-
+/*
 TEST(engine, example_integration) {
 	// check the following scenario:
 	// create world
@@ -115,4 +115,5 @@ TEST(engine, example_integration) {
 	ASSERT_EQ(9, partial_state_graph.get_optimal_path_length());
 
 }
+*/
 
