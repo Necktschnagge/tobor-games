@@ -115,7 +115,6 @@ TEST(tobor__v1_0__positions_of_pieces, create) {
 	static_assert(std::is_default_constructible<pop_type>::value == false, "positions_of_pieces default constructible");
 }
 
-/*
 TEST(tobor__v1_0__piece_id, create) {
 
 	auto x = tobor::v1_0::piece_id(7);
@@ -123,6 +122,7 @@ TEST(tobor__v1_0__piece_id, create) {
 	EXPECT_EQ(x.value, 7);
 }
 
+/*
 TEST(tobor__v1_0__piece_move, create_and_compare) {
 
 	auto x = tobor::v1_0::piece_move(tobor::v1_0::piece_id(7), tobor::v1_0::direction::SOUTH());
