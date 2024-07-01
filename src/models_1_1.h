@@ -2,6 +2,8 @@
 
 #include "models_1_0.h"
 
+#include <compare>
+
 namespace tobor {
 	namespace v1_1 {
 
@@ -76,6 +78,10 @@ namespace tobor {
 				return static_cast<int_cell_id_type>(x);
 			}
 
+			static constexpr int_size_type wide(const int_cell_id_type& x) {
+				return static_cast<int_size_type>(x);
+			}
+
 			/* ctors et. al. **************************************************************************************/
 
 			dynamic_rectangle_world() : x_size(0), y_size(0) {}
@@ -144,13 +150,13 @@ namespace tobor {
 			}
 
 			/* cell id conversion **************************************************************************************/
-			// #### beginning from here check overflow for allowed inputs by some static asserts!!!
+
 			inline constexpr int_cell_id_type coordinates_to_cell_id(int_cell_id_type x_coord, int_cell_id_type y_coord) const noexcept {
-				return static_cast<int_cell_id_type>(x_size * y_coord + x_coord);
+				return narrow(x_size * y_coord + x_coord);
 			}
 
 			inline constexpr int_cell_id_type coordinates_to_transposed_cell_id(int_cell_id_type x_coord, int_cell_id_type y_coord) const noexcept {
-				return static_cast<int_cell_id_type>(y_size * x_coord + y_coord);
+				return narrow(y_size * x_coord + y_coord);
 			}
 
 			inline constexpr std::pair<int_cell_id_type, int_cell_id_type> cell_id_to_coordinates(int_cell_id_type id) const noexcept {
@@ -172,11 +178,11 @@ namespace tobor {
 			}
 
 			inline constexpr int_cell_id_type cell_id_to_transposed_cell_id(int_cell_id_type id) const noexcept {
-				return static_cast<int_cell_id_type>(y_size * (id % x_size) + id / x_size);
+				return narrow(y_size * (id % x_size) + id / x_size);
 			}
 
 			inline constexpr int_cell_id_type transposed_cell_id_to_cell_id(int_cell_id_type transposed_id) const noexcept {
-				return static_cast<int_cell_id_type>(x_size * (transposed_id % y_size) + transposed_id / y_size);
+				return narrow(x_size * (transposed_id % y_size) + transposed_id / y_size);
 			}
 
 			/* wall accessors **************************************************************************************/
@@ -190,11 +196,11 @@ namespace tobor {
 			}
 
 			inline wall& north_wall_by_transposed_id(int_cell_id_type transposed_id) noexcept {
-				return h_walls[transposed_id + 1]; // ### need casting to size_type
+				return h_walls[wide(transposed_id) + 1];
 			}
 
 			inline const wall& north_wall_by_transposed_id(int_cell_id_type transposed_id) const noexcept {
-				return h_walls[transposed_id + 1]; // ### need casting to size_type
+				return h_walls[wide(transposed_id) + 1];
 			}
 
 			inline wall& west_wall_by_id(int_cell_id_type id) noexcept {
@@ -206,14 +212,12 @@ namespace tobor {
 			}
 
 			inline wall& east_wall_by_id(int_cell_id_type id) noexcept {
-				return v_walls[id + 1]; // ### need casting to size_type
+				return v_walls[wide(id) + 1];
 			}
 
 			inline const wall& east_wall_by_id(int_cell_id_type id) const noexcept {
-				return v_walls[id + 1]; // ### need casting to size_type
+				return v_walls[wide(id) + 1];
 			}
-
-			// ### consider: should calling these functions above be allowed for greater values ?, e.g. south wall of cell 256? -> no .... sure?
 
 			/* getter **************************************************************************************/
 
@@ -239,7 +243,7 @@ namespace tobor {
 			inline int_size_type blocked_cells() const noexcept {
 				int_size_type counter{ 0 };
 				for (int_size_type cell_id = 0; cell_id < count_cells(); ++cell_id) {
-					counter += blocked(narrow(cell_id)); //## need to cast here, note loop must use greater type since for breaks on overflow of smaller type.
+					counter += blocked(narrow(cell_id));
 				}
 				return counter;
 			}
@@ -260,7 +264,7 @@ namespace tobor {
 
 			type turn_left_90() const { // only for quadratic
 				if (x_size != y_size) {
-					throw std::logic_error("Cannot turn for non-quadratic world.");
+					throw std::logic_error("Cannot turn for non-quadratic board.");
 				}
 				auto copy = type(x_size, y_size);
 
@@ -277,6 +281,9 @@ namespace tobor {
 
 		using default_dynamic_rectangle_world = dynamic_rectangle_world<std::size_t, std::size_t>;
 
+		/**
+		*	@brief Stores just a cell id.
+		*/
 		template<class World_Type_T>
 		class min_size_cell_id {
 		public:
@@ -313,15 +320,15 @@ namespace tobor {
 
 		private:
 
-			int_cell_id_type id;
+			int_cell_id_type _id;
 
 		public:
 
 			/* ctors */
 
-			min_size_cell_id() : id(0) {}
+			min_size_cell_id() : _id(0) {}
 
-			min_size_cell_id(int_cell_id_type id) : id(id) {}
+			min_size_cell_id(int_cell_id_type id) : _id(id) {}
 
 			min_size_cell_id(const min_size_cell_id&) = default;
 
@@ -335,25 +342,19 @@ namespace tobor {
 
 			/* comparison operators */
 
-			inline bool operator < (const min_size_cell_id& other) const noexcept {
-				return this->id < other.id;
-			}
-
-			inline bool operator == (const min_size_cell_id& other) const noexcept {
-				return this->id == other.id;
-			}
+			inline std::strong_ordering operator<=>(const min_size_cell_id& another) const /*noexcept*/ { return _id <=> another._id; };
 
 			/* getter */
 
-			inline int_cell_id_type get_id() const noexcept { return id; }
+			inline int_cell_id_type get_id() const noexcept { return _id; }
 
-			inline int_cell_id_type get_id(const world_type&) const noexcept { return id; }
+			inline int_cell_id_type get_id(const world_type&) const noexcept { return _id; }
 
-			inline int_cell_id_type get_transposed_id(const world_type& world) const noexcept { return world.cell_id_to_transposed_cell_id(id); }
+			inline int_cell_id_type get_transposed_id(const world_type& world) const noexcept { return world.cell_id_to_transposed_cell_id(_id); }
 
-			inline int_cell_id_type get_x_coord(const world_type& world) const noexcept { return world.cell_id_to_coordinates(id).first; }
+			inline int_cell_id_type get_x_coord(const world_type& world) const noexcept { return world.cell_id_to_coordinates(_id).first; }
 
-			inline int_cell_id_type get_y_coord(const world_type& world) const noexcept { return world.cell_id_to_coordinates(id).second; }
+			inline int_cell_id_type get_y_coord(const world_type& world) const noexcept { return world.cell_id_to_coordinates(_id).second; }
 
 			inline int_cell_id_type get_raw_id(const id_polarisation& p, const world_type& world) const noexcept {
 				if (p) return get_transposed_id(world);
@@ -363,7 +364,7 @@ namespace tobor {
 			/* modifiers */
 
 			inline void set_id(int_cell_id_type p_id) noexcept {
-				id = p_id;
+				_id = p_id;
 			}
 
 			inline void set_id(int_cell_id_type p_id, const world_type&) noexcept {
@@ -371,11 +372,11 @@ namespace tobor {
 			}
 
 			inline void set_transposed_id(int_cell_id_type p_transposed_id, const world_type& world) noexcept {
-				id = world.transposed_cell_id_to_cell_id(p_transposed_id);
+				_id = world.transposed_cell_id_to_cell_id(p_transposed_id);
 			}
 
 			inline void set_coord(int_cell_id_type p_x_coord, int_cell_id_type p_y_coord, const world_type& world) noexcept {
-				id = world.coordinates_to_cell_id(p_x_coord, p_y_coord);
+				_id = world.coordinates_to_cell_id(p_x_coord, p_y_coord);
 			}
 
 		};
@@ -610,7 +611,7 @@ namespace tobor {
 
 			inline bool is_final(const cell_id_type& target_cell) const {
 				for (auto iter = target_pieces_cbegin(); iter != target_pieces_cend(); ++iter) {
-					if (*iter == target_cell)
+					if ((*iter) == target_cell)
 						return true;
 				}
 				return false;
