@@ -780,7 +780,7 @@ namespace tobor {
 		using default_piece_id = piece_id<>;
 
 		/*
-		*	@brief Equivalent to a pair of a piece_id and a direction where to move it
+		*	@brief Equivalent to a pair of a piece_id and a direction where to move it.
 		*
 		*	@details Does not define how piece_id is interpreted.
 		*/

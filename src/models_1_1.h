@@ -517,9 +517,9 @@ namespace tobor {
 
 			inline augmented_positions_of_pieces& operator = (const augmented_positions_of_pieces&) = default;
 
-			augmented_positions_of_pieces(augmented_positions_of_pieces&&) = default; //## need to make the other valid
+			augmented_positions_of_pieces(augmented_positions_of_pieces&&) = default;
 
-			inline augmented_positions_of_pieces& operator = (augmented_positions_of_pieces&&) = default; //## need to make the other valid
+			inline augmented_positions_of_pieces& operator = (augmented_positions_of_pieces&&) = default;
 
 			bool operator< (const augmented_positions_of_pieces& another) const noexcept {
 				return _piece_positions < another._piece_positions;
@@ -598,7 +598,6 @@ namespace tobor {
 				apply_perm(p_new, _piece_positions);
 				apply_perm(p_new, _permutation);
 
-				//(piece_ids = p_new[piece_ids]; ...);
 				feedback_helper(p_new, piece_ids...);
 			}
 
@@ -682,8 +681,8 @@ namespace tobor {
 			}
 		};
 
-
 		using default_augmented_positions_of_pieces = augmented_positions_of_pieces< default_pieces_quantity, default_min_size_cell_id, false, false>;
+
 
 		template <class Pieces_Quantity_Type>
 		using piece_id = tobor::v1_0::piece_id<Pieces_Quantity_Type>;
@@ -691,7 +690,7 @@ namespace tobor {
 		using default_piece_id = piece_id<default_pieces_quantity>;
 
 		/*
-		*	@brief Equivalent to a pair of a piece_id and a direction where to move it
+		*	@brief Equivalent to a pair of a piece_id and a direction where to move it.
 		*
 		*	@details Does not define how piece_id is interpreted.
 		*/
@@ -699,16 +698,6 @@ namespace tobor {
 		using piece_move = tobor::v1_0::piece_move<Piece_Id_Type>;
 
 		using default_piece_move = piece_move<default_piece_id>;
-
-#if false
-		template<class Position_Of_Pieces_T>
-		using state_path = tobor::v1_0::state_path<Position_Of_Pieces_T>;
-		// has to be reviewed again! ###
-
-		template<class Piece_Move_Type>
-		using move_path = tobor::v1_0::move_path<Piece_Move_Type>;
-		// has to be reviewed again! ###
-#endif
 
 	}
 }
