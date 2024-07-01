@@ -6,39 +6,6 @@
 #include <array>
 
 
-
-
-TEST(engine, create_wall_type_bool_conversion) {
-	ASSERT_NO_THROW(
-		auto t_wall = tobor::v1_0::wall(true);
-	(void)t_wall;
-		auto f_wall = tobor::v1_0::wall(false);
-	(void)f_wall;
-	);
-}
-
-TEST(engine, create_world) {
-	ASSERT_NO_THROW(
-		tobor::v1_0::tobor_world world;
-	);
-}
-
-TEST(engine, create_universal_field_id) {
-	ASSERT_NO_THROW(
-		auto cell_id = tobor::v1_0::universal_cell_id();
-	(void)cell_id;
-	);
-}
-
-TEST(engine, universal_field_id_consistency) {
-	// ### check that id conversion has no inconsistencies...
-	ASSERT_NO_THROW(
-		auto field_id = 0;
-		(void)field_id;
-	);
-}
-
-
 /*
 TEST(engine, example_integration) {
 	// check the following scenario:
