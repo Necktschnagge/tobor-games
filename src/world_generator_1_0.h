@@ -25,7 +25,7 @@ namespace tobor {
 
 				using world_type = tobor::v1_0::tobor_world<uint16_t>;
 
-				using cell_id_type = tobor::v1_0::universal_cell_id<world_type>;
+				using cell_id_type = tobor::v1_0::redundant_cell_id<world_type>;
 
 				constexpr static std::size_t RED_PLANET{ 0 };
 				constexpr static std::size_t GREEN_PLANET{ 1 };

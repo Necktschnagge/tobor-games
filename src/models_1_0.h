@@ -176,7 +176,7 @@ namespace tobor {
 		};
 
 
-		using wall_vector = std::vector<wall>; // OK
+		using wall_vector = std::vector<wall>;
 
 
 		/**
@@ -418,31 +418,31 @@ namespace tobor {
 					Reading different kind of ids does not require a game board object.
 		*/
 		template<class World_Type_T = default_world>
-		class universal_cell_id {
+		class redundant_cell_id {
 		public:
 
 			using world_type = World_Type_T;
 
 			using int_type = typename world_type::int_type;
 
-			using type = universal_cell_id;
+			using type = redundant_cell_id;
 
 			/* static factory member functions */
 
-			inline static universal_cell_id create_by_coordinates(int_type p_x_coord, int_type p_y_coord, const world_type& world) noexcept {
-				universal_cell_id result;
+			inline static redundant_cell_id create_by_coordinates(int_type p_x_coord, int_type p_y_coord, const world_type& world) noexcept {
+				redundant_cell_id result;
 				result.set_coord(p_x_coord, p_y_coord, world);
 				return result;
 			}
 
-			inline static universal_cell_id create_by_id(int_type p_id, const world_type& world) noexcept {
-				universal_cell_id result;
+			inline static redundant_cell_id create_by_id(int_type p_id, const world_type& world) noexcept {
+				redundant_cell_id result;
 				result.set_id(p_id, world);
 				return result;
 			}
 
-			inline static universal_cell_id create_by_transposed_id(int_type p_transposed_id, const world_type& world) noexcept {
-				universal_cell_id result;
+			inline static redundant_cell_id create_by_transposed_id(int_type p_transposed_id, const world_type& world) noexcept {
+				redundant_cell_id result;
 				result.set_transposed_id(p_transposed_id, world);
 				return result;
 			}
@@ -458,25 +458,25 @@ namespace tobor {
 
 			/* ctors */
 
-			universal_cell_id() : id(0), transposed_id(0), x_coord(0), y_coord(0) {}
+			redundant_cell_id() : id(0), transposed_id(0), x_coord(0), y_coord(0) {}
 
-			universal_cell_id(const universal_cell_id&) = default;
+			redundant_cell_id(const redundant_cell_id&) = default;
 
-			universal_cell_id(universal_cell_id&&) = default; // needed for static factory member function
+			redundant_cell_id(redundant_cell_id&&) = default; // needed for static factory member function
 
 			/* operator = */
 
-			inline universal_cell_id& operator = (const universal_cell_id&) = default;
+			inline redundant_cell_id& operator = (const redundant_cell_id&) = default;
 
-			inline universal_cell_id& operator = (universal_cell_id&&) = default;
+			inline redundant_cell_id& operator = (redundant_cell_id&&) = default;
 
 			/* comparison operators */
 
-			inline bool operator < (const universal_cell_id& other) const noexcept {
+			inline bool operator < (const redundant_cell_id& other) const noexcept {
 				return this->id < other.id;
 			}
 
-			inline bool operator == (const universal_cell_id& other) const noexcept {
+			inline bool operator == (const redundant_cell_id& other) const noexcept {
 				return this->id == other.id;
 			}
 
@@ -513,7 +513,7 @@ namespace tobor {
 
 		};
 
-		using default_cell_id = universal_cell_id<>;
+		using default_cell_id = redundant_cell_id<>;
 
 		/**
 		*	@brief Stores the number of target pieces and non-target pieces statically.

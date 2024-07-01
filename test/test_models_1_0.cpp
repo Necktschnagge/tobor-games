@@ -75,7 +75,7 @@ TEST(tobor__v1_0__tobor_world, create_world) {
 
 TEST(tobor__v1_0__universal_cell_id, create) {
 	EXPECT_NO_THROW(
-		auto cell_id = tobor::v1_0::universal_cell_id();
+		auto cell_id = tobor::v1_0::redundant_cell_id();
 	(void)cell_id;
 	);
 }
