@@ -70,7 +70,7 @@ TEST(engine, example_integration) {
 
 	//auto initial_state = tobor::v1_0::positions_of_pieces<3>(target_piece, std::move(other_robots));
 
-	// specify target field
+	// specify target cell
 	auto target = tobor::v1_0::default_cell_id::create_by_coordinates(9, 1, w);
 
 	auto w_analyzer = tobor::v1_0::default_move_one_piece_calculator(w);

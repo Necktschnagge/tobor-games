@@ -106,7 +106,7 @@ namespace tobor {
 			}
 
 			/*
-				@brief Fills center fields to make them unreachable.
+				@brief Fills center cells to make them unreachable.
 			*/
 			inline void block_center_cells(int_size_type x_blocked_size, int_size_type y_blocked_size) {
 				// check for symmetry of blocked area:
@@ -115,7 +115,7 @@ namespace tobor {
 				if ((y_size - y_blocked_size) % 2)
 					throw division_by_2_error();
 
-				// check for non-blocked fields in every direction
+				// check for non-blocked cells in every direction
 				if (x_blocked_size >= x_size)
 					throw blocked_center_error();
 				if (y_blocked_size >= y_size)
