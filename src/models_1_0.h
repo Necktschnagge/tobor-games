@@ -680,7 +680,7 @@ namespace tobor {
 			}
 
 			/**
-			*	@brief Returns the number of pieces ín which both states differ.
+			*	@brief Returns the number of pieces in which both states differ.
 			*/
 			inline std::size_t count_changed_pieces(const positions_of_pieces& another) const {
 				std::size_t counter{ 0 };
