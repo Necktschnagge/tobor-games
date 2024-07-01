@@ -544,8 +544,6 @@ namespace tobor {
 		*/
 		template <class Pieces_Quantity_Type = default_pieces_quantity, class Cell_Id_Type_T = default_cell_id, bool SORTED_TARGET_PIECES_V = true, bool SORTED_NON_TARGET_PIECES_V = true>
 		class positions_of_pieces {
-			// ## alternative implementation using std::vector instead of array, as non-template variant
-
 		public:
 
 			template <class INNER_Pieces_Quantity_Type, class INNER_Cell_Id_Type, bool INNER_SORTED_TARGET_PIECES_V, bool INNER_SORTED_NON_TARGET_PIECES_V>
@@ -617,9 +615,9 @@ namespace tobor {
 
 			inline positions_of_pieces& operator = (positions_of_pieces&&) = default;
 
-			inline all_pieces_array_type& piece_positions() { return _piece_positions; } // ### do the same in the naked class
+			inline all_pieces_array_type& piece_positions() { return _piece_positions; }
 
-			inline const all_pieces_array_type& piece_positions() const { return _piece_positions; } // ### do the same in the naked class
+			inline const all_pieces_array_type& piece_positions() const { return _piece_positions; }
 
 			bool operator< (const positions_of_pieces& another) const noexcept {
 				return _piece_positions < another._piece_positions;
