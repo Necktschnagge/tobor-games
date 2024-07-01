@@ -679,6 +679,9 @@ namespace tobor {
 				return false;
 			}
 
+			/**
+			*	@brief Returns the number of pieces ín which both states differ.
+			*/
 			inline std::size_t count_changed_pieces(const positions_of_pieces& another) const {
 				std::size_t counter{ 0 };
 				if constexpr (SORTED_TARGET_PIECES) {
@@ -697,6 +700,7 @@ namespace tobor {
 							++jter;
 					}
 					counter += (target_pieces_cend() - iter);
+					// note: we only count the elements of *this which have no matching counterpart. We do not count for \p another.
 				}
 				else {
 					for (
