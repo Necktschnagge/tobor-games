@@ -233,7 +233,7 @@ namespace tobor {
 
 					h_walls = wall_vector_type(SIZE, false);
 					v_walls = wall_vector_type(SIZE, false);
-				} // ### check for exception (? heap allocation, should anyway cause the app to terminate, ignore this?)
+				}
 
 				for (int_type i = 0; i <= x_size; ++i) { // set north and south walls
 					h_walls[y_size * i] = true;

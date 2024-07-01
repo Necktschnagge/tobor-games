@@ -11,6 +11,9 @@ namespace tobor {
 
 		using direction = tobor::v1_0::direction;
 
+		/**
+		*	@brief A Wrapper for a bool to distinguish between (non-transposed) id - direction (EAST - WEST) and transposed id - direction (NORTH - SOUTH)
+		*/
 		class id_polarisation {
 
 			bool is_transposed{ false };
@@ -34,7 +37,7 @@ namespace tobor {
 
 		/**
 		*
-		*	@brief Represents the game's entire board, stating which fields are separated by walls.
+		*	@brief Represents the game's entire board, stating which cells are separated by walls.
 		*	@details Does NOT contain any information about where pieces are located.
 		*
 		*/
@@ -92,7 +95,7 @@ namespace tobor {
 
 					h_walls = wall_vector_type(SIZE, false);
 					v_walls = wall_vector_type(SIZE, false);
-				} // ### check for exception (? heap allocation, should anyway cause the app to terminate, ignore this?)
+				}
 
 				for (int_size_type i = 0; i <= x_size; ++i) { // set north and south walls
 					h_walls[y_size * i] = true;
