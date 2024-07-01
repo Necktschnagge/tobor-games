@@ -748,7 +748,7 @@ namespace tobor {
 		using default_positions_of_pieces = positions_of_pieces<default_pieces_quantity, default_cell_id, false, true>;
 
 		/**
-		* 
+		*	@brief Wrapper for an integer to select one of the pieces on the board.
 		*/
 		template <class Pieces_Quantity_Type = default_pieces_quantity>
 		struct piece_id {
