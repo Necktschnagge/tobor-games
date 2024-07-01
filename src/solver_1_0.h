@@ -369,10 +369,6 @@ namespace tobor {
 
 			}
 
-			inline bool is_target_state(const positions_of_pieces_type& state, const cell_id_type& target_cell) {
-				return state.is_final(target_cell); // ### wrapper to be deleted
-			}
-
 		};
 
 		using default_move_one_piece_calculator = move_one_piece_calculator<>;
