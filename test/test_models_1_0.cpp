@@ -122,7 +122,6 @@ TEST(tobor__v1_0__piece_id, create) {
 	EXPECT_EQ(x.value, 7);
 }
 
-/*
 TEST(tobor__v1_0__piece_move, create_and_compare) {
 
 	auto x = tobor::v1_0::piece_move(tobor::v1_0::piece_id(7), tobor::v1_0::direction::SOUTH());
@@ -134,6 +133,7 @@ TEST(tobor__v1_0__piece_move, create_and_compare) {
 	EXPECT_TRUE(x < y);
 }
 
+/*
 TEST(tobor__v1_0__move_path, create) {
 
 	EXPECT_NO_THROW(
