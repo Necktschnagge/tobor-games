@@ -183,15 +183,15 @@ void GuiInteractiveController::setPieceId(const GameController::piece_id_type& p
 void GuiInteractiveController::selectPieceByColorId(const std::size_t& color_id)
 {
 	auto iter = std::find(
-		current_game->current_state().get_permutation().cbegin(),
-		current_game->current_state().get_permutation().cend(),
+		current_game->current_state().permutation().cbegin(),
+		current_game->current_state().permutation().cend(),
 		color_id
 	);
 
-	if (iter == current_game->current_state().get_permutation().cend())
+	if (iter == current_game->current_state().permutation().cend())
 		throw std::logic_error("Illegal color_id.");
 
-	setPieceId(static_cast<GameController::piece_quantity_type::int_type>(iter - current_game->current_state().get_permutation().cbegin()));
+	setPieceId(static_cast<GameController::piece_quantity_type::int_type>(iter - current_game->current_state().permutation().cbegin()));
 }
 
 
@@ -202,7 +202,7 @@ void GuiInteractiveController::refreshSVG()
 		auto permutated_color_vector = current_color_vector;
 
 		for (std::size_t i{ 0 }; i < current_color_vector.colors.size(); ++i) {
-			permutated_color_vector.colors[i] = current_color_vector.colors[current_game->current_state().get_permutation()[i]];
+			permutated_color_vector.colors[i] = current_color_vector.colors[current_game->current_state().permutation()[i]];
 		}
 
 		graphics_type::coloring coloring =
@@ -305,7 +305,7 @@ void GuiInteractiveController::refreshStatusbar() {
 	if (interactive_mode == InteractiveMode::GAME_INTERACTIVE || interactive_mode == InteractiveMode::SOLVER_INTERACTIVE_STEPS) {
 
 		auto current_color = current_color_vector.colors[
-			current_game->current_state().get_permutation()[
+			current_game->current_state().permutation()[
 				selected_piece_id.value
 			]
 		].getQColor();
@@ -444,7 +444,7 @@ void GuiInteractiveController::viewSolutionPaths() // this has to be improved!!!
 	auto permutated_color_vector = current_color_vector;
 
 	//for (std::size_t i{ 0 }; i < current_color_vector.colors.size(); ++i) {
-	//	permutated_color_vector.colors[i] = current_color_vector.colors[current_game->solver_begin_state().get_permutation()[i]];
+	//	permutated_color_vector.colors[i] = current_color_vector.colors[current_game->solver_begin_state().permutation()[i]];
 	//}
 
 	const auto& partitions{ current_game->optimal_solutions() /* get solver's move path for displaying on the upper right of main window */ };

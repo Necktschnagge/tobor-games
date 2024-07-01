@@ -425,21 +425,21 @@ namespace tobor {
 
 			using world_type = typename cell_id_type::world_type;
 
-			// cell_id_type::int_type for cell ids
+			using cell_id_int_type = typename pieces_quantity_type::int_type;
 
 
-			// here it should not use a dependent name without alias-defining it in the class itself!
-			// like piece_id_int_type, we already defined class piece_id as a wrapper.
 
-			static constexpr typename pieces_quantity_type::int_type COUNT_TARGET_PIECES{ Pieces_Quantity_Type::COUNT_TARGET_PIECES };
+			static constexpr cell_id_int_type COUNT_TARGET_PIECES{ Pieces_Quantity_Type::COUNT_TARGET_PIECES };
 
-			static constexpr typename pieces_quantity_type::int_type COUNT_NON_TARGET_PIECES{ Pieces_Quantity_Type::COUNT_NON_TARGET_PIECES };
+			static constexpr cell_id_int_type COUNT_NON_TARGET_PIECES{ Pieces_Quantity_Type::COUNT_NON_TARGET_PIECES };
 
-			static constexpr typename pieces_quantity_type::int_type COUNT_ALL_PIECES{ Pieces_Quantity_Type::COUNT_ALL_PIECES };
+			static constexpr cell_id_int_type COUNT_ALL_PIECES{ Pieces_Quantity_Type::COUNT_ALL_PIECES };
 
 			static constexpr bool SORTED_TARGET_PIECES{ SORTED_TARGET_PIECES_V };
 
 			static constexpr bool SORTED_NON_TARGET_PIECES{ SORTED_NON_TARGET_PIECES_V };
+
+
 
 			using target_pieces_array_type = std::array<cell_id_type, COUNT_TARGET_PIECES>;
 
@@ -477,11 +477,11 @@ namespace tobor {
 			}
 		public:
 
-			inline all_pieces_array_type& piece_positions() { return _piece_positions; } // ### do the same in the naked class
+			inline all_pieces_array_type& piece_positions() { return _piece_positions; }
 
-			inline const all_pieces_array_type& piece_positions() const { return _piece_positions; } // ### do the same in the naked class
+			inline const all_pieces_array_type& piece_positions() const { return _piece_positions; }
 
-			inline const permutation_type& get_permutation() const { return _permutation; } // ### rename members!
+			inline const permutation_type& permutation() const { return _permutation; }
 
 			inline augmented_positions_of_pieces& reset_permutation() {
 				reset_perm(_permutation);

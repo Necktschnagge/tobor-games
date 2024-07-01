@@ -1159,7 +1159,7 @@ namespace tobor {
 						move_engine.state_minus_state(augmented_state_path.vector()[i + 1], augmented_state_path.vector()[i]));
 					// roll back permutation
 					auto piece_id = result._move_vector.back().pid.value;
-					auto permutation_of_piece_id = augmented_state_path.vector()[i].get_permutation()[piece_id];
+					auto permutation_of_piece_id = augmented_state_path.vector()[i].permutation()[piece_id];
 
 					/*is it checked somewhere that no out of range can happen? ### */
 					result._move_vector.back().pid.value = static_cast<pieces_quantity_int_type>(permutation_of_piece_id);

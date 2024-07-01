@@ -140,7 +140,7 @@ private:
 			const piece_quantity_type::int_type SELECTED_PIECE_AFTER{
 				[&]() {
 					for (piece_quantity_type::int_type i{ 0 }; i < piece_quantity_type::COUNT_ALL_PIECES; ++i) {
-						if (to_state.get_permutation()[i] == SELECTED_PIECE) {
+						if (to_state.permutation()[i] == SELECTED_PIECE) {
 							return i;
 						}
 					}
