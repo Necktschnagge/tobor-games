@@ -383,6 +383,9 @@ namespace tobor {
 
 		using default_min_size_cell_id = min_size_cell_id<default_dynamic_rectangle_world>;
 
+		/**
+		*	@brief Stores the number of target pieces and non-target pieces statically.
+		*/
 		template<class Int_Type_T, Int_Type_T COUNT_TARGET_PIECES_V, Int_Type_T COUNT_NON_TARGET_PIECES_V>
 		using pieces_quantity = tobor::v1_0::pieces_quantity<Int_Type_T, COUNT_TARGET_PIECES_V, COUNT_NON_TARGET_PIECES_V>;
 
@@ -394,9 +397,6 @@ namespace tobor {
 
 		/**
 		*	@brief Contains the information where the pieces are located on the game board.
-		*
-		*	@details It only distinguishes the target piece from non target pieces.
-		*			Non target pieces cannot be distiguished. They are kept sorted acending by their cell ids.
 		*/
 		template <class Pieces_Quantity_Type, class Cell_Id_Type_T, bool SORTED_TARGET_PIECES_V, bool SORTED_NON_TARGET_PIECES_V>
 		using positions_of_pieces = tobor::v1_0::positions_of_pieces<Pieces_Quantity_Type, Cell_Id_Type_T, SORTED_TARGET_PIECES_V, SORTED_NON_TARGET_PIECES_V>;
@@ -406,8 +406,7 @@ namespace tobor {
 		/**
 		*	@brief Contains the information where the pieces are located on the game board.
 		*
-		*	@details It only distinguishes the target piece from non target pieces.
-		*			Non target pieces cannot be distiguished. They are kept sorted acending by their cell ids.
+		*	@details Whether or not a section is sorted, it keeps track of the permutation which was applied in order to sort the pieces.
 		*/
 		template <class Pieces_Quantity_Type, class Cell_Id_Type_T, bool SORTED_TARGET_PIECES_V, bool SORTED_NON_TARGET_PIECES_V>
 		class augmented_positions_of_pieces {
