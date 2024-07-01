@@ -342,7 +342,7 @@ namespace tobor {
 
 			/* comparison operators */
 
-			inline std::strong_ordering operator<=>(const min_size_cell_id& another) const /*noexcept*/ { return _id <=> another._id; };
+			inline std::strong_ordering operator<=>(const min_size_cell_id& another) const = default;
 
 			/* getter */
 
@@ -611,7 +611,7 @@ namespace tobor {
 
 			inline bool is_final(const cell_id_type& target_cell) const {
 				for (auto iter = target_pieces_cbegin(); iter != target_pieces_cend(); ++iter) {
-					if ((*iter) == target_cell)
+					if (*iter == target_cell)
 						return true;
 				}
 				return false;
