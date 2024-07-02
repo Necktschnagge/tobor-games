@@ -29,15 +29,13 @@ namespace tobor {
 			using cell_id_int_type = typename world_type::int_cell_id_type;
 			using int_size_type = typename world_type::int_size_type;
 
-			//### does the world type itself check for overflows?
-
 		private:
 			const world_type& board;
 
 			std::vector<cell_id_int_type> go_west; // using cell ids
 			std::vector<cell_id_int_type> go_east; // using cell ids
-			std::vector<cell_id_int_type> go_south; // using cell transposed ids
-			std::vector<cell_id_int_type> go_north; // using cell transposed ids
+			std::vector<cell_id_int_type> go_south; // using transposed cell ids
+			std::vector<cell_id_int_type> go_north; // using transposed cell ids
 
 		public:
 
@@ -133,6 +131,13 @@ namespace tobor {
 			*/
 			inline cell_id_int_type get_north(cell_id_int_type transposed_id) const { return go_north[transposed_id]; }
 
+			/**
+			*	@brief Returns the raw id of the cell you reach from cell \p id when moving in direction \p d, assuming there are no pieces on the way.
+			*
+			*	@details You must pass a tranposed id as raw id for north/south and an id for east/west.
+			*		The value returned is also a transposed id or an id respectively.
+			*		Has undefined behavior if \p id is out of range. Valid range is [ 0, board.count_cells() - 1 ].
+			*/
 			inline cell_id_int_type get(const direction& d, cell_id_int_type raw_id) const {
 				switch (d.get())
 				{
