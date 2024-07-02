@@ -8,59 +8,9 @@
 
 #include <QStringListModel>
 
-#include "svg_1_0.h" // has to be reordered!
-
 #include <stdexcept>
 
 
-inline GameController::world_type get22Game() {
-	auto world = GameController::world_type(16, 16);
-	world.block_center_cells(2, 2);
-
-	world.west_wall_by_id(6) = true;
-	world.west_wall_by_id(11) = true;
-	world.west_wall_by_id(16 + 2) = true;
-	world.west_wall_by_id(16 + 14) = true;
-	world.west_wall_by_id(3 * 16 + 7) = true;
-	world.west_wall_by_id(3 * 16 + 10) = true;
-	world.west_wall_by_id(4 * 16 + 1) = true;
-	world.west_wall_by_id(5 * 16 + 11) = true;
-	world.west_wall_by_id(6 * 16 + 4) = true;
-	world.west_wall_by_id(6 * 16 + 14) = true;
-	world.west_wall_by_id(8 * 16 + 11) = true;
-	world.west_wall_by_id(9 * 16 + 14) = true;
-	world.west_wall_by_id(10 * 16 + 3) = true;
-	world.west_wall_by_id(11 * 16 + 5) = true;
-	world.west_wall_by_id(12 * 16 + 2) = true;
-	world.west_wall_by_id(13 * 16 + 11) = true;
-	world.west_wall_by_id(14 * 16 + 6) = true;
-	world.west_wall_by_id(14 * 16 + 14) = true;
-	world.west_wall_by_id(15 * 16 + 4) = true;
-	world.west_wall_by_id(15 * 16 + 10) = true;
-
-	world.south_wall_by_transposed_id(2) = true;
-	world.south_wall_by_transposed_id(9) = true;
-	world.south_wall_by_transposed_id(16 + 4) = true;
-	world.south_wall_by_transposed_id(16 + 13) = true;
-	world.south_wall_by_transposed_id(2 * 16 + 2) = true;
-	world.south_wall_by_transposed_id(2 * 16 + 10) = true;
-	world.south_wall_by_transposed_id(3 * 16 + 7) = true;
-	world.south_wall_by_transposed_id(5 * 16 + 12) = true;
-	world.south_wall_by_transposed_id(6 * 16 + 3) = true;
-	world.south_wall_by_transposed_id(6 * 16 + 14) = true;
-	world.south_wall_by_transposed_id(9 * 16 + 4) = true;
-	world.south_wall_by_transposed_id(10 * 16 + 9) = true;
-	world.south_wall_by_transposed_id(11 * 16 + 5) = true;
-	world.south_wall_by_transposed_id(11 * 16 + 13) = true;
-	world.south_wall_by_transposed_id(13 * 16 + 1) = true;
-	world.south_wall_by_transposed_id(13 * 16 + 9) = true;
-	world.south_wall_by_transposed_id(14 * 16 + 7) = true;
-	world.south_wall_by_transposed_id(14 * 16 + 15) = true;
-	world.south_wall_by_transposed_id(15 * 16 + 5) = true;
-	world.south_wall_by_transposed_id(15 * 16 + 12) = true;
-
-	return world;
-}
 
 template<class X>
 inline void startReferenceGame22Helper(X& guiInteractiveController) {
@@ -78,37 +28,7 @@ inline void startReferenceGame22Helper(X& guiInteractiveController) {
 
 		guiInteractiveController.interactive_mode = X::InteractiveMode::GAME_INTERACTIVE;
 
-		GameController::world_type world = get22Game();
-
-		GameController::cell_id_type target_cell = GameController::cell_id_type::create_by_coordinates(9, 3, world);
-
-		GameController::positions_of_pieces_type initial_state = GameController::positions_of_pieces_type(
-			{
-				GameController::cell_id_type::create_by_coordinates(15, 15, world)
-			},
-			{
-				GameController::cell_id_type::create_by_coordinates(1,0, world),
-				GameController::cell_id_type::create_by_coordinates(12,14, world),
-				GameController::cell_id_type::create_by_coordinates(12,15, world)
-			}
-			);
-
-		std::vector<GameController::piece_quantity_type::int_type> not_yet_permutated;
-
-		for (GameController::piece_quantity_type::int_type i = 0; i < GameController::piece_quantity_type::COUNT_ALL_PIECES; ++i) {
-			not_yet_permutated.push_back(i);
-		}
-
-		std::vector<GameController::piece_quantity_type::int_type> colorPermutation = not_yet_permutated;
-
-		guiInteractiveController.gameHistory.emplace_back(
-			world,
-			initial_state,
-			target_cell,
-			colorPermutation
-		);
-
-		++guiInteractiveController.productWorldGenerator;
+		guiInteractiveController.current_game = SpecialCaseGameFactory().create(); // put in history!
 
 		guiInteractiveController.current_color_vector = tobor::v1_0::color_vector::get_standard_coloring(GameController::piece_quantity_type::COUNT_ALL_PIECES);
 
@@ -136,8 +56,18 @@ void GuiInteractiveController::startGame() {
 
 	interactive_mode = InteractiveMode::GAME_INTERACTIVE;
 
+	std::shared_ptr<GameFactory> current_factory = std::make_shared<OriginalGameFactory<GameController::piece_quantity_type>>(next_factory);
+	++next_factory;
 
-	auto& boardGenerator{ productWorldGenerator.main() };
+	game_history_222.push_back(current_factory);
+
+	current_game = current_factory->create();
+
+
+	/// old stuff...
+
+	/*
+	auto& boardGenerator{ current_factory->.main() };
 
 	auto& initialStateGenerator{ productWorldGenerator.side() };
 
@@ -167,17 +97,9 @@ void GuiInteractiveController::startGame() {
 	if constexpr (GameController::piece_quantity_type::COUNT_ALL_PIECES == 4) {
 		colorPermutation = boardGenerator.obtain_standard_4_coloring_permutation(not_yet_permutated);
 	}
+	*/
 
-	gameHistory.emplace_back(
-		world,
-		initialStateGenerator.get_positions_of_pieces(world),
-		target,
-		colorPermutation
-	);
-
-	++productWorldGenerator;
-
-	current_color_vector = tobor::v1_0::color_vector::get_standard_coloring(GameController::piece_quantity_type::COUNT_ALL_PIECES);
+	current_color_vector = tobor::v1_0::color_vector::get_standard_coloring(GameController::piece_quantity_type::COUNT_ALL_PIECES); // standard coloring without permutation
 
 	createColorActions();
 
@@ -224,15 +146,13 @@ void GuiInteractiveController::stopGame() {
 		return showErrorDialog("This action should not be available.");
 	}
 
-	gameHistory.back().lazyFreeSolverData();
-
 	interactive_mode = InteractiveMode::NO_GAME;
 	refreshAll();
 }
 
 void GuiInteractiveController::moveBySolver(bool forward)
 {
-	gameHistory.back().moveBySolver(forward);
+	current_game->move_by_solver(forward);
 
 }
 
@@ -263,61 +183,46 @@ void GuiInteractiveController::setPieceId(const GameController::piece_id_type& p
 void GuiInteractiveController::selectPieceByColorId(const std::size_t& color_id)
 {
 	auto iter = std::find(
-		gameHistory.back().colorPermutation.cbegin(),
-		gameHistory.back().colorPermutation.cend(),
+		current_game->current_state().permutation().cbegin(),
+		current_game->current_state().permutation().cend(),
 		color_id
 	);
 
-	const typename decltype(iter)::difference_type index{ iter - gameHistory.back().colorPermutation.cbegin() };
-
-	if (iter == gameHistory.back().colorPermutation.cend())
+	if (iter == current_game->current_state().permutation().cend())
 		throw std::logic_error("Illegal color_id.");
 
-	setPieceId(index);
-}
-
-template<class T, GameController::piece_quantity_type::int_type ... Index_Sequence>
-tobor::v1_0::tobor_graphics<GameController::positions_of_pieces_type>::coloring make_coloring(
-	T& permutated_color_vector,
-	std::integer_sequence<GameController::piece_quantity_type::int_type, Index_Sequence...>
-) {
-	auto coloring = tobor::v1_0::tobor_graphics<GameController::positions_of_pieces_type>::coloring{
-		(permutated_color_vector.colors[Index_Sequence].getSVGColorString()) ...
-	};
-	return coloring;
+	setPieceId(static_cast<GameController::piece_quantity_type::int_type>(iter - current_game->current_state().permutation().cbegin()));
 }
 
 
 void GuiInteractiveController::refreshSVG()
 {
-	using graphics = tobor::v1_0::tobor_graphics<GameController::positions_of_pieces_type>;
-
 	if (interactive_mode == InteractiveMode::GAME_INTERACTIVE || interactive_mode == InteractiveMode::SOLVER_INTERACTIVE_STEPS) {
 
 		auto permutated_color_vector = current_color_vector;
 
 		for (std::size_t i{ 0 }; i < current_color_vector.colors.size(); ++i) {
-			permutated_color_vector.colors[i] = current_color_vector.colors[gameHistory.back().colorPermutation[i]];
+			permutated_color_vector.colors[i] = current_color_vector.colors[current_game->current_state().permutation()[i]];
 		}
 
-		graphics::coloring coloring =
+		graphics_type::coloring coloring =
 			make_coloring(
 				permutated_color_vector,
 				std::make_integer_sequence<GameController::piece_quantity_type::int_type, GameController::piece_quantity_type::COUNT_ALL_PIECES>{}
 		);
 
-		graphics::piece_shape_selection shape{ graphics::piece_shape_selection::BALL };
+		graphics_type::piece_shape_selection shape{ graphics_type::piece_shape_selection::BALL };
 
 		if (mainWindow->shapeSelectionItems.getSelectedShape() == mainWindow->shapeSelectionItems.duck) {
-			shape = graphics::piece_shape_selection::DUCK;
+			shape = graphics_type::piece_shape_selection::DUCK;
 		}
 		// else default ball.
 
 		std::string example_svg_string =
-			graphics::draw_tobor_world(
-				gameHistory.back().tobor_world,
-				gameHistory.back().path.back(),
-				gameHistory.back().target_cell,
+			graphics_type::draw_tobor_world(
+				current_game->world(),
+				current_game->current_state().naked(),
+				current_game->target_cell(),
 				coloring,
 				shape
 			);
@@ -345,7 +250,7 @@ void GuiInteractiveController::refreshMenuButtonEnable()
 
 		mainWindow->ui->actionStop_Solver->setEnabled(false);
 
-		mainWindow->ui->actionMoveBack->setEnabled(!gameHistory.back().isEmptyPath());
+		mainWindow->ui->actionMoveBack->setEnabled(!current_game->is_initial());
 
 		mainWindow->ui->menuSelect_Piece->setEnabled(true);
 
@@ -383,7 +288,7 @@ void GuiInteractiveController::refreshMenuButtonEnable()
 
 		mainWindow->ui->actionStop_Solver->setEnabled(true);
 
-		mainWindow->ui->actionMoveBack->setEnabled(!gameHistory.back().isEmptyPath());
+		mainWindow->ui->actionMoveBack->setEnabled(!current_game->is_initial());
 
 		mainWindow->ui->menuSelect_Piece->setEnabled(false);
 
@@ -400,7 +305,7 @@ void GuiInteractiveController::refreshStatusbar() {
 	if (interactive_mode == InteractiveMode::GAME_INTERACTIVE || interactive_mode == InteractiveMode::SOLVER_INTERACTIVE_STEPS) {
 
 		auto current_color = current_color_vector.colors[
-			gameHistory.back().colorPermutation[
+			current_game->current_state().permutation()[
 				selected_piece_id.value
 			]
 		].getQColor();
@@ -422,7 +327,7 @@ void GuiInteractiveController::refreshNumberOfSteps() {
 
 	if (interactive_mode == InteractiveMode::GAME_INTERACTIVE || interactive_mode == InteractiveMode::SOLVER_INTERACTIVE_STEPS) {
 
-		number_of_steps = QString::number(gameHistory.back().path.size() - 1);
+		number_of_steps = QString::number(current_game->depth());
 
 	}
 
@@ -438,7 +343,8 @@ void GuiInteractiveController::movePiece(const tobor::v1_0::direction& direction
 		break;
 	case GuiInteractiveController::InteractiveMode::GAME_INTERACTIVE:
 
-		gameHistory.back().movePiece(selected_piece_id, direction);
+		current_game->move_feedback(selected_piece_id, direction); // here we need to update selected piece_id because of reordering. or we need to store colors...
+		mainWindow->statusBar()->showMessage(QString::fromStdString(std::to_string((unsigned int)(selected_piece_id.value))));
 
 		refreshAll();
 
@@ -468,7 +374,7 @@ void GuiInteractiveController::undo() {
 		return showErrorDialog("Cannot undo with no game opened.");
 
 	case GuiInteractiveController::InteractiveMode::GAME_INTERACTIVE:
-		gameHistory.back().undo();
+		current_game->undo();
 		refreshAll();
 		break;
 
@@ -486,7 +392,12 @@ void GuiInteractiveController::undo() {
 
 void GuiInteractiveController::startSolver()
 {
-	gameHistory.back().startSolver(mainWindow);
+	auto showMessage = [&](const std::string& m) {
+		mainWindow->statusBar()->showMessage(m.c_str());
+		mainWindow->repaint();
+		};
+
+	current_game->start_solver(showMessage);
 	interactive_mode = InteractiveMode::SOLVER_INTERACTIVE_STEPS;
 	viewSolutionPaths();
 	refreshAll();
@@ -495,7 +406,7 @@ void GuiInteractiveController::startSolver()
 void GuiInteractiveController::stopSolver()
 {
 	interactive_mode = InteractiveMode::GAME_INTERACTIVE;
-	gameHistory.back().stopSolver();
+	current_game->stop_solver();
 	viewSolutionPaths();
 	refreshAll();
 }
@@ -505,8 +416,8 @@ void GuiInteractiveController::selectSolution(std::size_t index)
 	if (interactive_mode != InteractiveMode::SOLVER_INTERACTIVE_STEPS) {
 		return showErrorDialog("Cannot select any solver solution when not in solver mode!");
 	}
-	gameHistory.back().selectSolution(index);
-	gameHistory.back().resetSolverSteps();
+	current_game->select_solution(index);
+	current_game->reset_solver_steps();
 }
 
 void GuiInteractiveController::viewSolutionPaths() // this has to be improved!!!
@@ -526,47 +437,34 @@ void GuiInteractiveController::viewSolutionPaths() // this has to be improved!!!
 		return;
 	}
 
-
 	QStringList qStringList;
 
-
-	std::size_t goal_counter{ 0 };
+	//std::size_t goal_counter{ 0 };
 
 	auto permutated_color_vector = current_color_vector;
 
-	for (std::size_t i{ 0 }; i < current_color_vector.colors.size(); ++i) {
-		permutated_color_vector.colors[i] = current_color_vector.colors[gameHistory.back().colorPermutation[i]];
-	}
+	//for (std::size_t i{ 0 }; i < current_color_vector.colors.size(); ++i) {
+	//	permutated_color_vector.colors[i] = current_color_vector.colors[current_game->solver_begin_state().permutation()[i]];
+	//}
 
-	for (const auto& pair : gameHistory.back().optional_classified_move_paths.value()) {
-		//const auto& goal_state{ pair.first };
-		const auto& equivalence_classes{ pair.second };
+	const auto& partitions{ current_game->optimal_solutions() /* get solver's move path for displaying on the upper right of main window */ };
 
-		for (std::size_t i = 0; i < equivalence_classes.size(); ++i) {
-			QString s;
-			s = s + "[" + QString::number(goal_counter) + "]     ";
-			s = s + QString::number(i) + ": ";
-			for (const GameController::piece_move_type& m : equivalence_classes[i][0].vector()) {
+	for (std::size_t i{ 0 }; i < partitions.size(); ++i) {
+		QString s;
+		s = s + "[" + QString::number(i) + "]     ";
+		for (const GameController::piece_move_type& m : partitions[i].second.vector()) {
+			//is not checked for emptiness!!
 
-				const char letter{ permutated_color_vector.colors[m.pid.value].UPPERCASE_shortcut_letter() };
+			const char letter{ permutated_color_vector.colors[m.pid.value].UPPERCASE_shortcut_letter() };
 
+			std::string color = std::string(1, letter);
 
-				std::string color = std::string(1, letter);
-				// please check #69 so that we may include tobor svg in this file's corresponding header to define coloring there....
+			s = s + "  " + QString::fromStdString(color) + QString::fromStdString(static_cast<std::string>(m.dir));
 
-				// the solution might be a "global" fixed coloring with full words and with Letter, 
-				// additionally a permutation which is applied anywhere before reading the colors,
-				// and which is also used at that position where GUI input is interpreted.
-
-				s = s + "  " + QString::fromStdString(color) + QString::fromStdString(static_cast<std::string>(m.dir));
-			}
-			s = s + "     (x" + QString::number(equivalence_classes[i].size()) + ")";
-			qStringList << s;
 		}
-		++goal_counter;
+		s = s + "     ( NO COUNT " + /*QString::number(partitions[i].size()) + */ ")";
+		qStringList << s;
 	}
-
-
 
 	model->setStringList(qStringList);
 
@@ -582,9 +480,9 @@ void GuiInteractiveController::highlightGeneratedTargetCells()
 		return showErrorDialog("Target cell markers not supported without running a game");
 	}
 
-	auto& world{ gameHistory.back().tobor_world };
+	const auto& world{ current_game->world() };
 
-	auto raw_cell_id_vector = productWorldGenerator.main().get_target_cell_id_vector(world);
+	auto raw_cell_id_vector = dynamic_cast<OriginalGameFactory<GameController::piece_quantity_type>*>(game_history_222.back().get())->product_generator().main().get_target_cell_id_vector(world);
 
 	std::vector<GameController::cell_id_type> comfort_cell_id_vector;
 
@@ -594,7 +492,7 @@ void GuiInteractiveController::highlightGeneratedTargetCells()
 		}
 	);
 
-	std::string svg_string = tobor::v1_0::tobor_graphics<GameController::positions_of_pieces_type>::draw_tobor_world_with_cell_markers(
+	std::string svg_string = graphics_type::draw_tobor_world_with_cell_markers(
 		world,
 		comfort_cell_id_vector
 	);
@@ -604,91 +502,4 @@ void GuiInteractiveController::highlightGeneratedTargetCells()
 	QString m{ "Number of generator target cells:   " };
 	m += QString::number(comfort_cell_id_vector.size());
 	mainWindow->ui->statusbar->showMessage(m);
-}
-
-GameController::move_path_type& GameController::get_selected_solution_representant(std::size_t index) {
-	for (auto& pair : optional_classified_move_paths.value()) {
-		//for (auto& equi_class : pair.second) {
-		if (index < pair.second.size()) {
-			return pair.second[index].front();
-		}
-		index -= pair.second.size();
-		//}
-
-	}
-	// out of range
-	showErrorDialog("selected solution index out of range, try to use teh first solution instead.");
-	if (optional_classified_move_paths.value().empty()) {
-		showErrorDialog("no solution found at all [1]");
-		throw std::runtime_error("should select a solution where there is no solution [1]");
-	}
-
-	if (optional_classified_move_paths.value().begin()->second.empty()) {
-		showErrorDialog("no solution found in first class [2]");
-		throw std::runtime_error("should select a solution where there is no solution [2]");
-	}
-	if (optional_classified_move_paths.value().begin()->second.front().empty()) {
-		showErrorDialog("no solution found in first class [3]");
-		throw std::runtime_error("should select a solution where there is no solution [3]");
-	}
-	return optional_classified_move_paths.value().begin()->second.front().front();
-}
-
-void GameController::startSolver(QMainWindow* mw) {
-
-	// set solver begin
-	solver_begin_index = path.size();
-
-	// build graph
-	optional_solver_state_graph.emplace(currentState());
-	partial_state_graph_type& graph{ optional_solver_state_graph.value() };
-	graph.explore_until_optimal_solution_distance(move_one_piece_calculator, target_cell);
-	graph.remove_dead_states(target_cell);
-
-	mw->statusBar()->showMessage("Extracting solution paths...");
-	mw->repaint();
-
-	// optimal paths
-	std::map<positions_of_pieces_type, std::vector<move_path_type>> optimal_paths_map{ graph.optimal_move_paths(target_cell) };
-
-	mw->statusBar()->showMessage("Classifying solution paths...");
-	mw->repaint();
-
-	// classify optimal paths...
-	optional_classified_move_paths.reset();
-	optional_classified_move_paths.emplace();
-	auto& classified_move_paths{ optional_classified_move_paths.value() };
-
-	for (const auto& pair : optimal_paths_map) {
-		classified_move_paths[pair.first] = move_path_type::interleaving_partitioning(pair.second);
-		for (auto& equivalence_class : classified_move_paths[pair.first]) {
-			std::sort(equivalence_class.begin(), equivalence_class.end(), move_path_type::antiprettiness_relation);
-		}
-	}
-	mw->statusBar()->showMessage("Done");
-	mw->repaint();
-}
-
-void GameController::moveBySolver(bool forward) {
-
-	auto& move_path = get_selected_solution_representant(selected_solution_index);
-
-	qDebug() << "move by solver: path length " << move_path.vector().size();
-
-	const auto index_next_move = path.size() - solver_begin_index;
-
-	qDebug() << "move by solver: index next move " << index_next_move;
-
-	if (forward) {
-		if (isFinal())
-			return;
-		movePiece(move_path.vector()[index_next_move].pid, move_path.vector()[index_next_move].dir);
-	}
-	else { // back
-		if (index_next_move == 0) // already at solver start
-			return;
-		path.pop_back();
-	}
-
-	//selected_solution_index
 }

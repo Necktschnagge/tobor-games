@@ -1,6 +1,6 @@
 #pragma once
 
-#include "models_1_0.h"
+#include "models_1_1.h"
 
 #include <vector>
 #include <array>
@@ -8,6 +8,13 @@
 #include <algorithm>
 
 namespace tobor {
+
+	template<uint64_t X>
+	inline constexpr uint64_t FACULTY{ X * FACULTY<X - 1> };
+
+	template<>
+	inline constexpr uint64_t FACULTY<0>{ 1 };
+
 
 	namespace v1_0 {
 
@@ -18,7 +25,7 @@ namespace tobor {
 
 				using world_type = tobor::v1_0::tobor_world<uint16_t>;
 
-				using cell_id_type = tobor::v1_0::universal_cell_id<world_type>;
+				using cell_id_type = tobor::v1_0::redundant_cell_id<world_type>;
 
 				constexpr static std::size_t RED_PLANET{ 0 };
 				constexpr static std::size_t GREEN_PLANET{ 1 };
@@ -91,7 +98,7 @@ namespace tobor {
 				};
 
 			private:
-				// standard generator:
+				// standard product_generator:
 				// 4 times: select a quadrant
 				// 6 permutations
 				// 4 board rotation
@@ -129,8 +136,8 @@ namespace tobor {
 					return gcd(y % x, x);
 				}
 
-				//static_assert(gcd(STANDARD_GENERATOR, CYCLIC_GROUP_SIZE) == 1, "check generator");
-				//static_assert(gcd(SECOND_GENERATOR, CYCLIC_GROUP_SIZE) == 1, "check generator");
+				//static_assert(gcd(STANDARD_GENERATOR, CYCLIC_GROUP_SIZE) == 1, "check product_generator");
+				//static_assert(gcd(SECOND_GENERATOR, CYCLIC_GROUP_SIZE) == 1, "check product_generator");
 
 				inline uint64_t& increment_generator_until_gcd_1() {
 					while (gcd(generator, CYCLIC_GROUP_SIZE) != 1) {
@@ -163,7 +170,7 @@ namespace tobor {
 				}
 
 				template<class Aggregation_Type>
-				Aggregation_Type obtain_standard_4_coloring_permutation(const Aggregation_Type& original_ordered_colors) {
+				Aggregation_Type obtain_standard_4_coloring_permutation(const Aggregation_Type& original_ordered_colors) const {
 					Aggregation_Type result = original_ordered_colors;
 					auto permutation = (counter * SECOND_GENERATOR % CYCLIC_GROUP_SIZE) / (CYCLIC_GROUP_SIZE / (4 * 3 * 2));
 					std::swap(result[0], result[permutation % 4]);
@@ -447,7 +454,7 @@ namespace tobor {
 				positions_of_pieces_type get_positions_of_pieces(const world_type& world) {
 
 					if (world.count_cells() != BOARD_SIZE) {
-						throw board_size_condition_violation(board_size_condition_violation::reason_code::BOARD_SIZE); 	// write a test for board generator to always fulfill the condition !
+						throw board_size_condition_violation(board_size_condition_violation::reason_code::BOARD_SIZE); 	// write a test for board product_generator to always fulfill the condition !
 					}
 
 					if (world.blocked_cells() != BLOCKED_CELLS) {
@@ -546,14 +553,14 @@ namespace tobor {
 					return side_generator;
 				}
 
-				// add counter / generator here if wanted. for random access
+				// add counter / product_generator here if wanted. for random access
 
 
-				// main Group generator size M
+				// main Group product_generator size M
 
-				// side Group generator size N
+				// side Group product_generator size N
 
-				// generator standard 1
+				// product_generator standard 1
 
 				// counter k in 0..M*N
 
@@ -602,11 +609,12 @@ namespace tobor {
 			};
 
 			class dynamic_generator {
-				// select a generator, an input, give generated board as output.
+				// select a product_generator, an input, give generated board as output.
 			};
 
 		}
 	}
+
 }
 
 

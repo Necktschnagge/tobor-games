@@ -91,7 +91,7 @@ public:
 	MainWindow(QWidget* parent = nullptr);
 	~MainWindow();
 
-private slots:
+private Q_SLOTS:
 	void on_actionshowSVG_triggered();
 
 	void on_actionHighlightGeneratedTargetCells_triggered();
@@ -131,7 +131,7 @@ private slots:
 private:
 	Ui::MainWindow* ui;
 	GuiInteractiveController guiInteractiveController;
-	friend class GuiInteractiveController;
+	friend class GuiInteractiveController; // try to remove friends here ###
 	friend class ControlKeyEventAgent;
 
 	SvgViewToolchain svgViewToolchain;
@@ -161,7 +161,7 @@ private:
 		inputConnections.clear();
 	}
 
-private slots:
+private Q_SLOTS:
 
 	void selectPieceByColor(int index);
 

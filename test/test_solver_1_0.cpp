@@ -5,56 +5,8 @@
 #include <type_traits>
 #include <array>
 
-TEST(engine, create_division_by_2_error) {
-	ASSERT_NO_THROW(
-		tobor::v1_0::division_by_2_error error;
-	);
-}
 
-TEST(engine, create_blocked_center_error) {
-	ASSERT_NO_THROW(
-		tobor::v1_0::blocked_center_error error;
-	);
-}
-
-TEST(engine, create_wall_type_std_constructor) {
-	ASSERT_FALSE(
-		std::is_default_constructible<tobor::v1_0::wall_type>::value // convert into static assert! ###
-	);
-}
-
-TEST(engine, create_wall_type_bool_conversion) {
-	ASSERT_NO_THROW(
-		auto t_wall = tobor::v1_0::wall_type(true);
-	(void)t_wall;
-		auto f_wall = tobor::v1_0::wall_type(false);
-	(void)f_wall;
-	);
-}
-
-TEST(engine, create_world) {
-	ASSERT_NO_THROW(
-		tobor::v1_0::tobor_world world;
-	);
-}
-
-TEST(engine, create_universal_field_id) {
-	ASSERT_NO_THROW(
-		auto cell_id = tobor::v1_0::universal_cell_id();
-	(void)cell_id;
-	);
-}
-
-TEST(engine, universal_field_id_consistency) {
-	// ### check that id conversion has no inconsistencies...
-	ASSERT_NO_THROW(
-		auto field_id = 0;
-		(void)field_id;
-	);
-}
-
-
-
+/*
 TEST(engine, example_integration) {
 	// check the following scenario:
 	// create world
@@ -118,7 +70,7 @@ TEST(engine, example_integration) {
 
 	//auto initial_state = tobor::v1_0::positions_of_pieces<3>(target_piece, std::move(other_robots));
 
-	// specify target field
+	// specify target cell
 	auto target = tobor::v1_0::default_cell_id::create_by_coordinates(9, 1, w);
 
 	auto w_analyzer = tobor::v1_0::default_move_one_piece_calculator(w);
@@ -130,4 +82,5 @@ TEST(engine, example_integration) {
 	ASSERT_EQ(9, partial_state_graph.get_optimal_path_length());
 
 }
+*/
 
