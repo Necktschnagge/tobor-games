@@ -189,9 +189,9 @@ namespace tobor {
 
 		private:
 
-			const world_type& my_world; // remove this, add member function returning the reference inside cache!!! #####
+			const world_type& _my_world; // remove this, add member function returning the reference inside cache!!! #####
 
-			quick_move_cache_type cache;
+			quick_move_cache_type _cache;
 
 		public:
 
@@ -200,7 +200,7 @@ namespace tobor {
 			*
 			* @details \p my_word must not be changed externally. This is constructing a quick_move_cache inside which would be invalidated.
 			*/
-			move_engine(const world_type& my_world) : my_world(my_world), cache(my_world) {
+			move_engine(const world_type& my_world) : _my_world(my_world), _cache(my_world) {
 			}
 
 #if false
@@ -220,10 +220,10 @@ namespace tobor {
 				const id_getter_type& get_raw_id,
 				const cache_direction_getter& get_cache_direction
 			) const {
-				cell_id_int_type raw_next_cell_id{ (cache.*get_cache_direction)(raw_start_cell_id) };
+				cell_id_int_type raw_next_cell_id{ (_cache.*get_cache_direction)(raw_start_cell_id) };
 
 				for (std::size_t i = 0; i < state.COUNT_ALL_PIECES; ++i) { // iterate over all pieces
-					const cell_id_int_type current_raw_id{ (state.piece_positions()[i].*get_raw_id)(my_world) };
+					const cell_id_int_type current_raw_id{ (state.piece_positions()[i].*get_raw_id)(_my_world) };
 
 					if (raw_start_cell_id < current_raw_id && current_raw_id <= raw_next_cell_id) {
 						raw_next_cell_id = current_raw_id - 1;
@@ -248,11 +248,11 @@ namespace tobor {
 				const cell_id_creator& create_cell_id_by,
 				const cache_direction_getter& get_cache_direction
 			) const {
-				const cell_id_int_type raw_start_cell_id{ (start_cell.*get_raw_id)(my_world) };
+				const cell_id_int_type raw_start_cell_id{ (start_cell.*get_raw_id)(_my_world) };
 
 				const cell_id_int_type raw_next_cell_id{ next_cell_max_move_raw(raw_start_cell_id, state, get_raw_id,get_cache_direction) };
 
-				return create_cell_id_by(raw_next_cell_id, my_world);
+				return create_cell_id_by(raw_next_cell_id, _my_world);
 			}
 #endif
 
@@ -265,10 +265,10 @@ namespace tobor {
 				const Position_Of_Pieces_Type& state,
 				const direction& d
 			) const {
-				cell_id_int_type raw_next_cell_id{ cache.get(d, raw_start_cell_id) };
+				cell_id_int_type raw_next_cell_id{ _cache.get(d, raw_start_cell_id) };
 
 				for (std::size_t i = 0; i < state.COUNT_ALL_PIECES; ++i) { // iterate over all pieces
-					const cell_id_int_type current_raw_id{ state.piece_positions()[i].get_raw_id(d, my_world) };
+					const cell_id_int_type current_raw_id{ state.piece_positions()[i].get_raw_id(d, _my_world) };
 
 					if (raw_start_cell_id < current_raw_id && current_raw_id <= raw_next_cell_id) {
 						raw_next_cell_id = current_raw_id - 1;
@@ -291,13 +291,17 @@ namespace tobor {
 				const Position_Of_Pieces_Type& state,
 				const direction& d
 			) const {
-				const cell_id_int_type raw_start_cell_id{ start_cell.get_raw_id(d,my_world) };
+				const cell_id_int_type raw_start_cell_id{ start_cell.get_raw_id(d,_my_world) };
 
 				const cell_id_int_type raw_next_cell_id{ next_cell_max_move_raw(raw_start_cell_id, state, d) };
 
-				return cell_id_type::create_by_raw_id(d, raw_next_cell_id, my_world);
+				return cell_id_type::create_by_raw_id(d, raw_next_cell_id, _my_world);
 			}
 
+			/**
+			*	@brief Determines all possible predecessor states of \p state when the piece \p _piece_id was moved from \p _direction_from.
+			*
+			*/
 			template<class Position_Of_Pieces_Type>
 			inline std::vector<Position_Of_Pieces_Type> predecessor_states(
 				const Position_Of_Pieces_Type& state,
@@ -306,7 +310,7 @@ namespace tobor {
 			) const {
 				const cell_id_type start_cell{ state.piece_positions()[_piece_id.value] };
 
-				const cell_id_int_type raw_start_cell_id{ start_cell.get_raw_id(_direction_from, my_world) };
+				const cell_id_int_type raw_start_cell_id{ start_cell.get_raw_id(_direction_from, _my_world) };
 
 				// need to check if we can stop here coming from _direction_from.
 				// return if there is no obstacle in opposite direction
@@ -330,7 +334,7 @@ namespace tobor {
 
 				auto iter = result.begin();
 				for (cell_id_int_type raw_id = raw_far_id; raw_id != raw_start_cell_id; raw_id += increment, ++iter) {
-					iter->piece_positions()[_piece_id.value] = cell_id_type::create_by_raw_id(_direction_from, raw_id, my_world);
+					iter->piece_positions()[_piece_id.value] = cell_id_type::create_by_raw_id(_direction_from, raw_id, _my_world);
 					iter->sort_pieces();
 				}
 				return result;
@@ -342,7 +346,7 @@ namespace tobor {
 				const typename piece_move_type::piece_id_type& _piece_id
 			) const {
 				auto result = std::vector<Position_Of_Pieces_Type>();
-				result.reserve(static_cast<std::size_t>(my_world.get_horizontal_size() + my_world.get_vertical_size()) * 2);
+				result.reserve(static_cast<std::size_t>(_my_world.get_horizontal_size() + _my_world.get_vertical_size()) * 2);
 				for (direction d = direction::begin(); d != direction::end(); ++d) {
 					auto part = predecessor_states(state, _piece_id, d);
 					std::copy(std::begin(part), std::end(part), std::back_inserter(result));
@@ -355,7 +359,7 @@ namespace tobor {
 			inline std::vector<Position_Of_Pieces_Type> predecessor_states(const Position_Of_Pieces_Type& state) const {
 				auto result = std::vector<Position_Of_Pieces_Type>();
 				result.reserve(
-					static_cast<std::size_t>(my_world.get_horizontal_size() + my_world.get_vertical_size()) * 2 * piece_id_type::pieces_quantity_type::COUNT_ALL_PIECES
+					static_cast<std::size_t>(_my_world.get_horizontal_size() + _my_world.get_vertical_size()) * 2 * piece_id_type::pieces_quantity_type::COUNT_ALL_PIECES
 				);
 				for (piece_id_type piece = piece_id_type::begin(); piece != piece_id_type::end(); ++piece) {
 					auto part = predecessor_states(state, piece);
