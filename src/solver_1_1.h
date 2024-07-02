@@ -11,14 +11,9 @@
 #include <execution>
 #include <numeric>
 
-class GameController; // for friend class declaration, to be removed
-
 namespace tobor {
 
 	namespace v1_1 {
-
-		// ### alternative board representation is just two sorted vectors of indices where there are walls, additionally you can uniformly encode pieces like walls, in this case double walls left and right, or top and bottom.
-
 
 		/**
 		* @brief Class for keeping the information about quick jumps
@@ -513,29 +508,6 @@ namespace tobor {
 				return map.clear();
 			}
 		};
-
-		//template<uint64_t MAX_DISTANCE, uint64_t MAX_WIDTH>
-		class indexing_backward_graph {
-		public:
-			//using positions_of_pieces_type = Positions_Of_Pieces_Type;
-
-			template<class Distance_Int, class Index_Int>
-			struct index_edge {
-				Distance_Int d_from;
-				Index_Int i_from;
-				Index_Int i_to;
-
-				friend auto operator <=>(const index_edge& l, const index_edge& r) = default;
-			};
-
-			std::vector<index_edge<uint8_t, uint64_t>> edges;
-
-			inline void sort() {
-				std::sort(edges.begin(), edges.end());
-			}
-
-		};
-
 
 		template <class Move_One_Piece_Calculator, class Positions_Of_Pieces_Type>
 		class distance_exploration {

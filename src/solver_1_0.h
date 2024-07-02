@@ -13,9 +13,6 @@ namespace tobor {
 
 	namespace v1_0 {
 
-		// ### alternative board representation is just two sorted vectors of indices where there are walls, additionally you can uniformly encode pieces like walls, in this case double walls left and right, or top and bottom.
-
-
 		/**
 		* @brief Class for keeping the information about quick jumps
 		*
