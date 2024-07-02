@@ -203,6 +203,7 @@ namespace tobor {
 			move_engine(const world_type& my_world) : my_world(my_world), cache(my_world) {
 			}
 
+#if false
 			using id_getter_type = cell_id_int_type(cell_id_type::*)(const world_type&);
 
 			using cell_id_creator = cell_id_type(*)(cell_id_int_type, const world_type&);
@@ -253,6 +254,7 @@ namespace tobor {
 
 				return create_cell_id_by(raw_next_cell_id, my_world);
 			}
+#endif
 
 			/**
 			*	@brief Calculates the successor cell to reach starting at \p start_cell moving in given direction \p d until any obstacle (wall or piece).
