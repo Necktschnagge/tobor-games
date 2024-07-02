@@ -135,7 +135,7 @@ private:
 			// obtain SELECTED_PIECE id after move
 			positions_of_pieces_type_interactive from_state(map_iter_root->first);
 			from_state.reset_permutation();
-			positions_of_pieces_type_interactive to_state = engine.state_plus_move(from_state, move);
+			positions_of_pieces_type_interactive to_state = engine.successor_state(from_state, move);
 
 			const piece_quantity_type::int_type SELECTED_PIECE_AFTER{
 				[&]() {

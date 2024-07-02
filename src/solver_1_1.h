@@ -299,8 +299,9 @@ namespace tobor {
 			}
 
 			/**
-			*	@brief Determines all possible predecessor states of \p state when the piece \p _piece_id was moved from \p _direction_from.
+			*	@brief Determines all possible predecessor states of \p state when the piece \p _piece_id was moved from \p _direction_from (i.e. into opposite direction compared to \p _direction_from).
 			*
+			*	@details Note, if given piece may have come from a specified direction, but it is not able to stop at it's position according to \p state, then there is no predecessor.
 			*/
 			template<class Position_Of_Pieces_Type>
 			inline std::vector<Position_Of_Pieces_Type> predecessor_states(
@@ -340,37 +341,48 @@ namespace tobor {
 				return result;
 			}
 
+			/**
+			*	@brief Determines all possible predecessor states of \p state when the piece \p _piece_id was moved in any direction.
+			*/
 			template<class Position_Of_Pieces_Type>
 			inline std::vector<Position_Of_Pieces_Type> predecessor_states(
 				const Position_Of_Pieces_Type& state,
-				const typename piece_move_type::piece_id_type& _piece_id
+				const typename piece_move_type::piece_id_type& _piece_id,
+				const bool SHRINK = true
 			) const {
 				auto result = std::vector<Position_Of_Pieces_Type>();
-				result.reserve(static_cast<std::size_t>(_my_world.get_horizontal_size() + _my_world.get_vertical_size()) * 2);
+				result.reserve(static_cast<std::size_t>(_my_world.get_horizontal_size() + _my_world.get_vertical_size()));
 				for (direction d = direction::begin(); d != direction::end(); ++d) {
 					auto part = predecessor_states(state, _piece_id, d);
 					std::copy(std::begin(part), std::end(part), std::back_inserter(result));
 				}
-				result.shrink_to_fit();
+				if (SHRINK) result.shrink_to_fit();
 				return result;
 			}
 
+			/**
+			*	@brief Determines all possible predecessor states of \p state when any piece was moved in any direction.
+			*/
 			template<class Position_Of_Pieces_Type>
-			inline std::vector<Position_Of_Pieces_Type> predecessor_states(const Position_Of_Pieces_Type& state) const {
+			inline std::vector<Position_Of_Pieces_Type> predecessor_states(const Position_Of_Pieces_Type& state, const bool SHRINK = true) const {
 				auto result = std::vector<Position_Of_Pieces_Type>();
 				result.reserve(
-					static_cast<std::size_t>(_my_world.get_horizontal_size() + _my_world.get_vertical_size()) * 2 * piece_id_type::pieces_quantity_type::COUNT_ALL_PIECES
+					static_cast<std::size_t>(_my_world.get_horizontal_size() + _my_world.get_vertical_size()) * piece_id_type::pieces_quantity_type::COUNT_ALL_PIECES
 				);
 				for (piece_id_type piece = piece_id_type::begin(); piece != piece_id_type::end(); ++piece) {
-					auto part = predecessor_states(state, piece);
+					auto part = predecessor_states(state, piece, false);
 					std::copy(std::begin(part), std::end(part), std::back_inserter(result));
 				}
-				result.shrink_to_fit();
+				if (SHRINK) result.shrink_to_fit();
 				return result;
-			} // should add a function returning void but taking an insert iterator
+			}
+			// ### should add a function returning void but taking an insert iterator
 
+			/**
+			*	@brief Calculates the successor state arising when moving \p _piece_id into direction \p _direction.
+			*/
 			template<class Position_Of_Pieces_Type>
-			inline Position_Of_Pieces_Type successor_state(const Position_Of_Pieces_Type& state, const typename piece_move_type::piece_id_type& _piece_id, const direction& _direction) const {
+			inline Position_Of_Pieces_Type successor_state(const Position_Of_Pieces_Type& state, const piece_id_type& _piece_id, const direction& _direction) const {
 				Position_Of_Pieces_Type result(state);
 
 				result.piece_positions()[_piece_id.value] = next_cell_max_move(state.piece_positions()[_piece_id.value], state, _direction);
@@ -379,8 +391,12 @@ namespace tobor {
 				return result;
 			}
 
+			/**
+			*	@brief Calculates the successor state arising when moving \p _piece_id into direction \p _direction.
+			*	@details Updates _piece_id to the new id the piece takes after is was moved.
+			*/
 			template<class Position_Of_Pieces_Type>
-			inline Position_Of_Pieces_Type successor_state_feedback(const Position_Of_Pieces_Type& state, typename piece_move_type::piece_id_type& _piece_id, const direction& _direction) const {
+			inline Position_Of_Pieces_Type successor_state_feedback(const Position_Of_Pieces_Type& state, piece_id_type& _piece_id, const direction& _direction) const {
 				Position_Of_Pieces_Type result(state);
 
 				result.piece_positions()[_piece_id.value] = next_cell_max_move(state.piece_positions()[_piece_id.value], state, _direction);
@@ -389,12 +405,15 @@ namespace tobor {
 				return result;
 			}
 
+			/**
+			*	@brief Calculates the successor state arising when \p move is applied.
+			*/
 			template<class Position_Of_Pieces_Type>
 			inline Position_Of_Pieces_Type successor_state(const Position_Of_Pieces_Type& state, const piece_move_type& move) const { return successor_state(state, move.pid, move.dir); }
 
-			template<class Position_Of_Pieces_Type>
-			inline Position_Of_Pieces_Type state_plus_move(const Position_Of_Pieces_Type& state, const piece_move_type& move) const { return successor_state(state, move); }
-
+			/**
+			*	@brief Calculated the piece_move which has to be applied in order to move from \p from_state to \p to_state
+			*/
 			template<class Position_Of_Pieces_Type>
 			inline piece_move_type state_minus_state(const Position_Of_Pieces_Type& to_state, const Position_Of_Pieces_Type& from_state) const {
 				if (from_state == to_state) { // no move error
@@ -403,7 +422,7 @@ namespace tobor {
 
 					for (auto pid = piece_id_type::begin(); pid < piece_id_type::end(); ++pid) {
 						for (auto dir = direction::begin(); dir < direction::end(); ++dir) {
-							if (state_plus_move(from_state, piece_move_type(pid, dir)) == to_state) {
+							if (successor_state(from_state,pid, dir) == to_state) {
 								no_move_exception.zero_moves.emplace_back(pid, dir);
 							}
 						}
@@ -416,7 +435,7 @@ namespace tobor {
 
 				for (auto pid = piece_id_type::begin(); pid < piece_id_type::end(); ++pid) {
 					for (auto dir = direction::begin(); dir < direction::end(); ++dir) {
-						if (state_plus_move(from_state, piece_move_type(pid, dir)) == to_state) {
+						if (successor_state(from_state, pid, dir) == to_state) {
 							multi_move_exception.moves.emplace_back(pid, dir);
 						}
 					}
@@ -435,6 +454,7 @@ namespace tobor {
 		};
 
 		using default_move_one_piece_calculator = move_engine<default_min_size_cell_id, default_quick_move_cache, default_piece_move>;
+
 
 		template<class State_Type, class State_Label_Type = void>
 		class simple_state_bigraph;
@@ -1130,7 +1150,7 @@ namespace tobor {
 				result.vector().push_back(initial_state);
 
 				for (std::size_t i{ 0 }; i < _move_vector.size(); ++i) {
-					result.vector().push_back(move_engine.state_plus_move(result.vector().back(), _move_vector[i]));
+					result.vector().push_back(move_engine.successor_state(result.vector().back(), _move_vector[i]));
 				}
 
 				return result;
@@ -1846,7 +1866,7 @@ namespace tobor {
 
 						Piece_Move_T move{ engine.state_minus_state(source_succ_state, source_curr_state) };
 
-						Destination_PoP_Type similar_successor_state = engine.state_plus_move(destination_curr_state, move);
+						Destination_PoP_Type similar_successor_state = engine.successor_state(destination_curr_state, move);
 
 
 						//auto& destination_succ_map_value = destination_bigraph.map[similar_successor_state]; // insert successor state, if not present
