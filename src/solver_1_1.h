@@ -204,14 +204,16 @@ namespace tobor {
 			}
 
 			using id_getter_type = cell_id_int_type(cell_id_type::*)(const world_type&);
+
 			using cell_id_creator = cell_id_type(*)(cell_id_int_type, const world_type&);
+
 			using cache_direction_getter = cell_id_int_type(quick_move_cache_type::*)(cell_id_int_type);
 
 			/**
 			*	@brief Calculates the successor cell to reach starting at \p start_cell moving in given direction until any obstacle (wall or piece).
 			*/
 			template<class Position_Of_Pieces_Type>
-			inline cell_id_int_type next_cell_max_move_raw(
+			[[deprecated]] inline cell_id_int_type next_cell_max_move_raw( // this function maybe private
 				const cell_id_int_type& raw_start_cell_id,
 				const Position_Of_Pieces_Type& state,
 				const id_getter_type& get_raw_id,
@@ -234,9 +236,26 @@ namespace tobor {
 				return raw_next_cell_id;
 			}
 
-
 			/**
 			*	@brief Calculates the successor cell to reach starting at \p start_cell moving in given direction until any obstacle (wall or piece).
+			*/
+			template<class Position_Of_Pieces_Type>
+			[[deprecated]] inline cell_id_type next_cell_max_move(
+				const cell_id_type& start_cell,
+				const Position_Of_Pieces_Type& state,
+				const id_getter_type& get_raw_id,
+				const cell_id_creator& create_cell_id_by,
+				const cache_direction_getter& get_cache_direction
+			) const {
+				const cell_id_int_type raw_start_cell_id{ (start_cell.*get_raw_id)(my_world) };
+
+				const cell_id_int_type raw_next_cell_id{ next_cell_max_move_raw(raw_start_cell_id, state, get_raw_id,get_cache_direction) };
+
+				return create_cell_id_by(raw_next_cell_id, my_world);
+			}
+
+			/**
+			*	@brief Calculates the successor cell to reach starting at \p start_cell moving in given direction \p d until any obstacle (wall or piece).
 			*/
 			template<class Position_Of_Pieces_Type>
 			inline cell_id_int_type next_cell_max_move_raw(
@@ -261,25 +280,6 @@ namespace tobor {
 				return raw_next_cell_id;
 			}
 
-
-			/**
-			*	@brief Calculates the successor cell to reach starting at \p start_cell moving in given direction until any obstacle (wall or piece).
-			*/
-			template<class Position_Of_Pieces_Type>
-			inline cell_id_type next_cell_max_move(
-				const cell_id_type& start_cell,
-				const Position_Of_Pieces_Type& state,
-				const id_getter_type& get_raw_id,
-				const cell_id_creator& create_cell_id_by,
-				const cache_direction_getter& get_cache_direction
-			) const {
-				const cell_id_int_type raw_start_cell_id{ (start_cell.*get_raw_id)(my_world) };
-
-				const cell_id_int_type raw_next_cell_id{ next_cell_max_move_raw(raw_start_cell_id, state, get_raw_id,get_cache_direction) };
-
-				return create_cell_id_by(raw_next_cell_id, my_world);
-			}
-
 			/**
 			*	@brief Calculates the successor cell to reach starting at \p start_cell moving in given direction until any obstacle (wall or piece).
 			*/
@@ -295,26 +295,6 @@ namespace tobor {
 
 				return cell_id_type::create_by_raw_id(d, raw_next_cell_id, my_world);
 			}
-
-#if false
-			/**
-			*	@brief Calculates the successor cell to reach starting at \p start_cell moving in given direction until any obstacle (wall or piece).
-			*/
-			template<id_getter_type get_raw_id,
-				cell_id_creator create_cell_id_by,
-				cache_direction_getter get_cache_direction
-			>
-			inline cell_id_type static_next_cell_max_move(
-				const cell_id_type& start_cell,
-				const positions_of_pieces_type& state
-			) const {
-				const cell_id_int_type raw_start_cell_id{ (start_cell.*get_raw_id)(my_world) };
-
-				const cell_id_int_type raw_next_cell_id{ next_cell_max_move_raw(raw_start_cell_id, state, get_raw_id,get_cache_direction) };
-
-				return create_cell_id_by(raw_next_cell_id, my_world);
-			}
-#endif
 
 			template<class Position_Of_Pieces_Type>
 			inline std::vector<Position_Of_Pieces_Type> predecessor_states(
