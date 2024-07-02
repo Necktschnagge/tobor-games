@@ -161,11 +161,8 @@ namespace tobor {
 		*	@brief Calculates successor states by calcualting successor cell of single pieces for moving in a given direction.
 		*/
 		template<class Cell_Id_Type, class Quick_Move_Cache_T, class Piece_Move_Type>
-		class move_one_piece_calculator { // logic engine // move_engine
+		class move_engine {
 		public:
-
-			//using positions_of_pieces_type = Position_Of_Pieces_T; // remove #### this from template. every fucntion should be template to use different pop types over the same pieces quantity.
-			// for every template we must check type compatibility with world (---> int types) and pieces quantity (--> vector length, )
 
 			using quick_move_cache_type = Quick_Move_Cache_T;
 
@@ -178,16 +175,6 @@ namespace tobor {
 			using piece_move_type = Piece_Move_Type;
 
 			using piece_id_type = typename piece_move_type::piece_id_type;
-
-			//static_assert(
-			//	std::is_same<typename positions_of_pieces_type::world_type, typename quick_move_cache_type::world_type>::value,
-			//	"Incompatible template arguments. typename Position_Of_Pieces_T::world_type must equal typenname Quick_Move_Cache_T::world_type"
-			//	);
-
-			//static_assert(
-			//	std::is_same<typename positions_of_pieces_type::pieces_quantity_type, typename piece_move_type::pieces_quantity_type>::value,
-			//	"Incompatible template arguments. typename Position_Of_Pieces_T::pieces_quantity_type must equal typenname Piece_Move_Type::pieces_quantity_type"
-			//	);
 
 			struct arithmetic_error {
 
@@ -209,11 +196,11 @@ namespace tobor {
 		public:
 
 			/**
-			* @brief Constructs a move_one_piece_calculator.
+			* @brief Constructs a move_engine.
 			*
 			* @details \p my_word must not be changed externally. This is constructing a quick_move_cache inside which would be invalidated.
 			*/
-			move_one_piece_calculator(const world_type& my_world) : my_world(my_world), cache(my_world) {
+			move_engine(const world_type& my_world) : my_world(my_world), cache(my_world) {
 			}
 
 			using id_getter_type = cell_id_int_type(cell_id_type::*)(const world_type&);
@@ -461,7 +448,7 @@ namespace tobor {
 
 		};
 
-		using default_move_one_piece_calculator = move_one_piece_calculator<default_min_size_cell_id, default_quick_move_cache, default_piece_move>;
+		using default_move_one_piece_calculator = move_engine<default_min_size_cell_id, default_quick_move_cache, default_piece_move>;
 
 		template<class State_Type, class State_Label_Type = void>
 		class simple_state_bigraph;
@@ -1821,7 +1808,7 @@ namespace tobor {
 					const source_bigraph_type& source_bigraph,
 					destination_bigraph_type& destination_bigraph,
 					const Destination_PoP_Type& initial_state_destination,
-					const move_one_piece_calculator<Cell_Id_T, Quick_Move_Cache_T, Piece_Move_T>& engine
+					const move_engine<Cell_Id_T, Quick_Move_Cache_T, Piece_Move_T>& engine
 				) {
 					destination_bigraph.clear();
 

@@ -23,7 +23,7 @@ struct EngineTypeSet {
 
 	using quick_move_cache_type = tobor::v1_1::quick_move_cache<world_type>;
 
-	using move_one_piece_calculator_type = tobor::v1_1::move_one_piece_calculator<cell_id_type, quick_move_cache_type, piece_move_type>;
+	using move_one_piece_calculator_type = tobor::v1_1::move_engine<cell_id_type, quick_move_cache_type, piece_move_type>;
 
 	using move_path_type = tobor::v1_1::move_path<piece_move_type>;
 
