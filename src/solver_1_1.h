@@ -205,59 +205,6 @@ namespace tobor {
 
 			inline const world_type& board() const noexcept { return _cache.board(); }
 
-#if false
-			using id_getter_type = int_cell_id_type(cell_id_type::*)(const world_type&);
-
-			using cell_id_creator = cell_id_type(*)(int_cell_id_type, const world_type&);
-
-			using cache_direction_getter = int_cell_id_type(quick_move_cache_type::*)(int_cell_id_type);
-
-			/**
-			*	@brief Calculates the successor cell to reach starting at \p start_cell moving in given direction until any obstacle (wall or piece).
-			*/
-			template<class Position_Of_Pieces_T>
-			[[deprecated]] inline int_cell_id_type next_cell_max_move_raw( // this function maybe private
-				const int_cell_id_type& raw_start_cell_id,
-				const Position_Of_Pieces_T& state,
-				const id_getter_type& get_raw_id,
-				const cache_direction_getter& get_cache_direction
-			) const {
-				int_cell_id_type raw_next_cell_id{ (_cache.*get_cache_direction)(raw_start_cell_id) };
-
-				for (std::size_t i = 0; i < state.COUNT_ALL_PIECES; ++i) { // iterate over all pieces
-					const int_cell_id_type current_raw_id{ (state.piece_positions()[i].*get_raw_id)(board()) };
-
-					if (raw_start_cell_id < current_raw_id && current_raw_id <= raw_next_cell_id) {
-						raw_next_cell_id = current_raw_id - 1;
-					}
-
-					if (raw_start_cell_id > current_raw_id && current_raw_id >= raw_next_cell_id) {
-						raw_next_cell_id = current_raw_id + 1;
-					}
-				}
-
-				return raw_next_cell_id;
-			}
-
-			/**
-			*	@brief Calculates the successor cell to reach starting at \p start_cell moving in given direction until any obstacle (wall or piece).
-			*/
-			template<class Position_Of_Pieces_T>
-			[[deprecated]] inline cell_id_type next_cell_max_move(
-				const cell_id_type& start_cell,
-				const Position_Of_Pieces_T& state,
-				const id_getter_type& get_raw_id,
-				const cell_id_creator& create_cell_id_by,
-				const cache_direction_getter& get_cache_direction
-			) const {
-				const int_cell_id_type raw_start_cell_id{ (start_cell.*get_raw_id)(board()) };
-
-				const int_cell_id_type raw_next_cell_id{ next_cell_max_move_raw(raw_start_cell_id, state, get_raw_id,get_cache_direction) };
-
-				return create_cell_id_by(raw_next_cell_id, board());
-			}
-#endif
-
 			/**
 			*	@brief Calculates the successor cell to reach starting at \p start_cell moving in given direction \p d until any obstacle (wall or piece).
 			*/
