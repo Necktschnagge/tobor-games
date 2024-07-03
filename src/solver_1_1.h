@@ -30,7 +30,7 @@ namespace tobor {
 			using int_size_type = typename world_type::int_size_type;
 
 		private:
-			const world_type& board;
+			const world_type& _board;
 
 			std::vector<int_cell_id_type> go_west; // using cell ids
 			std::vector<int_cell_id_type> go_east; // using cell ids
@@ -44,15 +44,17 @@ namespace tobor {
 
 				@details Make sure that for this cache to be correct, update() needs to be called whenever board is changed.
 			*/
-			quick_move_cache(const world_type& board) : board(board) {
+			quick_move_cache(const world_type& board) : _board(board) {
 				update();
 			}
+
+			inline const world_type& board() const noexcept { return _board; }
 
 			/**
 			* @brief Updates the cache stored by this object. Needs to be called after any change of the board for the cache to be valid.
 			*/
 			void update() {
-				const int_size_type VECTOR_SIZE{ board.count_cells() };
+				const int_size_type VECTOR_SIZE{ _board.count_cells() };
 
 				if (!(VECTOR_SIZE > 0)) {
 					return;
@@ -70,13 +72,13 @@ namespace tobor {
 					int_cell_id_type id = 0;
 					while (static_cast<int_size_type>(id) + 1 < VECTOR_SIZE) {
 						++id;
-						if (board.west_wall_by_id(id)) {
+						if (_board.west_wall_by_id(id)) {
 							go_west[id] = id;
 						}
 						else {
 							go_west[id] = go_west[id - 1];
 						}
-						if (board.south_wall_by_transposed_id(id)) {
+						if (_board.south_wall_by_transposed_id(id)) {
 							go_south[id] = id;
 						}
 						else {
@@ -91,13 +93,13 @@ namespace tobor {
 					int_cell_id_type id{ static_cast<int_cell_id_type>(VECTOR_SIZE - 1) };
 					do {
 						--id;
-						if (board.east_wall_by_id(id)) {
+						if (_board.east_wall_by_id(id)) {
 							go_east[id] = id;
 						}
 						else {
 							go_east[id] = go_east[id + 1];
 						}
-						if (board.north_wall_by_transposed_id(id)) {
+						if (_board.north_wall_by_transposed_id(id)) {
 							go_north[id] = id;
 						}
 						else {
@@ -109,25 +111,25 @@ namespace tobor {
 
 			/**
 			* @brief Returns the id of the cell you reach from cell \p id when moving west with no pieces on the way.
-			* @details Has undefined behavior if \p id is out of range. Valid range is [ 0, board.count_cells() - 1 ]
+			* @details Has undefined behavior if \p id is out of range. Valid range is [ 0, _board.count_cells() - 1 ]
 			*/
 			inline int_cell_id_type get_west(int_cell_id_type id) const { return go_west[id]; }
 
 			/**
 			* @brief Returns the id of the cell you reach from cell \p id when moving east with no pieces on the way.
-			* @details Has undefined behavior if \p id is out of range. Valid range is [ 0, board.count_cells() - 1 ]
+			* @details Has undefined behavior if \p id is out of range. Valid range is [ 0, _board.count_cells() - 1 ]
 			*/
 			inline int_cell_id_type get_east(int_cell_id_type id) const { return go_east[id]; }
 
 			/**
 			* @brief Returns the transposed id of the cell you reach from cell \p transposed_id when moving south with no pieces on the way.
-			* @details Has undefined behavior if \p id is out of range. Valid range is [ 0, board.count_cells() - 1 ]
+			* @details Has undefined behavior if \p id is out of range. Valid range is [ 0, _board.count_cells() - 1 ]
 			*/
 			inline int_cell_id_type get_south(int_cell_id_type transposed_id) const { return go_south[transposed_id]; }
 
 			/**
 			* @brief Returns the transposed id of the cell you reach from cell \p transposed_id when moving north with no pieces on the way.
-			* @details Has undefined behavior if \p id is out of range. Valid range is [ 0, board.count_cells() - 1 ]
+			* @details Has undefined behavior if \p id is out of range. Valid range is [ 0, _board.count_cells() - 1 ]
 			*/
 			inline int_cell_id_type get_north(int_cell_id_type transposed_id) const { return go_north[transposed_id]; }
 
@@ -136,7 +138,7 @@ namespace tobor {
 			*
 			*	@details You must pass a tranposed id as raw id for north/south and an id for east/west.
 			*		The value returned is also a transposed id or an id respectively.
-			*		Has undefined behavior if \p id is out of range. Valid range is [ 0, board.count_cells() - 1 ].
+			*		Has undefined behavior if \p id is out of range. Valid range is [ 0, _board.count_cells() - 1 ].
 			*/
 			inline int_cell_id_type get(const direction& d, int_cell_id_type raw_id) const {
 				switch (d.get())
@@ -189,8 +191,6 @@ namespace tobor {
 
 		private:
 
-			const world_type& _my_world; // remove this, add member function returning the reference inside cache!!! #####
-
 			quick_move_cache_type _cache;
 
 		public:
@@ -200,8 +200,10 @@ namespace tobor {
 			*
 			* @details \p my_word must not be changed externally. This is constructing a quick_move_cache inside which would be invalidated.
 			*/
-			move_engine(const world_type& my_world) : _my_world(my_world), _cache(my_world) {
+			move_engine(const world_type& my_world) : _cache(my_world) {
 			}
+
+			inline const world_type& board() const noexcept { return _cache.board(); }
 
 #if false
 			using id_getter_type = int_cell_id_type(cell_id_type::*)(const world_type&);
@@ -223,7 +225,7 @@ namespace tobor {
 				int_cell_id_type raw_next_cell_id{ (_cache.*get_cache_direction)(raw_start_cell_id) };
 
 				for (std::size_t i = 0; i < state.COUNT_ALL_PIECES; ++i) { // iterate over all pieces
-					const int_cell_id_type current_raw_id{ (state.piece_positions()[i].*get_raw_id)(_my_world) };
+					const int_cell_id_type current_raw_id{ (state.piece_positions()[i].*get_raw_id)(board()) };
 
 					if (raw_start_cell_id < current_raw_id && current_raw_id <= raw_next_cell_id) {
 						raw_next_cell_id = current_raw_id - 1;
@@ -248,11 +250,11 @@ namespace tobor {
 				const cell_id_creator& create_cell_id_by,
 				const cache_direction_getter& get_cache_direction
 			) const {
-				const int_cell_id_type raw_start_cell_id{ (start_cell.*get_raw_id)(_my_world) };
+				const int_cell_id_type raw_start_cell_id{ (start_cell.*get_raw_id)(board()) };
 
 				const int_cell_id_type raw_next_cell_id{ next_cell_max_move_raw(raw_start_cell_id, state, get_raw_id,get_cache_direction) };
 
-				return create_cell_id_by(raw_next_cell_id, _my_world);
+				return create_cell_id_by(raw_next_cell_id, board());
 			}
 #endif
 
@@ -268,7 +270,7 @@ namespace tobor {
 				cell_id_int_type raw_next_cell_id{ _cache.get(d, raw_start_cell_id) };
 
 				for (std::size_t i = 0; i < state.COUNT_ALL_PIECES; ++i) { // iterate over all pieces
-					const cell_id_int_type current_raw_id{ state.piece_positions()[i].get_raw_id(d, _my_world) };
+					const cell_id_int_type current_raw_id{ state.piece_positions()[i].get_raw_id(d, board()) };
 
 					if (raw_start_cell_id < current_raw_id && current_raw_id <= raw_next_cell_id) {
 						raw_next_cell_id = current_raw_id - 1;
@@ -291,11 +293,11 @@ namespace tobor {
 				const Position_Of_Pieces_T& state,
 				const direction& d
 			) const {
-				const cell_id_int_type raw_start_cell_id{ start_cell.get_raw_id(d,_my_world) };
+				const cell_id_int_type raw_start_cell_id{ start_cell.get_raw_id(d,board()) };
 
 				const cell_id_int_type raw_next_cell_id{ next_cell_max_move_raw(raw_start_cell_id, state, d) };
 
-				return cell_id_type::create_by_raw_id(d, raw_next_cell_id, _my_world);
+				return cell_id_type::create_by_raw_id(d, raw_next_cell_id, board());
 			}
 
 			/**
@@ -311,7 +313,7 @@ namespace tobor {
 			) const {
 				const cell_id_type start_cell{ state.piece_positions()[_piece_id.value] };
 
-				const cell_id_int_type raw_start_cell_id{ start_cell.get_raw_id(_direction_from, _my_world) };
+				const cell_id_int_type raw_start_cell_id{ start_cell.get_raw_id(_direction_from, board()) };
 
 				// need to check if we can stop here coming from _direction_from.
 				// return if there is no obstacle in opposite direction
@@ -335,7 +337,7 @@ namespace tobor {
 
 				auto iter = result.begin();
 				for (cell_id_int_type raw_id = raw_far_id; raw_id != raw_start_cell_id; raw_id += increment, ++iter) {
-					iter->piece_positions()[_piece_id.value] = cell_id_type::create_by_raw_id(_direction_from, raw_id, _my_world);
+					iter->piece_positions()[_piece_id.value] = cell_id_type::create_by_raw_id(_direction_from, raw_id, board());
 					iter->sort_pieces();
 				}
 				return result;
@@ -351,7 +353,7 @@ namespace tobor {
 				const bool SHRINK = true
 			) const {
 				auto result = std::vector<Position_Of_Pieces_T>();
-				result.reserve(static_cast<std::size_t>(_my_world.get_horizontal_size() + _my_world.get_vertical_size()));
+				result.reserve(static_cast<std::size_t>(board().get_horizontal_size() + board().get_vertical_size()));
 				for (direction d = direction::begin(); d != direction::end(); ++d) {
 					auto part = predecessor_states(state, _piece_id, d);
 					std::copy(std::begin(part), std::end(part), std::back_inserter(result));
@@ -367,7 +369,7 @@ namespace tobor {
 			inline std::vector<Position_Of_Pieces_T> predecessor_states(const Position_Of_Pieces_T& state, const bool SHRINK = true) const {
 				auto result = std::vector<Position_Of_Pieces_T>();
 				result.reserve(
-					static_cast<std::size_t>(_my_world.get_horizontal_size() + _my_world.get_vertical_size()) * piece_id_type::pieces_quantity_type::COUNT_ALL_PIECES
+					static_cast<std::size_t>(board().get_horizontal_size() + board().get_vertical_size()) * piece_id_type::pieces_quantity_type::COUNT_ALL_PIECES
 				);
 				for (piece_id_type piece = piece_id_type::begin(); piece != piece_id_type::end(); ++piece) {
 					auto part = predecessor_states(state, piece, false);
