@@ -425,15 +425,15 @@ namespace tobor {
 
 			using world_type = typename cell_id_type::world_type;
 
-			using cell_id_int_type = typename pieces_quantity_type::int_type;
+			using piece_id_int_type = typename pieces_quantity_type::int_type;
 
 
 
-			static constexpr cell_id_int_type COUNT_TARGET_PIECES{ Pieces_Quantity_Type::COUNT_TARGET_PIECES };
+			static constexpr piece_id_int_type COUNT_TARGET_PIECES{ Pieces_Quantity_Type::COUNT_TARGET_PIECES };
 
-			static constexpr cell_id_int_type COUNT_NON_TARGET_PIECES{ Pieces_Quantity_Type::COUNT_NON_TARGET_PIECES };
+			static constexpr piece_id_int_type COUNT_NON_TARGET_PIECES{ Pieces_Quantity_Type::COUNT_NON_TARGET_PIECES };
 
-			static constexpr cell_id_int_type COUNT_ALL_PIECES{ Pieces_Quantity_Type::COUNT_ALL_PIECES };
+			static constexpr piece_id_int_type COUNT_ALL_PIECES{ Pieces_Quantity_Type::COUNT_ALL_PIECES };
 
 			static constexpr bool SORTED_TARGET_PIECES{ SORTED_TARGET_PIECES_V };
 

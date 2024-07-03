@@ -18,7 +18,7 @@ namespace tobor {
 		/**
 		* @brief Class for keeping the information about quick jumps
 		*
-		* @details For a board, it stores for each cell the information which are the cells to move to on one step [west, east, south, north] until wall, assuming that there are no pieces on the way.
+		* @details For a board, it stores for each cell the information which are the cells to move to in one step [west, east, south, north] until wall, assuming that there are no pieces on the way.
 		*/
 		template<class World_Type_T>
 		class quick_move_cache {
@@ -26,16 +26,16 @@ namespace tobor {
 
 			using world_type = World_Type_T;
 
-			using cell_id_int_type = typename world_type::int_cell_id_type;
+			using int_cell_id_type = typename world_type::int_cell_id_type;
 			using int_size_type = typename world_type::int_size_type;
 
 		private:
 			const world_type& board;
 
-			std::vector<cell_id_int_type> go_west; // using cell ids
-			std::vector<cell_id_int_type> go_east; // using cell ids
-			std::vector<cell_id_int_type> go_south; // using transposed cell ids
-			std::vector<cell_id_int_type> go_north; // using transposed cell ids
+			std::vector<int_cell_id_type> go_west; // using cell ids
+			std::vector<int_cell_id_type> go_east; // using cell ids
+			std::vector<int_cell_id_type> go_south; // using transposed cell ids
+			std::vector<int_cell_id_type> go_north; // using transposed cell ids
 
 		public:
 
@@ -58,16 +58,16 @@ namespace tobor {
 					return;
 				}
 
-				go_west = std::vector<cell_id_int_type>(VECTOR_SIZE, 0);
-				go_east = std::vector<cell_id_int_type>(VECTOR_SIZE, 0);
-				go_south = std::vector<cell_id_int_type>(VECTOR_SIZE, 0);
-				go_north = std::vector<cell_id_int_type>(VECTOR_SIZE, 0);
+				go_west = std::vector<int_cell_id_type>(VECTOR_SIZE, 0);
+				go_east = std::vector<int_cell_id_type>(VECTOR_SIZE, 0);
+				go_south = std::vector<int_cell_id_type>(VECTOR_SIZE, 0);
+				go_north = std::vector<int_cell_id_type>(VECTOR_SIZE, 0);
 
 				{
 					go_west[0] = 0;
 					go_south[0] = 0;
 
-					cell_id_int_type id = 0;
+					int_cell_id_type id = 0;
 					while (static_cast<int_size_type>(id) + 1 < VECTOR_SIZE) {
 						++id;
 						if (board.west_wall_by_id(id)) {
@@ -85,10 +85,10 @@ namespace tobor {
 					}
 				}
 				{
-					go_east[VECTOR_SIZE - 1] = static_cast<cell_id_int_type>(VECTOR_SIZE - 1);
-					go_north[VECTOR_SIZE - 1] = static_cast<cell_id_int_type>(VECTOR_SIZE - 1);
+					go_east[VECTOR_SIZE - 1] = static_cast<int_cell_id_type>(VECTOR_SIZE - 1);
+					go_north[VECTOR_SIZE - 1] = static_cast<int_cell_id_type>(VECTOR_SIZE - 1);
 
-					cell_id_int_type id{ static_cast<cell_id_int_type>(VECTOR_SIZE - 1) };
+					int_cell_id_type id{ static_cast<int_cell_id_type>(VECTOR_SIZE - 1) };
 					do {
 						--id;
 						if (board.east_wall_by_id(id)) {
@@ -111,25 +111,25 @@ namespace tobor {
 			* @brief Returns the id of the cell you reach from cell \p id when moving west with no pieces on the way.
 			* @details Has undefined behavior if \p id is out of range. Valid range is [ 0, board.count_cells() - 1 ]
 			*/
-			inline cell_id_int_type get_west(cell_id_int_type id) const { return go_west[id]; }
+			inline int_cell_id_type get_west(int_cell_id_type id) const { return go_west[id]; }
 
 			/**
 			* @brief Returns the id of the cell you reach from cell \p id when moving east with no pieces on the way.
 			* @details Has undefined behavior if \p id is out of range. Valid range is [ 0, board.count_cells() - 1 ]
 			*/
-			inline cell_id_int_type get_east(cell_id_int_type id) const { return go_east[id]; }
+			inline int_cell_id_type get_east(int_cell_id_type id) const { return go_east[id]; }
 
 			/**
 			* @brief Returns the transposed id of the cell you reach from cell \p transposed_id when moving south with no pieces on the way.
 			* @details Has undefined behavior if \p id is out of range. Valid range is [ 0, board.count_cells() - 1 ]
 			*/
-			inline cell_id_int_type get_south(cell_id_int_type transposed_id) const { return go_south[transposed_id]; }
+			inline int_cell_id_type get_south(int_cell_id_type transposed_id) const { return go_south[transposed_id]; }
 
 			/**
 			* @brief Returns the transposed id of the cell you reach from cell \p transposed_id when moving north with no pieces on the way.
 			* @details Has undefined behavior if \p id is out of range. Valid range is [ 0, board.count_cells() - 1 ]
 			*/
-			inline cell_id_int_type get_north(cell_id_int_type transposed_id) const { return go_north[transposed_id]; }
+			inline int_cell_id_type get_north(int_cell_id_type transposed_id) const { return go_north[transposed_id]; }
 
 			/**
 			*	@brief Returns the raw id of the cell you reach from cell \p id when moving in direction \p d, assuming there are no pieces on the way.
@@ -138,7 +138,7 @@ namespace tobor {
 			*		The value returned is also a transposed id or an id respectively.
 			*		Has undefined behavior if \p id is out of range. Valid range is [ 0, board.count_cells() - 1 ].
 			*/
-			inline cell_id_int_type get(const direction& d, cell_id_int_type raw_id) const {
+			inline int_cell_id_type get(const direction& d, int_cell_id_type raw_id) const {
 				switch (d.get())
 				{
 				case direction::encoding::NORTH:
@@ -204,26 +204,26 @@ namespace tobor {
 			}
 
 #if false
-			using id_getter_type = cell_id_int_type(cell_id_type::*)(const world_type&);
+			using id_getter_type = int_cell_id_type(cell_id_type::*)(const world_type&);
 
-			using cell_id_creator = cell_id_type(*)(cell_id_int_type, const world_type&);
+			using cell_id_creator = cell_id_type(*)(int_cell_id_type, const world_type&);
 
-			using cache_direction_getter = cell_id_int_type(quick_move_cache_type::*)(cell_id_int_type);
+			using cache_direction_getter = int_cell_id_type(quick_move_cache_type::*)(int_cell_id_type);
 
 			/**
 			*	@brief Calculates the successor cell to reach starting at \p start_cell moving in given direction until any obstacle (wall or piece).
 			*/
 			template<class Position_Of_Pieces_Type>
-			[[deprecated]] inline cell_id_int_type next_cell_max_move_raw( // this function maybe private
-				const cell_id_int_type& raw_start_cell_id,
+			[[deprecated]] inline int_cell_id_type next_cell_max_move_raw( // this function maybe private
+				const int_cell_id_type& raw_start_cell_id,
 				const Position_Of_Pieces_Type& state,
 				const id_getter_type& get_raw_id,
 				const cache_direction_getter& get_cache_direction
 			) const {
-				cell_id_int_type raw_next_cell_id{ (_cache.*get_cache_direction)(raw_start_cell_id) };
+				int_cell_id_type raw_next_cell_id{ (_cache.*get_cache_direction)(raw_start_cell_id) };
 
 				for (std::size_t i = 0; i < state.COUNT_ALL_PIECES; ++i) { // iterate over all pieces
-					const cell_id_int_type current_raw_id{ (state.piece_positions()[i].*get_raw_id)(_my_world) };
+					const int_cell_id_type current_raw_id{ (state.piece_positions()[i].*get_raw_id)(_my_world) };
 
 					if (raw_start_cell_id < current_raw_id && current_raw_id <= raw_next_cell_id) {
 						raw_next_cell_id = current_raw_id - 1;
@@ -248,9 +248,9 @@ namespace tobor {
 				const cell_id_creator& create_cell_id_by,
 				const cache_direction_getter& get_cache_direction
 			) const {
-				const cell_id_int_type raw_start_cell_id{ (start_cell.*get_raw_id)(_my_world) };
+				const int_cell_id_type raw_start_cell_id{ (start_cell.*get_raw_id)(_my_world) };
 
-				const cell_id_int_type raw_next_cell_id{ next_cell_max_move_raw(raw_start_cell_id, state, get_raw_id,get_cache_direction) };
+				const int_cell_id_type raw_next_cell_id{ next_cell_max_move_raw(raw_start_cell_id, state, get_raw_id,get_cache_direction) };
 
 				return create_cell_id_by(raw_next_cell_id, _my_world);
 			}
@@ -453,7 +453,7 @@ namespace tobor {
 
 		};
 
-		using default_move_one_piece_calculator = move_engine<default_min_size_cell_id, default_quick_move_cache, default_piece_move>;
+		using default_move_engine = move_engine<default_min_size_cell_id, default_quick_move_cache, default_piece_move>;
 
 
 		template<class State_Type, class State_Label_Type = void>
@@ -507,11 +507,16 @@ namespace tobor {
 			}
 		};
 
-		template <class Move_One_Piece_Calculator, class Positions_Of_Pieces_Type>
+		/**
+		*	@brief A state space explorer for game boards.
+		*	@details It always has a fixed initial state which is the root of all state space exploration.
+		*			It can explore the entire reachable state space or only until a target is reached.
+		*/
+		template <class Move_Engine, class Positions_Of_Pieces_Type>
 		class distance_exploration {
 
 		public:
-			using move_one_piece_calculator_type = Move_One_Piece_Calculator;
+			using move_one_piece_calculator_type = Move_Engine;
 
 			using positions_of_pieces_type = Positions_Of_Pieces_Type; // check compatibility with Move_One_Piece_Calc! #### via static assert 
 
