@@ -11,7 +11,7 @@ private:
 
 	world_type _world;
 
-	move_one_piece_calculator_type _move_engine;
+	move_engine_type _move_engine;
 
 	state_path_type_interactive _path;
 

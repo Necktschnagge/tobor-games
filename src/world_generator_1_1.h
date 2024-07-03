@@ -335,13 +335,13 @@ namespace tobor {
 				inline reason_code reason() const { return r; }
 			};
 
-			template<class Positions_Of_Pieces_Type, uint64_t _BOARD_SIZE, uint64_t _COUNT_TARGET_ROBOTS, uint64_t _COUNT_NON_TARGET_ROBOTS, uint64_t _BLOCKED_CELLS>
+			template<class Positions_Of_Pieces_T, uint64_t _BOARD_SIZE, uint64_t _COUNT_TARGET_ROBOTS, uint64_t _COUNT_NON_TARGET_ROBOTS, uint64_t _BLOCKED_CELLS>
 			class initial_state_generator {
 			public:
 
 				/* types */
 
-				using positions_of_pieces_type = Positions_Of_Pieces_Type;
+				using positions_of_pieces_type = Positions_Of_Pieces_T;
 
 				using cell_id_type = typename positions_of_pieces_type::cell_id_type;
 

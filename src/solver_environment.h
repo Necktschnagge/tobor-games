@@ -23,7 +23,7 @@ struct EngineTypeSet {
 
 	using quick_move_cache_type = tobor::v1_1::quick_move_cache<world_type>;
 
-	using move_one_piece_calculator_type = tobor::v1_1::move_engine<cell_id_type, quick_move_cache_type, piece_move_type>;
+	using move_engine_type = tobor::v1_1::move_engine<cell_id_type, quick_move_cache_type, piece_move_type>;
 
 	using move_path_type = tobor::v1_1::move_path<piece_move_type>;
 
@@ -61,7 +61,7 @@ private:
 
 	using piece_change_decoration_vector = std::vector<piece_change_decoration>;
 
-	using distance_exploration_type = tobor::v1_1::distance_exploration<move_one_piece_calculator_type, positions_of_pieces_type_solver>;
+	using distance_exploration_type = tobor::v1_1::distance_exploration<move_engine_type, positions_of_pieces_type_solver>;
 
 	using bigraph_type = tobor::v1_1::simple_state_bigraph<positions_of_pieces_type_solver, std::vector<bool>>;
 
@@ -75,7 +75,7 @@ private:
 
 	cell_id_type _target_cell;
 
-	const move_one_piece_calculator_type& _move_engine;
+	const move_engine_type& _move_engine;
 
 	uint8_t _status_code;
 
@@ -89,7 +89,7 @@ private:
 	*	@details Purpose is counting min piece changes until final state.
 	*	Invariant that must be provided: If a state has labels then this state and all its direct and indirect successors must have been evaluated and their labels are set correclty.
 	*/
-	void build_prettiness_decoration(pretty_evaluation_bigraph_type& pretty_evaluation_bigraph, pretty_evaluation_bigraph_type::map_iterator_type map_iter_root, const move_one_piece_calculator_type& engine) {
+	void build_prettiness_decoration(pretty_evaluation_bigraph_type& pretty_evaluation_bigraph, pretty_evaluation_bigraph_type::map_iterator_type map_iter_root, const move_engine_type& engine) {
 		if (!map_iter_root->second.labels.empty()) {
 			return; // this map entry and all reachable direct and indirect successor states must have been decorated correctly
 		}
@@ -164,7 +164,7 @@ private:
 	}
 
 	state_path_type_interactive get_representant(pretty_evaluation_bigraph_type& pretty_evaluation_bigraph, pretty_evaluation_bigraph_type::map_iterator_type map_iter_root
-		//, const move_one_piece_calculator_type& engine
+		//, const move_engine_type& engine
 	) {
 		state_path_type_interactive result;
 
@@ -332,7 +332,7 @@ public:
 	SolverEnvironment(
 		const positions_of_pieces_type_interactive& initial_state,
 		const cell_id_type& target_cell,
-		const move_one_piece_calculator_type& move_engine,
+		const move_engine_type& move_engine,
 		std::function<void(const std::string&)> status_callback = nullptr,
 		std::size_t MAX_DEPTH = distance_exploration_type::SIZE_TYPE_MAX
 		//, bool explicilty_create_all_optimal_solution_paths = false // select prettiness evaluation.

@@ -20,11 +20,11 @@ namespace tobor {
 		*
 		* @details For a board, it stores for each cell the information which are the cells to move to in one step [west, east, south, north] until wall, assuming that there are no pieces on the way.
 		*/
-		template<class World_Type_T>
+		template<class World_T>
 		class quick_move_cache {
 		public:
 
-			using world_type = World_Type_T;
+			using world_type = World_T;
 
 			using int_cell_id_type = typename world_type::int_cell_id_type;
 			using int_size_type = typename world_type::int_size_type;
@@ -160,7 +160,7 @@ namespace tobor {
 		/**
 		*	@brief Calculates successor states by calcualting successor cell of single pieces for moving in a given direction.
 		*/
-		template<class Cell_Id_Type, class Quick_Move_Cache_T, class Piece_Move_Type>
+		template<class Cell_Id_T, class Quick_Move_Cache_T, class Piece_Move_T>
 		class move_engine {
 		public:
 
@@ -168,11 +168,11 @@ namespace tobor {
 
 			using world_type = typename quick_move_cache_type::world_type;
 
-			using cell_id_type = Cell_Id_Type;
+			using cell_id_type = Cell_Id_T;
 
 			using cell_id_int_type = typename cell_id_type::int_cell_id_type;
 
-			using piece_move_type = Piece_Move_Type;
+			using piece_move_type = Piece_Move_T;
 
 			using piece_id_type = typename piece_move_type::piece_id_type;
 
@@ -213,10 +213,10 @@ namespace tobor {
 			/**
 			*	@brief Calculates the successor cell to reach starting at \p start_cell moving in given direction until any obstacle (wall or piece).
 			*/
-			template<class Position_Of_Pieces_Type>
+			template<class Position_Of_Pieces_T>
 			[[deprecated]] inline int_cell_id_type next_cell_max_move_raw( // this function maybe private
 				const int_cell_id_type& raw_start_cell_id,
-				const Position_Of_Pieces_Type& state,
+				const Position_Of_Pieces_T& state,
 				const id_getter_type& get_raw_id,
 				const cache_direction_getter& get_cache_direction
 			) const {
@@ -240,10 +240,10 @@ namespace tobor {
 			/**
 			*	@brief Calculates the successor cell to reach starting at \p start_cell moving in given direction until any obstacle (wall or piece).
 			*/
-			template<class Position_Of_Pieces_Type>
+			template<class Position_Of_Pieces_T>
 			[[deprecated]] inline cell_id_type next_cell_max_move(
 				const cell_id_type& start_cell,
-				const Position_Of_Pieces_Type& state,
+				const Position_Of_Pieces_T& state,
 				const id_getter_type& get_raw_id,
 				const cell_id_creator& create_cell_id_by,
 				const cache_direction_getter& get_cache_direction
@@ -259,10 +259,10 @@ namespace tobor {
 			/**
 			*	@brief Calculates the successor cell to reach starting at \p start_cell moving in given direction \p d until any obstacle (wall or piece).
 			*/
-			template<class Position_Of_Pieces_Type>
+			template<class Position_Of_Pieces_T>
 			inline cell_id_int_type next_cell_max_move_raw(
 				const cell_id_int_type& raw_start_cell_id,
-				const Position_Of_Pieces_Type& state,
+				const Position_Of_Pieces_T& state,
 				const direction& d
 			) const {
 				cell_id_int_type raw_next_cell_id{ _cache.get(d, raw_start_cell_id) };
@@ -285,10 +285,10 @@ namespace tobor {
 			/**
 			*	@brief Calculates the successor cell to reach starting at \p start_cell moving in given direction until any obstacle (wall or piece).
 			*/
-			template<class Position_Of_Pieces_Type>
+			template<class Position_Of_Pieces_T>
 			inline cell_id_type next_cell_max_move(
 				const cell_id_type& start_cell,
-				const Position_Of_Pieces_Type& state,
+				const Position_Of_Pieces_T& state,
 				const direction& d
 			) const {
 				const cell_id_int_type raw_start_cell_id{ start_cell.get_raw_id(d,_my_world) };
@@ -303,9 +303,9 @@ namespace tobor {
 			*
 			*	@details Note, if given piece may have come from a specified direction, but it is not able to stop at it's position according to \p state, then there is no predecessor.
 			*/
-			template<class Position_Of_Pieces_Type>
-			inline std::vector<Position_Of_Pieces_Type> predecessor_states(
-				const Position_Of_Pieces_Type& state,
+			template<class Position_Of_Pieces_T>
+			inline std::vector<Position_Of_Pieces_T> predecessor_states(
+				const Position_Of_Pieces_T& state,
 				const typename piece_move_type::piece_id_type& _piece_id,
 				const direction& _direction_from
 			) const {
@@ -316,7 +316,7 @@ namespace tobor {
 				// need to check if we can stop here coming from _direction_from.
 				// return if there is no obstacle in opposite direction
 				if (next_cell_max_move_raw(raw_start_cell_id, state, !_direction_from) != raw_start_cell_id)
-					return std::vector<Position_Of_Pieces_Type>();
+					return std::vector<Position_Of_Pieces_T>();
 
 				auto raw_far_id = next_cell_max_move_raw(
 					raw_start_cell_id,
@@ -324,7 +324,7 @@ namespace tobor {
 					_direction_from
 				);
 
-				auto result = std::vector<Position_Of_Pieces_Type>(
+				auto result = std::vector<Position_Of_Pieces_T>(
 					raw_start_cell_id > raw_far_id ?
 					raw_start_cell_id - raw_far_id :
 					raw_far_id - raw_start_cell_id,
@@ -344,13 +344,13 @@ namespace tobor {
 			/**
 			*	@brief Determines all possible predecessor states of \p state when the piece \p _piece_id was moved in any direction.
 			*/
-			template<class Position_Of_Pieces_Type>
-			inline std::vector<Position_Of_Pieces_Type> predecessor_states(
-				const Position_Of_Pieces_Type& state,
+			template<class Position_Of_Pieces_T>
+			inline std::vector<Position_Of_Pieces_T> predecessor_states(
+				const Position_Of_Pieces_T& state,
 				const typename piece_move_type::piece_id_type& _piece_id,
 				const bool SHRINK = true
 			) const {
-				auto result = std::vector<Position_Of_Pieces_Type>();
+				auto result = std::vector<Position_Of_Pieces_T>();
 				result.reserve(static_cast<std::size_t>(_my_world.get_horizontal_size() + _my_world.get_vertical_size()));
 				for (direction d = direction::begin(); d != direction::end(); ++d) {
 					auto part = predecessor_states(state, _piece_id, d);
@@ -363,9 +363,9 @@ namespace tobor {
 			/**
 			*	@brief Determines all possible predecessor states of \p state when any piece was moved in any direction.
 			*/
-			template<class Position_Of_Pieces_Type>
-			inline std::vector<Position_Of_Pieces_Type> predecessor_states(const Position_Of_Pieces_Type& state, const bool SHRINK = true) const {
-				auto result = std::vector<Position_Of_Pieces_Type>();
+			template<class Position_Of_Pieces_T>
+			inline std::vector<Position_Of_Pieces_T> predecessor_states(const Position_Of_Pieces_T& state, const bool SHRINK = true) const {
+				auto result = std::vector<Position_Of_Pieces_T>();
 				result.reserve(
 					static_cast<std::size_t>(_my_world.get_horizontal_size() + _my_world.get_vertical_size()) * piece_id_type::pieces_quantity_type::COUNT_ALL_PIECES
 				);
@@ -381,9 +381,9 @@ namespace tobor {
 			/**
 			*	@brief Calculates the successor state arising when moving \p _piece_id into direction \p _direction.
 			*/
-			template<class Position_Of_Pieces_Type>
-			inline Position_Of_Pieces_Type successor_state(const Position_Of_Pieces_Type& state, const piece_id_type& _piece_id, const direction& _direction) const {
-				Position_Of_Pieces_Type result(state);
+			template<class Position_Of_Pieces_T>
+			inline Position_Of_Pieces_T successor_state(const Position_Of_Pieces_T& state, const piece_id_type& _piece_id, const direction& _direction) const {
+				Position_Of_Pieces_T result(state);
 
 				result.piece_positions()[_piece_id.value] = next_cell_max_move(state.piece_positions()[_piece_id.value], state, _direction);
 				result.sort_pieces();
@@ -395,9 +395,9 @@ namespace tobor {
 			*	@brief Calculates the successor state arising when moving \p _piece_id into direction \p _direction.
 			*	@details Updates _piece_id to the new id the piece takes after is was moved.
 			*/
-			template<class Position_Of_Pieces_Type>
-			inline Position_Of_Pieces_Type successor_state_feedback(const Position_Of_Pieces_Type& state, piece_id_type& _piece_id, const direction& _direction) const {
-				Position_Of_Pieces_Type result(state);
+			template<class Position_Of_Pieces_T>
+			inline Position_Of_Pieces_T successor_state_feedback(const Position_Of_Pieces_T& state, piece_id_type& _piece_id, const direction& _direction) const {
+				Position_Of_Pieces_T result(state);
 
 				result.piece_positions()[_piece_id.value] = next_cell_max_move(state.piece_positions()[_piece_id.value], state, _direction);
 				result.sort_pieces(_piece_id.value);
@@ -408,21 +408,21 @@ namespace tobor {
 			/**
 			*	@brief Calculates the successor state arising when \p move is applied.
 			*/
-			template<class Position_Of_Pieces_Type>
-			inline Position_Of_Pieces_Type successor_state(const Position_Of_Pieces_Type& state, const piece_move_type& move) const { return successor_state(state, move.pid, move.dir); }
+			template<class Position_Of_Pieces_T>
+			inline Position_Of_Pieces_T successor_state(const Position_Of_Pieces_T& state, const piece_move_type& move) const { return successor_state(state, move.pid, move.dir); }
 
 			/**
 			*	@brief Calculated the piece_move which has to be applied in order to move from \p from_state to \p to_state
 			*/
-			template<class Position_Of_Pieces_Type>
-			inline piece_move_type state_minus_state(const Position_Of_Pieces_Type& to_state, const Position_Of_Pieces_Type& from_state) const {
+			template<class Position_Of_Pieces_T>
+			inline piece_move_type state_minus_state(const Position_Of_Pieces_T& to_state, const Position_Of_Pieces_T& from_state) const {
 				if (from_state == to_state) { // no move error
 
 					typename arithmetic_error::no_move no_move_exception;
 
 					for (auto pid = piece_id_type::begin(); pid < piece_id_type::end(); ++pid) {
 						for (auto dir = direction::begin(); dir < direction::end(); ++dir) {
-							if (successor_state(from_state,pid, dir) == to_state) {
+							if (successor_state(from_state, pid, dir) == to_state) {
 								no_move_exception.zero_moves.emplace_back(pid, dir);
 							}
 						}
@@ -456,14 +456,14 @@ namespace tobor {
 		using default_move_engine = move_engine<default_min_size_cell_id, default_quick_move_cache, default_piece_move>;
 
 
-		template<class State_Type, class State_Label_Type = void>
+		template<class State_T, class State_Label_T = void>
 		class simple_state_bigraph;
 
-		template<class State_Type>
-		class simple_state_bigraph<State_Type, void> {
+		template<class State_T>
+		class simple_state_bigraph<State_T, void> {
 		public:
 
-			using state_type = State_Type;
+			using state_type = State_T;
 			using state_set_type = std::set<state_type>;
 			using state_label_type = void;
 
@@ -483,12 +483,12 @@ namespace tobor {
 			}
 		};
 
-		template<class State_Type, class State_Label_Type>
+		template<class State_T, class State_Label_T>
 		class simple_state_bigraph {
 		public:
-			using state_type = State_Type;
+			using state_type = State_T;
 			using state_set_type = std::set<state_type>;
-			using state_label_type = State_Label_Type;
+			using state_label_type = State_Label_T;
 
 			struct node_links {
 				state_set_type predecessors;
@@ -512,15 +512,15 @@ namespace tobor {
 		*	@details It always has a fixed initial state which is the root of all state space exploration.
 		*			It can explore the entire reachable state space or only until a target is reached.
 		*/
-		template <class Move_Engine, class Positions_Of_Pieces_Type>
+		template <class Move_Engine_T, class Positions_Of_Pieces_T>
 		class distance_exploration {
 
 		public:
-			using move_one_piece_calculator_type = Move_Engine;
+			using move_engine_type = Move_Engine_T;
 
-			using positions_of_pieces_type = Positions_Of_Pieces_Type; // check compatibility with Move_One_Piece_Calc! #### via static assert 
+			using positions_of_pieces_type = Positions_Of_Pieces_T; // check compatibility with Move_One_Piece_Calc! #### via static assert 
 
-			using piece_move_type = typename move_one_piece_calculator_type::piece_move_type;
+			using piece_move_type = typename move_engine_type::piece_move_type;
 
 			using cell_id_type = typename positions_of_pieces_type::cell_id_type;
 
@@ -645,11 +645,11 @@ namespace tobor {
 				_reachable_states_by_distance[index].erase(free_next, _reachable_states_by_distance[index].end());
 			}
 
-			template<class Iterator_Type>
+			template<class Iterator_T>
 			inline void add_all_nontrivial_successor_states(
-				const move_one_piece_calculator_type& engine,
+				const move_engine_type& engine,
 				const positions_of_pieces_type& current_state,
-				Iterator_Type destination
+				Iterator_T destination
 			) {
 				// compute all successor state candidates:
 				for (typename piece_move_type::piece_id_type::int_type pid = 0; pid < positions_of_pieces_type::COUNT_ALL_PIECES; ++pid) {
@@ -665,12 +665,12 @@ namespace tobor {
 				}
 			}
 
-			template<class Iterator_Type>
+			template<class Iterator_T>
 			inline bool add_all_nontrivial_successor_states(
-				const move_one_piece_calculator_type& engine,
+				const move_engine_type& engine,
 				const positions_of_pieces_type& current_state,
 				const cell_id_type& target_cell,
-				Iterator_Type destination
+				Iterator_T destination
 			) {
 				bool found_final_state{ false };
 
@@ -741,7 +741,7 @@ namespace tobor {
 			* Caller guarantees that target_cell has not yet been found if NOT_YET_FOUND_GUARANTEED == true.
 			*/
 			inline size_type explore_until_target(
-				const move_one_piece_calculator_type& engine,
+				const move_engine_type& engine,
 				const cell_id_type& target_cell,
 				const exploration_policy& policy,
 				const bool NOT_YET_FOUND_GUARANTEED = false
@@ -817,7 +817,7 @@ namespace tobor {
 			*
 			*/
 			inline void explore(
-				const move_one_piece_calculator_type& engine,
+				const move_engine_type& engine,
 				const exploration_policy& policy
 			) {
 				const size_type INDEX_LAST_EXPLORATION{ _reachable_states_by_distance.size() - 1 };
@@ -850,15 +850,15 @@ namespace tobor {
 				}
 			}
 
-			inline size_type explore_until_target(const move_one_piece_calculator_type& engine, const cell_id_type& target_cell) {
+			inline size_type explore_until_target(const move_engine_type& engine, const cell_id_type& target_cell) {
 				return optimal_path_length(engine, target_cell, exploration_policy::FORCE_EXPLORATION_UNRESTRICTED(), 0);
 			}
 
-			inline size_type explore_until_target(const move_one_piece_calculator_type& engine, const cell_id_type& target_cell, const size_type& max_depth) {
+			inline size_type explore_until_target(const move_engine_type& engine, const cell_id_type& target_cell, const size_type& max_depth) {
 				return optimal_path_length(engine, target_cell, exploration_policy::FORCE_EXPLORATION_UNTIL_DEPTH(max_depth), 0);
 			}
 
-			inline size_type optimal_path_length(const move_one_piece_calculator_type& engine, const cell_id_type& target_cell, const exploration_policy& policy = exploration_policy::ONLY_EXPLORED(), const size_type& min_length_hint = 0) {
+			inline size_type optimal_path_length(const move_engine_type& engine, const cell_id_type& target_cell, const exploration_policy& policy = exploration_policy::ONLY_EXPLORED(), const size_type& min_length_hint = 0) {
 				// checking cache...
 				const auto iter = _optimal_path_length_map.find(target_cell);
 
@@ -891,7 +891,7 @@ namespace tobor {
 
 
 
-			inline std::vector<positions_of_pieces_type> optimal_final_states(move_one_piece_calculator_type& engine, const cell_id_type& target_cell, const exploration_policy& policy = exploration_policy::ONLY_EXPLORED(), const size_type& min_length_hint = 0) {
+			inline std::vector<positions_of_pieces_type> optimal_final_states(move_engine_type& engine, const cell_id_type& target_cell, const exploration_policy& policy = exploration_policy::ONLY_EXPLORED(), const size_type& min_length_hint = 0) {
 				std::vector<positions_of_pieces_type> result;
 				const size_type DEPTH{ optimal_path_length(engine, target_cell, policy, min_length_hint) };
 
@@ -907,15 +907,15 @@ namespace tobor {
 				return result;
 			}
 
-			template<class State_Label_Type>
+			template<class State_Label_T>
 			void get_simple_bigraph(
-				const move_one_piece_calculator_type& engine,
+				const move_engine_type& engine,
 				const cell_id_type& target_cell,
-				simple_state_bigraph<positions_of_pieces_type, State_Label_Type>& destination,
+				simple_state_bigraph<positions_of_pieces_type, State_Label_T>& destination,
 				const exploration_policy& policy = exploration_policy::ONLY_EXPLORED(),
 				const size_type& min_length_hint = 0
 			) {
-				using bigraph = simple_state_bigraph<positions_of_pieces_type, State_Label_Type>;
+				using bigraph = simple_state_bigraph<positions_of_pieces_type, State_Label_T>;
 
 				destination.clear();
 
@@ -1079,11 +1079,11 @@ namespace tobor {
 
 		};
 
-		template<class Piece_Move_Type = default_piece_move>
+		template<class Piece_Move_T>
 		class move_path {
 
 		public:
-			using piece_move_type = Piece_Move_Type;
+			using piece_move_type = Piece_Move_T;
 
 			using vector_type = std::vector<piece_move_type>;
 
@@ -1108,20 +1108,20 @@ namespace tobor {
 
 			move_path& operator=(move_path&&) = default;
 
-			template<class Position_Of_Pieces_Type, class Move_Once_Piece_Calculator_Type>
-			explicit move_path(const state_path<Position_Of_Pieces_Type>& s_path, const Move_Once_Piece_Calculator_Type& move_engine) {
+			template<class Position_Of_Pieces_T, class Move_Engine_T>
+			explicit move_path(const state_path<Position_Of_Pieces_T>& s_path, const Move_Engine_T& move_engine) {
 				for (std::size_t i{ 0 }; i + 1 < s_path.vector().size(); ++i) {
 					_move_vector.emplace_back(move_engine.state_minus_state(s_path.vector()[i + 1], s_path.vector()[i]));
 				}
 			}
 
-			template <class Pieces_Quantity_Type, class Cell_Id_Type_T, bool SORTED_TARGET_PIECES_V, bool SORTED_NON_TARGET_PIECES_V, class Move_Once_Piece_Calculator_Type>
+			template <class Pieces_Quantity_T, class Cell_Id_Type_T, bool SORTED_TARGET_PIECES_V, bool SORTED_NON_TARGET_PIECES_V, class Move_Engine_T>
 			inline static move_path extract_unsorted_move_path(
-				const state_path<augmented_positions_of_pieces<Pieces_Quantity_Type, Cell_Id_Type_T, SORTED_TARGET_PIECES_V, SORTED_NON_TARGET_PIECES_V>>& augmented_state_path,
-				const Move_Once_Piece_Calculator_Type& move_engine
+				const state_path<augmented_positions_of_pieces<Pieces_Quantity_T, Cell_Id_Type_T, SORTED_TARGET_PIECES_V, SORTED_NON_TARGET_PIECES_V>>& augmented_state_path,
+				const Move_Engine_T& move_engine
 			)
 			{
-				using augmented_positions_of_pieces_type = augmented_positions_of_pieces<Pieces_Quantity_Type, Cell_Id_Type_T, SORTED_TARGET_PIECES_V, SORTED_NON_TARGET_PIECES_V>;
+				using augmented_positions_of_pieces_type = augmented_positions_of_pieces<Pieces_Quantity_T, Cell_Id_Type_T, SORTED_TARGET_PIECES_V, SORTED_NON_TARGET_PIECES_V>;
 				using permutation_type = typename augmented_positions_of_pieces_type::permutation_type;
 				using permutation_indexing_type = typename permutation_type::size_type;
 
@@ -1148,9 +1148,9 @@ namespace tobor {
 
 			const vector_type& vector() const { return _move_vector; }
 
-			template<class Position_Of_Pieces_Type, class Move_Once_Piece_Calculator_Type>
-			[[nodiscard]] inline state_path<Position_Of_Pieces_Type> apply(const Position_Of_Pieces_Type& initial_state, const Move_Once_Piece_Calculator_Type& move_engine) const {
-				state_path<Position_Of_Pieces_Type> result;
+			template<class Position_Of_Pieces_T, class Move_Engine_T>
+			[[nodiscard]] inline state_path<Position_Of_Pieces_T> apply(const Position_Of_Pieces_T& initial_state, const Move_Engine_T& move_engine) const {
+				state_path<Position_Of_Pieces_T> result;
 				result.vector().reserve(_move_vector.size() + 1);
 				result.vector().push_back(initial_state);
 
@@ -1380,7 +1380,7 @@ namespace tobor {
 		};
 
 
-		template<class Positions_Of_Pieces_Type>
+		template<class Positions_Of_Pieces_T>
 		class path_classificator {
 
 			inline static bool contains(const std::vector<bool>& flag_vector, std::size_t flag_index) {
@@ -1398,7 +1398,7 @@ namespace tobor {
 			}
 
 		public:
-			using positions_of_pieces_type = Positions_Of_Pieces_Type;
+			using positions_of_pieces_type = Positions_Of_Pieces_T;
 
 			using state_path_type = state_path<positions_of_pieces_type>;
 
@@ -1406,12 +1406,12 @@ namespace tobor {
 
 		private:
 
-			template<class State_Label_Type>
+			template<class State_Label_T>
 			static void extract_all_state_paths_helper(
-				const simple_state_bigraph<positions_of_pieces_type, State_Label_Type>& source,
+				const simple_state_bigraph<positions_of_pieces_type, State_Label_T>& source,
 				std::vector<state_path<positions_of_pieces_type>>& all_state_paths,
 				state_path_vector_type& depth_first_path
-				//, const typename simple_state_bigraph<positions_of_pieces_type, State_Label_Type>::map_type::const_iterator& current_state_iter /* not end */
+				//, const typename simple_state_bigraph<positions_of_pieces_type, State_Label_T>::map_type::const_iterator& current_state_iter /* not end */
 			) {
 				auto iter = source.map.find(depth_first_path.back());
 
@@ -1727,11 +1727,11 @@ namespace tobor {
 				return flag_index;
 			}
 
-			template<class State_Label_Type>
+			template<class State_Label_T>
 			static void extract_subgraph_by_label(
 				const simple_state_bigraph<positions_of_pieces_type, std::vector<bool>>& source,
 				std::size_t label_index,
-				simple_state_bigraph<positions_of_pieces_type, State_Label_Type>& destination
+				simple_state_bigraph<positions_of_pieces_type, State_Label_T>& destination
 			) {
 				destination.map.clear();
 
@@ -1747,7 +1747,7 @@ namespace tobor {
 					if (contains(pair.second.labels, label_index)) {
 						auto iter = destination.map.insert(
 							destination.map.end(),
-							std::make_pair(pair.first, typename simple_state_bigraph<positions_of_pieces_type, State_Label_Type>::node_links())
+							std::make_pair(pair.first, typename simple_state_bigraph<positions_of_pieces_type, State_Label_T>::node_links())
 						);
 						std::copy_if(pair.second.predecessors.cbegin(), pair.second.predecessors.cend(), std::inserter(iter->second.predecessors, iter->second.predecessors.end()), has_label);
 						std::copy_if(pair.second.successors.cbegin(), pair.second.successors.cend(), std::inserter(iter->second.successors, iter->second.successors.end()), has_label);
@@ -1757,8 +1757,8 @@ namespace tobor {
 
 
 
-			template<class State_Label_Type>
-			static std::vector<state_path<positions_of_pieces_type>> extract_all_state_paths(const simple_state_bigraph<positions_of_pieces_type, State_Label_Type>& source) {
+			template<class State_Label_T>
+			static std::vector<state_path<positions_of_pieces_type>> extract_all_state_paths(const simple_state_bigraph<positions_of_pieces_type, State_Label_T>& source) {
 				std::vector<state_path<positions_of_pieces_type>> all_state_paths;
 
 				for (auto iter = source.map.cbegin(); iter != source.map.cend(); ++iter) {
@@ -1782,21 +1782,22 @@ namespace tobor {
 			*	@brief requires single initial state in source bigraph
 			*/
 			template<
-				class Source_PoP_Type,
-				class Source_Decoration_Type,
-				class Destination_PoP_Type,
-				class Destination_Decoration_Type,
+				class Source_State_T,
+				class Source_Decoration_T,
+				class Destination_State_T,
+				class Destination_Decoration_T,
 				class Cell_Id_T,
 				class Quick_Move_Cache_T,
 				class Piece_Move_T
 			>
-				requires std::same_as<typename Source_PoP_Type::cell_id_type, Cell_Id_T>&&
-			std::same_as<typename Destination_PoP_Type::cell_id_type, Cell_Id_T>
+				requires std::same_as<typename Source_State_T::cell_id_type, Cell_Id_T>
+			&&
+				std::same_as<typename Destination_State_T::cell_id_type, Cell_Id_T>
 
 				struct bigraph_simulation_copy {
 
-				using source_bigraph_type = tobor::v1_1::simple_state_bigraph<Source_PoP_Type, Source_Decoration_Type>;
-				using destination_bigraph_type = tobor::v1_1::simple_state_bigraph<Destination_PoP_Type, Destination_Decoration_Type>;
+				using source_bigraph_type = tobor::v1_1::simple_state_bigraph<Source_State_T, Source_Decoration_T>;
+				using destination_bigraph_type = tobor::v1_1::simple_state_bigraph<Destination_State_T, Destination_Decoration_T>;
 
 				using source_map_const_iterator = typename source_bigraph_type::map_const_iterator_type;
 				using destination_map_iterator = typename destination_bigraph_type::map_iterator_type;
@@ -1811,14 +1812,14 @@ namespace tobor {
 
 				};
 
-				using simulation_links_type = std::map<Source_PoP_Type, std::set<Destination_PoP_Type>>;
+				using simulation_links_type = std::map<Source_State_T, std::set<Destination_State_T>>;
 
 				bigraph_simulation_copy() = delete;
 
 				inline static destination_map_iterator copy(
 					const source_bigraph_type& source_bigraph,
 					destination_bigraph_type& destination_bigraph,
-					const Destination_PoP_Type& initial_state_destination,
+					const Destination_State_T& initial_state_destination,
 					const move_engine<Cell_Id_T, Quick_Move_Cache_T, Piece_Move_T>& engine
 				) {
 					destination_bigraph.clear();
@@ -1871,7 +1872,7 @@ namespace tobor {
 
 						Piece_Move_T move{ engine.state_minus_state(source_succ_state, source_curr_state) };
 
-						Destination_PoP_Type similar_successor_state = engine.successor_state(destination_curr_state, move);
+						Destination_State_T similar_successor_state = engine.successor_state(destination_curr_state, move);
 
 
 						//auto& destination_succ_map_value = destination_bigraph.map[similar_successor_state]; // insert successor state, if not present

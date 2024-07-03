@@ -284,11 +284,11 @@ namespace tobor {
 		/**
 		*	@brief Stores just a cell id.
 		*/
-		template<class World_Type_T>
+		template<class World_T>
 		class min_size_cell_id {
 		public:
 
-			using world_type = World_Type_T;
+			using world_type = World_T;
 
 			using int_size_type = typename world_type::int_size_type; // narrow_int
 			using int_cell_id_type = typename world_type::int_cell_id_type; // size_int
@@ -398,8 +398,8 @@ namespace tobor {
 		/**
 		*	@brief Contains the information where the pieces are located on the game board.
 		*/
-		template <class Pieces_Quantity_Type, class Cell_Id_Type_T, bool SORTED_TARGET_PIECES_V, bool SORTED_NON_TARGET_PIECES_V>
-		using positions_of_pieces = tobor::v1_0::positions_of_pieces<Pieces_Quantity_Type, Cell_Id_Type_T, SORTED_TARGET_PIECES_V, SORTED_NON_TARGET_PIECES_V>;
+		template <class Pieces_Quantity_T, class Cell_Id_Type_T, bool SORTED_TARGET_PIECES_V, bool SORTED_NON_TARGET_PIECES_V>
+		using positions_of_pieces = tobor::v1_0::positions_of_pieces<Pieces_Quantity_T, Cell_Id_Type_T, SORTED_TARGET_PIECES_V, SORTED_NON_TARGET_PIECES_V>;
 
 		using default_positions_of_pieces = positions_of_pieces<default_pieces_quantity, default_min_size_cell_id, false, true>;
 
@@ -408,7 +408,7 @@ namespace tobor {
 		*
 		*	@details Whether or not a section is sorted, it keeps track of the permutation which was applied in order to sort the pieces.
 		*/
-		template <class Pieces_Quantity_Type, class Cell_Id_Type_T, bool SORTED_TARGET_PIECES_V, bool SORTED_NON_TARGET_PIECES_V>
+		template <class Pieces_Quantity_T, class Cell_Id_Type_T, bool SORTED_TARGET_PIECES_V, bool SORTED_NON_TARGET_PIECES_V>
 		class augmented_positions_of_pieces {
 
 			template <class INNER_Pieces_Quantity_Type, class INNER_Cell_Id_Type_T, bool INNER_SORTED_TARGET_PIECES_V, bool INNER_SORTED_NON_TARGET_PIECES_V>
@@ -419,7 +419,7 @@ namespace tobor {
 
 		public:
 
-			using pieces_quantity_type = Pieces_Quantity_Type;
+			using pieces_quantity_type = Pieces_Quantity_T;
 
 			using cell_id_type = Cell_Id_Type_T;
 
@@ -429,11 +429,11 @@ namespace tobor {
 
 
 
-			static constexpr piece_id_int_type COUNT_TARGET_PIECES{ Pieces_Quantity_Type::COUNT_TARGET_PIECES };
+			static constexpr piece_id_int_type COUNT_TARGET_PIECES{ Pieces_Quantity_T::COUNT_TARGET_PIECES };
 
-			static constexpr piece_id_int_type COUNT_NON_TARGET_PIECES{ Pieces_Quantity_Type::COUNT_NON_TARGET_PIECES };
+			static constexpr piece_id_int_type COUNT_NON_TARGET_PIECES{ Pieces_Quantity_T::COUNT_NON_TARGET_PIECES };
 
-			static constexpr piece_id_int_type COUNT_ALL_PIECES{ Pieces_Quantity_Type::COUNT_ALL_PIECES };
+			static constexpr piece_id_int_type COUNT_ALL_PIECES{ Pieces_Quantity_T::COUNT_ALL_PIECES };
 
 			static constexpr bool SORTED_TARGET_PIECES{ SORTED_TARGET_PIECES_V };
 
@@ -684,8 +684,8 @@ namespace tobor {
 		using default_augmented_positions_of_pieces = augmented_positions_of_pieces< default_pieces_quantity, default_min_size_cell_id, false, false>;
 
 
-		template <class Pieces_Quantity_Type>
-		using piece_id = tobor::v1_0::piece_id<Pieces_Quantity_Type>;
+		template <class Pieces_Quantity_T>
+		using piece_id = tobor::v1_0::piece_id<Pieces_Quantity_T>;
 
 		using default_piece_id = piece_id<default_pieces_quantity>;
 
@@ -703,10 +703,10 @@ namespace tobor {
 }
 
 namespace std {
-	template <class Pieces_Quantity_Type, class Cell_Id_Type, bool SORTED_TARGET_PIECES_V, bool SORTED_NON_TARGET_PIECES_V>
+	template <class Pieces_Quantity_T, class Cell_Id_Type, bool SORTED_TARGET_PIECES_V, bool SORTED_NON_TARGET_PIECES_V>
 	inline void swap(
-		tobor::v1_1::augmented_positions_of_pieces<Pieces_Quantity_Type, Cell_Id_Type, SORTED_TARGET_PIECES_V, SORTED_NON_TARGET_PIECES_V>& a,
-		tobor::v1_1::augmented_positions_of_pieces<Pieces_Quantity_Type, Cell_Id_Type, SORTED_TARGET_PIECES_V, SORTED_NON_TARGET_PIECES_V>& b
+		tobor::v1_1::augmented_positions_of_pieces<Pieces_Quantity_T, Cell_Id_Type, SORTED_TARGET_PIECES_V, SORTED_NON_TARGET_PIECES_V>& a,
+		tobor::v1_1::augmented_positions_of_pieces<Pieces_Quantity_T, Cell_Id_Type, SORTED_TARGET_PIECES_V, SORTED_NON_TARGET_PIECES_V>& b
 	) {
 		std::swap(a._piece_positions, b._piece_positions);
 		std::swap(a._permutation, b._permutation);
