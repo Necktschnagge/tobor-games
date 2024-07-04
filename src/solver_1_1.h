@@ -362,7 +362,7 @@ namespace tobor {
 
 			/**
 			*	@brief Calculated the piece_move which has to be applied in order to move from \p from_state to \p to_state
-			*	
+			*
 			*	@details If (\p from_state == \p to_state) arithmetic_error::no_move is thrown.
 			*	If there are multiple moves in sequence needed in order to move from \p from_state to \p to_state, an arithmetic_error::multi_move is thrown.
 			*	Also, if there are different single moves one can use from \p from_state to \p to_state, an arithmetic_error::multi_move is thrown.
@@ -470,11 +470,13 @@ namespace tobor {
 		public:
 			using move_engine_type = Move_Engine_T;
 
-			using positions_of_pieces_type = Positions_Of_Pieces_T; // check compatibility with Move_One_Piece_Calc! #### via static assert 
+			using positions_of_pieces_type = Positions_Of_Pieces_T;
 
 			using piece_move_type = typename move_engine_type::piece_move_type;
 
 			using cell_id_type = typename positions_of_pieces_type::cell_id_type;
+
+			//using pieces_quantity_type = positions_of_pieces::
 
 			using size_type = std::size_t;
 
@@ -526,32 +528,45 @@ namespace tobor {
 
 			using target_distance_map_type = std::map<cell_id_type, size_type>;
 
-
 			using states_vector = std::vector<positions_of_pieces_type>;
 
 			/**
 			* conditions:
 			*	- guaranteed to have .size() > 0
 			*	- the first entry _reachable_states_by_distance[0] has always length 1 and contains the initial state
+			*	- the vector at index i contains exactly the states which are reachable by an optimal path of length i
 			*/
 			std::vector<states_vector> _reachable_states_by_distance;
-
-			// number of steps needed by any optimal solution
-			//size_type _optimal_path_length;
 
 			/**
 			* maps target cells to their minimal distance from initial state
 			*/
 			target_distance_map_type _optimal_path_length_map;
 
+			/**
+			*	true if and only if the whole state space reachable from initial state has been fully explored.
+			*/
 			bool _entirely_explored{ false };
 
+			inline void radix_sort_unique() {
+				//positions_of_pieces_type::
+
+			}
+
 			inline void sort_unique(const typename std::vector<states_vector>::size_type& index /* new states index */) {
-				std::sort(/*std::execution::par,*/ _reachable_states_by_distance[index].begin(), _reachable_states_by_distance[index].end());
-				_reachable_states_by_distance[index].erase(
-					unique(/*std::execution::par,*/ _reachable_states_by_distance[index].begin(), _reachable_states_by_distance[index].end()),
-					_reachable_states_by_distance[index].end()
-				);
+				static constexpr bool USE_RADIX_SORT{ true };
+
+				if constexpr (USE_RADIX_SORT) {
+					positions_of_pieces_type::collection_sort_unique(_reachable_states_by_distance[index]);
+				}
+				else {
+					std::sort(/*std::execution::par,*/ _reachable_states_by_distance[index].begin(), _reachable_states_by_distance[index].end());
+
+					_reachable_states_by_distance[index].erase(
+						unique(/*std::execution::par,*/ _reachable_states_by_distance[index].begin(), _reachable_states_by_distance[index].end()),
+						_reachable_states_by_distance[index].end()
+					);
+				}
 			}
 
 			inline void erase_seen_before(const typename std::vector<states_vector>::size_type& index /* new states index */) {

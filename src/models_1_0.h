@@ -14,6 +14,7 @@
 #include <string>
 #include <execution>
 #include <compare>
+#include <functional>
 
 
 namespace tobor {
@@ -585,7 +586,158 @@ namespace tobor {
 			*/
 			all_pieces_array_type _piece_positions;
 
+
+			template <class T>
+			using bucket = std::array<std::vector<T>, 256>; // ### make 256 template
+
+			template<class T>
+			class bucket_iterator {
+
+				typename bucket<T>::iterator _outer_iter;
+				const typename bucket<T>::iterator _outer_iter_end;
+				typename bucket<T>::value_type::iterator _inner_iter;
+
+				inline void advance_until_valid() {
+					if (_outer_iter == _outer_iter_end)
+						return;
+
+					while (_inner_iter == _outer_iter->end()) {
+						++_outer_iter;
+						if (_outer_iter == _outer_iter_end) {
+							return; // reached end iterator
+						}
+						// jump to beginning of next bucket:
+						_inner_iter = _outer_iter->begin();
+					}
+				}
+
+				bucket_iterator(const typename bucket<T>::iterator& outer_iter, const typename bucket<T>::iterator& outer_iter_end, const typename bucket<T>::value_type::iterator& inner_iter) : _outer_iter(outer_iter), _outer_iter_end(outer_iter_end), _inner_iter(inner_iter) {
+					advance_until_valid();
+				}
+
+			public:
+
+				inline static bucket_iterator begin_of(bucket<T>& b) {
+					return bucket_iterator(b.begin(), b.end(), b[0].begin());
+				}
+
+				inline static bucket_iterator end_of(bucket<T>& b) {
+					return bucket_iterator(b.end(), b.end(), b[0].begin());
+				}
+
+				inline T& operator*() {
+					return *_inner_iter;
+				}
+
+				inline bucket_iterator operator++() {
+					// guaranteed that this is no end iterator.
+					// guaranteed that inner is no end iterator;
+					++_inner_iter;
+					advance_until_valid();
+					return *this;
+				}
+
+				inline bool is_end() const {
+					return _outer_iter == _outer_iter_end;
+				}
+
+				inline bool operator==(const bucket_iterator another) {
+					return (_outer_iter == another._outer_iter) && (
+						is_end() || another.is_end() || _inner_iter == another._inner_iter
+						);
+				}
+
+			};
+
+			template<class Iterator_T>
+			inline static void sort_in_buckets(std::array<std::vector<positions_of_pieces>, 256>& buckets, const Iterator_T& begin, const Iterator_T& end, const std::function<uint8_t(const positions_of_pieces&)>& get_bucket) {
+
+				for (auto iter = begin; iter != end; ++iter) {
+					const uint8_t value = get_bucket(*iter);
+					if (buckets[value].empty() || !(buckets[value].back() == *iter)) {
+						buckets[value].push_back(*iter);
+					}
+				}
+			}
+
 		public:
+
+
+			template<class Collection_T>
+			inline static void collection_sort_unique(Collection_T& c) {
+				/*
+				if constexpr (std::is_same<typename cell_id_type::int_cell_id_type, uint8_t>::value) { // trivial variant
+
+					bucket<positions_of_pieces> old_buckets;
+					bucket<positions_of_pieces> new_buckets;
+
+					for (auto iter = std::cbegin(c); iter != std::cend(c); ++iter) {
+						old_buckets[0].push_back(*iter);
+					}
+					c.clear();
+
+					for (std::size_t i{ 0 }; i < COUNT_ALL_PIECES; ++i) {
+
+						for (auto& element : new_buckets) {
+							element.clear();
+						}
+
+						std::function<uint8_t(const positions_of_pieces&)> f = [&](const positions_of_pieces& p) -> uint8_t { return p._piece_positions[static_cast<pieces_quantity_int_type>(COUNT_ALL_PIECES - i - 1)].get_id(); };
+
+						sort_in_buckets(new_buckets, bucket_iterator<positions_of_pieces>::begin_of(old_buckets), bucket_iterator<positions_of_pieces>::end_of(old_buckets), f);
+
+						std::swap(old_buckets, new_buckets);
+					}
+					for (auto iter = bucket_iterator<positions_of_pieces>::begin_of(old_buckets); iter != bucket_iterator<positions_of_pieces>::end_of(old_buckets); ++iter) {
+						c.push_back(*iter);
+					}
+
+					// check is sorted here
+
+					return;
+				}
+				else 
+				*/
+				{ // extracting bytes of cell_id s
+
+					using int_cell_id_type = typename cell_id_type::int_cell_id_type;
+
+					bucket<positions_of_pieces> old_buckets;
+					bucket<positions_of_pieces> new_buckets;
+
+					for (auto iter = std::cbegin(c); iter != std::cend(c); ++iter) {
+						old_buckets[0].push_back(*iter);
+					}
+					c.clear();
+
+					for (std::size_t i{ 0 }; i < COUNT_ALL_PIECES; ++i) {
+						for (std::size_t j{ 0 }; j < sizeof(int_cell_id_type); ++j) {
+
+							for (auto& element : new_buckets) {
+								element.clear();
+							}
+
+							std::function<uint8_t(const positions_of_pieces&)> f = [&](const positions_of_pieces& p) -> uint8_t {
+								const int_cell_id_type raw_id = p._piece_positions[static_cast<pieces_quantity_int_type>(COUNT_ALL_PIECES - i - 1)].get_id();
+								return (raw_id >> (j * 8)) & 0xFF;
+								};
+
+							sort_in_buckets(new_buckets, bucket_iterator<positions_of_pieces>::begin_of(old_buckets), bucket_iterator<positions_of_pieces>::end_of(old_buckets), f);
+
+							std::swap(old_buckets, new_buckets);
+
+						}
+					}
+
+					for (auto iter = bucket_iterator<positions_of_pieces>::begin_of(old_buckets); iter != bucket_iterator<positions_of_pieces>::end_of(old_buckets); ++iter) {
+						c.push_back(*iter);
+					}
+
+					// check is sorted here
+
+					return;
+				}
+			}
 
 			template<class Iter>
 			inline positions_of_pieces(Iter target_pieces_begin) {

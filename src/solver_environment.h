@@ -11,7 +11,8 @@ struct EngineTypeSet {
 
 	using cell_id_type = tobor::v1_1::min_size_cell_id<world_type>;
 
-	using piece_quantity_type = tobor::v1_1::pieces_quantity<uint8_t, 1, 2>;
+	//using piece_quantity_type = tobor::v1_1::pieces_quantity<uint8_t, 1, 2>;
+	using piece_quantity_type = tobor::v1_1::pieces_quantity<uint8_t, 1, 3>;
 
 	using piece_id_type = tobor::v1_1::piece_id<piece_quantity_type>;
 
