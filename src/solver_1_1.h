@@ -39,10 +39,10 @@ namespace tobor {
 
 		public:
 
-			/***
-				@brief Calculates quick moves for all cells of board. Make sure that reference to \p board stays valid until this is destroyed. Otherwise behavior is undefined.
-
-				@details Make sure that for this cache to be correct, update() needs to be called whenever board is changed.
+			/**
+			*	@brief Calculates quick moves for all cells of board. Make sure that reference to \p board stays valid until this is destroyed. Otherwise behavior is undefined.
+			*
+			*	@details Make sure that for this cache to be correct, update() needs to be called whenever board is changed.
 			*/
 			quick_move_cache(const world_type& board) : _board(board) {
 				update();
@@ -362,6 +362,11 @@ namespace tobor {
 
 			/**
 			*	@brief Calculated the piece_move which has to be applied in order to move from \p from_state to \p to_state
+			*	
+			*	@details If (\p from_state == \p to_state) arithmetic_error::no_move is thrown.
+			*	If there are multiple moves in sequence needed in order to move from \p from_state to \p to_state, an arithmetic_error::multi_move is thrown.
+			*	Also, if there are different single moves one can use from \p from_state to \p to_state, an arithmetic_error::multi_move is thrown.
+			*	Note, by theory this last case should be impossible, but it might occur if you pass ill state(s) as parameters.
 			*/
 			template<class Position_Of_Pieces_T>
 			inline piece_move_type state_minus_state(const Position_Of_Pieces_T& to_state, const Position_Of_Pieces_T& from_state) const {
@@ -393,8 +398,6 @@ namespace tobor {
 				if (multi_move_exception.moves.size() != 1) {
 					throw multi_move_exception;
 				}
-
-				// multi_move_exception.zero_moves.size() can also be zero ... Should it really fire multi-move then?
 
 				return multi_move_exception.moves[0];
 
