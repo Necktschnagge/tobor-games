@@ -476,8 +476,6 @@ namespace tobor {
 
 			using cell_id_type = typename positions_of_pieces_type::cell_id_type;
 
-			//using pieces_quantity_type = positions_of_pieces::
-
 			using size_type = std::size_t;
 
 			static constexpr size_type SIZE_TYPE_MAX{ std::numeric_limits<size_type>::max() };
@@ -547,11 +545,6 @@ namespace tobor {
 			*	true if and only if the whole state space reachable from initial state has been fully explored.
 			*/
 			bool _entirely_explored{ false };
-
-			inline void radix_sort_unique() {
-				//positions_of_pieces_type::
-
-			}
 
 			inline void sort_unique(const typename std::vector<states_vector>::size_type& index /* new states index */) {
 				static constexpr bool USE_RADIX_SORT{ true };

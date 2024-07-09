@@ -88,8 +88,8 @@ namespace tobor {
 
 				v.colors.emplace_back(0xFF, 0x90, 0x00, "orange", "&orange", 'o');
 				v.colors.emplace_back(0x90, 0x00, 0xFF, "purple", "&purple", 'p');
-				v.colors.emplace_back(0x00, 0x00, 0xFF, "blue", "&blue", 'b');
 
+				v.colors.emplace_back(0x00, 0x00, 0xFF, "blue", "&blue", 'b');
 				v.colors.emplace_back(0xFF, 0x00, 0x00, "red", "&red", 'r');
 
 				v.colors.emplace_back(0xcf, 0xcf, 0xcf, "light grey", "&light grey", 'l');
