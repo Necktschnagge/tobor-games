@@ -546,6 +546,9 @@ namespace tobor {
 			*/
 			bool _entirely_explored{ false };
 
+			/**
+			*	@brief Sorts states inside _reachable_states_by_distance[index], removes duplicates
+			*/
 			inline void sort_unique(const typename std::vector<states_vector>::size_type& index /* new states index */) {
 				static constexpr bool USE_RADIX_SORT{ true };
 
@@ -562,6 +565,9 @@ namespace tobor {
 				}
 			}
 
+			/**
+			*	@brief Removes states inside _reachable_states_by_distance[index] which have already been seen within some shorter distance
+			*/
 			inline void erase_seen_before(const typename std::vector<states_vector>::size_type& index /* new states index */) {
 
 				using sub_iterator = typename std::vector<positions_of_pieces_type>::iterator;
@@ -605,6 +611,10 @@ namespace tobor {
 				_reachable_states_by_distance[index].erase(free_next, _reachable_states_by_distance[index].end());
 			}
 
+			/**
+			*	@brief Adds all successor states of \p current_state to \p destination
+			*/
+			/*
 			template<class Iterator_T>
 			inline void add_all_nontrivial_successor_states(
 				const move_engine_type& engine,
@@ -624,7 +634,13 @@ namespace tobor {
 					}
 				}
 			}
+			*/
+		
 
+			/**
+			*	@brief Adds all successor states of \p current_state to \p destination
+			*	@return true if and only if a taregt state was found.
+			*/
 			template<class Iterator_T>
 			inline bool add_all_nontrivial_successor_states(
 				const move_engine_type& engine,
@@ -650,17 +666,17 @@ namespace tobor {
 					}
 				}
 
-				/* order of candidates:
-				 piece 0: N E S W      <- target pieces come first!
-				 piece 1: N E S W
-				 ...
-				 piece last: N E S W
-				*/
+				// order of candidates:
+				// piece 0: N E S W      <- target pieces come first!
+				// piece 1: N E S W
+				// ...
+				// piece last: N E S W
+				
 
 
 				typename std::vector<move_candidate>::size_type index_candidate{ 0 };
 
-				// only check if reached goal for candidates arising from moved target pieces:
+				// only check if reached target for candidates arising from moved target pieces:
 				for (; index_candidate < COUNT_SUCC_CANDIDATES_WITH_TARGET_PIECE_MOVED; ++index_candidate) {
 					if (candidates_for_successor_states[index_candidate].successor_state == current_state) {
 						continue;
