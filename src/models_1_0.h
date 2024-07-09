@@ -588,7 +588,7 @@ namespace tobor {
 
 
 			template <class T>
-			using bucket = std::array<std::vector<T>, 256>; // ### make 256 template
+			using bucket = std::array<std::vector<T>, 256>; // ### make 256 template in future version.
 
 			template<class T>
 			class bucket_iterator {
@@ -665,78 +665,43 @@ namespace tobor {
 
 			template<class Collection_T>
 			inline static void collection_sort_unique(Collection_T& c) {
-				/*
-				if constexpr (std::is_same<typename cell_id_type::int_cell_id_type, uint8_t>::value) { // trivial variant
+				using int_cell_id_type = typename cell_id_type::int_cell_id_type;
 
-					bucket<positions_of_pieces> old_buckets;
-					bucket<positions_of_pieces> new_buckets;
+				bucket<positions_of_pieces> old_buckets;
+				bucket<positions_of_pieces> new_buckets;
 
-					for (auto iter = std::cbegin(c); iter != std::cend(c); ++iter) {
-						old_buckets[0].push_back(*iter);
-					}
-					c.clear();
+				for (auto iter = std::cbegin(c); iter != std::cend(c); ++iter) {
+					old_buckets[0].push_back(*iter);
+				}
+				c.clear();
 
-					for (std::size_t i{ 0 }; i < COUNT_ALL_PIECES; ++i) {
+				for (std::size_t i{ 0 }; i < COUNT_ALL_PIECES; ++i) {
+					for (std::size_t j{ 0 }; j < sizeof(int_cell_id_type); ++j) {
 
 						for (auto& element : new_buckets) {
 							element.clear();
 						}
 
-						std::function<uint8_t(const positions_of_pieces&)> f = [&](const positions_of_pieces& p) -> uint8_t { return p._piece_positions[static_cast<pieces_quantity_int_type>(COUNT_ALL_PIECES - i - 1)].get_id(); };
+						std::function<uint8_t(const positions_of_pieces&)> f = [&](const positions_of_pieces& p) -> uint8_t {
+							const int_cell_id_type raw_id = p._piece_positions[static_cast<pieces_quantity_int_type>(COUNT_ALL_PIECES - i - 1)].get_id();
+							return (raw_id >> (j * 8)) & 0xFF;
+							};
 
 						sort_in_buckets(new_buckets, bucket_iterator<positions_of_pieces>::begin_of(old_buckets), bucket_iterator<positions_of_pieces>::end_of(old_buckets), f);
 
 						std::swap(old_buckets, new_buckets);
-					}
-					for (auto iter = bucket_iterator<positions_of_pieces>::begin_of(old_buckets); iter != bucket_iterator<positions_of_pieces>::end_of(old_buckets); ++iter) {
-						c.push_back(*iter);
-					}
 
-					// check is sorted here
-
-					return;
+					}
 				}
-				else 
-				*/
-				{ // extracting bytes of cell_id s
 
-					using int_cell_id_type = typename cell_id_type::int_cell_id_type;
-
-					bucket<positions_of_pieces> old_buckets;
-					bucket<positions_of_pieces> new_buckets;
-
-					for (auto iter = std::cbegin(c); iter != std::cend(c); ++iter) {
-						old_buckets[0].push_back(*iter);
-					}
-					c.clear();
-
-					for (std::size_t i{ 0 }; i < COUNT_ALL_PIECES; ++i) {
-						for (std::size_t j{ 0 }; j < sizeof(int_cell_id_type); ++j) {
-
-							for (auto& element : new_buckets) {
-								element.clear();
-							}
-
-							std::function<uint8_t(const positions_of_pieces&)> f = [&](const positions_of_pieces& p) -> uint8_t {
-								const int_cell_id_type raw_id = p._piece_positions[static_cast<pieces_quantity_int_type>(COUNT_ALL_PIECES - i - 1)].get_id();
-								return (raw_id >> (j * 8)) & 0xFF;
-								};
-
-							sort_in_buckets(new_buckets, bucket_iterator<positions_of_pieces>::begin_of(old_buckets), bucket_iterator<positions_of_pieces>::end_of(old_buckets), f);
-
-							std::swap(old_buckets, new_buckets);
-
-						}
-					}
-
-					for (auto iter = bucket_iterator<positions_of_pieces>::begin_of(old_buckets); iter != bucket_iterator<positions_of_pieces>::end_of(old_buckets); ++iter) {
-						c.push_back(*iter);
-					}
-
-					// check is sorted here
-
-					return;
+				for (auto iter = bucket_iterator<positions_of_pieces>::begin_of(old_buckets); iter != bucket_iterator<positions_of_pieces>::end_of(old_buckets); ++iter) {
+					c.push_back(*iter);
 				}
+
+				// check is sorted here
+
+				return;
+
 			}
 
 			template<class Iter>
