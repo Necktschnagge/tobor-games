@@ -5,19 +5,35 @@
 
 #include <memory>
 
-class GameFactory {
+class AbstractGameFactory {
 
 public:
 
-	[[nodiscard]] virtual std::shared_ptr<GameController> create() const = 0;
+	[[nodiscard]] virtual AbstractGameController* create() const = 0;
 
-	virtual ~GameFactory() {}
+	virtual void increment() = 0;
+
+	virtual AbstractGameFactory* clone() const = 0;
+
+
+
+	virtual std::size_t world_generator_group_size() const = 0;
+
+	virtual void set_world_generator_counter(std::size_t c) const = 0;
+
+	virtual std::size_t state_generator_group_size() const = 0;
+
+	virtual void set_state_generator_counter(std::size_t c) const = 0;
+
+
+
+	virtual ~AbstractGameFactory() {}
 
 };
 
 
 template<class Piece_Quantity_Type>
-class OriginalGameFactory : public GameFactory {
+class OriginalGameFactory : public AbstractGameFactory {
 public:
 
 	using world_type = tobor::v1_1::dynamic_rectangle_world<uint16_t, uint8_t>;
@@ -51,7 +67,7 @@ public:
 	OriginalGameFactory(OriginalGameFactory&& another) = default;
 
 
-	[[nodiscard]] virtual std::shared_ptr<GameController> create() const override {
+	[[nodiscard]] virtual AbstractGameController* create() const override {
 
 		auto world = _product_generator.main().get_tobor_world();
 
@@ -68,21 +84,40 @@ public:
 			initial_color_permutation = _product_generator.main().template obtain_permutation<std::vector<typename piece_quantity_type::int_type>, piece_quantity_type::COUNT_ALL_PIECES>(initial_color_permutation);
 		}
 
-		return std::make_shared<GameController>(
+		return new GameController(
 			world,
 			_product_generator.side().get_positions_of_pieces(world).apply_permutation(initial_color_permutation),
 			_product_generator.main().get_target_cell()
 		);
 	}
 
-
 	inline OriginalGameFactory& operator++() { ++_product_generator; return *this; }
+
+	virtual void increment() override { ++(*this); }
+
+	virtual AbstractGameFactory* clone() const override { return new OriginalGameFactory(*this); }
 
 	inline product_generator_type& product_generator() { return _product_generator; }
 
+	virtual std::size_t world_generator_group_size() const override {
+		return board_generator_type::CYCLIC_GROUP_SIZE;
+	}
+
+	virtual void set_world_generator_counter(std::size_t c) const override {
+		_product_generator.main().set_counter(c);
+	}
+
+	virtual std::size_t state_generator_group_size() const override {
+		return state_generator_type::CYCLIC_GROUP_SIZE;
+	}
+
+	virtual void set_state_generator_counter(std::size_t c) const override {
+		_product_generator.side().set_counter(c);
+	}
+
 };
 
-class SpecialCaseGameFactory : public GameFactory {
+class SpecialCaseGameFactory : public AbstractGameFactory {
 public:
 	using world_type = tobor::v1_1::dynamic_rectangle_world<uint16_t, uint8_t>;
 	using cell_id_type = tobor::v1_1::min_size_cell_id<world_type>;
@@ -90,6 +125,7 @@ public:
 	using piece_quantity_type = tobor::v1_1::pieces_quantity<uint8_t, 1, 3>;
 	using positions_of_pieces_type_interactive = tobor::v1_1::augmented_positions_of_pieces<piece_quantity_type, cell_id_type, true, true>;
 
+	using game_controller_type = GameController<piece_quantity_type>;
 
 private:
 	inline static world_type get22Game() {
@@ -146,23 +182,19 @@ public:
 
 	SpecialCaseGameFactory() {}
 
+	SpecialCaseGameFactory(const SpecialCaseGameFactory& a) {}
 
-	[[nodiscard]] virtual std::shared_ptr<GameController> create() const override {
 
-		///#### this is not ok for release, Gamefactory should be a template where parameters are at least the piece quantities, than add a general factory which handles thingts dynamically.
+	[[nodiscard]] virtual AbstractGameController* create() const override {
 
-		if constexpr (GameController::piece_quantity_type::COUNT_TARGET_PIECES != 1 || GameController::piece_quantity_type::COUNT_NON_TARGET_PIECES != 3) {
-			return nullptr;
-		}
-		else {
-			world_type world{ get22Game() };
+		world_type world{ get22Game() };
 
-			cell_id_type target_cell{ cell_id_type::create_by_coordinates(9, 3, world) };
+		cell_id_type target_cell{ cell_id_type::create_by_coordinates(9, 3, world) };
 
-			positions_of_pieces_type_interactive initial_state = positions_of_pieces_type_interactive(
-				{
-					cell_id_type::create_by_coordinates(15, 15, world)
-				},
+		positions_of_pieces_type_interactive initial_state = positions_of_pieces_type_interactive(
+			{
+				cell_id_type::create_by_coordinates(15, 15, world)
+			},
 			{
 				cell_id_type::create_by_coordinates(1,0, world),
 				cell_id_type::create_by_coordinates(12,14, world),
@@ -170,9 +202,20 @@ public:
 			}
 			);
 
-			return std::make_shared<GameController>(world, initial_state, target_cell);
-		}
+		return new game_controller_type(world, initial_state, target_cell);
 	}
 
+	virtual void increment() override {}
+
+	virtual AbstractGameFactory* clone() const override { return new SpecialCaseGameFactory(*this); }
+
+
+	virtual std::size_t world_generator_group_size() const override { return 0; }
+
+	virtual void set_world_generator_counter(std::size_t c) const override {}
+
+	virtual std::size_t state_generator_group_size() const override { return 0; }
+
+	virtual void set_state_generator_counter(std::size_t c) const override {}
 };
 

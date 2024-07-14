@@ -7,8 +7,6 @@
 #include <algorithm>
 #include <limits>
 
-class GameController; // for friend class declaration, to be removed
-
 namespace tobor {
 
 	namespace v1_0 {
@@ -498,7 +496,6 @@ namespace tobor {
 
 			static constexpr size_type SIZE_TYPE_MAX = state_graph_node_type::MAX;
 
-			friend class GameController; // remove this! is bad design.
 		private:
 
 		public:

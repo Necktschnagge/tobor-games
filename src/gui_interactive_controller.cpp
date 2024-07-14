@@ -56,13 +56,14 @@ void GuiInteractiveController::startGame() {
 
 	interactive_mode = InteractiveMode::GAME_INTERACTIVE;
 
-	std::shared_ptr<GameFactory> current_factory = std::make_shared<OriginalGameFactory<GameController::piece_quantity_type>>(next_factory);
-	++next_factory;
+	auto& fac{ next_factory_1[factory_select] };
 
-	game_history_222.push_back(current_factory);
+	factory_history.emplace_back(fac->clone());
 
-	current_game = current_factory->create();
+	current_game.reset(fac->create());
 
+
+	fac->increment();
 
 	/// old stuff...
 
@@ -428,43 +429,13 @@ void GuiInteractiveController::viewSolutionPaths() // this has to be improved!!!
 		model = new QStringListModel();
 	}
 
-	if (interactive_mode != InteractiveMode::SOLVER_INTERACTIVE_STEPS) {
-
-		QStringList emptyStringList;
-
-		model->setStringList(emptyStringList);
-		mainWindow->ui->listView->setModel(model);
-		return;
-	}
-
-	QStringList qStringList;
-
-	//std::size_t goal_counter{ 0 };
-
 	auto permutated_color_vector = current_color_vector;
 
 	//for (std::size_t i{ 0 }; i < current_color_vector.colors.size(); ++i) {
 	//	permutated_color_vector.colors[i] = current_color_vector.colors[current_game->solver_begin_state().permutation()[i]];
 	//}
 
-	const auto& partitions{ current_game->optimal_solutions() /* get solver's move path for displaying on the upper right of main window */ };
-
-	for (std::size_t i{ 0 }; i < partitions.size(); ++i) {
-		QString s;
-		s = s + "[" + QString::number(i) + "]     ";
-		for (const GameController::piece_move_type& m : partitions[i].second.vector()) {
-			//is not checked for emptiness!!
-
-			const char letter{ permutated_color_vector.colors[m.pid.value].UPPERCASE_shortcut_letter() };
-
-			std::string color = std::string(1, letter);
-
-			s = s + "  " + QString::fromStdString(color) + QString::fromStdString(static_cast<std::string>(m.dir));
-
-		}
-		s = s + "     ( NO COUNT " + /*QString::number(partitions[i].size()) + */ ")";
-		qStringList << s;
-	}
+	QStringList qStringList = current_game->optimal_solutions_list(permutated_color_vector);
 
 	model->setStringList(qStringList);
 
@@ -482,7 +453,7 @@ void GuiInteractiveController::highlightGeneratedTargetCells()
 
 	const auto& world{ current_game->world() };
 
-	auto raw_cell_id_vector = dynamic_cast<OriginalGameFactory<GameController::piece_quantity_type>*>(game_history_222.back().get())->product_generator().main().get_target_cell_id_vector(world);
+	auto raw_cell_id_vector = dynamic_cast<OriginalGameFactory<GameController::piece_quantity_type>*>(factory_history.back().get())->product_generator().main().get_target_cell_id_vector(world);
 
 	std::vector<GameController::cell_id_type> comfort_cell_id_vector;
 
