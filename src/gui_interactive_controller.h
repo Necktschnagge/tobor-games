@@ -41,22 +41,20 @@ public:
 		SOLVER_INTERACTIVE_STEPS
 	};
 
+	/*
 	using board_generator_type = tobor::v1_1::world_generator::original_4_of_16;
 
 	using state_generator_type = tobor::v1_1::world_generator::initial_state_generator<
 		GameController::positions_of_pieces_type_solver,
 		256,
-		GameController::piece_quantity_type::COUNT_TARGET_PIECES,
-		GameController::piece_quantity_type::COUNT_NON_TARGET_PIECES,
+		GameController::pieces_quantity_type::COUNT_TARGET_PIECES,
+		GameController::pieces_quantity_type::COUNT_NON_TARGET_PIECES,
 		4>;
 
 	using product_generator_type = tobor::v1_1::world_generator::product_group_generator<board_generator_type, state_generator_type>;
+	*/
 
-	using graphics_type = tobor::v1_1::tobor_graphics<GameController::world_type, GameController::positions_of_pieces_type_solver>;
-	// put graphics into Gamecontroller (?)
-
-	using graphics_coloring_type = typename graphics_type::coloring;
-
+	
 private:
 	MainWindow* mainWindow;
 
@@ -72,12 +70,7 @@ private:
 
 	std::size_t factory_select;
 
-
-
-	//OriginalGameFactory<tobor::v1_1::pieces_quantity<uint8_t, 1, 1>> next_factory;
-
-
-	GameController::piece_id_type selected_piece_id{ 0 };
+	std::size_t selected_piece_id{ 0 };
 
 	std::mt19937 generator;
 
@@ -85,16 +78,6 @@ private:
 	//tobor::v1_0::tobor_graphics<GameController::positions_of_pieces_type>::coloring coloring = tobor::v1_0::tobor_graphics<GameController::positions_of_pieces_type>::coloring("red", "yellow", "green", "blue");
 	// needs tobor svg include which brings errors...
 
-	template<class T, GameController::piece_quantity_type::int_type ... Index_Sequence>
-	graphics_coloring_type make_coloring(
-		T& permutated_color_vector,
-		std::integer_sequence<GameController::piece_quantity_type::int_type, Index_Sequence...>
-	) {
-		auto coloring = graphics_coloring_type{
-			(permutated_color_vector.colors[Index_Sequence].getSVGColorString()) ...
-		};
-		return coloring;
-	}
 
 public:
 
@@ -112,12 +95,6 @@ public:
 		std::random_device rd;
 
 		generator.seed(rd());
-
-		//std::uniform_int_distribution<uint64_t> distribution_on_uint64_board(0, board_generator_type::CYCLIC_GROUP_SIZE);
-		//std::uniform_int_distribution<uint64_t> distribution_on_uint64_pieces(0, product_generator_type::side_group_generator_type::CYCLIC_GROUP_SIZE);
-		//
-		//next_factory.product_generator().main().set_counter(distribution_on_uint64_board(generator));
-		//next_factory.product_generator().side().set_counter(distribution_on_uint64_pieces(generator));
 
 		next_factory_1.emplace_back(new OriginalGameFactory<tobor::v1_1::pieces_quantity<uint8_t, 1, 1>>());
 		next_factory_1.emplace_back(new OriginalGameFactory<tobor::v1_1::pieces_quantity<uint8_t, 1, 2>>());
@@ -138,14 +115,6 @@ public:
 
 		}
 
-		//originalGenerator.set_counter(distribution_on_uint64(product_generator));
-
-		//originalGenerator.set_counter(73021); // 72972 73021
-
-		//originalGenerator.set_generator(1);
-		//originalGenerator.set_counter(3223);
-
-		//productWorldGenerator.main().set_counter(73021);
 	}
 
 	inline InteractiveMode interactiveMode() const {
@@ -160,7 +129,7 @@ public:
 
 	void moveBySolver(bool forward);
 
-	void setPieceId(const GameController::piece_id_type& piece_id);
+	void setPieceId(const std::size_t &piece_id);
 
 	void selectPieceByColorId(const std::size_t& color_id);
 

@@ -12,9 +12,9 @@ class AbstractGameController {
 
 	// use this class as interface 
 
-	AbstractGameController() {}
-
 public:
+
+	AbstractGameController() {}
 
 	/* non-modifying */
 
@@ -31,6 +31,8 @@ public:
 	//virtual const cell_id_type& target_cell() const { return _target_cell; }
 
 	virtual std::size_t depth() const = 0;
+
+	virtual std::size_t count_pieces() const = 0;
 
 
 	/* modifying */
@@ -56,6 +58,10 @@ public:
 	//virtual auto optimal_solutions() const = 0;
 
 	virtual QStringList optimal_solutions_list(const tobor::v1_0::color_vector& current_color_vector) const = 0;
+
+
+	virtual std::string svg(const tobor::v1_0::color_vector& current_color_vector) const = 0;
+
 
 	virtual ~AbstractGameController() {}
 };

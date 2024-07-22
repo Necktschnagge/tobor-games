@@ -13,17 +13,17 @@ public:
 
 	virtual void increment() = 0;
 
-	virtual AbstractGameFactory* clone() const = 0;
+	[[nodiscard]] virtual AbstractGameFactory* clone() const = 0;
 
 
 
 	virtual std::size_t world_generator_group_size() const = 0;
 
-	virtual void set_world_generator_counter(std::size_t c) const = 0;
+	virtual void set_world_generator_counter(std::size_t c) = 0;
 
 	virtual std::size_t state_generator_group_size() const = 0;
 
-	virtual void set_state_generator_counter(std::size_t c) const = 0;
+	virtual void set_state_generator_counter(std::size_t c) = 0;
 
 
 
@@ -32,15 +32,15 @@ public:
 };
 
 
-template<class Piece_Quantity_Type>
+template<class Pieces_Quantity_Type>
 class OriginalGameFactory : public AbstractGameFactory {
 public:
 
 	using world_type = tobor::v1_1::dynamic_rectangle_world<uint16_t, uint8_t>;
-	using piece_quantity_type = Piece_Quantity_Type;
+	using pieces_quantity_type = Pieces_Quantity_Type;
 	using cell_id_type = tobor::v1_1::min_size_cell_id<world_type>;
 
-	using positions_of_pieces_type_interactive = tobor::v1_1::augmented_positions_of_pieces<piece_quantity_type, cell_id_type, true, true>;
+	using positions_of_pieces_type_interactive = tobor::v1_1::augmented_positions_of_pieces<pieces_quantity_type, cell_id_type, true, true>;
 
 
 	using board_generator_type = tobor::v1_1::world_generator::original_4_of_16;
@@ -48,8 +48,8 @@ public:
 	using state_generator_type = tobor::v1_1::world_generator::initial_state_generator<
 		positions_of_pieces_type_interactive,
 		256,
-		piece_quantity_type::COUNT_TARGET_PIECES,
-		piece_quantity_type::COUNT_NON_TARGET_PIECES,
+		pieces_quantity_type::COUNT_TARGET_PIECES,
+		pieces_quantity_type::COUNT_NON_TARGET_PIECES,
 		4>;
 
 	using product_generator_type = tobor::v1_1::world_generator::product_group_generator<board_generator_type, state_generator_type>;
@@ -71,20 +71,20 @@ public:
 
 		auto world = _product_generator.main().get_tobor_world();
 
-		std::vector<typename piece_quantity_type::int_type> initial_color_permutation;
+		std::vector<typename pieces_quantity_type::int_type> initial_color_permutation;
 
-		for (typename piece_quantity_type::int_type i = 0; i < piece_quantity_type::COUNT_ALL_PIECES; ++i) { // build neutral permutation
+		for (typename pieces_quantity_type::int_type i = 0; i < pieces_quantity_type::COUNT_ALL_PIECES; ++i) { // build neutral permutation
 			initial_color_permutation.push_back(i);
 		}
 
-		if constexpr (piece_quantity_type::COUNT_ALL_PIECES == 4) {
+		if constexpr (pieces_quantity_type::COUNT_ALL_PIECES == 4) {
 			initial_color_permutation = _product_generator.main().obtain_standard_4_coloring_permutation(initial_color_permutation);
 		}
 		else {
-			initial_color_permutation = _product_generator.main().template obtain_permutation<std::vector<typename piece_quantity_type::int_type>, piece_quantity_type::COUNT_ALL_PIECES>(initial_color_permutation);
+			initial_color_permutation = _product_generator.main().template obtain_permutation<std::vector<typename pieces_quantity_type::int_type>, pieces_quantity_type::COUNT_ALL_PIECES>(initial_color_permutation);
 		}
 
-		return new GameController(
+		return new GameController<pieces_quantity_type>(
 			world,
 			_product_generator.side().get_positions_of_pieces(world).apply_permutation(initial_color_permutation),
 			_product_generator.main().get_target_cell()
@@ -103,7 +103,7 @@ public:
 		return board_generator_type::CYCLIC_GROUP_SIZE;
 	}
 
-	virtual void set_world_generator_counter(std::size_t c) const override {
+	virtual void set_world_generator_counter(std::size_t c) override {
 		_product_generator.main().set_counter(c);
 	}
 
@@ -111,7 +111,7 @@ public:
 		return state_generator_type::CYCLIC_GROUP_SIZE;
 	}
 
-	virtual void set_state_generator_counter(std::size_t c) const override {
+	virtual void set_state_generator_counter(std::size_t c) override {
 		_product_generator.side().set_counter(c);
 	}
 
@@ -122,10 +122,10 @@ public:
 	using world_type = tobor::v1_1::dynamic_rectangle_world<uint16_t, uint8_t>;
 	using cell_id_type = tobor::v1_1::min_size_cell_id<world_type>;
 
-	using piece_quantity_type = tobor::v1_1::pieces_quantity<uint8_t, 1, 3>;
-	using positions_of_pieces_type_interactive = tobor::v1_1::augmented_positions_of_pieces<piece_quantity_type, cell_id_type, true, true>;
+	using pieces_quantity_type = tobor::v1_1::pieces_quantity<uint8_t, 1, 3>;
+	using positions_of_pieces_type_interactive = tobor::v1_1::augmented_positions_of_pieces<pieces_quantity_type, cell_id_type, true, true>;
 
-	using game_controller_type = GameController<piece_quantity_type>;
+	using game_controller_type = GameController<pieces_quantity_type>;
 
 private:
 	inline static world_type get22Game() {
@@ -182,7 +182,7 @@ public:
 
 	SpecialCaseGameFactory() {}
 
-	SpecialCaseGameFactory(const SpecialCaseGameFactory& a) {}
+	SpecialCaseGameFactory(const SpecialCaseGameFactory&) = default;
 
 
 	[[nodiscard]] virtual AbstractGameController* create() const override {
@@ -200,22 +200,22 @@ public:
 				cell_id_type::create_by_coordinates(12,14, world),
 				cell_id_type::create_by_coordinates(12,15, world)
 			}
-			);
+		);
 
 		return new game_controller_type(world, initial_state, target_cell);
 	}
 
 	virtual void increment() override {}
 
-	virtual AbstractGameFactory* clone() const override { return new SpecialCaseGameFactory(*this); }
+	[[nodiscard]] virtual AbstractGameFactory* clone() const override { return new SpecialCaseGameFactory(*this); }
 
 
 	virtual std::size_t world_generator_group_size() const override { return 0; }
 
-	virtual void set_world_generator_counter(std::size_t c) const override {}
+	virtual void set_world_generator_counter(std::size_t) override {}
 
 	virtual std::size_t state_generator_group_size() const override { return 0; }
 
-	virtual void set_state_generator_counter(std::size_t c) const override {}
+	virtual void set_state_generator_counter(std::size_t) override {}
 };
 

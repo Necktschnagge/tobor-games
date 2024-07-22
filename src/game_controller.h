@@ -8,6 +8,8 @@
 
 #include "color_generator.h"
 
+#include "svg_1_1.h"
+
 #include <QString>
 
 template<class Pieces_Quantity_T>
@@ -23,7 +25,16 @@ public:
 	using move_path_type = engine_typeset::move_path_type;
 	using cell_id_type = engine_typeset::cell_id_type;
 	using positions_of_pieces_type_interactive = engine_typeset::positions_of_pieces_type_interactive;
+	using positions_of_pieces_type_solver = engine_typeset::positions_of_pieces_type_solver;
 	using piece_id_type = engine_typeset::piece_id_type;
+	using piece_move_type = engine_typeset::piece_move_type;
+	using pieces_quantity_type = engine_typeset::pieces_quantity_type;
+
+	using pieces_quantity_int_type = typename pieces_quantity_type::int_type;
+
+
+	using graphics_type = tobor::v1_1::tobor_graphics<world_type, positions_of_pieces_type_solver>;
+	using graphics_coloring_type = typename graphics_type::coloring;
 
 
 private:
@@ -82,7 +93,7 @@ public:
 
 	virtual std::size_t depth() const { return _path.vector().size() - 1; }
 
-
+	virtual std::size_t count_pieces() const { return pieces_quantity_type::COUNT_ALL_PIECES; }
 
 	/* modifying */
 
@@ -182,6 +193,7 @@ public:
 		return SolverEnvironment::optimal_solutions_vector();
 	}
 
+	// remove the QStringList here! ###
 	virtual QStringList optimal_solutions_list(const tobor::v1_0::color_vector& current_color_vector) const // this has to be improved!!!
 	{
 		if (!_solver) {
@@ -195,7 +207,7 @@ public:
 		for (std::size_t i{ 0 }; i < partitions.size(); ++i) {
 			QString s;
 			s = s + "[" + QString::number(i) + "]     ";
-			for (const GameController::piece_move_type& m : partitions[i].second.vector()) {
+			for (const piece_move_type& m : partitions[i].second.vector()) {
 				//is not checked for emptiness!!
 
 				const char letter{ current_color_vector.colors[m.pid.value].UPPERCASE_shortcut_letter() };
@@ -211,6 +223,50 @@ public:
 
 		return qStringList;
 	}
+
+
+	template<class T, pieces_quantity_type::int_type ... Index_Sequence>
+	inline static graphics_coloring_type make_coloring(
+		T& permutated_color_vector,
+		std::integer_sequence<typename pieces_quantity_type::int_type, Index_Sequence...>
+	) {
+		auto coloring = graphics_coloring_type{
+			(permutated_color_vector.colors[Index_Sequence].getSVGColorString()) ...
+		};
+		return coloring;
+	}
+
+
+	// should be moved outside the game controller. This is my interim solution
+	virtual std::string svg(const tobor::v1_0::color_vector& current_color_vector) const override {
+
+		auto permutated_color_vector = current_color_vector;
+
+		for (std::size_t i{ 0 }; i < current_color_vector.colors.size(); ++i) {
+			permutated_color_vector.colors[i] = current_color_vector.colors[current_state().permutation()[i]];
+		}
+
+		typename graphics_type::coloring coloring =
+			make_coloring(
+				permutated_color_vector,
+				std::make_integer_sequence<GameController::pieces_quantity_type::int_type, GameController::pieces_quantity_type::COUNT_ALL_PIECES>{}
+			);
+
+		typename graphics_type::piece_shape_selection shape{ graphics_type::piece_shape_selection::BALL }; // make this a parameter!
+
+		std::string example_svg_string =
+			graphics_type::draw_tobor_world(
+				this->world(),
+				this->current_state().naked(),
+				this->target_cell(),
+				coloring,
+				shape
+			);
+
+		return example_svg_string;
+	}
+
+
 
 	~GameController() {}
 

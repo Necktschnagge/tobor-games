@@ -9,13 +9,13 @@ struct ClassicEngineTypeSet {
 
 	using cell_id_type = tobor::v1_1::min_size_cell_id<world_type>;
 
-	using piece_quantity_type = Pieces_Quantity_T;
+	using pieces_quantity_type = Pieces_Quantity_T;
 
-	using piece_id_type = tobor::v1_1::piece_id<piece_quantity_type>;
+	using piece_id_type = tobor::v1_1::piece_id<pieces_quantity_type>;
 
-	using positions_of_pieces_type_solver = tobor::v1_1::positions_of_pieces<piece_quantity_type, cell_id_type, true, true>;
+	using positions_of_pieces_type_solver = tobor::v1_1::positions_of_pieces<pieces_quantity_type, cell_id_type, true, true>;
 
-	using positions_of_pieces_type_interactive = tobor::v1_1::augmented_positions_of_pieces<piece_quantity_type, cell_id_type, true, true>;
+	using positions_of_pieces_type_interactive = tobor::v1_1::augmented_positions_of_pieces<pieces_quantity_type, cell_id_type, true, true>;
 
 	using piece_move_type = tobor::v1_1::piece_move<piece_id_type>;
 

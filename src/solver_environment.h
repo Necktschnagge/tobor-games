@@ -7,22 +7,38 @@
 
 
 template<class Pieces_Quantity_T>
-class SolverEnvironment /* : public ClassicEngineTypeSet<Pieces_Quantity_T>*/ {
+class SolverEnvironment {
 public:
 
-	//using super = ClassicEngineTypeSet<Pieces_Quantity_T>;
 
-	using state_path_type_interactive = typename ClassicEngineTypeSet<Pieces_Quantity_T>::state_path_type_interactive;
+	using engine_typeset = ClassicEngineTypeSet<Pieces_Quantity_T>;
 
-	using move_path_type = typename ClassicEngineTypeSet<Pieces_Quantity_T>::move_path_type;
 
-	using positions_of_pieces_type_interactive = typename ClassicEngineTypeSet<Pieces_Quantity_T>::positions_of_pieces_type_interactive;
+	using state_path_type_interactive = typename engine_typeset::state_path_type_interactive;
 
-	using positions_of_pieces_type_solver = typename ClassicEngineTypeSet<Pieces_Quantity_T>::positions_of_pieces_type_solver;
+	using state_path_type_solver = typename engine_typeset::state_path_type_solver;
 
-	using move_engine_type = typename ClassicEngineTypeSet<Pieces_Quantity_T>::move_engine_type;
+	using move_path_type = typename engine_typeset::move_path_type;
 
-	using cell_id_type = typename ClassicEngineTypeSet<Pieces_Quantity_T>::cell_id_type;
+	using positions_of_pieces_type_interactive = typename engine_typeset::positions_of_pieces_type_interactive;
+
+	using positions_of_pieces_type_solver = typename engine_typeset::positions_of_pieces_type_solver;
+
+	using move_engine_type = typename engine_typeset::move_engine_type;
+
+	using cell_id_type = typename engine_typeset::cell_id_type;
+
+	using pieces_quantity_type = typename engine_typeset::pieces_quantity_type;
+
+	using piece_move_type = typename engine_typeset::piece_move_type;
+
+	using quick_move_cache_type = typename engine_typeset::quick_move_cache_type;
+
+
+
+	using  piece_quantity_int_type = typename pieces_quantity_type::int_type;
+
+
 
 	using optimal_solutions_vector = std::vector<std::pair<state_path_type_interactive, move_path_type>>;
 
@@ -82,7 +98,7 @@ private:
 		}
 		if (map_iter_root->second.successors.empty()) {
 			// This is a final state, not yet decorated.
-			for (std::size_t n{ 0 }; n < piece_quantity_type::COUNT_ALL_PIECES; ++n) {
+			for (std::size_t n{ 0 }; n < pieces_quantity_type::COUNT_ALL_PIECES; ++n) {
 				map_iter_root->second.labels.emplace_back(
 					0, // 0 piece changes left when in final state
 					std::vector<positions_of_pieces_type_interactive>() // no successors
@@ -103,7 +119,7 @@ private:
 		//now calculate current state's decoration using the successor decorations.
 
 		// initialize with MAX distance
-		for (std::size_t i{ 0 }; i < piece_quantity_type::COUNT_ALL_PIECES; ++i) {
+		for (std::size_t i{ 0 }; i < pieces_quantity_type::COUNT_ALL_PIECES; ++i) {
 			map_iter_root->second.labels.emplace_back(
 				piece_change_decoration::MAX,
 				std::vector<positions_of_pieces_type_interactive>() // no successors
@@ -117,16 +133,16 @@ private:
 
 			// obtain SELECTED_PIECE id
 			piece_move_type move = engine.state_minus_state(succ_state, map_iter_root->first); // exceptions here!!
-			const piece_quantity_type::int_type SELECTED_PIECE = move.pid.value;
+			const piece_quantity_int_type SELECTED_PIECE = move.pid.value;
 
 			// obtain SELECTED_PIECE id after move
 			positions_of_pieces_type_interactive from_state(map_iter_root->first);
 			from_state.reset_permutation();
 			positions_of_pieces_type_interactive to_state = engine.successor_state(from_state, move);
 
-			const piece_quantity_type::int_type SELECTED_PIECE_AFTER{
+			const piece_quantity_int_type SELECTED_PIECE_AFTER{
 				[&]() {
-					for (piece_quantity_type::int_type i{ 0 }; i < piece_quantity_type::COUNT_ALL_PIECES; ++i) {
+					for (piece_quantity_int_type i{ 0 }; i < pieces_quantity_type::COUNT_ALL_PIECES; ++i) {
 						if (to_state.permutation()[i] == SELECTED_PIECE) {
 							return i;
 						}
@@ -137,7 +153,7 @@ private:
 
 			const std::size_t SUB_DISTANCE{ succ_jter->second.labels[SELECTED_PIECE_AFTER].min_piece_change_distance };
 
-			for (piece_quantity_type::int_type i{ 0 }; i < piece_quantity_type::COUNT_ALL_PIECES; ++i) {
+			for (piece_quantity_int_type i{ 0 }; i < pieces_quantity_type::COUNT_ALL_PIECES; ++i) {
 				const std::size_t UPDATE_DISTANCE{ SUB_DISTANCE + (SELECTED_PIECE != i) };
 				if (UPDATE_DISTANCE < map_iter_root->second.labels[i].min_piece_change_distance) {
 
@@ -333,7 +349,7 @@ public:
 		run_solver_toolchain(status_callback, MAX_DEPTH, 0);
 	}
 
-	inline void advance_max_depth(const std::size_t MAX_DEPTH = distance_exploration_type::SIZE_TYPE_MAX) {
+	inline void advance_max_depth(std::function<void(const std::string&)> status_callback = nullptr, const std::size_t MAX_DEPTH = distance_exploration_type::SIZE_TYPE_MAX) {
 		if (_status_code == 0) {
 			return;
 		}

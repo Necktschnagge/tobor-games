@@ -15,7 +15,7 @@
 template<class X>
 inline void startReferenceGame22Helper(X& guiInteractiveController) {
 	if constexpr (!
-		(GameController::piece_quantity_type::COUNT_TARGET_PIECES == 1 && GameController::piece_quantity_type::COUNT_NON_TARGET_PIECES == 3)
+		(GameController::pieces_quantity_type::COUNT_TARGET_PIECES == 1 && GameController::pieces_quantity_type::COUNT_NON_TARGET_PIECES == 3)
 		) {
 		return;
 	}
@@ -30,7 +30,7 @@ inline void startReferenceGame22Helper(X& guiInteractiveController) {
 
 		guiInteractiveController.current_game = SpecialCaseGameFactory().create(); // put in history!
 
-		guiInteractiveController.current_color_vector = tobor::v1_0::color_vector::get_standard_coloring(GameController::piece_quantity_type::COUNT_ALL_PIECES);
+		guiInteractiveController.current_color_vector = tobor::v1_0::color_vector::get_standard_coloring(GameController::pieces_quantity_type::COUNT_ALL_PIECES);
 
 		guiInteractiveController.createColorActions();
 
@@ -87,20 +87,20 @@ void GuiInteractiveController::startGame() {
 
 	auto target = boardGenerator.get_target_cell();
 
-	std::vector<GameController::piece_quantity_type::int_type> not_yet_permutated;
+	std::vector<GameController::pieces_quantity_type::int_type> not_yet_permutated;
 
-	for (GameController::piece_quantity_type::int_type i = 0; i < GameController::piece_quantity_type::COUNT_ALL_PIECES; ++i) {
+	for (GameController::pieces_quantity_type::int_type i = 0; i < GameController::pieces_quantity_type::COUNT_ALL_PIECES; ++i) {
 		not_yet_permutated.push_back(i);
 	}
 
-	std::vector<GameController::piece_quantity_type::int_type> colorPermutation = not_yet_permutated;
+	std::vector<GameController::pieces_quantity_type::int_type> colorPermutation = not_yet_permutated;
 
-	if constexpr (GameController::piece_quantity_type::COUNT_ALL_PIECES == 4) {
+	if constexpr (GameController::pieces_quantity_type::COUNT_ALL_PIECES == 4) {
 		colorPermutation = boardGenerator.obtain_standard_4_coloring_permutation(not_yet_permutated);
 	}
 	*/
 
-	current_color_vector = tobor::v1_0::color_vector::get_standard_coloring(GameController::piece_quantity_type::COUNT_ALL_PIECES); // standard coloring without permutation
+	current_color_vector = tobor::v1_0::color_vector::get_standard_coloring(static_cast<uint8_t>(current_game->count_pieces())); // standard coloring without permutation
 
 	createColorActions();
 
@@ -157,7 +157,7 @@ void GuiInteractiveController::moveBySolver(bool forward)
 
 }
 
-void GuiInteractiveController::setPieceId(const GameController::piece_id_type& piece_id) {
+void GuiInteractiveController::setPieceId(const std::size_t& piece_id) {
 
 	switch (interactive_mode)
 	{
@@ -192,7 +192,7 @@ void GuiInteractiveController::selectPieceByColorId(const std::size_t& color_id)
 	if (iter == current_game->current_state().permutation().cend())
 		throw std::logic_error("Illegal color_id.");
 
-	setPieceId(static_cast<GameController::piece_quantity_type::int_type>(iter - current_game->current_state().permutation().cbegin()));
+	setPieceId(static_cast<GameController::pieces_quantity_type::int_type>(iter - current_game->current_state().permutation().cbegin()));
 }
 
 
@@ -209,7 +209,7 @@ void GuiInteractiveController::refreshSVG()
 		graphics_type::coloring coloring =
 			make_coloring(
 				permutated_color_vector,
-				std::make_integer_sequence<GameController::piece_quantity_type::int_type, GameController::piece_quantity_type::COUNT_ALL_PIECES>{}
+				std::make_integer_sequence<GameController::pieces_quantity_type::int_type, GameController::pieces_quantity_type::COUNT_ALL_PIECES>{}
 		);
 
 		graphics_type::piece_shape_selection shape{ graphics_type::piece_shape_selection::BALL };
@@ -453,7 +453,7 @@ void GuiInteractiveController::highlightGeneratedTargetCells()
 
 	const auto& world{ current_game->world() };
 
-	auto raw_cell_id_vector = dynamic_cast<OriginalGameFactory<GameController::piece_quantity_type>*>(factory_history.back().get())->product_generator().main().get_target_cell_id_vector(world);
+	auto raw_cell_id_vector = dynamic_cast<OriginalGameFactory<GameController::pieces_quantity_type>*>(factory_history.back().get())->product_generator().main().get_target_cell_id_vector(world);
 
 	std::vector<GameController::cell_id_type> comfort_cell_id_vector;
 
