@@ -70,7 +70,7 @@ private:
 
 	std::size_t factory_select;
 
-	std::size_t selected_piece_id{ 0 };
+	//std::size_t selected_piece_id{ 0 };
 
 	std::mt19937 generator;
 

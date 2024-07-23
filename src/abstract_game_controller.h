@@ -18,17 +18,15 @@ public:
 
 	/* non-modifying */
 
-	//virtual const positions_of_pieces_type_interactive& current_state() const = 0;
-
-	//virtual const positions_of_pieces_type_interactive& solver_begin_state() const = 0;
+	//virtual const AbstractGameState& current_state() const = 0;   maybe added to this interface
 
 	virtual bool is_final() const = 0;
 
 	virtual bool is_initial() const = 0;
 
-	//virtual const world_type& world() const { return _world; }
+	//virtual const abstract_world_type& world() const { return _world; }   maybe added to this interface
 
-	//virtual const cell_id_type& target_cell() const { return _target_cell; }
+	//virtual const cell_id_type& target_cell() const { return _target_cell; }   maybe added to this interface
 
 	virtual std::size_t depth() const = 0;
 
@@ -61,6 +59,10 @@ public:
 
 
 	virtual std::string svg(const tobor::v1_0::color_vector& current_color_vector) const = 0;
+
+	virtual bool select_piece_by_piece_id(const std::size_t& piece_id) = 0;
+
+	virtual bool select_piece_by_color_id(const std::size_t& color_id) = 0;
 
 
 	virtual ~AbstractGameController() {}

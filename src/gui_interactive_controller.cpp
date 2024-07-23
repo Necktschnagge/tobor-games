@@ -157,8 +157,8 @@ void GuiInteractiveController::moveBySolver(bool forward)
 
 }
 
-void GuiInteractiveController::setPieceId(const std::size_t& piece_id) {
-
+//void GuiInteractiveController::setPieceId(const std::size_t& piece_id) {
+	/*
 	switch (interactive_mode)
 	{
 	case GuiInteractiveController::InteractiveMode::NO_GAME:
@@ -177,12 +177,18 @@ void GuiInteractiveController::setPieceId(const std::size_t& piece_id) {
 		);
 		break;
 	}
+	*/
 
-	refreshStatusbar();
-}
+//	refreshStatusbar();
+//}
 
 void GuiInteractiveController::selectPieceByColorId(const std::size_t& color_id)
 {
+	const bool OK{ current_game->select_piece_by_color_id(color_id) };
+
+	if (!OK) throw std::logic_error("Illegal color_id.");
+
+	/*
 	auto iter = std::find(
 		current_game->current_state().permutation().cbegin(),
 		current_game->current_state().permutation().cend(),
@@ -193,6 +199,9 @@ void GuiInteractiveController::selectPieceByColorId(const std::size_t& color_id)
 		throw std::logic_error("Illegal color_id.");
 
 	setPieceId(static_cast<GameController::pieces_quantity_type::int_type>(iter - current_game->current_state().permutation().cbegin()));
+	*/
+
+	refreshStatusbar();
 }
 
 
@@ -210,7 +219,7 @@ void GuiInteractiveController::refreshSVG()
 			make_coloring(
 				permutated_color_vector,
 				std::make_integer_sequence<GameController::pieces_quantity_type::int_type, GameController::pieces_quantity_type::COUNT_ALL_PIECES>{}
-		);
+			);
 
 		graphics_type::piece_shape_selection shape{ graphics_type::piece_shape_selection::BALL };
 
@@ -311,7 +320,7 @@ void GuiInteractiveController::refreshStatusbar() {
 			]
 		].getQColor();
 
-			mainWindow->statusbarItems.setSelectedPiece(current_color);
+		mainWindow->statusbarItems.setSelectedPiece(current_color);
 
 	}
 	else {
