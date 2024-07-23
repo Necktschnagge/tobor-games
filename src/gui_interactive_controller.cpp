@@ -15,7 +15,7 @@
 template<class X>
 inline void startReferenceGame22Helper(X& guiInteractiveController) {
 	if constexpr (!
-		(GameController::pieces_quantity_type::COUNT_TARGET_PIECES == 1 && GameController::pieces_quantity_type::COUNT_NON_TARGET_PIECES == 3)
+		(DRWGameController::pieces_quantity_type::COUNT_TARGET_PIECES == 1 && DRWGameController::pieces_quantity_type::COUNT_NON_TARGET_PIECES == 3)
 		) {
 		return;
 	}
@@ -30,7 +30,7 @@ inline void startReferenceGame22Helper(X& guiInteractiveController) {
 
 		guiInteractiveController.current_game = SpecialCaseGameFactory().create(); // put in history!
 
-		guiInteractiveController.current_color_vector = tobor::v1_0::color_vector::get_standard_coloring(GameController::pieces_quantity_type::COUNT_ALL_PIECES);
+		guiInteractiveController.current_color_vector = tobor::v1_0::color_vector::get_standard_coloring(DRWGameController::pieces_quantity_type::COUNT_ALL_PIECES);
 
 		guiInteractiveController.createColorActions();
 
@@ -87,15 +87,15 @@ void GuiInteractiveController::startGame() {
 
 	auto target = boardGenerator.get_target_cell();
 
-	std::vector<GameController::pieces_quantity_type::int_type> not_yet_permutated;
+	std::vector<DRWGameController::pieces_quantity_type::int_type> not_yet_permutated;
 
-	for (GameController::pieces_quantity_type::int_type i = 0; i < GameController::pieces_quantity_type::COUNT_ALL_PIECES; ++i) {
+	for (DRWGameController::pieces_quantity_type::int_type i = 0; i < DRWGameController::pieces_quantity_type::COUNT_ALL_PIECES; ++i) {
 		not_yet_permutated.push_back(i);
 	}
 
-	std::vector<GameController::pieces_quantity_type::int_type> colorPermutation = not_yet_permutated;
+	std::vector<DRWGameController::pieces_quantity_type::int_type> colorPermutation = not_yet_permutated;
 
-	if constexpr (GameController::pieces_quantity_type::COUNT_ALL_PIECES == 4) {
+	if constexpr (DRWGameController::pieces_quantity_type::COUNT_ALL_PIECES == 4) {
 		colorPermutation = boardGenerator.obtain_standard_4_coloring_permutation(not_yet_permutated);
 	}
 	*/
@@ -179,8 +179,8 @@ void GuiInteractiveController::moveBySolver(bool forward)
 	}
 	*/
 
-//	refreshStatusbar();
-//}
+	//	refreshStatusbar();
+	//}
 
 void GuiInteractiveController::selectPieceByColorId(const std::size_t& color_id)
 {
@@ -198,7 +198,7 @@ void GuiInteractiveController::selectPieceByColorId(const std::size_t& color_id)
 	if (iter == current_game->current_state().permutation().cend())
 		throw std::logic_error("Illegal color_id.");
 
-	setPieceId(static_cast<GameController::pieces_quantity_type::int_type>(iter - current_game->current_state().permutation().cbegin()));
+	setPieceId(static_cast<DRWGameController::pieces_quantity_type::int_type>(iter - current_game->current_state().permutation().cbegin()));
 	*/
 
 	refreshStatusbar();
@@ -209,6 +209,10 @@ void GuiInteractiveController::refreshSVG()
 {
 	if (interactive_mode == InteractiveMode::GAME_INTERACTIVE || interactive_mode == InteractiveMode::SOLVER_INTERACTIVE_STEPS) {
 
+		tobor::v1_1::general_piece_shape_selection shape{ tobor::v1_1::general_piece_shape_selection::BALL };
+
+		/*
+
 		auto permutated_color_vector = current_color_vector;
 
 		for (std::size_t i{ 0 }; i < current_color_vector.colors.size(); ++i) {
@@ -218,10 +222,9 @@ void GuiInteractiveController::refreshSVG()
 		graphics_type::coloring coloring =
 			make_coloring(
 				permutated_color_vector,
-				std::make_integer_sequence<GameController::pieces_quantity_type::int_type, GameController::pieces_quantity_type::COUNT_ALL_PIECES>{}
+				std::make_integer_sequence<DRWGameController::pieces_quantity_type::int_type, DRWGameController::pieces_quantity_type::COUNT_ALL_PIECES>{}
 			);
 
-		graphics_type::piece_shape_selection shape{ graphics_type::piece_shape_selection::BALL };
 
 		if (mainWindow->shapeSelectionItems.getSelectedShape() == mainWindow->shapeSelectionItems.duck) {
 			shape = graphics_type::piece_shape_selection::DUCK;
@@ -236,8 +239,13 @@ void GuiInteractiveController::refreshSVG()
 				coloring,
 				shape
 			);
+		*/
 
-		mainWindow->viewSvgInMainView(example_svg_string);
+		// ### different shapes are missing here!
+
+		auto svg_as_string = current_game->svg(current_color_vector, shape);
+
+		mainWindow->viewSvgInMainView(svg_as_string);
 	}
 
 	if (interactive_mode == InteractiveMode::NO_GAME) {
@@ -314,11 +322,7 @@ void GuiInteractiveController::refreshStatusbar() {
 
 	if (interactive_mode == InteractiveMode::GAME_INTERACTIVE || interactive_mode == InteractiveMode::SOLVER_INTERACTIVE_STEPS) {
 
-		auto current_color = current_color_vector.colors[
-			current_game->current_state().permutation()[
-				selected_piece_id.value
-			]
-		].getQColor();
+		auto current_color = current_color_vector.colors[current_game->selected_piece_color_id()].getQColor();
 
 		mainWindow->statusbarItems.setSelectedPiece(current_color);
 
@@ -353,8 +357,10 @@ void GuiInteractiveController::movePiece(const tobor::v1_0::direction& direction
 		break;
 	case GuiInteractiveController::InteractiveMode::GAME_INTERACTIVE:
 
-		current_game->move_feedback(selected_piece_id, direction); // here we need to update selected piece_id because of reordering. or we need to store colors...
-		mainWindow->statusBar()->showMessage(QString::fromStdString(std::to_string((unsigned int)(selected_piece_id.value))));
+
+		current_game->move_selected(direction);
+
+		mainWindow->statusBar()->showMessage(QString::fromStdString(std::to_string(current_game->selected_piece_color_id())));
 
 		refreshAll();
 
@@ -460,15 +466,18 @@ void GuiInteractiveController::highlightGeneratedTargetCells()
 		return showErrorDialog("Target cell markers not supported without running a game");
 	}
 
+	auto child_game = dynamic_cast<DRWGameController<>*>(current_game.get());
+
+
 	const auto& world{ current_game->world() };
 
-	auto raw_cell_id_vector = dynamic_cast<OriginalGameFactory<GameController::pieces_quantity_type>*>(factory_history.back().get())->product_generator().main().get_target_cell_id_vector(world);
+	auto raw_cell_id_vector = dynamic_cast<OriginalGameFactory<DRWGameController::pieces_quantity_type>*>(factory_history.back().get())->product_generator().main().get_target_cell_id_vector(world);
 
-	std::vector<GameController::cell_id_type> comfort_cell_id_vector;
+	std::vector<DRWGameController::cell_id_type> comfort_cell_id_vector;
 
 	std::transform(raw_cell_id_vector.cbegin(), raw_cell_id_vector.cend(), std::back_inserter(comfort_cell_id_vector),
 		[&](const auto& raw_cell_id) {
-			return GameController::cell_id_type::create_by_id(raw_cell_id, world);
+			return DRWGameController::cell_id_type::create_by_id(raw_cell_id, world);
 		}
 	);
 

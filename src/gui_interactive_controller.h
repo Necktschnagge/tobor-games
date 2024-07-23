@@ -45,10 +45,10 @@ public:
 	using board_generator_type = tobor::v1_1::world_generator::original_4_of_16;
 
 	using state_generator_type = tobor::v1_1::world_generator::initial_state_generator<
-		GameController::positions_of_pieces_type_solver,
+		DRWGameController::positions_of_pieces_type_solver,
 		256,
-		GameController::pieces_quantity_type::COUNT_TARGET_PIECES,
-		GameController::pieces_quantity_type::COUNT_NON_TARGET_PIECES,
+		DRWGameController::pieces_quantity_type::COUNT_TARGET_PIECES,
+		DRWGameController::pieces_quantity_type::COUNT_NON_TARGET_PIECES,
 		4>;
 
 	using product_generator_type = tobor::v1_1::world_generator::product_group_generator<board_generator_type, state_generator_type>;
@@ -75,7 +75,7 @@ private:
 	std::mt19937 generator;
 
 
-	//tobor::v1_0::tobor_graphics<GameController::positions_of_pieces_type>::coloring coloring = tobor::v1_0::tobor_graphics<GameController::positions_of_pieces_type>::coloring("red", "yellow", "green", "blue");
+	//tobor::v1_0::tobor_graphics<DRWGameController::positions_of_pieces_type>::coloring coloring = tobor::v1_0::tobor_graphics<DRWGameController::positions_of_pieces_type>::coloring("red", "yellow", "green", "blue");
 	// needs tobor svg include which brings errors...
 
 
@@ -129,7 +129,7 @@ public:
 
 	void moveBySolver(bool forward);
 
-	void setPieceId(const std::size_t &piece_id);
+	//[[deprecated]] void setPieceId(const std::size_t &piece_id);
 
 	void selectPieceByColorId(const std::size_t& color_id);
 

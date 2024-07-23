@@ -2,6 +2,7 @@
 
 #include "game_controller.h"
 #include "world_generator_1_1.h"
+#include "svg_1_1.h"
 
 #include <memory>
 
@@ -24,6 +25,8 @@ public:
 	virtual std::size_t state_generator_group_size() const = 0;
 
 	virtual void set_state_generator_counter(std::size_t c) = 0;
+
+	virtual std::pair<std::string, std::size_t> svg_highlighted_targets() const = 0;
 
 
 
@@ -84,7 +87,7 @@ public:
 			initial_color_permutation = _product_generator.main().template obtain_permutation<std::vector<typename pieces_quantity_type::int_type>, pieces_quantity_type::COUNT_ALL_PIECES>(initial_color_permutation);
 		}
 
-		return new GameController<pieces_quantity_type>(
+		return new DRWGameController<pieces_quantity_type>(
 			world,
 			_product_generator.side().get_positions_of_pieces(world).apply_permutation(initial_color_permutation),
 			_product_generator.main().get_target_cell()
@@ -115,6 +118,31 @@ public:
 		_product_generator.side().set_counter(c);
 	}
 
+	virtual std::pair<std::string, std::size_t> svg_highlighted_targets() const override {
+
+		using graphics = tobor::v1_1::tobor_graphics<world_type, positions_of_pieces_type_interactive>;
+
+		auto raw_cell_id_vector = board_generator_type::get_target_cell_id_vector(_product_generator.main().get_world());
+
+		std::vector<cell_id_type> comfort_cell_id_vector;
+
+		std::transform(raw_cell_id_vector.cbegin(), raw_cell_id_vector.cend(), std::back_inserter(comfort_cell_id_vector),
+			[&](const auto& raw_cell_id) {
+				return cell_id_type::create_by_id(raw_cell_id, world);
+			}
+		);
+
+		std::string svg_string = graphics::draw_tobor_world_with_cell_markers(
+			world,
+			comfort_cell_id_vector
+		);
+
+		return std::make_pair(svg_string, comfort_cell_id_vector.size());
+
+	}
+
+	virtual ~OriginalGameFactory() override {}
+
 };
 
 class SpecialCaseGameFactory : public AbstractGameFactory {
@@ -125,7 +153,7 @@ public:
 	using pieces_quantity_type = tobor::v1_1::pieces_quantity<uint8_t, 1, 3>;
 	using positions_of_pieces_type_interactive = tobor::v1_1::augmented_positions_of_pieces<pieces_quantity_type, cell_id_type, true, true>;
 
-	using game_controller_type = GameController<pieces_quantity_type>;
+	using game_controller_type = DRWGameController<pieces_quantity_type>;
 
 private:
 	inline static world_type get22Game() {
@@ -217,5 +245,12 @@ public:
 	virtual std::size_t state_generator_group_size() const override { return 0; }
 
 	virtual void set_state_generator_counter(std::size_t) override {}
+
+	virtual std::pair<std::string, std::size_t> svg_highlighted_targets() const override {
+		using graphics = tobor::v1_1::tobor_graphics<world_type, positions_of_pieces_type_interactive>;
+		return std::make_pair(graphics::draw_tobor_world_with_cell_markers(get22Game(), {}), 0);
+	}
+
+	virtual ~SpecialCaseGameFactory() override {}
 };
 

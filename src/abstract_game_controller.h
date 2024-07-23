@@ -1,6 +1,7 @@
 #pragma once
 
 #include "color_generator.h"
+#include "svg_1_1.h"
 
 #include <QStringList>
 
@@ -39,6 +40,8 @@ public:
 	//
 	//virtual uint8_t move(const piece_id_type& piece_id, const tobor::v1_0::direction& direction) = 0;
 
+	virtual uint8_t move_selected(const tobor::v1_1::direction& direction) = 0;
+
 	virtual void undo() = 0;
 
 	virtual void start_solver(std::function<void(const std::string&)> status_callback) = 0;
@@ -55,14 +58,19 @@ public:
 
 	//virtual auto optimal_solutions() const = 0;
 
-	virtual QStringList optimal_solutions_list(const tobor::v1_0::color_vector& current_color_vector) const = 0;
+	virtual QStringList optimal_solutions_list(const tobor::v1_0::color_vector& current_color_vector) const = 0; // update to v1 1
 
 
-	virtual std::string svg(const tobor::v1_0::color_vector& current_color_vector) const = 0;
+	virtual std::string svg(const tobor::v1_0::color_vector& current_color_vector, const tobor::v1_1::general_piece_shape_selection& shape) const = 0; // update to v1 1
 
 	virtual bool select_piece_by_piece_id(const std::size_t& piece_id) = 0;
 
 	virtual bool select_piece_by_color_id(const std::size_t& color_id) = 0;
+
+	virtual std::size_t selected_piece_id() const = 0;
+
+	virtual std::size_t selected_piece_color_id() const = 0;
+
 
 
 	virtual ~AbstractGameController() {}

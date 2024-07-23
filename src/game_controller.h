@@ -13,7 +13,7 @@
 #include <QString>
 
 template<class Pieces_Quantity_T>
-class GameController : public AbstractGameController {
+class DRWGameController : public AbstractGameController {
 
 public:
 
@@ -56,11 +56,11 @@ private:
 
 	std::size_t _solution_index;
 
-	pieces_quantity_int_type _selected_piece_id;
+	piece_id_type _selected_piece_id;
 
 public:
 
-	GameController(
+	DRWGameController(
 		const world_type& world,
 		const positions_of_pieces_type_interactive& initial_state,
 		const cell_id_type& target_cell
@@ -128,6 +128,11 @@ public:
 
 		return 0;
 	}
+
+	virtual uint8_t move_selected(const tobor::v1_0::direction& direction) override {
+		return move_feedback(_selected_piece_id, direction);
+	}
+
 
 	virtual void undo() {
 		if (_solver) return; // or stop solver if undoing out of solver (?)
@@ -242,7 +247,10 @@ public:
 
 
 	// should be moved outside the game controller. This is my interim solution
-	virtual std::string svg(const tobor::v1_0::color_vector& current_color_vector) const override {
+	virtual std::string svg(
+		const tobor::v1_0::color_vector& current_color_vector,
+		const tobor::v1_1::general_piece_shape_selection& shape = tobor::v1_1::general_piece_shape_selection::BALL
+	) const override {
 
 		auto permutated_color_vector = current_color_vector;
 
@@ -253,10 +261,8 @@ public:
 		typename graphics_type::coloring coloring =
 			make_coloring(
 				permutated_color_vector,
-				std::make_integer_sequence<GameController::pieces_quantity_type::int_type, GameController::pieces_quantity_type::COUNT_ALL_PIECES>{}
+				std::make_integer_sequence<DRWGameController::pieces_quantity_type::int_type, DRWGameController::pieces_quantity_type::COUNT_ALL_PIECES>{}
 			);
-
-		typename graphics_type::piece_shape_selection shape{ graphics_type::piece_shape_selection::BALL }; // make this a parameter!
 
 		std::string example_svg_string =
 			graphics_type::draw_tobor_world(
@@ -270,11 +276,39 @@ public:
 		return example_svg_string;
 	}
 
+	virtual std::string svg_highlighted_target_cells() const override {
+
+		// _world
+
+		// move this function to game factory!!!
+
+		auto raw_cell_id_vector = dynamic_cast<OriginalGameFactory<DRWGameController::pieces_quantity_type>*>(factory_history.back().get())->product_generator().main().get_target_cell_id_vector(world);
+
+		std::vector<DRWGameController::cell_id_type> comfort_cell_id_vector;
+
+		std::transform(raw_cell_id_vector.cbegin(), raw_cell_id_vector.cend(), std::back_inserter(comfort_cell_id_vector),
+			[&](const auto& raw_cell_id) {
+				return DRWGameController::cell_id_type::create_by_id(raw_cell_id, world);
+			}
+		);
+
+		std::string svg_string = graphics_type::draw_tobor_world_with_cell_markers(
+			world,
+			comfort_cell_id_vector
+		);
+
+		mainWindow->viewSvgInMainView(svg_string);
+
+		QString m{ "Number of generator target cells:   " };
+		m += QString::number(comfort_cell_id_vector.size());
+		mainWindow->ui->statusbar->showMessage(m);
+	}
+
 
 	virtual bool select_piece_by_piece_id(const std::size_t& piece_id) override {
 		if (_solver) return false;
 		if (!(piece_id < pieces_quantity_type::COUNT_ALL_PIECES)) return false;
-		_selected_piece_id = static_cast<decltype(_selected_piece_id)>(piece_id);
+		_selected_piece_id.value = static_cast<decltype(_selected_piece_id.value)>(piece_id);
 		return true;
 	}
 
@@ -291,11 +325,18 @@ public:
 
 		return select_piece_by_piece_id(iter - current_state().permutation().cbegin());
 
-		//setPieceId(static_cast<GameController::pieces_quantity_type::int_type>(iter - current_game->current_state().permutation().cbegin()));
+		//setPieceId(static_cast<DRWGameController::pieces_quantity_type::int_type>(iter - current_game->current_state().permutation().cbegin()));
 	}
 
+	virtual std::size_t selected_piece_id() const override {
+		return _selected_piece_id.value;
+	}
 
-	virtual ~GameController() override {}
+	virtual std::size_t selected_piece_color_id() const override {
+		return current_state().permutation()[_selected_piece_id.value];
+	}
+
+	virtual ~DRWGameController() override {}
 
 	// todo: functions below:
 
