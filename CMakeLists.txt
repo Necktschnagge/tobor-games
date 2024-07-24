@@ -53,18 +53,19 @@ set(CMAKE_CXX_EXTENSIONS False)
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 
 if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+		message("Clang detected")
 		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libstdc++")
-		message("Clang Flags recognized")
 endif()
 
-if (WIN32 AND NOT (MSYS OR MINGW))
+if (MSVC)
+        message("MSVC detected")
         set(CMAKE_CXX_FLAGS_RELEASE "/MT /O2 /Ob2 /DNDEBUG") #what do all these flags mean?
         set(CMAKE_CXX_FLAGS_DEBUG "/MTd /Zi /Ob0 /Od /RTC1")
-        message("WIN32 Flags recognized")
 endif()
 
 if(MSVC)
   add_compile_options(/W4 /WX)
+  add_compile_options(/bigobj)
 else()
   add_compile_options(-Wall -Wextra -pedantic -Werror)
 endif()

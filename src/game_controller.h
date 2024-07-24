@@ -2,8 +2,41 @@
 
 #include "solver_environment.h"
 
+#include "abstract_game_controller.h"
 
-class GameController : public EngineTypeSet {
+#include "engine_typeset.h"
+
+#include "color_generator.h"
+
+#include "svg_1_1.h"
+
+#include <QString>
+
+template<class Pieces_Quantity_T>
+class DRWGameController : public AbstractGameController {
+
+public:
+
+	using engine_typeset = ClassicEngineTypeSet<Pieces_Quantity_T>;
+
+	using world_type = typename engine_typeset::world_type;
+	using move_engine_type = typename engine_typeset::move_engine_type;
+	using state_path_type_interactive = typename engine_typeset::state_path_type_interactive;
+	using move_path_type = typename engine_typeset::move_path_type;
+	using cell_id_type = typename engine_typeset::cell_id_type;
+	using positions_of_pieces_type_interactive = typename engine_typeset::positions_of_pieces_type_interactive;
+	using positions_of_pieces_type_solver = typename engine_typeset::positions_of_pieces_type_solver;
+	using piece_id_type = typename engine_typeset::piece_id_type;
+	using piece_move_type = typename engine_typeset::piece_move_type;
+	using pieces_quantity_type = typename engine_typeset::pieces_quantity_type;
+
+	using pieces_quantity_int_type = typename pieces_quantity_type::int_type;
+
+
+	using graphics_type = tobor::v1_1::tobor_graphics<world_type, positions_of_pieces_type_solver>;
+	using graphics_coloring_type = typename graphics_type::coloring;
+
+	using solver_environment_type = SolverEnvironment<Pieces_Quantity_T>;
 
 private:
 
@@ -15,19 +48,19 @@ private:
 
 	state_path_type_interactive _path;
 
-	//std::vector<uint8_t> _color_permutation; // not needed because of augmented state type
-
 	cell_id_type _target_cell;
 
-	std::optional<SolverEnvironment> _solver;
+	std::optional<solver_environment_type> _solver;
 
 	std::size_t _solver_begin_index; // index of the first state where the solver moves to. == _path.vector().size() in case of solver-initial state
 
 	std::size_t _solution_index;
 
+	piece_id_type _selected_piece_id;
+
 public:
 
-	GameController(
+	DRWGameController(
 		const world_type& world,
 		const positions_of_pieces_type_interactive& initial_state,
 		const cell_id_type& target_cell
@@ -38,47 +71,37 @@ public:
 		_target_cell(target_cell),
 		_solver(),
 		_solver_begin_index(0),
-		_solution_index(0)
+		_solution_index(0),
+		_selected_piece_id(0)
 	{}
-
-	/*
-	GameController(
-		const world_type& world,
-		const positions_of_pieces_type_interactive& initial_state,
-		const cell_id_type& target_cell,
-		const std::vector<uint8_t>& color_permutation
-	) :
-		GameController(world,initial_state.add_permutation(color_permutation), target_cell)
-	{}
-	*/
 
 
 
 	/* non-modifying */
 
-	inline const positions_of_pieces_type_interactive& current_state() const { return _path.vector().back(); }
+	const positions_of_pieces_type_interactive& current_state() const { return _path.vector().back(); }
 
-	inline const positions_of_pieces_type_interactive& solver_begin_state() const {
+	const positions_of_pieces_type_interactive& solver_begin_state() const {
 		if (!_solver)
 			return _path.vector().back();
 		return _path.vector()[_solver_begin_index - 1];
 	}
 
-	inline bool is_final() const { return current_state().is_final(_target_cell); }
+	virtual bool is_final() const override { return current_state().is_final(_target_cell); }
 
-	inline bool is_initial() const { return _path.vector().size() == 1; }
+	virtual bool is_initial() const override { return _path.vector().size() == 1; }
 
-	//inline const std::vector<uint8_t>& color_permutation() const { return _color_permutation; }
+	const world_type& world() const { return _world; }
 
-	inline const world_type& world() const { return _world; }
+	const cell_id_type& target_cell() const { return _target_cell; }
 
-	inline const cell_id_type& target_cell() const { return _target_cell; }
+	virtual std::size_t depth() const override { return _path.vector().size() - 1; }
 
-	inline std::size_t depth() const { return _path.vector().size() - 1; }
+	virtual std::size_t count_pieces() const override { return pieces_quantity_type::COUNT_ALL_PIECES; }
 
 	/* modifying */
 
-	inline uint8_t move_feedback(piece_id_type& piece_id, const tobor::v1_0::direction& direction) {
+	uint8_t move_feedback(piece_id_type& piece_id, const tobor::v1_0::direction& direction) {
 		if (_solver) return 4;
 
 		if (is_final()) return 2;
@@ -92,7 +115,7 @@ public:
 		return 0;
 	}
 
-	inline uint8_t move(const piece_id_type& piece_id, const tobor::v1_0::direction& direction) {
+	uint8_t move(const piece_id_type& piece_id, const tobor::v1_0::direction& direction) {
 		if (_solver) return 4;
 
 		if (is_final()) return 2;
@@ -106,7 +129,12 @@ public:
 		return 0;
 	}
 
-	inline void undo() {
+	virtual uint8_t move_selected(const tobor::v1_0::direction& direction) override {
+		return move_feedback(_selected_piece_id, direction);
+	}
+
+
+	virtual void undo() override {
 		if (_solver) return; // or stop solver if undoing out of solver (?)
 
 		if (_path.vector().size() > 1) {
@@ -114,39 +142,170 @@ public:
 		}
 	}
 
-	void start_solver(std::function<void(const std::string&)> status_callback = nullptr);
+	virtual void start_solver(std::function<void(const std::string&)> status_callback = nullptr) override {
+		_solver.emplace(current_state(), _target_cell, _move_engine, status_callback);
 
-	inline void reset_solver_steps() {
+		_solver_begin_index = _path.vector().size();
+
+		if (_solver.value().solutions_size() == 0) {
+			// error dialog message!!!####
+			return stop_solver();
+		}
+
+		if (status_callback) status_callback("Successfully executed solver.");
+	}
+
+	virtual void reset_solver_steps() override {
 		// go back to solver_begin_index
 		_path.vector().erase(_path.vector().begin() + _solver_begin_index, _path.vector().end());
 	}
 
-	void stop_solver() {
+	virtual void stop_solver() override {
 		_solver_begin_index = 0;
 		_solver.reset();
 	}
 
-	inline void select_solution(const std::size_t& index) {
+	virtual void select_solution(const std::size_t& index) override {
 		if (_solver) {
 			_solution_index = index;
 			reset_solver_steps();
 		}
 	}
 
-	void move_by_solver(bool forward);
+	virtual void move_by_solver(bool forward) override {
+		if (!_solver) return;
 
-	inline state_path_type_interactive path() const noexcept {
+		const auto index_next_move = _path.vector().size() - _solver_begin_index;
+
+		const auto index_next_state = index_next_move + 1;
+
+		if (forward) {
+			if (is_final())
+				return;
+			_path += _solver.value().get_solution_state_path(_solution_index).vector()[index_next_state];
+		}
+		else { // back
+			if (index_next_move == 0) // already at solver start
+				return;
+			_path.vector().pop_back();
+		}
+	}
+
+	state_path_type_interactive path() const noexcept {
 		return _path;
 	}
 
-	inline auto optimal_solutions() const {
+	inline typename solver_environment_type::optimal_solutions_vector optimal_solutions() const {
 		if (_solver) {
 			return _solver.value().optimal_solutions();
 		}
-		return SolverEnvironment::optimal_solutions_vector();
+		return solver_environment_type::optimal_solutions_vector();
 	}
 
-	~GameController() {}
+	// remove the QStringList here! ###
+	virtual QStringList optimal_solutions_list(const tobor::v1_0::color_vector& current_color_vector) const override // this has to be improved!!!
+	{
+		if (!_solver) {
+			return QStringList();
+		}
+
+		QStringList qStringList;
+
+		const std::vector<std::pair<state_path_type_interactive, move_path_type>> partitions{ _solver.value().optimal_solutions() };
+
+		for (std::size_t i{ 0 }; i < partitions.size(); ++i) {
+			QString s;
+			s = s + "[" + QString::number(i) + "]     ";
+			for (const piece_move_type& m : partitions[i].second.vector()) {
+				//is not checked for emptiness!!
+
+				const char letter{ current_color_vector.colors[m.pid.value].UPPERCASE_shortcut_letter() };
+
+				std::string color = std::string(1, letter);
+
+				s = s + "  " + QString::fromStdString(color) + QString::fromStdString(static_cast<std::string>(m.dir));
+
+			}
+			s = s + "     ( NO COUNT " + /*QString::number(partitions[i].size()) + */ ")";
+			qStringList << s;
+		}
+
+		return qStringList;
+	}
+
+
+	template<class T, pieces_quantity_int_type ... Index_Sequence>
+	inline static graphics_coloring_type make_coloring(
+		T& permutated_color_vector,
+		std::integer_sequence<pieces_quantity_int_type, Index_Sequence...>
+	) {
+		auto coloring = graphics_coloring_type{
+			(permutated_color_vector.colors[Index_Sequence].getSVGColorString()) ...
+		};
+		return coloring;
+	}
+
+
+	// should be moved outside the game controller. This is my interim solution
+	virtual std::string svg(
+		const tobor::v1_0::color_vector& current_color_vector,
+		const tobor::v1_1::general_piece_shape_selection& shape = tobor::v1_1::general_piece_shape_selection::BALL
+	) const override {
+
+		auto permutated_color_vector = current_color_vector;
+
+		for (std::size_t i{ 0 }; i < current_color_vector.colors.size(); ++i) {
+			permutated_color_vector.colors[i] = current_color_vector.colors[current_state().permutation()[i]];
+		}
+
+		typename graphics_type::coloring coloring =
+			make_coloring(
+				permutated_color_vector,
+				std::make_integer_sequence<pieces_quantity_int_type, pieces_quantity_type::COUNT_ALL_PIECES>{}
+			);
+
+		std::string example_svg_string =
+			graphics_type::draw_tobor_world(
+				this->world(),
+				this->current_state().naked(),
+				this->target_cell(),
+				coloring,
+				shape
+			);
+
+		return example_svg_string;
+	}
+
+	virtual bool select_piece_by_piece_id(const std::size_t& piece_id) override {
+		if (_solver) return false;
+		if (!(piece_id < pieces_quantity_type::COUNT_ALL_PIECES)) return false;
+		_selected_piece_id.value = static_cast<decltype(_selected_piece_id.value)>(piece_id);
+		return true;
+	}
+
+
+	virtual bool select_piece_by_color_id(const std::size_t& color_id) override {
+		auto iter = std::find(
+			current_state().permutation().cbegin(),
+			current_state().permutation().cend(),
+			color_id
+		);
+
+		if (iter == current_state().permutation().cend())
+			return false;
+
+		return select_piece_by_piece_id(iter - current_state().permutation().cbegin());
+	}
+
+	virtual std::size_t selected_piece_id() const override {
+		return _selected_piece_id.value;
+	}
+
+	virtual std::size_t selected_piece_color_id() const override {
+		return current_state().permutation()[_selected_piece_id.value];
+	}
+
+	virtual ~DRWGameController() override {}
 
 	// todo: functions below:
 

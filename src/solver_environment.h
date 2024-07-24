@@ -1,42 +1,44 @@
 #pragma once
 
-#include "solver_1_1.h"
+#include "engine_typeset.h"
 
 #include <functional>
 #include <optional>
 
-struct EngineTypeSet {
 
-	using world_type = tobor::v1_1::dynamic_rectangle_world<uint16_t, uint8_t>;
-
-	using cell_id_type = tobor::v1_1::min_size_cell_id<world_type>;
-
-	//using piece_quantity_type = tobor::v1_1::pieces_quantity<uint8_t, 1, 2>;
-	using piece_quantity_type = tobor::v1_1::pieces_quantity<uint8_t, 1, 3>;
-
-	using piece_id_type = tobor::v1_1::piece_id<piece_quantity_type>;
-
-	using positions_of_pieces_type_solver = tobor::v1_1::positions_of_pieces<piece_quantity_type, cell_id_type, true, true>;
-
-	using positions_of_pieces_type_interactive = tobor::v1_1::augmented_positions_of_pieces<piece_quantity_type, cell_id_type, true, true>;
-
-	using piece_move_type = tobor::v1_1::piece_move<piece_id_type>;
-
-	using quick_move_cache_type = tobor::v1_1::quick_move_cache<world_type>;
-
-	using move_engine_type = tobor::v1_1::move_engine<cell_id_type, quick_move_cache_type, piece_move_type>;
-
-	using move_path_type = tobor::v1_1::move_path<piece_move_type>;
-
-	using state_path_type_interactive = tobor::v1_1::state_path<positions_of_pieces_type_interactive>;
-
-	using state_path_type_solver = tobor::v1_1::state_path<positions_of_pieces_type_solver>;
-
-};
-
-
-class SolverEnvironment : public EngineTypeSet {
+template<class Pieces_Quantity_T>
+class SolverEnvironment {
 public:
+
+
+	using engine_typeset = ClassicEngineTypeSet<Pieces_Quantity_T>;
+
+
+	using state_path_type_interactive = typename engine_typeset::state_path_type_interactive;
+
+	using state_path_type_solver = typename engine_typeset::state_path_type_solver;
+
+	using move_path_type = typename engine_typeset::move_path_type;
+
+	using positions_of_pieces_type_interactive = typename engine_typeset::positions_of_pieces_type_interactive;
+
+	using positions_of_pieces_type_solver = typename engine_typeset::positions_of_pieces_type_solver;
+
+	using move_engine_type = typename engine_typeset::move_engine_type;
+
+	using cell_id_type = typename engine_typeset::cell_id_type;
+
+	using pieces_quantity_type = typename engine_typeset::pieces_quantity_type;
+
+	using piece_move_type = typename engine_typeset::piece_move_type;
+
+	using quick_move_cache_type = typename engine_typeset::quick_move_cache_type;
+
+
+
+	using  piece_quantity_int_type = typename pieces_quantity_type::int_type;
+
+
 
 	using optimal_solutions_vector = std::vector<std::pair<state_path_type_interactive, move_path_type>>;
 
@@ -70,6 +72,8 @@ private:
 
 	using pretty_evaluation_bigraph_type = tobor::v1_1::simple_state_bigraph<positions_of_pieces_type_interactive, piece_change_decoration_vector>;
 
+	using pretty_evaluation_bigraph_map_iterator_type = typename pretty_evaluation_bigraph_type::map_iterator_type;
+
 	using path_classificator_type = tobor::v1_1::path_classificator<positions_of_pieces_type_solver>;
 
 	positions_of_pieces_type_interactive _initial_state;
@@ -90,13 +94,13 @@ private:
 	*	@details Purpose is counting min piece changes until final state.
 	*	Invariant that must be provided: If a state has labels then this state and all its direct and indirect successors must have been evaluated and their labels are set correclty.
 	*/
-	void build_prettiness_decoration(pretty_evaluation_bigraph_type& pretty_evaluation_bigraph, pretty_evaluation_bigraph_type::map_iterator_type map_iter_root, const move_engine_type& engine) {
+	void build_prettiness_decoration(pretty_evaluation_bigraph_type& pretty_evaluation_bigraph, pretty_evaluation_bigraph_map_iterator_type map_iter_root, const move_engine_type& engine) {
 		if (!map_iter_root->second.labels.empty()) {
 			return; // this map entry and all reachable direct and indirect successor states must have been decorated correctly
 		}
 		if (map_iter_root->second.successors.empty()) {
 			// This is a final state, not yet decorated.
-			for (std::size_t n{ 0 }; n < piece_quantity_type::COUNT_ALL_PIECES; ++n) {
+			for (std::size_t n{ 0 }; n < pieces_quantity_type::COUNT_ALL_PIECES; ++n) {
 				map_iter_root->second.labels.emplace_back(
 					0, // 0 piece changes left when in final state
 					std::vector<positions_of_pieces_type_interactive>() // no successors
@@ -117,7 +121,7 @@ private:
 		//now calculate current state's decoration using the successor decorations.
 
 		// initialize with MAX distance
-		for (std::size_t i{ 0 }; i < piece_quantity_type::COUNT_ALL_PIECES; ++i) {
+		for (std::size_t i{ 0 }; i < pieces_quantity_type::COUNT_ALL_PIECES; ++i) {
 			map_iter_root->second.labels.emplace_back(
 				piece_change_decoration::MAX,
 				std::vector<positions_of_pieces_type_interactive>() // no successors
@@ -131,16 +135,16 @@ private:
 
 			// obtain SELECTED_PIECE id
 			piece_move_type move = engine.state_minus_state(succ_state, map_iter_root->first); // exceptions here!!
-			const piece_quantity_type::int_type SELECTED_PIECE = move.pid.value;
+			const piece_quantity_int_type SELECTED_PIECE = move.pid.value;
 
 			// obtain SELECTED_PIECE id after move
 			positions_of_pieces_type_interactive from_state(map_iter_root->first);
 			from_state.reset_permutation();
 			positions_of_pieces_type_interactive to_state = engine.successor_state(from_state, move);
 
-			const piece_quantity_type::int_type SELECTED_PIECE_AFTER{
+			const piece_quantity_int_type SELECTED_PIECE_AFTER{
 				[&]() {
-					for (piece_quantity_type::int_type i{ 0 }; i < piece_quantity_type::COUNT_ALL_PIECES; ++i) {
+					for (piece_quantity_int_type i{ 0 }; i < pieces_quantity_type::COUNT_ALL_PIECES; ++i) {
 						if (to_state.permutation()[i] == SELECTED_PIECE) {
 							return i;
 						}
@@ -151,7 +155,7 @@ private:
 
 			const std::size_t SUB_DISTANCE{ succ_jter->second.labels[SELECTED_PIECE_AFTER].min_piece_change_distance };
 
-			for (piece_quantity_type::int_type i{ 0 }; i < piece_quantity_type::COUNT_ALL_PIECES; ++i) {
+			for (piece_quantity_int_type i{ 0 }; i < pieces_quantity_type::COUNT_ALL_PIECES; ++i) {
 				const std::size_t UPDATE_DISTANCE{ SUB_DISTANCE + (SELECTED_PIECE != i) };
 				if (UPDATE_DISTANCE < map_iter_root->second.labels[i].min_piece_change_distance) {
 
@@ -164,7 +168,7 @@ private:
 		}
 	}
 
-	state_path_type_interactive get_representant(pretty_evaluation_bigraph_type& pretty_evaluation_bigraph, pretty_evaluation_bigraph_type::map_iterator_type map_iter_root
+	state_path_type_interactive get_representant(pretty_evaluation_bigraph_type& pretty_evaluation_bigraph, pretty_evaluation_bigraph_map_iterator_type map_iter_root
 		//, const move_engine_type& engine
 	) {
 		state_path_type_interactive result;
@@ -336,7 +340,6 @@ public:
 		const move_engine_type& move_engine,
 		std::function<void(const std::string&)> status_callback = nullptr,
 		std::size_t MAX_DEPTH = distance_exploration_type::SIZE_TYPE_MAX
-		//, bool explicilty_create_all_optimal_solution_paths = false // select prettiness evaluation.
 	) :
 		_initial_state(initial_state),
 		_target_cell(target_cell),
@@ -345,6 +348,13 @@ public:
 		_distance_explorer(initial_state.naked()),
 		_optimal_solutions()
 	{
+		run_solver_toolchain(status_callback, MAX_DEPTH, 0);
+	}
+
+	inline void advance_max_depth(std::function<void(const std::string&)> status_callback = nullptr, const std::size_t MAX_DEPTH = distance_exploration_type::SIZE_TYPE_MAX) {
+		if (_status_code == 0) {
+			return;
+		}
 		run_solver_toolchain(status_callback, MAX_DEPTH, 0);
 	}
 

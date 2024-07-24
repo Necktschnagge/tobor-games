@@ -492,6 +492,9 @@ namespace tobor {
 
 			};
 
+			/**
+			*	@brief Describes restrictions for exploration.
+			*/
 			class exploration_policy {
 
 				size_type _state_count_threshold{ 0 };
@@ -546,6 +549,9 @@ namespace tobor {
 			*/
 			bool _entirely_explored{ false };
 
+			/**
+			*	@brief Sorts states inside _reachable_states_by_distance[index], removes duplicates
+			*/
 			inline void sort_unique(const typename std::vector<states_vector>::size_type& index /* new states index */) {
 				static constexpr bool USE_RADIX_SORT{ true };
 
@@ -562,6 +568,9 @@ namespace tobor {
 				}
 			}
 
+			/**
+			*	@brief Removes states inside _reachable_states_by_distance[index] which have already been seen within some shorter distance
+			*/
 			inline void erase_seen_before(const typename std::vector<states_vector>::size_type& index /* new states index */) {
 
 				using sub_iterator = typename std::vector<positions_of_pieces_type>::iterator;
@@ -605,6 +614,9 @@ namespace tobor {
 				_reachable_states_by_distance[index].erase(free_next, _reachable_states_by_distance[index].end());
 			}
 
+			/**
+			*	@brief Adds all successor states of \p current_state to \p destination
+			*/
 			template<class Iterator_T>
 			inline void add_all_nontrivial_successor_states(
 				const move_engine_type& engine,
@@ -625,6 +637,10 @@ namespace tobor {
 				}
 			}
 
+			/**
+			*	@brief Adds all successor states of \p current_state to \p destination
+			*	@return true if and only if a taregt state was found.
+			*/
 			template<class Iterator_T>
 			inline bool add_all_nontrivial_successor_states(
 				const move_engine_type& engine,
@@ -650,17 +666,17 @@ namespace tobor {
 					}
 				}
 
-				/* order of candidates:
-				 piece 0: N E S W      <- target pieces come first!
-				 piece 1: N E S W
-				 ...
-				 piece last: N E S W
-				*/
+				// order of candidates:
+				// piece 0: N E S W      <- target pieces come first!
+				// piece 1: N E S W
+				// ...
+				// piece last: N E S W
+
 
 
 				typename std::vector<move_candidate>::size_type index_candidate{ 0 };
 
-				// only check if reached goal for candidates arising from moved target pieces:
+				// only check if reached target for candidates arising from moved target pieces:
 				for (; index_candidate < COUNT_SUCC_CANDIDATES_WITH_TARGET_PIECE_MOVED; ++index_candidate) {
 					if (candidates_for_successor_states[index_candidate].successor_state == current_state) {
 						continue;
@@ -698,7 +714,9 @@ namespace tobor {
 			}
 
 			/**
-			* Caller guarantees that target_cell has not yet been found if NOT_YET_FOUND_GUARANTEED == true.
+			*	@brief Explores according to \p policy until reaching \p target_cell (or until running into policy threshold)
+			*
+			*	@details Caller guarantees that target_cell has not yet been found if NOT_YET_FOUND_GUARANTEED == true.
 			*/
 			inline size_type explore_until_target(
 				const move_engine_type& engine,
@@ -708,7 +726,7 @@ namespace tobor {
 			) {
 				const size_type INDEX_LAST_EXPLORATION{ _reachable_states_by_distance.size() - 1 };
 
-				size_type optimal_depth{ SIZE_TYPE_MAX }; // guaranteed not yet found if  NOT_YET_FOUND_GUARANTEED == true
+				size_type optimal_depth{ SIZE_TYPE_MAX }; // guaranteed not yet found if NOT_YET_FOUND_GUARANTEED == true
 
 				size_type states_counter{ count_states() };
 
@@ -752,15 +770,19 @@ namespace tobor {
 			}
 
 		public:
+			/**
+			*	@brief Constructs an object with empty exploration state space.
+			*/
 			distance_exploration(const positions_of_pieces_type& initial_state) :
-				//_optimal_path_length(SIZE_TYPE_MAX)
 				_optimal_path_length_map(),
 				_entirely_explored(false)
 			{
 				_reachable_states_by_distance.emplace_back(std::vector<positions_of_pieces_type>{ initial_state });
-
 			}
 
+			/**
+			*	@brief Returns the total number of states reached from initial state during exploration, including the initial state itself.
+			*/
 			inline size_type count_states() const noexcept {
 				return std::accumulate(
 					std::begin(_reachable_states_by_distance),
@@ -769,12 +791,18 @@ namespace tobor {
 					[](const size_type& acc, const auto& el) { return acc + el.size(); });
 			}
 
+			/**
+			*	@brief Returns true if and only if the entire state space has been explored.
+			*/
 			inline bool entirely_explored() const noexcept { return _entirely_explored; }
 
+			/**
+			*	@brief Returns the may depth of previously executed exploration.
+			*/
 			inline size_type exploration_depth() const noexcept { return _reachable_states_by_distance.size() - 1; }
 
 			/**
-			*
+			*	@brief Explores according to \p policy (until entirely explored or until running into some policy threshold)
 			*/
 			inline void explore(
 				const move_engine_type& engine,
@@ -810,14 +838,25 @@ namespace tobor {
 				}
 			}
 
+			/**
+			*	@brief Explores until reaching \p target_cell (without any restriction on exploration depth)
+			*/
 			inline size_type explore_until_target(const move_engine_type& engine, const cell_id_type& target_cell) {
 				return optimal_path_length(engine, target_cell, exploration_policy::FORCE_EXPLORATION_UNRESTRICTED(), 0);
 			}
 
+			/**
+			*	@brief Explores until reaching \p target_cell, restricted to max exploration depth \p max_depth
+			*/
 			inline size_type explore_until_target(const move_engine_type& engine, const cell_id_type& target_cell, const size_type& max_depth) {
 				return optimal_path_length(engine, target_cell, exploration_policy::FORCE_EXPLORATION_UNTIL_DEPTH(max_depth), 0);
 			}
 
+			/**
+			*	@brief Explores until reaching \p target_cell, if allowed by \p policy. The policy determines if it performs additional exploration or if it only looks up in previously cached or explored solutions.
+			*
+			*	@return Returns the optimal path length for reaching \p target_cell. Returns SIZE_TYPE_MAX in case no optimal path was found, perhaps due to \p policy.
+			*/
 			inline size_type optimal_path_length(const move_engine_type& engine, const cell_id_type& target_cell, const exploration_policy& policy = exploration_policy::ONLY_EXPLORED(), const size_type& min_length_hint = 0) {
 				// checking cache...
 				const auto iter = _optimal_path_length_map.find(target_cell);
@@ -848,9 +887,11 @@ namespace tobor {
 				return explore_until_target(engine, target_cell, policy, min_length_hint == 0);
 			}
 
-
-
-
+			/**
+			*	@brief Explores until reaching \p target_cell, if allowed by \p policy. The policy determines if it performs additional exploration or if it only looks up in previously cached or explored solutions.
+			*
+			*	@return Returns all final states covering \p target_cell.
+			*/
 			inline std::vector<positions_of_pieces_type> optimal_final_states(move_engine_type& engine, const cell_id_type& target_cell, const exploration_policy& policy = exploration_policy::ONLY_EXPLORED(), const size_type& min_length_hint = 0) {
 				std::vector<positions_of_pieces_type> result;
 				const size_type DEPTH{ optimal_path_length(engine, target_cell, policy, min_length_hint) };
@@ -867,6 +908,11 @@ namespace tobor {
 				return result;
 			}
 
+			/**
+			*	@brief Extracts the simple_state_bigraph containing all optimal solutions for reaching \p target_cell.
+			*
+			*	@details Explores the state space according to \p policy
+			*/
 			template<class State_Label_T>
 			void get_simple_bigraph(
 				const move_engine_type& engine,
@@ -951,10 +997,11 @@ namespace tobor {
 					// pass vector of pre-states to next loop run.
 				}
 			}
-
-			// ### offer step-wise exploration instead of exploration until optimal.
 		};
 
+		/**
+		*	@brief Represents a path by its states.
+		*/
 		template<class Position_Of_Pieces_T>
 		class state_path {
 		public:
@@ -1034,11 +1081,16 @@ namespace tobor {
 					);
 					return copy;
 				}
-				// ### error case of non-matching paths is missing here!
+				else {
+					return state_path();
+				}
 			}
 
 		};
 
+		/**
+		*	@brief Represents a path by its moves.
+		*/
 		template<class Piece_Move_T>
 		class move_path {
 
@@ -1339,7 +1391,9 @@ namespace tobor {
 
 		};
 
-
+		/**
+		*	@brief Utility class for classifying paths into equivalence classes.
+		*/
 		template<class Positions_Of_Pieces_T>
 		class path_classificator {
 
@@ -1358,6 +1412,7 @@ namespace tobor {
 			}
 
 		public:
+
 			using positions_of_pieces_type = Positions_Of_Pieces_T;
 
 			using state_path_type = state_path<positions_of_pieces_type>;
@@ -1366,17 +1421,20 @@ namespace tobor {
 
 		private:
 
+			/**
+			*	@brief Extracts all state paths of given simple_state_bigraph \p source with prefix \p depth_first_path and writes them into \p all_state_paths using emplace_back()
+			*/
 			template<class State_Label_T>
 			static void extract_all_state_paths_helper(
 				const simple_state_bigraph<positions_of_pieces_type, State_Label_T>& source,
 				std::vector<state_path<positions_of_pieces_type>>& all_state_paths,
 				state_path_vector_type& depth_first_path
-				//, const typename simple_state_bigraph<positions_of_pieces_type, State_Label_T>::map_type::const_iterator& current_state_iter /* not end */
 			) {
 				auto iter = source.map.find(depth_first_path.back());
 
 				if (iter == source.map.cend()) {
 					return; // Never reached by logic when used correctly.
+					// should throw std::unexpected();
 				}
 
 				if (
@@ -1395,10 +1453,14 @@ namespace tobor {
 		public:
 
 			/**
-			*	@brief
-			*	@return Number of partitions found
+			*	@brief Augments the states of \p bigraph by flags indicating all the equivalence classes a state belongs to.
+			*
+			*	@return Number of partitions found.
 			*/
 			static std::size_t make_state_graph_path_partitioning(simple_state_bigraph<positions_of_pieces_type, std::vector<bool>>& bigraph) {
+
+				// ## This function needs to be fixed in order to include crossed components of equivalence classes (which are left in this version.)
+
 				/*
 				std::vector<position_of_pieces_type> initials;
 				std::vector<position_of_pieces_type> finals;
@@ -1539,154 +1601,10 @@ namespace tobor {
 				return flag_index;
 			}
 
+			
 			/**
-			*	@brief
-			*	@return Number of partitions found
+			*	@brief Extracts the induced subgraph by the states with flag \p label_index. The extracted subgraph then shows oen single equivalence class.
 			*/
-			static std::size_t make_state_graph_path_partitioning_fixed(simple_state_bigraph<positions_of_pieces_type, std::vector<bool>>& bigraph) {
-
-				//### fix the coloring here!!!!
-
-				/*
-				std::vector<position_of_pieces_type> initials;
-				std::vector<position_of_pieces_type> finals;
-
-				for (auto& entry : bigraph.map) {
-					entry.second.labels.clear();
-					if (entry.second.predecessors.empty()) {
-						initials.push_back(entry.first);
-					}
-					if (entry.second.successors.empty()) {
-						finals.push_back(entry.first);
-					}
-				}
-				*/
-
-				std::size_t flag_index{ 0 };
-				for (auto iter = bigraph.map.begin(); iter != bigraph.map.end(); ++iter) {
-					/* while there is a state not being part of any path partition */
-					if (iter->second.labels.empty()) {
-						// found iter pointing to a state not belonging to any partition/ i.e. has no label
-
-						std::vector<decltype(bigraph.map.begin())> exploration_iterator_stack; // collect iterators for elements in partition
-						exploration_iterator_stack.reserve(bigraph.map.size());
-						exploration_iterator_stack.push_back(iter);
-
-						// add new label to *iter state and to all state on some initial path.
-						set_flag(iter->second.labels, flag_index, true);
-
-						{
-							auto i_back = iter;
-							while (!i_back->second.predecessors.empty()) { // can be optimized
-								i_back = bigraph.map.find(*i_back->second.predecessors.begin());
-								// i_back != end() /* assured by logic, also check it here (?)*/
-								if (i_back == bigraph.map.end()) break;
-								set_flag(i_back->second.labels, flag_index, true);
-								exploration_iterator_stack.push_back(i_back);
-							}
-						}
-						{
-							auto i_forward = iter;
-							while (!i_forward->second.successors.empty()) { // can be optimized
-								i_forward = bigraph.map.find(*i_forward->second.successors.begin());
-								if (i_forward == bigraph.map.end()) break;
-								// i_forward != end() /* assured by logic, also check it here (?)*/
-								set_flag(i_forward->second.labels, flag_index, true);
-								exploration_iterator_stack.push_back(i_forward);
-							}
-						}
-
-						// add all other states to this partition which can be reached by true interleaving:
-
-						/*
-						Theory:
-							A new element can be found from two common states embracing an interleaving
-								A	---->	B1
-								-			-
-								-			-
-								->			->
-								B2	---->	C
-
-							wlog we already know B1 but not B2. B2 can be found exploring from A and exploring from C
-
-							use the following algorithm
-							Put all known states into a stack.
-							while stack not empty pop and explore from that element, always explore in both directions
-								if found any new state of same partition, push it onto the stack.
-							loop until stack empty.
-
-							This way all states of the same partition will be found.
-
-							::PROOF:: fairly simple, using contradiction:
-
-							Assume Partition = A setunion B
-							where all A have been found, but none of B.
-							Since all of b are reachable by statewise interleaving from A,
-							there must be some b2 and a1 ---> a2 ---> a3 such that also a1 ---> b2 ---> a3.
-							So assuming b2 was not found when the stack got empty.
-							This means that when a3 was popped, at this moment a1 has not yet been found.
-							Otherwise exploration would have found also b2.
-							So a1 was found after a3 was popped.
-							a1 explored after a1 found, a1 found after a3 popped, a3 popped after a3 found.
-							Thus, a1 explored after a3 found.
-							Hence b2 was found when a1 got explored. Contradiction.
-						*/
-						while (!exploration_iterator_stack.empty()) {
-							auto exploree = exploration_iterator_stack.back();
-							exploration_iterator_stack.pop_back();
-
-							for (const auto& candidate : exploree->second.successors) {
-								const auto i_candidate = bigraph.map.find(candidate);
-								if (i_candidate == bigraph.map.end()) continue; // never happens by logic if bigraph is sound.
-								if (contains(i_candidate->second.labels, flag_index)) continue; // state already labeled as part of current equivalence class
-
-								for (const auto& successor : i_candidate->second.successors) {
-									auto i_successor = bigraph.map.find(successor);
-									if (i_successor == bigraph.map.end()) continue; // never happens by logic if bigraph is sound.
-
-									if (contains(i_successor->second.labels, flag_index)) {
-										if (exploree->first.count_changed_pieces(i_successor->first) == 2) { // true interleaving
-											// accept candidate here:
-											exploration_iterator_stack.push_back(i_candidate);
-											set_flag(i_candidate->second.labels, flag_index);
-											goto candidate_accepted_1;
-										}
-									}
-								}
-							candidate_accepted_1:
-								(void)0;
-							}
-							for (const auto& candidate : exploree->second.predecessors) {
-								const auto i_candidate = bigraph.map.find(candidate);
-								if (i_candidate == bigraph.map.end()) continue; // never happens by logic if bigraph is sound.
-								if (contains(i_candidate->second.labels, flag_index)) continue; // state already labeled as part of current equivalence class
-
-								for (const auto& predecessor : i_candidate->second.predecessors) {
-									auto i_predecessor = bigraph.map.find(predecessor);
-									if (i_predecessor == bigraph.map.end()) continue; // never happens by logic if bigraph is sound.
-
-									if (contains(i_predecessor->second.labels, flag_index)) {
-										if (exploree->first.count_changed_pieces(i_predecessor->first) == 2) { // true interleaving
-											// accept candidate here:
-											exploration_iterator_stack.push_back(i_candidate);
-											set_flag(i_candidate->second.labels, flag_index);
-											goto candidate_accepted_2;
-										}
-									}
-								}
-							candidate_accepted_2:
-								(void)0;
-							}
-						}
-
-						++flag_index;
-					}
-
-				}
-
-				return flag_index;
-			}
-
 			template<class State_Label_T>
 			static void extract_subgraph_by_label(
 				const simple_state_bigraph<positions_of_pieces_type, std::vector<bool>>& source,
@@ -1715,8 +1633,9 @@ namespace tobor {
 				}
 			}
 
-
-
+			/**
+			*	@brief Returns all state paths of given simple_state_bigraph \p source.
+			*/
 			template<class State_Label_T>
 			static std::vector<state_path<positions_of_pieces_type>> extract_all_state_paths(const simple_state_bigraph<positions_of_pieces_type, State_Label_T>& source) {
 				std::vector<state_path<positions_of_pieces_type>> all_state_paths;
@@ -1729,8 +1648,6 @@ namespace tobor {
 				}
 				return all_state_paths;
 			}
-
-
 		};
 
 		class bigraph_operations {

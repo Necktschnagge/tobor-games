@@ -580,25 +580,29 @@ namespace tobor {
 			template<class ... T>
 			inline void sort_pieces(T&... piece_ids) {
 				if constexpr ((!SORTED_TARGET_PIECES || COUNT_TARGET_PIECES <= 1) && (!SORTED_NON_TARGET_PIECES || COUNT_NON_TARGET_PIECES <= 1)) {
+					((void)piece_ids, ...);
 					return;
 				}
-				permutation_type p_new;
-				reset_perm(p_new);
-				if constexpr (SORTED_TARGET_PIECES && !(COUNT_TARGET_PIECES <= 1)) {
-					//std::sort(target_pieces_begin(), target_pieces_end());
-					std::sort(p_new.begin(), p_new.begin() + COUNT_TARGET_PIECES, [&](const std::size_t& l, const std::size_t& r) {
-						return _piece_positions[l] < _piece_positions[r];
-						});
-				}
-				if constexpr (SORTED_NON_TARGET_PIECES && !(COUNT_NON_TARGET_PIECES <= 1)) {
-					std::sort(p_new.begin() + COUNT_TARGET_PIECES, p_new.begin() + COUNT_ALL_PIECES, [&](const std::size_t& l, const std::size_t& r) {
-						return _piece_positions[l] < _piece_positions[r];
-						});
-				}
-				apply_perm(p_new, _piece_positions);
-				apply_perm(p_new, _permutation);
+				else {
 
-				feedback_helper(p_new, piece_ids...);
+					permutation_type p_new;
+					reset_perm(p_new);
+					if constexpr (SORTED_TARGET_PIECES && !(COUNT_TARGET_PIECES <= 1)) {
+						//std::sort(target_pieces_begin(), target_pieces_end());
+						std::sort(p_new.begin(), p_new.begin() + COUNT_TARGET_PIECES, [&](const std::size_t& l, const std::size_t& r) {
+							return _piece_positions[l] < _piece_positions[r];
+							});
+					}
+					if constexpr (SORTED_NON_TARGET_PIECES && !(COUNT_NON_TARGET_PIECES <= 1)) {
+						std::sort(p_new.begin() + COUNT_TARGET_PIECES, p_new.begin() + COUNT_ALL_PIECES, [&](const std::size_t& l, const std::size_t& r) {
+							return _piece_positions[l] < _piece_positions[r];
+							});
+					}
+					apply_perm(p_new, _piece_positions);
+					apply_perm(p_new, _permutation);
+
+					feedback_helper(p_new, piece_ids...);
+				}
 			}
 
 			template<class AggregationType>
