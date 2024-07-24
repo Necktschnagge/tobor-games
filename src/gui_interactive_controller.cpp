@@ -135,6 +135,9 @@ void GuiInteractiveController::stopGame() {
 	}
 
 	interactive_mode = InteractiveMode::NO_GAME;
+
+	current_game.reset();
+
 	refreshAll();
 }
 
@@ -433,15 +436,15 @@ void GuiInteractiveController::viewSolutionPaths() // this has to be improved!!!
 
 	auto permutated_color_vector = current_color_vector;
 
-	//for (std::size_t i{ 0 }; i < current_color_vector.colors.size(); ++i) {
-	//	permutated_color_vector.colors[i] = current_color_vector.colors[current_game->solver_begin_state().permutation()[i]];
-	//}
+	QStringList qStringList;
 
-	QStringList qStringList = current_game->optimal_solutions_list(permutated_color_vector);
+	if (current_game) {
+		qStringList = current_game->optimal_solutions_list(permutated_color_vector);
+	}
 
 	model->setStringList(qStringList);
 
-	mainWindow->ui->listView->setModel(model);
+	mainWindow->ui->listView->setModel(model); // not needed multiple times ###
 
 }
 
