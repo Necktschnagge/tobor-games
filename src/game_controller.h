@@ -261,7 +261,7 @@ public:
 		typename graphics_type::coloring coloring =
 			make_coloring(
 				permutated_color_vector,
-				std::make_integer_sequence<DRWGameController::pieces_quantity_type::int_type, DRWGameController::pieces_quantity_type::COUNT_ALL_PIECES>{}
+				std::make_integer_sequence<pieces_quantity_int_type, pieces_quantity_type::COUNT_ALL_PIECES>{}
 			);
 
 		std::string example_svg_string =
