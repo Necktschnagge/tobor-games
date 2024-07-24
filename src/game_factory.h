@@ -123,7 +123,7 @@ public:
 
 		using graphics = tobor::v1_1::tobor_graphics<world_type, positions_of_pieces_type_interactive>;
 
-		const auto world{ _product_generator.main().get_world() };
+		const auto world{ _product_generator.main().get_tobor_world() };
 
 		auto raw_cell_id_vector = board_generator_type::get_target_cell_id_vector(world);
 

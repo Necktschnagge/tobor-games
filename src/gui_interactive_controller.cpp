@@ -11,41 +11,28 @@
 #include <stdexcept>
 
 
-
-template<class X>
-inline void startReferenceGame22Helper(X& guiInteractiveController) {
-	if constexpr (!
-		(DRWGameController::pieces_quantity_type::COUNT_TARGET_PIECES == 1 && DRWGameController::pieces_quantity_type::COUNT_NON_TARGET_PIECES == 3)
-		) {
-		return;
-	}
-	else {
-
-
-		if (guiInteractiveController.interactive_mode != X::InteractiveMode::NO_GAME) {
-			return showErrorDialog("This action should not be available.");
-		}
-
-		guiInteractiveController.interactive_mode = X::InteractiveMode::GAME_INTERACTIVE;
-
-		guiInteractiveController.current_game = SpecialCaseGameFactory().create(); // put in history!
-
-		guiInteractiveController.current_color_vector = tobor::v1_0::color_vector::get_standard_coloring(DRWGameController::pieces_quantity_type::COUNT_ALL_PIECES);
-
-		guiInteractiveController.createColorActions();
-
-		guiInteractiveController.refreshAll();
-
-	}
-
-}
-
 /**
 *	@brief Starts a reference game where 22 steps are needed until goal
 *	is deprecated, just for development and debugging
 */
 void GuiInteractiveController::startReferenceGame22() {
-	return startReferenceGame22Helper(*this); // need to do it in some templated context so that if constexpr - else paths will not cause errors.
+	if (interactive_mode != InteractiveMode::NO_GAME) {
+		return showErrorDialog("This action should not be available.");
+	}
+
+	interactive_mode = InteractiveMode::GAME_INTERACTIVE;
+
+	auto fac = SpecialCaseGameFactory();
+
+	factory_history.emplace_back(fac.clone());
+
+	current_game.reset(fac.create());
+
+	current_color_vector = tobor::v1_0::color_vector::get_standard_coloring(static_cast<uint8_t>(current_game->count_pieces())); // standard coloring without permutation
+
+	createColorActions();
+
+	refreshAll();
 }
 
 void GuiInteractiveController::startGame() {
@@ -466,6 +453,7 @@ void GuiInteractiveController::highlightGeneratedTargetCells()
 		return showErrorDialog("Target cell markers not supported without running a game");
 	}
 
+	/*
 	auto child_game = dynamic_cast<DRWGameController<>*>(current_game.get());
 
 
@@ -485,10 +473,13 @@ void GuiInteractiveController::highlightGeneratedTargetCells()
 		world,
 		comfort_cell_id_vector
 	);
+	*/
 
-	mainWindow->viewSvgInMainView(svg_string);
+	std::pair<std::string, std::size_t> svg_and_count = factory_history.back()->svg_highlighted_targets();
+
+	mainWindow->viewSvgInMainView(svg_and_count.first);
 
 	QString m{ "Number of generator target cells:   " };
-	m += QString::number(comfort_cell_id_vector.size());
+	m += QString::number(svg_and_count.second);
 	mainWindow->ui->statusbar->showMessage(m);
 }
