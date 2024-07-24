@@ -87,17 +87,17 @@ public:
 		return _path.vector()[_solver_begin_index - 1];
 	}
 
-	virtual bool is_final() const { return current_state().is_final(_target_cell); }
+	virtual bool is_final() const override { return current_state().is_final(_target_cell); }
 
-	virtual bool is_initial() const { return _path.vector().size() == 1; }
+	virtual bool is_initial() const override { return _path.vector().size() == 1; }
 
 	const world_type& world() const { return _world; }
 
 	const cell_id_type& target_cell() const { return _target_cell; }
 
-	virtual std::size_t depth() const { return _path.vector().size() - 1; }
+	virtual std::size_t depth() const override { return _path.vector().size() - 1; }
 
-	virtual std::size_t count_pieces() const { return pieces_quantity_type::COUNT_ALL_PIECES; }
+	virtual std::size_t count_pieces() const override { return pieces_quantity_type::COUNT_ALL_PIECES; }
 
 	/* modifying */
 
@@ -134,7 +134,7 @@ public:
 	}
 
 
-	virtual void undo() {
+	virtual void undo() override {
 		if (_solver) return; // or stop solver if undoing out of solver (?)
 
 		if (_path.vector().size() > 1) {
@@ -155,24 +155,24 @@ public:
 		if (status_callback) status_callback("Successfully executed solver.");
 	}
 
-	virtual void reset_solver_steps() {
+	virtual void reset_solver_steps() override {
 		// go back to solver_begin_index
 		_path.vector().erase(_path.vector().begin() + _solver_begin_index, _path.vector().end());
 	}
 
-	virtual void stop_solver() {
+	virtual void stop_solver() override {
 		_solver_begin_index = 0;
 		_solver.reset();
 	}
 
-	virtual void select_solution(const std::size_t& index) {
+	virtual void select_solution(const std::size_t& index) override {
 		if (_solver) {
 			_solution_index = index;
 			reset_solver_steps();
 		}
 	}
 
-	virtual void move_by_solver(bool forward) {
+	virtual void move_by_solver(bool forward) override {
 		if (!_solver) return;
 
 		const auto index_next_move = _path.vector().size() - _solver_begin_index;
@@ -203,7 +203,7 @@ public:
 	}
 
 	// remove the QStringList here! ###
-	virtual QStringList optimal_solutions_list(const tobor::v1_0::color_vector& current_color_vector) const // this has to be improved!!!
+	virtual QStringList optimal_solutions_list(const tobor::v1_0::color_vector& current_color_vector) const override // this has to be improved!!!
 	{
 		if (!_solver) {
 			return QStringList();
@@ -234,10 +234,10 @@ public:
 	}
 
 
-	template<class T, pieces_quantity_type::int_type ... Index_Sequence>
+	template<class T, pieces_quantity_int_type ... Index_Sequence>
 	inline static graphics_coloring_type make_coloring(
 		T& permutated_color_vector,
-		std::integer_sequence<typename pieces_quantity_type::int_type, Index_Sequence...>
+		std::integer_sequence<pieces_quantity_int_type, Index_Sequence...>
 	) {
 		auto coloring = graphics_coloring_type{
 			(permutated_color_vector.colors[Index_Sequence].getSVGColorString()) ...

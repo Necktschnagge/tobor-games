@@ -72,7 +72,7 @@ private:
 
 	using pretty_evaluation_bigraph_type = tobor::v1_1::simple_state_bigraph<positions_of_pieces_type_interactive, piece_change_decoration_vector>;
 
-	using pretty_evaluation_bigraph_map_iterator_type = pretty_evaluation_bigraph_type::map_iterator_type;
+	using pretty_evaluation_bigraph_map_iterator_type = typename pretty_evaluation_bigraph_type::map_iterator_type;
 
 	using path_classificator_type = tobor::v1_1::path_classificator<positions_of_pieces_type_solver>;
 
