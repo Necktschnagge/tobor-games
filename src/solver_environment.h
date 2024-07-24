@@ -72,6 +72,8 @@ private:
 
 	using pretty_evaluation_bigraph_type = tobor::v1_1::simple_state_bigraph<positions_of_pieces_type_interactive, piece_change_decoration_vector>;
 
+	using pretty_evaluation_bigraph_map_iterator_type = pretty_evaluation_bigraph_type::map_iterator_type;
+
 	using path_classificator_type = tobor::v1_1::path_classificator<positions_of_pieces_type_solver>;
 
 	positions_of_pieces_type_interactive _initial_state;
@@ -92,7 +94,7 @@ private:
 	*	@details Purpose is counting min piece changes until final state.
 	*	Invariant that must be provided: If a state has labels then this state and all its direct and indirect successors must have been evaluated and their labels are set correclty.
 	*/
-	void build_prettiness_decoration(pretty_evaluation_bigraph_type& pretty_evaluation_bigraph, pretty_evaluation_bigraph_type::map_iterator_type map_iter_root, const move_engine_type& engine) {
+	void build_prettiness_decoration(pretty_evaluation_bigraph_type& pretty_evaluation_bigraph, pretty_evaluation_bigraph_map_iterator_type map_iter_root, const move_engine_type& engine) {
 		if (!map_iter_root->second.labels.empty()) {
 			return; // this map entry and all reachable direct and indirect successor states must have been decorated correctly
 		}

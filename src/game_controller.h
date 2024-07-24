@@ -19,16 +19,16 @@ public:
 
 	using engine_typeset = ClassicEngineTypeSet<Pieces_Quantity_T>;
 
-	using world_type = engine_typeset::world_type;
-	using move_engine_type = engine_typeset::move_engine_type;
-	using state_path_type_interactive = engine_typeset::state_path_type_interactive;
-	using move_path_type = engine_typeset::move_path_type;
-	using cell_id_type = engine_typeset::cell_id_type;
-	using positions_of_pieces_type_interactive = engine_typeset::positions_of_pieces_type_interactive;
-	using positions_of_pieces_type_solver = engine_typeset::positions_of_pieces_type_solver;
-	using piece_id_type = engine_typeset::piece_id_type;
-	using piece_move_type = engine_typeset::piece_move_type;
-	using pieces_quantity_type = engine_typeset::pieces_quantity_type;
+	using world_type = typename engine_typeset::world_type;
+	using move_engine_type = typename engine_typeset::move_engine_type;
+	using state_path_type_interactive = typename engine_typeset::state_path_type_interactive;
+	using move_path_type = typename engine_typeset::move_path_type;
+	using cell_id_type = typename engine_typeset::cell_id_type;
+	using positions_of_pieces_type_interactive = typename engine_typeset::positions_of_pieces_type_interactive;
+	using positions_of_pieces_type_solver = typename engine_typeset::positions_of_pieces_type_solver;
+	using piece_id_type = typename engine_typeset::piece_id_type;
+	using piece_move_type = typename engine_typeset::piece_move_type;
+	using pieces_quantity_type = typename engine_typeset::pieces_quantity_type;
 
 	using pieces_quantity_int_type = typename pieces_quantity_type::int_type;
 
