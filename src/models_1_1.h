@@ -580,6 +580,7 @@ namespace tobor {
 			template<class ... T>
 			inline void sort_pieces(T&... piece_ids) {
 				if constexpr ((!SORTED_TARGET_PIECES || COUNT_TARGET_PIECES <= 1) && (!SORTED_NON_TARGET_PIECES || COUNT_NON_TARGET_PIECES <= 1)) {
+					((void)piece_ids, ...);
 					return;
 				}
 				else {
