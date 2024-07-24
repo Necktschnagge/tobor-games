@@ -276,35 +276,6 @@ public:
 		return example_svg_string;
 	}
 
-	virtual std::string svg_highlighted_target_cells() const override {
-
-		// _world
-
-		// move this function to game factory!!!
-
-		auto raw_cell_id_vector = dynamic_cast<OriginalGameFactory<DRWGameController::pieces_quantity_type>*>(factory_history.back().get())->product_generator().main().get_target_cell_id_vector(world);
-
-		std::vector<DRWGameController::cell_id_type> comfort_cell_id_vector;
-
-		std::transform(raw_cell_id_vector.cbegin(), raw_cell_id_vector.cend(), std::back_inserter(comfort_cell_id_vector),
-			[&](const auto& raw_cell_id) {
-				return DRWGameController::cell_id_type::create_by_id(raw_cell_id, world);
-			}
-		);
-
-		std::string svg_string = graphics_type::draw_tobor_world_with_cell_markers(
-			world,
-			comfort_cell_id_vector
-		);
-
-		mainWindow->viewSvgInMainView(svg_string);
-
-		QString m{ "Number of generator target cells:   " };
-		m += QString::number(comfort_cell_id_vector.size());
-		mainWindow->ui->statusbar->showMessage(m);
-	}
-
-
 	virtual bool select_piece_by_piece_id(const std::size_t& piece_id) override {
 		if (_solver) return false;
 		if (!(piece_id < pieces_quantity_type::COUNT_ALL_PIECES)) return false;
@@ -324,8 +295,6 @@ public:
 			return false;
 
 		return select_piece_by_piece_id(iter - current_state().permutation().cbegin());
-
-		//setPieceId(static_cast<DRWGameController::pieces_quantity_type::int_type>(iter - current_game->current_state().permutation().cbegin()));
 	}
 
 	virtual std::size_t selected_piece_id() const override {

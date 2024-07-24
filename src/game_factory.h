@@ -4,6 +4,7 @@
 #include "world_generator_1_1.h"
 #include "svg_1_1.h"
 
+#include <string>
 #include <memory>
 
 class AbstractGameFactory {
@@ -122,7 +123,9 @@ public:
 
 		using graphics = tobor::v1_1::tobor_graphics<world_type, positions_of_pieces_type_interactive>;
 
-		auto raw_cell_id_vector = board_generator_type::get_target_cell_id_vector(_product_generator.main().get_world());
+		const auto world{ _product_generator.main().get_world() };
+
+		auto raw_cell_id_vector = board_generator_type::get_target_cell_id_vector(world);
 
 		std::vector<cell_id_type> comfort_cell_id_vector;
 
