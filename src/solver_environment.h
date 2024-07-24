@@ -168,7 +168,7 @@ private:
 		}
 	}
 
-	state_path_type_interactive get_representant(pretty_evaluation_bigraph_type& pretty_evaluation_bigraph, pretty_evaluation_bigraph_type::map_iterator_type map_iter_root
+	state_path_type_interactive get_representant(pretty_evaluation_bigraph_type& pretty_evaluation_bigraph, pretty_evaluation_bigraph_map_iterator_type map_iter_root
 		//, const move_engine_type& engine
 	) {
 		state_path_type_interactive result;
