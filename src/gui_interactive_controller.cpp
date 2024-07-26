@@ -141,110 +141,22 @@ void GuiInteractiveController::moveBySolver(bool forward)
 
 }
 
-//void GuiInteractiveController::setPieceId(const std::size_t& piece_id) {
-	/*
-	switch (interactive_mode)
-	{
-	case GuiInteractiveController::InteractiveMode::NO_GAME:
-		showErrorDialog("Cannot select a piece with no game opened.");
-		break;
-	case GuiInteractiveController::InteractiveMode::GAME_INTERACTIVE:
-		this->selected_piece_id = piece_id;
-		break;
-	case GuiInteractiveController::InteractiveMode::SOLVER_INTERACTIVE_STEPS:
-		showErrorDialog("Cannot select a piece while in Solver Mode."); // should never be reached (?), TODO disable acrions...
-		break;
-	default:
-		showErrorDialog(
-			QString("Undefined setPieceId for mode ") +
-			QString::number(static_cast<uint64_t>(interactive_mode))
-		);
-		break;
-	}
-	*/
-
-	//	refreshStatusbar();
-	//}
-
 void GuiInteractiveController::selectPieceByColorId(const std::size_t& color_id)
 {
 	const bool OK{ current_game->select_piece_by_color_id(color_id) };
 
 	if (!OK) throw std::logic_error("Illegal color_id.");
 
-	/*
-	auto iter = std::find(
-		current_game->current_state().permutation().cbegin(),
-		current_game->current_state().permutation().cend(),
-		color_id
-	);
-
-	if (iter == current_game->current_state().permutation().cend())
-		throw std::logic_error("Illegal color_id.");
-
-	setPieceId(static_cast<DRWGameController::pieces_quantity_type::int_type>(iter - current_game->current_state().permutation().cbegin()));
-	*/
-
 	refreshStatusbar();
-}
-
-
-void GuiInteractiveController::refreshSVG()
-{
-	if (current_game) {
-
-		tobor::v1_1::general_piece_shape_selection shape{ tobor::v1_1::general_piece_shape_selection::BALL };
-
-		if (mainWindow->shapeSelectionItems.getSelectedShape() == mainWindow->shapeSelectionItems.duck) {
-			shape = tobor::v1_1::general_piece_shape_selection::DUCK;
-		}
-
-		auto svg_as_string = current_game->svg(current_color_vector, shape);
-
-		mainWindow->viewSvgInMainView(svg_as_string);
-	}
-	else {
-		QGraphicsScene* scene = new QGraphicsScene();
-		mainWindow->ui->graphicsView->setScene(scene);
-	}
 }
 
 void GuiInteractiveController::refreshMenuButtonEnable()
 {
-	if (!current_game) {
-		mainWindow->ui->actionNewGame->setEnabled(true);
-		mainWindow->ui->actionStopGame->setEnabled(false);
-		mainWindow->ui->actionStart_Solver->setEnabled(false);
-		mainWindow->ui->actionStop_Solver->setEnabled(false);
-		mainWindow->ui->actionMoveBack->setEnabled(false);
-		mainWindow->ui->menuSelect_Piece->setEnabled(false);
-		mainWindow->ui->menuMove->setEnabled(false);
-		mainWindow->ui->menuPlaySolver->setEnabled(false);
-		return;
-	}
-
-	if (current_game->solver()) {
-		mainWindow->ui->actionNewGame->setEnabled(false);
-		mainWindow->ui->actionStopGame->setEnabled(true);
-		mainWindow->ui->actionStart_Solver->setEnabled(false);
-		mainWindow->ui->actionStop_Solver->setEnabled(true);
-		mainWindow->ui->actionMoveBack->setEnabled(!current_game->is_initial());
-		mainWindow->ui->menuSelect_Piece->setEnabled(false);
-		mainWindow->ui->menuMove->setEnabled(false);
-		mainWindow->ui->menuPlaySolver->setEnabled(true);
-		return;
-	}
-
-	// else interactive game
-	mainWindow->ui->actionNewGame->setEnabled(false);
-	mainWindow->ui->actionStopGame->setEnabled(true);
-	mainWindow->ui->actionStart_Solver->setEnabled(true);
-	mainWindow->ui->actionStop_Solver->setEnabled(false);
-	mainWindow->ui->actionMoveBack->setEnabled(!current_game->is_initial());
-	mainWindow->ui->menuSelect_Piece->setEnabled(true);
-	mainWindow->ui->menuMove->setEnabled(true);
-	mainWindow->ui->menuPlaySolver->setEnabled(false);
-
+	if (!current_game) return mainWindow->setMenuButtonEnableForNoGame();
+	
+	if (current_game->solver()) return mainWindow->setMenuButtonEnableForSolverGame();
+	
+	return mainWindow->setMenuButtonEnableForInteractiveGame(); 
 }
 
 void GuiInteractiveController::refreshStatusbar() {
@@ -255,15 +167,14 @@ void GuiInteractiveController::refreshStatusbar() {
 	else {
 		mainWindow->statusbarItems.setSelectedPiece(Qt::darkGray);
 	}
-	refreshNumberOfSteps();
+	mainWindow->refreshNumberOfSteps();
 }
 
-void GuiInteractiveController::refreshNumberOfSteps() {
-	QString number_of_steps;
-	if (current_game) {
-		number_of_steps = QString::number(current_game->depth());
-	}
-	mainWindow->statusbarItems.stepsValue->setText(number_of_steps);
+void GuiInteractiveController::refreshAll() {
+	mainWindow->refreshSVG();
+	refreshStatusbar();
+	refreshMenuButtonEnable();
+	viewSolutionPaths();
 }
 
 void GuiInteractiveController::movePiece(const tobor::v1_0::direction& direction) {

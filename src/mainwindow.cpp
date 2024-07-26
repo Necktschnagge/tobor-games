@@ -196,12 +196,76 @@ void MainWindow::on_actionLicense_Information_triggered()
 
 void MainWindow::on_listView_doubleClicked(const QModelIndex& index)
 {
-	//QString m{"double-clicked ListView on" };
-	//m+=QString::number(index.row());
-	//ui->statusbar->showMessage(m);
-
 	guiInteractiveController.selectSolution(index.row());
 	guiInteractiveController.refreshAll();
+}
+
+void MainWindow::setMenuButtonEnableForNoGame()
+{
+	ui->actionNewGame->setEnabled(true);
+	ui->actionStopGame->setEnabled(false);
+	ui->actionStart_Solver->setEnabled(false);
+	ui->actionStop_Solver->setEnabled(false);
+	ui->actionMoveBack->setEnabled(false);
+	ui->menuSelect_Piece->setEnabled(false);
+	ui->menuMove->setEnabled(false);
+	ui->menuPlaySolver->setEnabled(false);
+}
+
+void MainWindow::setMenuButtonEnableForInteractiveGame()
+{
+	ui->actionNewGame->setEnabled(false);
+	ui->actionStopGame->setEnabled(true);
+	ui->actionStart_Solver->setEnabled(true);
+	ui->actionStop_Solver->setEnabled(false);
+	ui->actionMoveBack->setEnabled(!guiInteractiveController.currentGame()->is_initial());
+	ui->menuSelect_Piece->setEnabled(true);
+	ui->menuMove->setEnabled(true);
+	ui->menuPlaySolver->setEnabled(false);
+}
+
+void MainWindow::setMenuButtonEnableForSolverGame()
+{
+	ui->actionNewGame->setEnabled(false);
+	ui->actionStopGame->setEnabled(true);
+	ui->actionStart_Solver->setEnabled(false);
+	ui->actionStop_Solver->setEnabled(true);
+	ui->actionMoveBack->setEnabled(!guiInteractiveController.currentGame()->is_initial());
+	ui->menuSelect_Piece->setEnabled(false);
+	ui->menuMove->setEnabled(false);
+	ui->menuPlaySolver->setEnabled(true);
+}
+
+void MainWindow::refreshSVG()
+{
+	auto game = guiInteractiveController.currentGame();
+	if (game) {
+
+		tobor::v1_1::general_piece_shape_selection shape{ tobor::v1_1::general_piece_shape_selection::BALL };
+
+		if (shapeSelectionItems.getSelectedShape() == shapeSelectionItems.duck) {
+			shape = tobor::v1_1::general_piece_shape_selection::DUCK;
+		}
+
+		auto svg_as_string = game->svg(guiInteractiveController.current_color_vector, shape);
+
+		viewSvgInMainView(svg_as_string);
+	}
+	else {
+		QGraphicsScene* scene = new QGraphicsScene();
+		ui->graphicsView->setScene(scene);
+	}
+}
+
+void MainWindow::refreshNumberOfSteps()
+{
+	auto game = guiInteractiveController.currentGame();
+
+	QString number_of_steps;
+	if (game) {
+		number_of_steps = QString::number(game->depth());
+	}
+	statusbarItems.stepsValue->setText(number_of_steps);
 }
 
 void MainWindow::StatusbarItems::init(QStatusBar* statusbar) {

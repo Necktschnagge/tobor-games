@@ -128,6 +128,15 @@ private Q_SLOTS:
 
 	void on_listView_doubleClicked(const QModelIndex& index);
 
+
+	void setMenuButtonEnableForNoGame();
+	void setMenuButtonEnableForInteractiveGame();
+	void setMenuButtonEnableForSolverGame();
+
+
+
+	void refreshSVG();
+	void refreshNumberOfSteps();
 private:
 	Ui::MainWindow* ui;
 	GuiInteractiveController guiInteractiveController;

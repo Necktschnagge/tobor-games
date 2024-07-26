@@ -98,20 +98,11 @@ public:
 
 	void selectPieceByColorId(const std::size_t& color_id);
 
-	void refreshNumberOfSteps();
-
-	void refreshSVG();
-
 	void refreshMenuButtonEnable();
 
 	void refreshStatusbar();
 
-	inline void refreshAll() {
-		refreshSVG();
-		refreshStatusbar();
-		refreshMenuButtonEnable();
-		viewSolutionPaths();
-	}
+	void refreshAll();
 
 	void movePiece(const tobor::v1_0::direction& direction);
 
