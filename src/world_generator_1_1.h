@@ -91,7 +91,7 @@ namespace tobor {
 				};
 
 			private:
-				// standard product_generator:
+				// standard generator:
 				// 4 times: select a quadrant
 				// 6 permutations
 				// 4 board rotation
@@ -129,8 +129,8 @@ namespace tobor {
 					return gcd(y % x, x);
 				}
 
-				//static_assert(gcd(STANDARD_GENERATOR, CYCLIC_GROUP_SIZE) == 1, "check product_generator");
-				//static_assert(gcd(SECOND_GENERATOR, CYCLIC_GROUP_SIZE) == 1, "check product_generator");
+				//static_assert(gcd(STANDARD_GENERATOR, CYCLIC_GROUP_SIZE) == 1, "check generator");
+				//static_assert(gcd(SECOND_GENERATOR, CYCLIC_GROUP_SIZE) == 1, "check generator");
 
 				inline uint64_t& increment_generator_until_gcd_1() {
 					while (gcd(generator, CYCLIC_GROUP_SIZE) != 1) {
@@ -491,7 +491,7 @@ namespace tobor {
 				positions_of_pieces_type get_positions_of_pieces(const world_type& world) const {
 
 					if (world.count_cells() != BOARD_SIZE) {
-						throw board_size_condition_violation(board_size_condition_violation::reason_code::BOARD_SIZE); 	// write a test for board product_generator to always fulfill the condition !
+						throw board_size_condition_violation(board_size_condition_violation::reason_code::BOARD_SIZE); 	// write a test for board generator to always fulfill the condition !
 					}
 
 					if (world.blocked_cells() != BLOCKED_CELLS) {
@@ -598,14 +598,14 @@ namespace tobor {
 					return side_generator;
 				}
 
-				// add counter / product_generator here if wanted. for random access
+				// add counter / generator here if wanted. for random access
 
 
-				// main Group product_generator size M
+				// main Group generator size M
 
-				// side Group product_generator size N
+				// side Group generator size N
 
-				// product_generator standard 1
+				// generator standard 1
 
 				// counter k in 0..M*N
 
@@ -654,7 +654,7 @@ namespace tobor {
 			};
 
 			class dynamic_generator {
-				// select a product_generator, an input, give generated board as output.
+				// select a generator, an input, give generated board as output.
 			};
 
 		}
