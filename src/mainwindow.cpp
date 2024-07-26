@@ -8,7 +8,6 @@
 #include "custom_traits.h"
 
 #include "./ui_mainwindow.h"
-#include "gui_interactive_controller.h"
 #include "solver_1_1.h"
 
 #include "spdlog/spdlog.h"
@@ -25,11 +24,14 @@
 
 // please add a enable all actions in menu to developer menu!
 
-MainWindow::MainWindow(QWidget* parent)
-	: QMainWindow(parent)
-	, ui(new Ui::MainWindow),
-	guiInteractiveController(this),
-	controlKeyEventAgent(this)
+MainWindow::MainWindow(QWidget* parent) :
+	QMainWindow(parent),
+	ui(new Ui::MainWindow),
+	controlKeyEventAgent(this),
+	current_game(),
+	factory_history(),
+	next_factory_1(),
+	factory_select(2)
 {
 	ui->setupUi(this);
 	statusbarItems.init(ui->statusbar);
@@ -55,6 +57,30 @@ MainWindow::MainWindow(QWidget* parent)
 		logger->info("QLocale: " + QLocale().name().toStdString());
 		logger->info("Qt Version: " + std::string(qVersion()));
 	*/
+
+	std::random_device rd;
+
+	generator.seed(rd());
+
+	next_factory_1.emplace_back(new OriginalGameFactory<tobor::v1_1::pieces_quantity<uint8_t, 1, 1>>());
+	next_factory_1.emplace_back(new OriginalGameFactory<tobor::v1_1::pieces_quantity<uint8_t, 1, 2>>());
+	next_factory_1.emplace_back(new OriginalGameFactory<tobor::v1_1::pieces_quantity<uint8_t, 1, 3>>());
+	next_factory_1.emplace_back(new OriginalGameFactory<tobor::v1_1::pieces_quantity<uint8_t, 1, 4>>());
+	next_factory_1.emplace_back(new OriginalGameFactory<tobor::v1_1::pieces_quantity<uint8_t, 1, 5>>());
+	next_factory_1.emplace_back(new OriginalGameFactory<tobor::v1_1::pieces_quantity<uint8_t, 1, 6>>());
+	next_factory_1.emplace_back(new OriginalGameFactory<tobor::v1_1::pieces_quantity<uint8_t, 1, 7>>());
+
+
+	for (auto& factory : next_factory_1) {
+
+		std::uniform_int_distribution<uint64_t> distribution_on_uint64_board(0, factory->world_generator_group_size());
+		std::uniform_int_distribution<uint64_t> distribution_on_uint64_pieces(0, factory->state_generator_group_size());
+
+		factory->set_world_generator_counter(distribution_on_uint64_board(generator));
+		factory->set_state_generator_counter(distribution_on_uint64_pieces(generator));
+
+	}
+
 }
 
 MainWindow::~MainWindow()
@@ -64,7 +90,7 @@ MainWindow::~MainWindow()
 
 void MainWindow::startSolver()
 {
-	auto game = guiInteractiveController.currentGame();
+	auto game = current_game;
 
 	if (!game) {
 		return showErrorDialog("Cannot start solver with no game opened.");
@@ -82,7 +108,7 @@ void MainWindow::startSolver()
 
 void MainWindow::stopSolver()
 {
-	auto game = guiInteractiveController.currentGame();
+	auto game = current_game;
 
 	if (!game) {
 		return showErrorDialog("Cannot start solver with no game opened.");
@@ -98,7 +124,7 @@ void MainWindow::stopGame()
 	disconnectInputConnections();
 	getSelectPieceSubMenu()->clear();
 
-	auto game = guiInteractiveController.currentGame();
+	auto game = current_game;
 
 	if (!game) {
 		return showErrorDialog("This action should not be available.");
@@ -106,7 +132,143 @@ void MainWindow::stopGame()
 
 	game.reset();
 
+	statusBar()->showMessage("Game stopped.");
 	refreshAll();
+}
+
+void MainWindow::startGame()
+{
+	auto game = current_game;
+
+	// when editing, also edit inline void startReferenceGame22Helper(X& guiInteractiveController) and maybe use a new fascade for creating a new game
+	if (game) {
+		return showErrorDialog("This action should not be available.");
+	}
+
+	auto& fac{ next_factory_1[factory_select] };
+
+	factory_history.emplace_back(fac->clone());
+
+	game.reset(fac->create());
+
+
+	fac->increment();
+
+	/// old stuff...
+
+	/*
+	auto& boardGenerator{ current_factory->.main() };
+
+	auto& initialStateGenerator{ productWorldGenerator.side() };
+
+	auto tup = boardGenerator.split_element();
+	(void)tup;
+	auto x = std::get<0>(tup);
+	auto a = x % 4; x /= 4;
+	auto b = x % 4; x /= 4;
+	auto c = x % 4; x /= 4;
+	auto d = x % 4; x /= 4;
+	auto e = x;
+	qDebug() << a << "   :   " << b << "   :   " << c << "   :   " << d << "   :   " << e << "   :   " << std::get<1>(tup) << "   :   " << std::get<2>(tup) << "\n";
+	qDebug() << boardGenerator.get_counter() << "\n";
+
+	auto world = boardGenerator.get_tobor_world();
+
+	auto target = boardGenerator.get_target_cell();
+
+	std::vector<DRWGameController::pieces_quantity_type::int_type> not_yet_permutated;
+
+	for (DRWGameController::pieces_quantity_type::int_type i = 0; i < DRWGameController::pieces_quantity_type::COUNT_ALL_PIECES; ++i) {
+		not_yet_permutated.push_back(i);
+	}
+
+	std::vector<DRWGameController::pieces_quantity_type::int_type> colorPermutation = not_yet_permutated;
+
+	if constexpr (DRWGameController::pieces_quantity_type::COUNT_ALL_PIECES == 4) {
+		colorPermutation = boardGenerator.obtain_standard_4_coloring_permutation(not_yet_permutated);
+	}
+	*/
+
+	current_color_vector = tobor::v1_0::color_vector::get_standard_coloring(static_cast<uint8_t>(game->count_pieces())); // standard coloring without permutation
+
+	createColorActions();
+
+	statusBar()->showMessage("Game started.");
+	refreshAll();
+}
+
+void MainWindow::startReferenceGame22()
+{
+	if (current_game) {
+		return showErrorDialog("This action should not be available.");
+	}
+
+	auto fac = SpecialCaseGameFactory();
+
+	factory_history.emplace_back(fac.clone());
+
+	current_game.reset(fac.create());
+
+	current_color_vector = tobor::v1_0::color_vector::get_standard_coloring(static_cast<uint8_t>(current_game->count_pieces())); // standard coloring without permutation
+
+	createColorActions();
+
+	refreshAll();
+}
+
+void MainWindow::selectPieceByColorId(const std::size_t& color_id)
+{
+	if (!current_game) {
+		return showErrorDialog("Cannot select piece with no game opened.");
+	}
+	const bool OK{ current_game->select_piece_by_color_id(color_id) };
+	if (!OK) throw std::logic_error("Illegal color_id.");
+	refreshStatusbar();
+}
+
+void MainWindow::movePiece(const tobor::v1_0::direction& direction)
+{
+	if (!current_game) {
+		showErrorDialog("Cannot move a piece with no game opened.");
+		return;
+	}
+
+	if (current_game->solver()) {
+		if ((direction == tobor::v1_0::direction::EAST()) || (direction == tobor::v1_0::direction::WEST())) {
+			current_game->move_by_solver(direction == tobor::v1_0::direction::EAST());
+			refreshAll();
+		}
+		// else ignore input
+		return;
+	}
+
+	current_game->move_selected(direction);
+	statusBar()->showMessage(QString::fromStdString(std::to_string(current_game->selected_piece_color_id())));
+	refreshAll();
+}
+
+void MainWindow::undo()
+{
+	if (!current_game) {
+		return showErrorDialog("Cannot undo with no game opened.");
+	}
+	if (current_game->solver()) {
+		return showErrorDialog("Cannot yet undo in solver mode.");
+	}
+	current_game->undo();
+	refreshAll();
+}
+
+void MainWindow::selectSolution(std::size_t index)
+{
+	if (!current_game) {
+		return showErrorDialog("Cannot select solution with no game opened.");
+	}
+	if (!current_game->solver()) {
+		return showErrorDialog("Cannot select solution without running solver.");
+	}
+
+	current_game->select_solution(index);
 }
 
 void MainWindow::on_actionshowSVG_triggered()
@@ -127,7 +289,7 @@ void MainWindow::on_actionshowSVG_triggered()
 }
 
 void MainWindow::on_actionHighlightGeneratedTargetCells_triggered() {
-	guiInteractiveController.highlightGeneratedTargetCells();
+	highlightGeneratedTargetCells();
 }
 
 void MainWindow::on_actionAbout_triggered()
@@ -164,50 +326,45 @@ void MainWindow::viewSvgInMainView(const QString& svg_string)
 }
 
 void MainWindow::on_actionNewGame_triggered() {
-	guiInteractiveController.startGame();
-	statusBar()->showMessage("Game started.");
-	//statusbarItems.stepsKey->show();
-	//statusbarItems.stepsValue->show();
+	startGame();
 }
 
 void MainWindow::on_actionStopGame_triggered() {
 	stopGame();
-	statusBar()->showMessage("Game stopped.");
 }
 
 void MainWindow::on_actionMoveBack_triggered()
 {
-	guiInteractiveController.undo();
+	undo();
 }
 
 void MainWindow::on_actionNORTH_triggered()
 {
+	movePiece(tobor::v1_0::direction::NORTH());
 	statusBar()->showMessage("Went north.");
-	guiInteractiveController.movePiece(tobor::v1_0::direction::NORTH());
 }
 
 
 void MainWindow::on_actionEAST_triggered()
 {
+	movePiece(tobor::v1_0::direction::EAST());
 	statusBar()->showMessage("Went east.");
-	guiInteractiveController.movePiece(tobor::v1_0::direction::EAST());
 
 }
 
 
 void MainWindow::on_actionSOUTH_triggered()
 {
+	movePiece(tobor::v1_0::direction::SOUTH());
 	statusBar()->showMessage("Went south.");
-	guiInteractiveController.movePiece(tobor::v1_0::direction::SOUTH());
 
 }
 
 
 void MainWindow::on_actionWEST_triggered()
 {
+	movePiece(tobor::v1_0::direction::WEST());
 	statusBar()->showMessage("Went west.");
-	guiInteractiveController.movePiece(tobor::v1_0::direction::WEST());
-
 }
 
 void MainWindow::on_actionForward_triggered()
@@ -241,7 +398,7 @@ void MainWindow::on_actionLicense_Information_triggered()
 
 void MainWindow::on_listView_doubleClicked(const QModelIndex& index)
 {
-	guiInteractiveController.selectSolution(index.row());
+	selectSolution(index.row());
 	refreshAll();
 }
 
@@ -263,7 +420,7 @@ void MainWindow::setMenuButtonEnableForInteractiveGame()
 	ui->actionStopGame->setEnabled(true);
 	ui->actionStart_Solver->setEnabled(true);
 	ui->actionStop_Solver->setEnabled(false);
-	ui->actionMoveBack->setEnabled(!guiInteractiveController.currentGame()->is_initial());
+	ui->actionMoveBack->setEnabled(!current_game->is_initial());
 	ui->menuSelect_Piece->setEnabled(true);
 	ui->menuMove->setEnabled(true);
 	ui->menuPlaySolver->setEnabled(false);
@@ -275,15 +432,40 @@ void MainWindow::setMenuButtonEnableForSolverGame()
 	ui->actionStopGame->setEnabled(true);
 	ui->actionStart_Solver->setEnabled(false);
 	ui->actionStop_Solver->setEnabled(true);
-	ui->actionMoveBack->setEnabled(!guiInteractiveController.currentGame()->is_initial());
+	ui->actionMoveBack->setEnabled(!current_game->is_initial());
 	ui->menuSelect_Piece->setEnabled(false);
 	ui->menuMove->setEnabled(false);
 	ui->menuPlaySolver->setEnabled(true);
 }
 
+void MainWindow::createColorActions()
+{
+	QMenu* sub = ui->menuSelect_Piece;
+
+	sub->clear();
+	// actions are deleted,
+	// according to QSignalMapper's docs, the map entries for these objects will be deleted on their destruction.
+
+
+	for (std::size_t i = 0; i < current_color_vector.colors.size(); ++i) {
+
+		auto action = sub->addAction(
+			current_color_vector.colors[i].UPPERCASE_display_string_with_underscore()
+		);
+		// TODO need to add shortcuts (?) STRG+R ...
+
+		inputConnections.push_back(
+			QObject::connect(action, &QAction::triggered, signalMapper, qOverload<>(&QSignalMapper::map), Qt::AutoConnection)
+		);
+		//QObject::connect(action, &QAction::triggered, mainWindow->signalMapper, static_cast<void (QSignalMapper::*)()>(&QSignalMapper::map), Qt::AutoConnection);
+
+		signalMapper->setMapping(action, static_cast<int>(i));
+	}
+}
+
 void MainWindow::refreshSVG()
 {
-	auto game = guiInteractiveController.currentGame();
+	auto game = current_game;
 	if (game) {
 
 		tobor::v1_1::general_piece_shape_selection shape{ tobor::v1_1::general_piece_shape_selection::BALL };
@@ -292,7 +474,7 @@ void MainWindow::refreshSVG()
 			shape = tobor::v1_1::general_piece_shape_selection::DUCK;
 		}
 
-		auto svg_as_string = game->svg(guiInteractiveController.current_color_vector, shape);
+		auto svg_as_string = game->svg(current_color_vector, shape);
 
 		viewSvgInMainView(svg_as_string);
 	}
@@ -304,7 +486,7 @@ void MainWindow::refreshSVG()
 
 void MainWindow::refreshNumberOfSteps()
 {
-	auto game = guiInteractiveController.currentGame();
+	auto game = current_game;
 
 	QString number_of_steps;
 	if (game) {
@@ -315,7 +497,7 @@ void MainWindow::refreshNumberOfSteps()
 
 void MainWindow::refreshMenuButtonEnable()
 {
-	auto game = guiInteractiveController.currentGame();
+	auto game = current_game;
 
 	if (!game) return setMenuButtonEnableForNoGame();
 
@@ -326,10 +508,10 @@ void MainWindow::refreshMenuButtonEnable()
 
 void MainWindow::refreshStatusbar()
 {
-	auto game = guiInteractiveController.currentGame();
+	auto game = current_game;
 
 	if (game) {
-		auto current_color = guiInteractiveController.current_color_vector.colors[game->selected_piece_color_id()].getQColor();
+		auto current_color = current_color_vector.colors[game->selected_piece_color_id()].getQColor();
 		statusbarItems.setSelectedPiece(current_color);
 	}
 	else {
@@ -342,14 +524,14 @@ void MainWindow::refreshSolutionPaths()
 {
 	static QStringListModel* model{ nullptr };
 
-	auto game = guiInteractiveController.currentGame();
+	auto game = current_game;
 
 
 	if (model == nullptr) {
 		model = new QStringListModel();
 	}
 
-	auto permutated_color_vector = guiInteractiveController.current_color_vector;
+	auto permutated_color_vector = current_color_vector;
 
 	QStringList qStringList;
 
@@ -360,6 +542,20 @@ void MainWindow::refreshSolutionPaths()
 	model->setStringList(qStringList);
 
 	ui->listView->setModel(model); // not needed multiple times ###
+}
+
+void MainWindow::highlightGeneratedTargetCells()
+{
+	if (!current_game) {
+		return showErrorDialog("Target cell markers not supported without running a game");
+	}
+	std::pair<std::string, std::size_t> svg_and_count = factory_history.back()->svg_highlighted_targets();
+
+	viewSvgInMainView(svg_and_count.first);
+
+	QString m{ "Number of generator target cells:   " };
+	m += QString::number(svg_and_count.second);
+	ui->statusbar->showMessage(m);
 }
 
 void MainWindow::refreshAll()
@@ -440,7 +636,7 @@ QMenu* MainWindow::getSelectPieceSubMenu() {
 }
 
 void MainWindow::selectPieceByColor(int index) {
-	guiInteractiveController.selectPieceByColorId(index); // where to check range correctness? SignalMapper should not fire an int greater than color vector, make some additional check here (or somewhere else?)
+	selectPieceByColorId(index); // where to check range correctness? SignalMapper should not fire an int greater than color vector, make some additional check here (or somewhere else?)
 }
 
 
@@ -470,7 +666,7 @@ void MainWindow::on_actionEnableAllMenuBarItems_triggered()
 
 void MainWindow::on_action22ReferenceGame_triggered()
 {
-	guiInteractiveController.startReferenceGame22();
+	startReferenceGame22();
 }
 
 void MainWindow::ShapeSelectionItems::createInsideQMenu(MainWindow* mainWindow, QMenu* qMenu) {

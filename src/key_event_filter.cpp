@@ -2,6 +2,7 @@
 
 #include "mainwindow.h"
 
+#include "models_1_1.h"
 
 
 #include<QKeyEvent>
@@ -30,34 +31,34 @@ bool ControlKeyEventAgent::eventFilter(QObject* object, QEvent* e)
 	// found a keyEvent
 	const auto key{ keyEvent->key() };
 
-	auto game = mainWindow->guiInteractiveController.currentGame();
+	auto game = mainWindow->current_game;
 
 	if (!game) {
 		return false; //pass-through
 	}
 
 
-	if (!mainWindow->guiInteractiveController.currentGame()->solver()) {
+	if (!mainWindow->current_game->solver()) {
 
 		// check for all arrow keys
 		switch (key) {
 		case Qt::Key_Up:
-			mainWindow->guiInteractiveController.movePiece(tobor::v1_0::direction::NORTH());
+			mainWindow->movePiece(tobor::v1_0::direction::NORTH());
 			return true; //absorbing eventcase
 		case Qt::Key_Down:
-			mainWindow->guiInteractiveController.movePiece(tobor::v1_0::direction::SOUTH());
+			mainWindow->movePiece(tobor::v1_0::direction::SOUTH());
 			return true; //absorbing eventcase
 		case Qt::Key_Right:
-			mainWindow->guiInteractiveController.movePiece(tobor::v1_0::direction::EAST());
+			mainWindow->movePiece(tobor::v1_0::direction::EAST());
 			return true; //absorbing eventcase
 		case Qt::Key_Left:
-			mainWindow->guiInteractiveController.movePiece(tobor::v1_0::direction::WEST());
+			mainWindow->movePiece(tobor::v1_0::direction::WEST());
 			return true; //absorbing event
 		default:
 			break;
 		}
 
-		const auto& raw_color_vector{ mainWindow->guiInteractiveController.current_color_vector.colors };
+		const auto& raw_color_vector{ mainWindow->current_color_vector.colors };
 
 		if (Qt::Key_A <= key && key <= Qt::Key_Z) {
 			for (std::size_t i = 0; i < raw_color_vector.size(); ++i) {
@@ -66,7 +67,7 @@ bool ControlKeyEventAgent::eventFilter(QObject* object, QEvent* e)
 				const int input_char_distance{ key - Qt::Key_A };
 
 				if (color_char_distance == input_char_distance) {
-					mainWindow->guiInteractiveController.selectPieceByColorId(i);
+					mainWindow->selectPieceByColorId(i);
 					return true; //absorbing event
 				}
 			}
@@ -76,7 +77,7 @@ bool ControlKeyEventAgent::eventFilter(QObject* object, QEvent* e)
 			const int input_char_distance{ key - Qt::Key_1 };
 
 			if (static_cast<std::size_t>(input_char_distance) < raw_color_vector.size()) {
-				mainWindow->guiInteractiveController.selectPieceByColorId(static_cast<std::size_t>(input_char_distance));
+				mainWindow->selectPieceByColorId(static_cast<std::size_t>(input_char_distance));
 				return true; //absorbing event
 			}
 		}
@@ -92,11 +93,11 @@ bool ControlKeyEventAgent::eventFilter(QObject* object, QEvent* e)
 		// check for all arrow keys
 	switch (key) {
 	case Qt::Key_Right:
-		mainWindow->guiInteractiveController.moveBySolver(true);
+		mainWindow->current_game->move_by_solver(true);
 		mainWindow->refreshAll();
 		return true; //absorbing eventcase
 	case Qt::Key_Left:
-		mainWindow->guiInteractiveController.moveBySolver(false);
+		mainWindow->current_game->move_by_solver(false);
 		mainWindow->refreshAll();
 		return true; //absorbing event
 	default:

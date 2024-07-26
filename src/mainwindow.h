@@ -2,10 +2,10 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include "gui_interactive_controller.h"
 #include "key_event_filter.h"
 
-
+#include "game_controller.h"
+#include "game_factory.h"
 
 #include <QMainWindow>
 #include <QSvgRenderer>
@@ -17,6 +17,7 @@
 #include <QActionGroup> 
 
 #include <memory>
+#include <random>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -93,10 +94,22 @@ public:
 
 private:
 	// concrete actions executed via slots or via direct calls
-	void startSolver();
-	void stopSolver();
 
+	// game
+	void startGame();
+	void startReferenceGame22();
 	void stopGame();
+
+	// solver
+	void startSolver();
+	void selectSolution(std::size_t index);
+	void stopSolver();
+	
+	// game moves
+	void selectPieceByColorId(const std::size_t& color_id);
+	void movePiece(const tobor::v1_0::direction& direction);
+	void undo();
+
 
 
 private Q_SLOTS:
@@ -127,6 +140,8 @@ private:
 	void setMenuButtonEnableForInteractiveGame();
 	void setMenuButtonEnableForSolverGame();
 
+	void createColorActions();
+
 
 	// Refresh UI Elements / Views
 	void refreshSVG();
@@ -134,12 +149,13 @@ private:
 	void refreshMenuButtonEnable();;
 	void refreshStatusbar();
 	void refreshSolutionPaths();
+	
+	void highlightGeneratedTargetCells();
 
 private:
 
 	Ui::MainWindow* ui;
-	GuiInteractiveController guiInteractiveController;
-	friend class GuiInteractiveController; // try to remove friends here ###
+
 	friend class ControlKeyEventAgent;
 
 	SvgViewToolchain svgViewToolchain;
@@ -168,6 +184,19 @@ private:
 		}
 		inputConnections.clear();
 	}
+
+	std::shared_ptr<AbstractGameController> current_game; /// check all positions where used!!!! #######
+
+	std::vector<std::shared_ptr<AbstractGameFactory>> factory_history;
+
+	std::vector<std::unique_ptr<AbstractGameFactory>> next_factory_1;
+
+	std::size_t factory_select;
+
+	std::mt19937 generator;
+
+	tobor::v1_0::color_vector current_color_vector;
+
 
 private Q_SLOTS:
 
