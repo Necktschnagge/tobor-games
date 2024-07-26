@@ -248,16 +248,6 @@ private:
 			}
 		}
 
-		/*
-		if (status_callback) status_callback("Prettiness sorting inside equivalence classes...");
-		for (auto& equivalence_class : partitioned_path_pairs) {
-			std::sort(equivalence_class.begin(), equivalence_class.end(), [](const auto& pair_l, const auto& pair_r) { return move_path_type::antiprettiness_relation(pair_l.second, pair_r.second); });
-		}
-		for (const auto& vec : partitioned_path_pairs) {
-			_optimal_solutions.push_back(vec[0]);
-		}
-		*/
-
 		if (status_callback) status_callback("Finding prettiest element inside each equivalence class...");
 		for (auto& equivalence_class : partitioned_path_pairs) {
 			auto min_iter = std::min_element(equivalence_class.begin(), equivalence_class.end(), [](const auto& pair_l, const auto& pair_r) { return move_path_type::antiprettiness_relation(pair_l.second, pair_r.second); });
@@ -310,8 +300,6 @@ private:
 		}
 	}
 
-
-	// call run from constructor########
 	inline uint8_t run_solver_toolchain(
 		std::function<void(const std::string&)> status_callback = nullptr,
 		std::size_t MAX_DEPTH = distance_exploration_type::SIZE_TYPE_MAX,
@@ -369,7 +357,7 @@ public:
 	*	@brief Returns an error code telling the reason why no path to target cell was found by solver.
 	*	@details 0 -> No Error, 1 -> Reached MAX_DEPTH, 2 -> Entirely explored all reachable states
 	*/
-	uint8_t status_code() const {
+	[[nodiscard]] uint8_t status_code() const {
 		return _status_code;
 	}
 
@@ -377,11 +365,15 @@ public:
 	*	@brief Returns an optimal solution state path.
 	*	@param index has to be less than \p solution_size()
 	*/
-	state_path_type_interactive get_solution_state_path(std::size_t index) const {
+	[[nodiscard]] state_path_type_interactive get_solution_state_path(std::size_t index) const {
 		return _optimal_solutions[index].first;
 	}
 
-	optimal_solutions_vector optimal_solutions() const {
+	/**
+	*	@brief Returns a vector with a representant for each equivalence class of all optimal solutions. The representant is a pair of augmented state path and move path.
+	*	@details Note, unless https://github.com/Necktschnagge/tobor-games/issues/167 has been fixed,equivalence classes arising from crossing two other equivalence classes may be omitted as long as we cover all segments of optimal solutions.
+	*/
+	[[nodiscard]] optimal_solutions_vector optimal_solutions() const {
 		return _optimal_solutions;
 	}
 };
