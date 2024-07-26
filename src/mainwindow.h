@@ -97,7 +97,7 @@ private Q_SLOTS:
 	void on_actionHighlightGeneratedTargetCells_triggered();
 
 	void on_actionEnableAllMenuBarItems_triggered();
-	
+
 	void on_action22ReferenceGame_triggered();
 
 	void on_actionAbout_triggered();
@@ -128,7 +128,7 @@ private Q_SLOTS:
 
 	void on_listView_doubleClicked(const QModelIndex& index);
 
-
+private:
 	void setMenuButtonEnableForNoGame();
 	void setMenuButtonEnableForInteractiveGame();
 	void setMenuButtonEnableForSolverGame();
