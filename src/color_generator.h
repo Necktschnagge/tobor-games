@@ -110,4 +110,10 @@ namespace tobor {
 		};
 
 	}
+
+	namespace v1_1 {
+		using color_vector = v1_0::color_vector;
+	}
 }
+
+

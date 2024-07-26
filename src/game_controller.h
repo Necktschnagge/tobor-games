@@ -203,7 +203,7 @@ public:
 	}
 
 	// remove the QStringList here! ###
-	virtual QStringList optimal_solutions_list(const tobor::v1_0::color_vector& current_color_vector) const override // this has to be improved!!!
+	virtual QStringList optimal_solutions_list(const tobor::v1_1::color_vector& current_color_vector) const override // this has to be improved!!!
 	{
 		if (!_solver) {
 			return QStringList();
@@ -248,7 +248,7 @@ public:
 
 	// should be moved outside the game controller. This is my interim solution
 	virtual std::string svg(
-		const tobor::v1_0::color_vector& current_color_vector,
+		const tobor::v1_1::color_vector& current_color_vector,
 		const tobor::v1_1::general_piece_shape_selection& shape = tobor::v1_1::general_piece_shape_selection::BALL
 	) const override {
 

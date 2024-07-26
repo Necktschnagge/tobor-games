@@ -36,9 +36,9 @@ public:
 
 	/* modifying */
 
-	//virtual uint8_t move_feedback(piece_id_type& piece_id, const tobor::v1_0::direction& direction) = 0;
-	//
-	//virtual uint8_t move(const piece_id_type& piece_id, const tobor::v1_0::direction& direction) = 0;
+	//virtual uint8_t move_feedback(piece_id_type& piece_id, const tobor::v1_0::direction& direction) = 0;   maybe added to this interface
+	
+	//virtual uint8_t move(const piece_id_type& piece_id, const tobor::v1_0::direction& direction) = 0;   maybe added to this interface
 
 	virtual uint8_t move_selected(const tobor::v1_1::direction& direction) = 0;
 
@@ -54,14 +54,14 @@ public:
 
 	virtual void move_by_solver(bool forward) = 0;
 
-	//virtual state_path_type_interactive path() const noexcept = 0;
+	//virtual state_path_type_interactive path() const noexcept = 0;   maybe added to this interface
 
-	//virtual auto optimal_solutions() const = 0;
+	//virtual auto optimal_solutions() const = 0;   maybe added to this interface
 
-	virtual QStringList optimal_solutions_list(const tobor::v1_0::color_vector& current_color_vector) const = 0; // update to v1 1
+	virtual QStringList optimal_solutions_list(const tobor::v1_1::color_vector& current_color_vector) const = 0;
 
 
-	virtual std::string svg(const tobor::v1_0::color_vector& current_color_vector, const tobor::v1_1::general_piece_shape_selection& shape) const = 0; // update to v1 1
+	virtual std::string svg(const tobor::v1_1::color_vector& current_color_vector, const tobor::v1_1::general_piece_shape_selection& shape) const = 0;
 
 	virtual bool select_piece_by_piece_id(const std::size_t& piece_id) = 0;
 
