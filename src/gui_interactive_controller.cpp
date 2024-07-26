@@ -202,7 +202,6 @@ void GuiInteractiveController::startSolver()
 		};
 
 	current_game->start_solver(showMessage);
-	viewSolutionPaths();
 	refreshAll();
 }
 
@@ -212,7 +211,6 @@ void GuiInteractiveController::stopSolver()
 		return showErrorDialog("Cannot start solver with no game opened.");
 	}
 	current_game->stop_solver();
-	viewSolutionPaths();
 	refreshAll();
 }
 
