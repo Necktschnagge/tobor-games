@@ -90,21 +90,13 @@ public:
 
 	void createColorActions();
 
-	void stopGame();
-
 	void moveBySolver(bool forward);
 
 	void selectPieceByColorId(const std::size_t& color_id);
 
-	void refreshAll();
-
 	void movePiece(const tobor::v1_0::direction& direction);
 
 	void undo();
-
-	void startSolver();
-
-	void stopSolver();
 
 	void selectSolution(std::size_t index);
 

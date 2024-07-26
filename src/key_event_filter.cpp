@@ -93,11 +93,11 @@ bool ControlKeyEventAgent::eventFilter(QObject* object, QEvent* e)
 	switch (key) {
 	case Qt::Key_Right:
 		mainWindow->guiInteractiveController.moveBySolver(true);
-		mainWindow->guiInteractiveController.refreshAll();
+		mainWindow->refreshAll();
 		return true; //absorbing eventcase
 	case Qt::Key_Left:
 		mainWindow->guiInteractiveController.moveBySolver(false);
-		mainWindow->guiInteractiveController.refreshAll();
+		mainWindow->refreshAll();
 		return true; //absorbing event
 	default:
 		break;

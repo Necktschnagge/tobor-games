@@ -30,7 +30,7 @@ void GuiInteractiveController::startReferenceGame22() {
 
 	createColorActions();
 
-	refreshAll();
+	mainWindow->refreshAll();
 }
 
 void GuiInteractiveController::startGame() {
@@ -87,7 +87,7 @@ void GuiInteractiveController::startGame() {
 
 	createColorActions();
 
-	refreshAll();
+	mainWindow->refreshAll();
 }
 
 
@@ -117,28 +117,9 @@ void GuiInteractiveController::createColorActions()
 	}
 }
 
-void GuiInteractiveController::stopGame() {
-
-	mainWindow->statusbarItems.setSelectedPiece(Qt::darkGray);
-
-	mainWindow->disconnectInputConnections();
-
-	mainWindow->getSelectPieceSubMenu()->clear();
-
-
-	if (!current_game) {
-		return showErrorDialog("This action should not be available.");
-	}
-
-	current_game.reset();
-
-	refreshAll();
-}
-
 void GuiInteractiveController::moveBySolver(bool forward)
 {
 	current_game->move_by_solver(forward);
-
 }
 
 void GuiInteractiveController::selectPieceByColorId(const std::size_t& color_id)
@@ -148,13 +129,6 @@ void GuiInteractiveController::selectPieceByColorId(const std::size_t& color_id)
 	if (!OK) throw std::logic_error("Illegal color_id.");
 
 	mainWindow->refreshStatusbar();
-}
-
-void GuiInteractiveController::refreshAll() {
-	mainWindow->refreshSVG();
-	mainWindow->refreshStatusbar();
-	mainWindow->refreshMenuButtonEnable();
-	mainWindow->refreshSolutionPaths();
 }
 
 void GuiInteractiveController::movePiece(const tobor::v1_0::direction& direction) {
@@ -167,7 +141,7 @@ void GuiInteractiveController::movePiece(const tobor::v1_0::direction& direction
 	if (current_game->solver()) {
 		if ((direction == tobor::v1_0::direction::EAST()) || (direction == tobor::v1_0::direction::WEST())) {
 			moveBySolver(direction == tobor::v1_0::direction::EAST());
-			refreshAll();
+			mainWindow->refreshAll();
 		}
 		// else ignore input
 		return;
@@ -175,7 +149,7 @@ void GuiInteractiveController::movePiece(const tobor::v1_0::direction& direction
 
 	current_game->move_selected(direction);
 	mainWindow->statusBar()->showMessage(QString::fromStdString(std::to_string(current_game->selected_piece_color_id())));
-	refreshAll();
+	mainWindow->refreshAll();
 }
 
 void GuiInteractiveController::undo() {
@@ -187,31 +161,7 @@ void GuiInteractiveController::undo() {
 		return showErrorDialog("Cannot yet undo in solver mode.");
 	}
 	current_game->undo();
-	refreshAll();
-}
-
-void GuiInteractiveController::startSolver()
-{
-	if (!current_game) {
-		return showErrorDialog("Cannot start solver with no game opened.");
-	}
-
-	auto showMessage = [&](const std::string& m) {
-		mainWindow->statusBar()->showMessage(m.c_str());
-		mainWindow->repaint();
-		};
-
-	current_game->start_solver(showMessage);
-	refreshAll();
-}
-
-void GuiInteractiveController::stopSolver()
-{
-	if (!current_game) {
-		return showErrorDialog("Cannot start solver with no game opened.");
-	}
-	current_game->stop_solver();
-	refreshAll();
+	mainWindow->refreshAll();
 }
 
 void GuiInteractiveController::selectSolution(std::size_t index)

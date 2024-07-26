@@ -36,7 +36,7 @@ MainWindow::MainWindow(QWidget* parent)
 
 	shapeSelectionItems.createInsideQMenu(this, ui->menuPieces);
 
-	guiInteractiveController.refreshAll();
+	refreshAll();
 
 	signalMapper = new QSignalMapper(this);
 
@@ -60,6 +60,53 @@ MainWindow::MainWindow(QWidget* parent)
 MainWindow::~MainWindow()
 {
 	delete ui;
+}
+
+void MainWindow::startSolver()
+{
+	auto game = guiInteractiveController.currentGame();
+
+	if (!game) {
+		return showErrorDialog("Cannot start solver with no game opened.");
+	}
+
+	auto showMessage = [&](const std::string& m) {
+		statusBar()->showMessage(m.c_str());
+		repaint();
+		};
+
+	game->start_solver(showMessage);
+
+	refreshAll();
+}
+
+void MainWindow::stopSolver()
+{
+	auto game = guiInteractiveController.currentGame();
+
+	if (!game) {
+		return showErrorDialog("Cannot start solver with no game opened.");
+	}
+
+	game->stop_solver();
+	refreshAll();
+}
+
+void MainWindow::stopGame()
+{
+	statusbarItems.setSelectedPiece(Qt::darkGray);
+	disconnectInputConnections();
+	getSelectPieceSubMenu()->clear();
+
+	auto game = guiInteractiveController.currentGame();
+
+	if (!game) {
+		return showErrorDialog("This action should not be available.");
+	}
+
+	game.reset();
+
+	refreshAll();
 }
 
 void MainWindow::on_actionshowSVG_triggered()
@@ -124,10 +171,8 @@ void MainWindow::on_actionNewGame_triggered() {
 }
 
 void MainWindow::on_actionStopGame_triggered() {
-	guiInteractiveController.stopGame();
+	stopGame();
 	statusBar()->showMessage("Game stopped.");
-	//statusbarItems.stepsKey->hide();
-	//statusbarItems.stepsValue->hide();
 }
 
 void MainWindow::on_actionMoveBack_triggered()
@@ -180,12 +225,12 @@ void MainWindow::on_actionStart_Solver_triggered()
 {
 	ui->statusbar->showMessage("starting solver...");
 	repaint();
-	guiInteractiveController.startSolver();
+	startSolver();
 }
 
 void MainWindow::on_actionStop_Solver_triggered()
 {
-	guiInteractiveController.stopSolver();
+	stopSolver();
 }
 
 void MainWindow::on_actionLicense_Information_triggered()
@@ -197,7 +242,7 @@ void MainWindow::on_actionLicense_Information_triggered()
 void MainWindow::on_listView_doubleClicked(const QModelIndex& index)
 {
 	guiInteractiveController.selectSolution(index.row());
-	guiInteractiveController.refreshAll();
+	refreshAll();
 }
 
 void MainWindow::setMenuButtonEnableForNoGame()
@@ -317,6 +362,14 @@ void MainWindow::refreshSolutionPaths()
 	ui->listView->setModel(model); // not needed multiple times ###
 }
 
+void MainWindow::refreshAll()
+{
+	refreshSVG();
+	refreshStatusbar();
+	refreshMenuButtonEnable();
+	refreshSolutionPaths();
+}
+
 void MainWindow::StatusbarItems::init(QStatusBar* statusbar) {
 	stepsKey = new QLabel(statusbar); // parent takes ownership
 	stepsValue = new QLabel(statusbar); // parent takes ownership
@@ -384,11 +437,6 @@ void MainWindow::StatusbarItems::setSelectedPiece(const QColor& c)
 
 QMenu* MainWindow::getSelectPieceSubMenu() {
 	return ui->menuSelect_Piece;
-}
-
-void MainWindow::refreshAllInGuiInteractiveController()
-{
-	guiInteractiveController.refreshAll();
 }
 
 void MainWindow::selectPieceByColor(int index) {
@@ -459,7 +507,7 @@ void MainWindow::ShapeSelectionItems::createInsideQMenu(MainWindow* mainWindow, 
 	group->setExclusive(true);
 	ball->setChecked(true);
 
-	QObject::connect(group, &QActionGroup::triggered, mainWindow, &MainWindow::refreshAllInGuiInteractiveController, Qt::AutoConnection);
+	QObject::connect(group, &QActionGroup::triggered, mainWindow, &MainWindow::refreshAll, Qt::AutoConnection);
 
 }
 

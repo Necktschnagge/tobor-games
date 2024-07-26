@@ -91,49 +91,44 @@ public:
 	MainWindow(QWidget* parent = nullptr);
 	~MainWindow();
 
+private:
+	// concrete actions executed via slots or via direct calls
+	void startSolver();
+	void stopSolver();
+
+	void stopGame();
+
+
 private Q_SLOTS:
+
 	void on_actionshowSVG_triggered();
-
 	void on_actionHighlightGeneratedTargetCells_triggered();
-
 	void on_actionEnableAllMenuBarItems_triggered();
-
 	void on_action22ReferenceGame_triggered();
-
 	void on_actionAbout_triggered();
-
 	void on_actionNewGame_triggered();
-
 	void on_actionStopGame_triggered();
-
 	void on_actionMoveBack_triggered();
-
 	void on_actionNORTH_triggered();
-
 	void on_actionEAST_triggered();
-
 	void on_actionSOUTH_triggered();
-
 	void on_actionWEST_triggered();
-
 	void on_actionForward_triggered();
-
 	void on_actionBack_triggered();
-
 	void on_actionStart_Solver_triggered();
-
 	void on_actionStop_Solver_triggered();
-
 	void on_actionLicense_Information_triggered();
-
 	void on_listView_doubleClicked(const QModelIndex& index);
 
 private:
 
+	// Refresh UI Elements / Button ENABLE
 	void setMenuButtonEnableForNoGame();
 	void setMenuButtonEnableForInteractiveGame();
 	void setMenuButtonEnableForSolverGame();
 
+
+	// Refresh UI Elements / Views
 	void refreshSVG();
 	void refreshNumberOfSteps();
 	void refreshMenuButtonEnable();;
@@ -178,7 +173,7 @@ private Q_SLOTS:
 
 	void selectPieceByColor(int index);
 
-	void refreshAllInGuiInteractiveController();
+	void refreshAll();
 
 };
 
