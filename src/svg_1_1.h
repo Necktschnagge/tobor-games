@@ -301,6 +301,11 @@ namespace tobor {
 			virtual ~ball_piece_drawer() {}
 		};
 
+		enum class general_piece_shape_selection {
+			BALL,
+			DUCK
+		};
+
 		template<class World_Type, class Positions_Of_Pieces_Type_T>
 		class tobor_graphics {
 		public:
@@ -333,10 +338,9 @@ namespace tobor {
 				}
 			};
 
-			enum class piece_shape_selection {
-				BALL,
-				DUCK
-			};
+			using piece_shape_selection = general_piece_shape_selection;
+
+			
 
 		private:
 
