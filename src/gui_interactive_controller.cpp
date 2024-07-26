@@ -220,6 +220,7 @@ void GuiInteractiveController::refreshMenuButtonEnable()
 		mainWindow->ui->menuSelect_Piece->setEnabled(false);
 		mainWindow->ui->menuMove->setEnabled(false);
 		mainWindow->ui->menuPlaySolver->setEnabled(false);
+		return;
 	}
 
 	if (current_game->solver()) {
@@ -231,6 +232,7 @@ void GuiInteractiveController::refreshMenuButtonEnable()
 		mainWindow->ui->menuSelect_Piece->setEnabled(false);
 		mainWindow->ui->menuMove->setEnabled(false);
 		mainWindow->ui->menuPlaySolver->setEnabled(true);
+		return;
 	}
 
 	// else interactive game
