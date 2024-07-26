@@ -147,34 +147,14 @@ void GuiInteractiveController::selectPieceByColorId(const std::size_t& color_id)
 
 	if (!OK) throw std::logic_error("Illegal color_id.");
 
-	refreshStatusbar();
-}
-
-void GuiInteractiveController::refreshMenuButtonEnable()
-{
-	if (!current_game) return mainWindow->setMenuButtonEnableForNoGame();
-	
-	if (current_game->solver()) return mainWindow->setMenuButtonEnableForSolverGame();
-	
-	return mainWindow->setMenuButtonEnableForInteractiveGame(); 
-}
-
-void GuiInteractiveController::refreshStatusbar() {
-	if (current_game) {
-		auto current_color = current_color_vector.colors[current_game->selected_piece_color_id()].getQColor();
-		mainWindow->statusbarItems.setSelectedPiece(current_color);
-	}
-	else {
-		mainWindow->statusbarItems.setSelectedPiece(Qt::darkGray);
-	}
-	mainWindow->refreshNumberOfSteps();
+	mainWindow->refreshStatusbar();
 }
 
 void GuiInteractiveController::refreshAll() {
 	mainWindow->refreshSVG();
-	refreshStatusbar();
-	refreshMenuButtonEnable();
-	viewSolutionPaths();
+	mainWindow->refreshStatusbar();
+	mainWindow->refreshMenuButtonEnable();
+	mainWindow->refreshSolutionPaths();
 }
 
 void GuiInteractiveController::movePiece(const tobor::v1_0::direction& direction) {
@@ -246,28 +226,6 @@ void GuiInteractiveController::selectSolution(std::size_t index)
 	}
 
 	current_game->select_solution(index);
-}
-
-void GuiInteractiveController::viewSolutionPaths() // this has to be improved!!!
-{
-	static QStringListModel* model{ nullptr };
-
-	if (model == nullptr) {
-		model = new QStringListModel();
-	}
-
-	auto permutated_color_vector = current_color_vector;
-
-	QStringList qStringList;
-
-	if (current_game) {
-		qStringList = current_game->optimal_solutions_list(permutated_color_vector);
-	}
-
-	model->setStringList(qStringList);
-
-	mainWindow->ui->listView->setModel(model); // not needed multiple times ###
-
 }
 
 void GuiInteractiveController::highlightGeneratedTargetCells()

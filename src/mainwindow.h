@@ -129,15 +129,19 @@ private Q_SLOTS:
 	void on_listView_doubleClicked(const QModelIndex& index);
 
 private:
+
 	void setMenuButtonEnableForNoGame();
 	void setMenuButtonEnableForInteractiveGame();
 	void setMenuButtonEnableForSolverGame();
 
-
-
 	void refreshSVG();
 	void refreshNumberOfSteps();
+	void refreshMenuButtonEnable();;
+	void refreshStatusbar();
+	void refreshSolutionPaths();
+
 private:
+
 	Ui::MainWindow* ui;
 	GuiInteractiveController guiInteractiveController;
 	friend class GuiInteractiveController; // try to remove friends here ###

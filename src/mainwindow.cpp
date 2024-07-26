@@ -268,6 +268,55 @@ void MainWindow::refreshNumberOfSteps()
 	statusbarItems.stepsValue->setText(number_of_steps);
 }
 
+void MainWindow::refreshMenuButtonEnable()
+{
+	auto game = guiInteractiveController.currentGame();
+
+	if (!game) return setMenuButtonEnableForNoGame();
+
+	if (game->solver()) return setMenuButtonEnableForSolverGame();
+
+	return setMenuButtonEnableForInteractiveGame();
+}
+
+void MainWindow::refreshStatusbar()
+{
+	auto game = guiInteractiveController.currentGame();
+
+	if (game) {
+		auto current_color = guiInteractiveController.current_color_vector.colors[game->selected_piece_color_id()].getQColor();
+		statusbarItems.setSelectedPiece(current_color);
+	}
+	else {
+		statusbarItems.setSelectedPiece(Qt::darkGray);
+	}
+	refreshNumberOfSteps();
+}
+
+void MainWindow::refreshSolutionPaths()
+{
+	static QStringListModel* model{ nullptr };
+
+	auto game = guiInteractiveController.currentGame();
+
+
+	if (model == nullptr) {
+		model = new QStringListModel();
+	}
+
+	auto permutated_color_vector = guiInteractiveController.current_color_vector;
+
+	QStringList qStringList;
+
+	if (game) {
+		qStringList = game->optimal_solutions_list(permutated_color_vector);
+	}
+
+	model->setStringList(qStringList);
+
+	ui->listView->setModel(model); // not needed multiple times ###
+}
+
 void MainWindow::StatusbarItems::init(QStatusBar* statusbar) {
 	stepsKey = new QLabel(statusbar); // parent takes ownership
 	stepsValue = new QLabel(statusbar); // parent takes ownership

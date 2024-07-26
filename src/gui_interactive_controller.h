@@ -94,13 +94,7 @@ public:
 
 	void moveBySolver(bool forward);
 
-	//[[deprecated]] void setPieceId(const std::size_t &piece_id);
-
 	void selectPieceByColorId(const std::size_t& color_id);
-
-	void refreshMenuButtonEnable();
-
-	void refreshStatusbar();
 
 	void refreshAll();
 
@@ -113,8 +107,6 @@ public:
 	void stopSolver();
 
 	void selectSolution(std::size_t index);
-
-	void viewSolutionPaths();
 
 	void highlightGeneratedTargetCells();
 
