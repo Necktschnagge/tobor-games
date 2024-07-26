@@ -90,31 +90,21 @@ MainWindow::~MainWindow()
 
 void MainWindow::startSolver()
 {
-	auto game = current_game;
-
-	if (!game) {
-		return showErrorDialog("Cannot start solver with no game opened.");
-	}
+	if (!current_game) return showErrorDialog("Cannot start solver with no game opened.");
 
 	auto showMessage = [&](const std::string& m) {
 		statusBar()->showMessage(m.c_str());
 		repaint();
 		};
 
-	game->start_solver(showMessage);
-
+	current_game->start_solver(showMessage);
 	refreshAll();
 }
 
 void MainWindow::stopSolver()
 {
-	auto game = current_game;
-
-	if (!game) {
-		return showErrorDialog("Cannot start solver with no game opened.");
-	}
-
-	game->stop_solver();
+	if (!current_game) return showErrorDialog("Cannot start solver with no game opened.");
+	current_game->stop_solver();
 	refreshAll();
 }
 
@@ -124,32 +114,22 @@ void MainWindow::stopGame()
 	disconnectInputConnections();
 	getSelectPieceSubMenu()->clear();
 
-	auto game = current_game;
-
-	if (!game) {
-		return showErrorDialog("This action should not be available.");
-	}
-
-	game.reset();
-
+	if (!current_game) return showErrorDialog("This action should not be available.");
+	current_game.reset();
 	statusBar()->showMessage("Game stopped.");
 	refreshAll();
 }
 
 void MainWindow::startGame()
 {
-	auto game = current_game;
-
 	// when editing, also edit inline void startReferenceGame22Helper(X& guiInteractiveController) and maybe use a new fascade for creating a new game
-	if (game) {
-		return showErrorDialog("This action should not be available.");
-	}
+	if (current_game) return showErrorDialog("This action should not be available.");
 
 	auto& fac{ next_factory_1[factory_select] };
 
 	factory_history.emplace_back(fac->clone());
 
-	game.reset(fac->create());
+	current_game.reset(fac->create());
 
 
 	fac->increment();
@@ -189,7 +169,7 @@ void MainWindow::startGame()
 	}
 	*/
 
-	current_color_vector = tobor::v1_0::color_vector::get_standard_coloring(static_cast<uint8_t>(game->count_pieces())); // standard coloring without permutation
+	current_color_vector = tobor::v1_0::color_vector::get_standard_coloring(static_cast<uint8_t>(current_game->count_pieces())); // standard coloring without permutation
 
 	createColorActions();
 
@@ -199,9 +179,7 @@ void MainWindow::startGame()
 
 void MainWindow::startReferenceGame22()
 {
-	if (current_game) {
-		return showErrorDialog("This action should not be available.");
-	}
+	if (current_game) return showErrorDialog("This action should not be available.");
 
 	auto fac = SpecialCaseGameFactory();
 
@@ -218,9 +196,8 @@ void MainWindow::startReferenceGame22()
 
 void MainWindow::selectPieceByColorId(const std::size_t& color_id)
 {
-	if (!current_game) {
-		return showErrorDialog("Cannot select piece with no game opened.");
-	}
+	if (!current_game) return showErrorDialog("Cannot select piece with no game opened.");
+
 	const bool OK{ current_game->select_piece_by_color_id(color_id) };
 	if (!OK) throw std::logic_error("Illegal color_id.");
 	refreshStatusbar();
@@ -249,12 +226,8 @@ void MainWindow::movePiece(const tobor::v1_0::direction& direction)
 
 void MainWindow::undo()
 {
-	if (!current_game) {
-		return showErrorDialog("Cannot undo with no game opened.");
-	}
-	if (current_game->solver()) {
-		return showErrorDialog("Cannot yet undo in solver mode.");
-	}
+	if (!current_game) return showErrorDialog("Cannot undo with no game opened.");
+	if (current_game->solver()) return showErrorDialog("Cannot yet undo in solver mode.");
 	current_game->undo();
 	refreshAll();
 }
@@ -465,8 +438,7 @@ void MainWindow::createColorActions()
 
 void MainWindow::refreshSVG()
 {
-	auto game = current_game;
-	if (game) {
+	if (current_game) {
 
 		tobor::v1_1::general_piece_shape_selection shape{ tobor::v1_1::general_piece_shape_selection::BALL };
 
@@ -474,7 +446,7 @@ void MainWindow::refreshSVG()
 			shape = tobor::v1_1::general_piece_shape_selection::DUCK;
 		}
 
-		auto svg_as_string = game->svg(current_color_vector, shape);
+		auto svg_as_string = current_game->svg(current_color_vector, shape);
 
 		viewSvgInMainView(svg_as_string);
 	}
@@ -486,32 +458,26 @@ void MainWindow::refreshSVG()
 
 void MainWindow::refreshNumberOfSteps()
 {
-	auto game = current_game;
-
 	QString number_of_steps;
-	if (game) {
-		number_of_steps = QString::number(game->depth());
+	if (current_game) {
+		number_of_steps = QString::number(current_game->depth());
 	}
 	statusbarItems.stepsValue->setText(number_of_steps);
 }
 
 void MainWindow::refreshMenuButtonEnable()
 {
-	auto game = current_game;
+	if (!current_game) return setMenuButtonEnableForNoGame();
 
-	if (!game) return setMenuButtonEnableForNoGame();
-
-	if (game->solver()) return setMenuButtonEnableForSolverGame();
+	if (current_game->solver()) return setMenuButtonEnableForSolverGame();
 
 	return setMenuButtonEnableForInteractiveGame();
 }
 
 void MainWindow::refreshStatusbar()
 {
-	auto game = current_game;
-
-	if (game) {
-		auto current_color = current_color_vector.colors[game->selected_piece_color_id()].getQColor();
+	if (current_game) {
+		auto current_color = current_color_vector.colors[current_game->selected_piece_color_id()].getQColor();
 		statusbarItems.setSelectedPiece(current_color);
 	}
 	else {
@@ -524,9 +490,6 @@ void MainWindow::refreshSolutionPaths()
 {
 	static QStringListModel* model{ nullptr };
 
-	auto game = current_game;
-
-
 	if (model == nullptr) {
 		model = new QStringListModel();
 	}
@@ -535,8 +498,8 @@ void MainWindow::refreshSolutionPaths()
 
 	QStringList qStringList;
 
-	if (game) {
-		qStringList = game->optimal_solutions_list(permutated_color_vector);
+	if (current_game) {
+		qStringList = current_game->optimal_solutions_list(permutated_color_vector);
 	}
 
 	model->setStringList(qStringList);
