@@ -16,11 +16,9 @@
 *	is deprecated, just for development and debugging
 */
 void GuiInteractiveController::startReferenceGame22() {
-	if (interactive_mode != InteractiveMode::NO_GAME) {
+	if (current_game) {
 		return showErrorDialog("This action should not be available.");
 	}
-
-	interactive_mode = InteractiveMode::GAME_INTERACTIVE;
 
 	auto fac = SpecialCaseGameFactory();
 
@@ -37,11 +35,9 @@ void GuiInteractiveController::startReferenceGame22() {
 
 void GuiInteractiveController::startGame() {
 	// when editing, also edit inline void startReferenceGame22Helper(X& guiInteractiveController) and maybe use a new fascade for creating a new game
-	if (interactive_mode != InteractiveMode::NO_GAME) {
+	if (current_game) {
 		return showErrorDialog("This action should not be available.");
 	}
-
-	interactive_mode = InteractiveMode::GAME_INTERACTIVE;
 
 	auto& fac{ next_factory_1[factory_select] };
 
@@ -130,11 +126,9 @@ void GuiInteractiveController::stopGame() {
 	mainWindow->getSelectPieceSubMenu()->clear();
 
 
-	if (interactive_mode == InteractiveMode::NO_GAME) {
+	if (!current_game) {
 		return showErrorDialog("This action should not be available.");
 	}
-
-	interactive_mode = InteractiveMode::NO_GAME;
 
 	current_game.reset();
 
@@ -197,48 +191,19 @@ void GuiInteractiveController::selectPieceByColorId(const std::size_t& color_id)
 
 void GuiInteractiveController::refreshSVG()
 {
-	if (interactive_mode == InteractiveMode::GAME_INTERACTIVE || interactive_mode == InteractiveMode::SOLVER_INTERACTIVE_STEPS) {
+	if (current_game) {
 
 		tobor::v1_1::general_piece_shape_selection shape{ tobor::v1_1::general_piece_shape_selection::BALL };
 
-		/*
-
-		auto permutated_color_vector = current_color_vector;
-
-		for (std::size_t i{ 0 }; i < current_color_vector.colors.size(); ++i) {
-			permutated_color_vector.colors[i] = current_color_vector.colors[current_game->current_state().permutation()[i]];
-		}
-
-		graphics_type::coloring coloring =
-			make_coloring(
-				permutated_color_vector,
-				std::make_integer_sequence<DRWGameController::pieces_quantity_type::int_type, DRWGameController::pieces_quantity_type::COUNT_ALL_PIECES>{}
-			);
-
-
 		if (mainWindow->shapeSelectionItems.getSelectedShape() == mainWindow->shapeSelectionItems.duck) {
-			shape = graphics_type::piece_shape_selection::DUCK;
+			shape = tobor::v1_1::general_piece_shape_selection::DUCK;
 		}
-		// else default ball.
-
-		std::string example_svg_string =
-			graphics_type::draw_tobor_world(
-				current_game->world(),
-				current_game->current_state().naked(),
-				current_game->target_cell(),
-				coloring,
-				shape
-			);
-		*/
-
-		// ### different shapes are missing here!
 
 		auto svg_as_string = current_game->svg(current_color_vector, shape);
 
 		mainWindow->viewSvgInMainView(svg_as_string);
 	}
-
-	if (interactive_mode == InteractiveMode::NO_GAME) {
+	else {
 		QGraphicsScene* scene = new QGraphicsScene();
 		mainWindow->ui->graphicsView->setScene(scene);
 	}
@@ -246,172 +211,113 @@ void GuiInteractiveController::refreshSVG()
 
 void GuiInteractiveController::refreshMenuButtonEnable()
 {
-
-
-	if (interactive_mode == InteractiveMode::GAME_INTERACTIVE) {
-
-		mainWindow->ui->actionNewGame->setEnabled(false);
-
-		mainWindow->ui->actionStopGame->setEnabled(true);
-
-		mainWindow->ui->actionStart_Solver->setEnabled(true);
-
-		mainWindow->ui->actionStop_Solver->setEnabled(false);
-
-		mainWindow->ui->actionMoveBack->setEnabled(!current_game->is_initial());
-
-		mainWindow->ui->menuSelect_Piece->setEnabled(true);
-
-		mainWindow->ui->menuMove->setEnabled(true);
-
-		mainWindow->ui->menuPlaySolver->setEnabled(false);
-
-	}
-	else if (interactive_mode == InteractiveMode::NO_GAME) {
-
+	if (!current_game) {
 		mainWindow->ui->actionNewGame->setEnabled(true);
-
 		mainWindow->ui->actionStopGame->setEnabled(false);
-
 		mainWindow->ui->actionStart_Solver->setEnabled(false);
-
 		mainWindow->ui->actionStop_Solver->setEnabled(false);
-
 		mainWindow->ui->actionMoveBack->setEnabled(false);
-
 		mainWindow->ui->menuSelect_Piece->setEnabled(false);
-
 		mainWindow->ui->menuMove->setEnabled(false);
-
 		mainWindow->ui->menuPlaySolver->setEnabled(false);
-
 	}
-	else if (interactive_mode == InteractiveMode::SOLVER_INTERACTIVE_STEPS) {
 
+	if (current_game->solver()) {
 		mainWindow->ui->actionNewGame->setEnabled(false);
-
 		mainWindow->ui->actionStopGame->setEnabled(true);
-
 		mainWindow->ui->actionStart_Solver->setEnabled(false);
-
 		mainWindow->ui->actionStop_Solver->setEnabled(true);
-
 		mainWindow->ui->actionMoveBack->setEnabled(!current_game->is_initial());
-
 		mainWindow->ui->menuSelect_Piece->setEnabled(false);
-
 		mainWindow->ui->menuMove->setEnabled(false);
-
 		mainWindow->ui->menuPlaySolver->setEnabled(true);
 	}
 
+	// else interactive game
+	mainWindow->ui->actionNewGame->setEnabled(false);
+	mainWindow->ui->actionStopGame->setEnabled(true);
+	mainWindow->ui->actionStart_Solver->setEnabled(true);
+	mainWindow->ui->actionStop_Solver->setEnabled(false);
+	mainWindow->ui->actionMoveBack->setEnabled(!current_game->is_initial());
+	mainWindow->ui->menuSelect_Piece->setEnabled(true);
+	mainWindow->ui->menuMove->setEnabled(true);
+	mainWindow->ui->menuPlaySolver->setEnabled(false);
 
 }
 
 void GuiInteractiveController::refreshStatusbar() {
-
-	if (interactive_mode == InteractiveMode::GAME_INTERACTIVE || interactive_mode == InteractiveMode::SOLVER_INTERACTIVE_STEPS) {
-
+	if (current_game) {
 		auto current_color = current_color_vector.colors[current_game->selected_piece_color_id()].getQColor();
-
 		mainWindow->statusbarItems.setSelectedPiece(current_color);
-
 	}
 	else {
 		mainWindow->statusbarItems.setSelectedPiece(Qt::darkGray);
 	}
-
 	refreshNumberOfSteps();
-
 }
 
 void GuiInteractiveController::refreshNumberOfSteps() {
-
 	QString number_of_steps;
-
-	if (interactive_mode == InteractiveMode::GAME_INTERACTIVE || interactive_mode == InteractiveMode::SOLVER_INTERACTIVE_STEPS) {
-
+	if (current_game) {
 		number_of_steps = QString::number(current_game->depth());
-
 	}
-
 	mainWindow->statusbarItems.stepsValue->setText(number_of_steps);
 }
 
 void GuiInteractiveController::movePiece(const tobor::v1_0::direction& direction) {
 
-	switch (interactive_mode)
-	{
-	case GuiInteractiveController::InteractiveMode::NO_GAME:
+	if (!current_game) {
 		showErrorDialog("Cannot move a piece with no game opened."); // should not be reachable, disable actions!
-		break;
-	case GuiInteractiveController::InteractiveMode::GAME_INTERACTIVE:
+		return;
+	}
 
-
-		current_game->move_selected(direction);
-
-		mainWindow->statusBar()->showMessage(QString::fromStdString(std::to_string(current_game->selected_piece_color_id())));
-
-		refreshAll();
-
-		break;
-
-	case GuiInteractiveController::InteractiveMode::SOLVER_INTERACTIVE_STEPS:
+	if (current_game->solver()) {
 		if ((direction == tobor::v1_0::direction::EAST()) || (direction == tobor::v1_0::direction::WEST())) {
 			moveBySolver(direction == tobor::v1_0::direction::EAST());
 			refreshAll();
-		} // else ignore input
-		break;
-
-	default:
-		showErrorDialog(
-			QString("Undefined piece move for mode ") +
-			QString::number(static_cast<uint64_t>(interactive_mode))
-		);
-		break;
+		}
+		// else ignore input
+		return;
 	}
+
+	current_game->move_selected(direction);
+	mainWindow->statusBar()->showMessage(QString::fromStdString(std::to_string(current_game->selected_piece_color_id())));
+	refreshAll();
 }
 
 void GuiInteractiveController::undo() {
 
-	switch (interactive_mode)
-	{
-	case GuiInteractiveController::InteractiveMode::NO_GAME:
+	if (!current_game) {
 		return showErrorDialog("Cannot undo with no game opened.");
-
-	case GuiInteractiveController::InteractiveMode::GAME_INTERACTIVE:
-		current_game->undo();
-		refreshAll();
-		break;
-
-	case GuiInteractiveController::InteractiveMode::SOLVER_INTERACTIVE_STEPS:
-		return showErrorDialog("Cannot yet undo in solver mode.");
-
-	default:
-		showErrorDialog(
-			QString("Undefined undo for mode ") +
-			QString::number(static_cast<uint64_t>(interactive_mode))
-		);
-		break;
 	}
+	if (current_game->solver()) {
+		return showErrorDialog("Cannot yet undo in solver mode.");
+	}
+	current_game->undo();
+	refreshAll();
 }
 
 void GuiInteractiveController::startSolver()
 {
+	if (!current_game) {
+		return showErrorDialog("Cannot start solver with no game opened.");
+	}
+
 	auto showMessage = [&](const std::string& m) {
 		mainWindow->statusBar()->showMessage(m.c_str());
 		mainWindow->repaint();
 		};
 
 	current_game->start_solver(showMessage);
-	interactive_mode = InteractiveMode::SOLVER_INTERACTIVE_STEPS;
 	viewSolutionPaths();
 	refreshAll();
 }
 
 void GuiInteractiveController::stopSolver()
 {
-	interactive_mode = InteractiveMode::GAME_INTERACTIVE;
+	if (!current_game) {
+		return showErrorDialog("Cannot start solver with no game opened.");
+	}
 	current_game->stop_solver();
 	viewSolutionPaths();
 	refreshAll();
@@ -419,11 +325,14 @@ void GuiInteractiveController::stopSolver()
 
 void GuiInteractiveController::selectSolution(std::size_t index)
 {
-	if (interactive_mode != InteractiveMode::SOLVER_INTERACTIVE_STEPS) {
-		return showErrorDialog("Cannot select any solver solution when not in solver mode!");
+	if (!current_game) {
+		return showErrorDialog("Cannot select solution with no game opened.");
 	}
+	if (!current_game->solver()) {
+		return showErrorDialog("Cannot select solution without running solver.");
+	}
+
 	current_game->select_solution(index);
-	current_game->reset_solver_steps();
 }
 
 void GuiInteractiveController::viewSolutionPaths() // this has to be improved!!!
@@ -450,34 +359,9 @@ void GuiInteractiveController::viewSolutionPaths() // this has to be improved!!!
 
 void GuiInteractiveController::highlightGeneratedTargetCells()
 {
-	const bool STATE_OK{ interactive_mode == InteractiveMode::GAME_INTERACTIVE || interactive_mode == InteractiveMode::SOLVER_INTERACTIVE_STEPS };
-
-	if (!STATE_OK) {
+	if (!current_game) {
 		return showErrorDialog("Target cell markers not supported without running a game");
 	}
-
-	/*
-	auto child_game = dynamic_cast<DRWGameController<>*>(current_game.get());
-
-
-	const auto& world{ current_game->world() };
-
-	auto raw_cell_id_vector = dynamic_cast<OriginalGameFactory<DRWGameController::pieces_quantity_type>*>(factory_history.back().get())->product_generator().main().get_target_cell_id_vector(world);
-
-	std::vector<DRWGameController::cell_id_type> comfort_cell_id_vector;
-
-	std::transform(raw_cell_id_vector.cbegin(), raw_cell_id_vector.cend(), std::back_inserter(comfort_cell_id_vector),
-		[&](const auto& raw_cell_id) {
-			return DRWGameController::cell_id_type::create_by_id(raw_cell_id, world);
-		}
-	);
-
-	std::string svg_string = graphics_type::draw_tobor_world_with_cell_markers(
-		world,
-		comfort_cell_id_vector
-	);
-	*/
-
 	std::pair<std::string, std::size_t> svg_and_count = factory_history.back()->svg_highlighted_targets();
 
 	mainWindow->viewSvgInMainView(svg_and_count.first);

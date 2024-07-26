@@ -18,23 +18,26 @@ bool ControlKeyEventAgent::eventFilter(QObject* object, QEvent* e)
 	}
 
 	// see https://doc.qt.io/qt-6/qevent.html for event types
-	
-	if (keyEvent->type() == QEvent::KeyRelease) {
-		return false; //pass-through
-	}
 
-	if (keyEvent->type() == QEvent::ShortcutOverride) {
-		return false; //pass-through
-	}
+	// keyEvent->type()
+	// is one of
+	// QEvent::KeyRelease, QEvent::ShortcutOverride, QEvent::KeyPress
 
 	if (keyEvent->type() != QEvent::KeyPress) {
 		return false; //pass-through
 	}
 
 	// found a keyEvent
-	const int key{ keyEvent->key() };
+	const auto key{ keyEvent->key() };
 
-	if (mainWindow->guiInteractiveController.interactiveMode() == GuiInteractiveController::InteractiveMode::GAME_INTERACTIVE) {
+	auto game = mainWindow->guiInteractiveController.currentGame();
+
+	if (!game) {
+		return false; //pass-through
+	}
+
+
+	if (!mainWindow->guiInteractiveController.currentGame()->solver()) {
 
 		// check for all arrow keys
 		switch (key) {
@@ -53,8 +56,6 @@ bool ControlKeyEventAgent::eventFilter(QObject* object, QEvent* e)
 		default:
 			break;
 		}
-
-		static_assert(std::is_same<decltype(keyEvent->key()), int>::value, "implementation probably ill");
 
 		const auto& raw_color_vector{ mainWindow->guiInteractiveController.current_color_vector.colors };
 
@@ -85,24 +86,24 @@ bool ControlKeyEventAgent::eventFilter(QObject* object, QEvent* e)
 		return false; //pass-through
 	}
 
-	if (mainWindow->guiInteractiveController.interactiveMode() == GuiInteractiveController::InteractiveMode::SOLVER_INTERACTIVE_STEPS) {
+
+	// else: solver mode
 
 		// check for all arrow keys
-		switch (key) {
-		case Qt::Key_Right:
-			mainWindow->guiInteractiveController.moveBySolver(true);
-			mainWindow->guiInteractiveController.refreshAll();
-			return true; //absorbing eventcase
-		case Qt::Key_Left:
-			mainWindow->guiInteractiveController.moveBySolver(false);
-			mainWindow->guiInteractiveController.refreshAll();
-			return true; //absorbing event
-		default:
-			break;
-		}
-
-		return false; //pass-through
+	switch (key) {
+	case Qt::Key_Right:
+		mainWindow->guiInteractiveController.moveBySolver(true);
+		mainWindow->guiInteractiveController.refreshAll();
+		return true; //absorbing eventcase
+	case Qt::Key_Left:
+		mainWindow->guiInteractiveController.moveBySolver(false);
+		mainWindow->guiInteractiveController.refreshAll();
+		return true; //absorbing event
+	default:
+		break;
 	}
 
 	return false; //pass-through
+
+
 }

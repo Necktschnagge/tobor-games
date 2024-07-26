@@ -31,53 +31,20 @@ class MainWindow;
 
 class GuiInteractiveController final {
 
-	template<class X>
-	friend void startReferenceGame22Helper(X& guiInteractiveController);
-
 public:
-	enum class InteractiveMode {
-		NO_GAME,
-		GAME_INTERACTIVE,
-		SOLVER_INTERACTIVE_STEPS
-	};
-
-	/*
-	using board_generator_type = tobor::v1_1::world_generator::original_4_of_16;
-
-	using state_generator_type = tobor::v1_1::world_generator::initial_state_generator<
-		DRWGameController::positions_of_pieces_type_solver,
-		256,
-		DRWGameController::pieces_quantity_type::COUNT_TARGET_PIECES,
-		DRWGameController::pieces_quantity_type::COUNT_NON_TARGET_PIECES,
-		4>;
-
-	using product_generator_type = tobor::v1_1::world_generator::product_group_generator<board_generator_type, state_generator_type>;
-	*/
-
 	
 private:
 	MainWindow* mainWindow;
 
-	InteractiveMode interactive_mode;
-
 	std::shared_ptr<AbstractGameController> current_game; /// check all positions where used!!!! #######
 
-
-
 	std::vector<std::shared_ptr<AbstractGameFactory>> factory_history;
-	std::vector<std::unique_ptr<AbstractGameFactory>> next_factory_1;
 
+	std::vector<std::unique_ptr<AbstractGameFactory>> next_factory_1;
 
 	std::size_t factory_select;
 
-	//std::size_t selected_piece_id{ 0 };
-
 	std::mt19937 generator;
-
-
-	//tobor::v1_0::tobor_graphics<DRWGameController::positions_of_pieces_type>::coloring coloring = tobor::v1_0::tobor_graphics<DRWGameController::positions_of_pieces_type>::coloring("red", "yellow", "green", "blue");
-	// needs tobor svg include which brings errors...
-
 
 public:
 
@@ -87,8 +54,6 @@ public:
 
 	GuiInteractiveController(MainWindow* mainWindow) :
 		mainWindow(mainWindow),
-		interactive_mode(InteractiveMode::NO_GAME),
-		//next_factory(),
 		next_factory_1(),
 		factory_select(2)
 	{
@@ -117,11 +82,11 @@ public:
 
 	}
 
-	inline InteractiveMode interactiveMode() const {
-		return interactive_mode;
-	}
-
 	void startGame();
+
+	std::shared_ptr<AbstractGameController> currentGame() {
+		return current_game;
+	}
 
 	void createColorActions();
 

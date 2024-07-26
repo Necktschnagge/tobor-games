@@ -54,6 +54,9 @@ public:
 
 	virtual void move_by_solver(bool forward) = 0;
 
+	[[nodiscard]] virtual bool solver() const = 0;
+
+
 	//virtual state_path_type_interactive path() const noexcept = 0;   maybe added to this interface
 
 	//virtual auto optimal_solutions() const = 0;   maybe added to this interface

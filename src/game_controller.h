@@ -191,6 +191,11 @@ public:
 		}
 	}
 
+	[[nodiscard]] virtual bool solver() const override {
+		return _solver.has_value();
+	}
+
+
 	state_path_type_interactive path() const noexcept {
 		return _path;
 	}
