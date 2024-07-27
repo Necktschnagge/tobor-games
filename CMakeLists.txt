@@ -82,7 +82,7 @@ include_directories(SYSTEM extern/json/include)
 find_package(Threads REQUIRED)
 
 if(USE_QT6)
-	find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets Svg SvgWidgets)
+	find_package(QT NAMES Qt6 REQUIRED COMPONENTS Widgets Svg SvgWidgets)
 	find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets Svg SvgWidgets)
 else()
 	find_package(QT NAMES Qt5 REQUIRED COMPONENTS Widgets Svg)
