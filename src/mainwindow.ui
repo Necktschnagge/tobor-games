@@ -107,7 +107,6 @@
         <property name="title">
           <string>&amp;File</string>
         </property>
-        <addaction name="actionshowSVG"/>
       </widget>
       <widget class="QMenu" name="menuEdit">
         <property name="title">
@@ -198,14 +197,6 @@
       <addaction name="menuHelp"/>
     </widget>
     <widget class="QStatusBar" name="statusbar"/>
-    <action name="actionshowSVG">
-      <property name="enabled">
-        <bool>false</bool>
-      </property>
-      <property name="text">
-        <string>showSVG</string>
-      </property>
-    </action>
     <action name="actionNewGame">
       <property name="enabled">
         <bool>false</bool>

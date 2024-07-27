@@ -119,7 +119,6 @@ private:
 
 private Q_SLOTS:
 
-	void on_actionshowSVG_triggered();
 	void on_actionHighlightGeneratedTargetCells_triggered();
 	void on_actionEnableAllMenuBarItems_triggered();
 	void on_action22ReferenceGame_triggered();
@@ -172,7 +171,7 @@ private:
 
 	std::vector<QMetaObject::Connection> inputConnections;
 
-	std::vector<QMetaObject::Connection> historyConnections;
+	//std::vector<QMetaObject::Connection> historyConnections;
 
 	QSignalMapper* signalMapper{ nullptr };
 

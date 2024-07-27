@@ -260,22 +260,6 @@ void MainWindow::selectSolution(std::size_t index)
 	current_game->select_solution(index);
 }
 
-void MainWindow::on_actionshowSVG_triggered()
-{
-	const QString example_svg_string{
-	  R"xxx(<?xml version="1.0" ?>
-<!DOCTYPE svg  PUBLIC '-//W3C//DTD SVG 1.1//EN'  'http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd'>
-<svg enable-background="new 0 0 512 512.068" height="512.068px" id="Layer_1" version="1.1" viewBox="0 0 512 512.068" width="512px" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-<g id="meanicons_x5F_23">
-<path d="M256.34-0.068C114.936-0.068,0.345,114.628,0.345,255.939c0,141.442,114.591,256.062,255.995,256.062   c141.424,0,256.005-114.619,256.005-256.062C512.346,114.628,397.764-0.068,256.34-0.068z M273.314,355.815l-73.994,74.068   l-74.089-74.068l-85.545-85.631l74.032-74.051l85.602,85.563L398.942,82.122l74.089,74.004L273.314,355.815z"/>
-</g>
-<g id="Layer_1_1_"/>
-</svg>
-)xxx"
-	};
-
-	viewSvgInMainView(example_svg_string);
-}
 
 void MainWindow::on_actionHighlightGeneratedTargetCells_triggered() {
 	highlightGeneratedTargetCells();
@@ -543,17 +527,13 @@ void MainWindow::refreshHistory()
 		const auto state_counter{ factory_history[i_reverse]->get_state_generator_counter() };
 		
 		auto action = sub->addAction(
-			QString::number(i_reverse) + " :    " + QString::number(world_counter) + " : " + QString::number(state_counter)
+			QString::number(i_reverse + 1) + " :    " + QString::number(world_counter) + " : " + QString::number(state_counter)
 		);
 
-		historyConnections.push_back(
-			QObject::connect(action, &QAction::triggered, historySignalMapper, qOverload<>(&QSignalMapper::map), Qt::AutoConnection)
-		);
-
+		QObject::connect(action, &QAction::triggered, historySignalMapper, qOverload<>(&QSignalMapper::map), Qt::AutoConnection);
+		
 		historySignalMapper->setMapping(action, static_cast<int>(i_reverse));
 	}
-
-	//historyConnections.clear(); // can be removed, not needed.
 
 }
 
