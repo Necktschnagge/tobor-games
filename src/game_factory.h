@@ -21,9 +21,14 @@ public:
 
 	virtual std::size_t world_generator_group_size() const = 0;
 
+	virtual std::size_t get_world_generator_counter() const = 0;
+
 	virtual void set_world_generator_counter(std::size_t c) = 0;
 
+
 	virtual std::size_t state_generator_group_size() const = 0;
+
+	virtual std::size_t get_state_generator_counter() const = 0;
 
 	virtual void set_state_generator_counter(std::size_t c) = 0;
 
@@ -106,6 +111,10 @@ public:
 	virtual std::size_t world_generator_group_size() const override {
 		return board_generator_type::CYCLIC_GROUP_SIZE;
 	}
+	
+	virtual std::size_t get_world_generator_counter() const override {
+		return _product_generator.main().get_counter();
+	}
 
 	virtual void set_world_generator_counter(std::size_t c) override {
 		_product_generator.main().set_counter(c);
@@ -113,6 +122,10 @@ public:
 
 	virtual std::size_t state_generator_group_size() const override {
 		return state_generator_type::CYCLIC_GROUP_SIZE;
+	}
+
+	virtual std::size_t get_state_generator_counter() const override {
+		return _product_generator.side().get_counter();
 	}
 
 	virtual void set_state_generator_counter(std::size_t c) override {
@@ -243,9 +256,13 @@ public:
 
 	virtual std::size_t world_generator_group_size() const override { return 0; }
 
+	virtual std::size_t get_world_generator_counter() const override { return 0; }
+
 	virtual void set_world_generator_counter(std::size_t) override {}
 
 	virtual std::size_t state_generator_group_size() const override { return 0; }
+	
+	virtual std::size_t get_state_generator_counter() const override { return 0; }
 
 	virtual void set_state_generator_counter(std::size_t) override {}
 

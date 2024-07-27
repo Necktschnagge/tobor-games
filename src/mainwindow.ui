@@ -118,6 +118,11 @@
         <property name="title">
           <string>&amp;Game</string>
         </property>
+        <widget class="QMenu" name="menuHistory">
+          <property name="title">
+            <string>&amp;History...</string>
+          </property>
+        </widget>
         <widget class="QMenu" name="menuSelect_Piece">
           <property name="title">
             <string>Select &amp;Piece...</string>
@@ -140,6 +145,7 @@
           <addaction name="actionBack"/>
         </widget>
         <addaction name="actionNewGame"/>
+        <addaction name="menuHistory"/>
         <addaction name="actionStopGame"/>
         <addaction name="separator"/>
         <addaction name="menuSelect_Piece"/>

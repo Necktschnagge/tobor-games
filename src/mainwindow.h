@@ -96,7 +96,11 @@ private:
 	// concrete actions executed via slots or via direct calls
 
 	// game
+	void startGame(AbstractGameFactory* factory);
 	void startGame();
+private Q_SLOTS:
+	void startGameFromHistory(int index);
+private:
 	void startReferenceGame22();
 	void stopGame();
 
@@ -104,11 +108,12 @@ private:
 	void startSolver();
 	void selectSolution(std::size_t index);
 	void stopSolver();
-	
+
 	// game moves
 	void selectPieceByColorId(const std::size_t& color_id);
 	void movePiece(const tobor::v1_0::direction& direction);
 	void undo();
+
 
 
 
@@ -149,7 +154,8 @@ private:
 	void refreshMenuButtonEnable();
 	void refreshStatusbar();
 	void refreshSolutionPaths();
-	
+	void refreshHistory();
+
 	void highlightGeneratedTargetCells();
 
 private:
@@ -166,7 +172,11 @@ private:
 
 	std::vector<QMetaObject::Connection> inputConnections;
 
-	QSignalMapper* signalMapper;
+	std::vector<QMetaObject::Connection> historyConnections;
+
+	QSignalMapper* signalMapper{ nullptr };
+
+	QSignalMapper* historySignalMapper{ nullptr };
 
 	ControlKeyEventAgent controlKeyEventAgent;
 
@@ -175,8 +185,6 @@ private:
 	inline void viewSvgInMainView(const std::string& svg_string) {
 		return viewSvgInMainView(QString::fromStdString(svg_string));
 	}
-
-	QMenu* getSelectPieceSubMenu();
 
 	void disconnectInputConnections() {
 		for (QMetaObject::Connection& c : inputConnections) {

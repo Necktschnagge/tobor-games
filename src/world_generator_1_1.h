@@ -200,7 +200,7 @@ namespace tobor {
 
 
 
-				inline uint64_t get_counter() {
+				inline uint64_t get_counter() const {
 					return counter;
 				}
 
@@ -477,7 +477,7 @@ namespace tobor {
 				}
 
 
-				inline uint64_t get_counter() {
+				inline uint64_t get_counter() const {
 					return counter;
 				}
 

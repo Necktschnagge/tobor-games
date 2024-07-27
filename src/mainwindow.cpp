@@ -42,7 +42,11 @@ MainWindow::MainWindow(QWidget* parent) :
 
 	signalMapper = new QSignalMapper(this);
 
+	historySignalMapper = new QSignalMapper(this);
+
 	QObject::connect(signalMapper, QSignalMapper__mappedInt__OR__mapped__PTR, this, &MainWindow::selectPieceByColor, Qt::AutoConnection);
+	
+	QObject::connect(historySignalMapper, QSignalMapper__mappedInt__OR__mapped__PTR, this, &MainWindow::startGameFromHistory, Qt::AutoConnection);
 
 	// in-game navigation input:
 	ui->graphicsView->installEventFilter(&controlKeyEventAgent);
@@ -112,7 +116,7 @@ void MainWindow::stopGame()
 {
 	statusbarItems.setSelectedPiece(Qt::darkGray);
 	disconnectInputConnections();
-	getSelectPieceSubMenu()->clear();
+	ui->menuSelect_Piece->clear();
 
 	if (!current_game) return showErrorDialog("This action should not be available.");
 	current_game.reset();
@@ -120,17 +124,28 @@ void MainWindow::stopGame()
 	refreshAll();
 }
 
-void MainWindow::startGame()
+void MainWindow::startGame(AbstractGameFactory* factory)
 {
-	// when editing, also edit inline void startReferenceGame22Helper(X& guiInteractiveController) and maybe use a new fascade for creating a new game
 	if (current_game) return showErrorDialog("This action should not be available.");
 
-	auto& fac{ next_factory_1[factory_select] };
+	current_game.reset(factory->create());
+	current_color_vector = tobor::v1_0::color_vector::get_standard_coloring(static_cast<uint8_t>(current_game->count_pieces())); // standard coloring without permutation
+
+	createColorActions();
+
+	statusBar()->showMessage("Game started.");
+	refreshAll();
+}
+
+void MainWindow::startGame()
+{
+	if (current_game) return showErrorDialog("This action should not be available.");
+
+	std::unique_ptr<AbstractGameFactory>& fac{ next_factory_1[factory_select] };
 
 	factory_history.emplace_back(fac->clone());
 
-	current_game.reset(fac->create());
-
+	startGame(fac.get());
 
 	fac->increment();
 
@@ -168,13 +183,14 @@ void MainWindow::startGame()
 		colorPermutation = boardGenerator.obtain_standard_4_coloring_permutation(not_yet_permutated);
 	}
 	*/
+	
+}
 
-	current_color_vector = tobor::v1_0::color_vector::get_standard_coloring(static_cast<uint8_t>(current_game->count_pieces())); // standard coloring without permutation
+void MainWindow::startGameFromHistory(int index)
+{
+	if (current_game) return showErrorDialog("This action should not be available.");
 
-	createColorActions();
-
-	statusBar()->showMessage("Game started.");
-	refreshAll();
+	return startGame(factory_history[index].get());
 }
 
 void MainWindow::startReferenceGame22()
@@ -385,6 +401,7 @@ void MainWindow::setMenuButtonEnableForNoGame()
 	ui->menuSelect_Piece->setEnabled(false);
 	ui->menuMove->setEnabled(false);
 	ui->menuPlaySolver->setEnabled(false);
+	ui->menuHistory->setEnabled(true);
 }
 
 void MainWindow::setMenuButtonEnableForInteractiveGame()
@@ -397,6 +414,7 @@ void MainWindow::setMenuButtonEnableForInteractiveGame()
 	ui->menuSelect_Piece->setEnabled(true);
 	ui->menuMove->setEnabled(true);
 	ui->menuPlaySolver->setEnabled(false);
+	ui->menuHistory->setEnabled(false);
 }
 
 void MainWindow::setMenuButtonEnableForSolverGame()
@@ -409,6 +427,7 @@ void MainWindow::setMenuButtonEnableForSolverGame()
 	ui->menuSelect_Piece->setEnabled(false);
 	ui->menuMove->setEnabled(false);
 	ui->menuPlaySolver->setEnabled(true);
+	ui->menuHistory->setEnabled(false);
 }
 
 void MainWindow::createColorActions()
@@ -507,6 +526,37 @@ void MainWindow::refreshSolutionPaths()
 	ui->listView->setModel(model); // not needed multiple times ###
 }
 
+void MainWindow::refreshHistory()
+{
+	QMenu* sub = ui->menuHistory;
+
+	sub->clear();
+	// actions are deleted,
+	// according to QSignalMapper's docs, the map entries for these objects will be deleted on their destruction.
+
+
+	for (std::size_t i = 0; i < factory_history.size(); ++i) {
+
+		const auto i_reverse{ factory_history.size() - i - 1 };
+
+		const auto world_counter{ factory_history[i_reverse]->get_world_generator_counter() };
+		const auto state_counter{ factory_history[i_reverse]->get_state_generator_counter() };
+		
+		auto action = sub->addAction(
+			QString::number(i_reverse) + " :    " + QString::number(world_counter) + " : " + QString::number(state_counter)
+		);
+
+		historyConnections.push_back(
+			QObject::connect(action, &QAction::triggered, historySignalMapper, qOverload<>(&QSignalMapper::map), Qt::AutoConnection)
+		);
+
+		historySignalMapper->setMapping(action, static_cast<int>(i_reverse));
+	}
+
+	//historyConnections.clear(); // can be removed, not needed.
+
+}
+
 void MainWindow::highlightGeneratedTargetCells()
 {
 	if (!current_game) {
@@ -527,6 +577,7 @@ void MainWindow::refreshAll()
 	refreshStatusbar();
 	refreshMenuButtonEnable();
 	refreshSolutionPaths();
+	refreshHistory();
 }
 
 void MainWindow::StatusbarItems::init(QStatusBar* statusbar) {
@@ -594,14 +645,9 @@ void MainWindow::StatusbarItems::setSelectedPiece(const QColor& c)
 	pieceSelectedValue->setPixmap(pm.scaled(pieceSelectedValue->size(), Qt::KeepAspectRatio));
 }
 
-QMenu* MainWindow::getSelectPieceSubMenu() {
-	return ui->menuSelect_Piece;
-}
-
 void MainWindow::selectPieceByColor(int index) {
 	selectPieceByColorId(index); // where to check range correctness? SignalMapper should not fire an int greater than color vector, make some additional check here (or somewhere else?)
 }
-
 
 template<class QMenu_OR_QMenuBar>
 inline void menu_recursion(QMenu_OR_QMenuBar* m) {
