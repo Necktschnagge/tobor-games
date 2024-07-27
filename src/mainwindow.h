@@ -146,7 +146,7 @@ private:
 	// Refresh UI Elements / Views
 	void refreshSVG();
 	void refreshNumberOfSteps();
-	void refreshMenuButtonEnable();;
+	void refreshMenuButtonEnable();
 	void refreshStatusbar();
 	void refreshSolutionPaths();
 	
