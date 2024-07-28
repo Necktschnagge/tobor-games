@@ -155,6 +155,7 @@ public:
 		}
 		_solution_index = 0;
 		if (status_callback) status_callback("Successfully executed solver.");
+		return 0;
 	}
 
 	virtual void reset_solver_steps() override {
