@@ -142,26 +142,32 @@ public:
 		}
 	}
 
-	virtual void start_solver(std::function<void(const std::string&)> status_callback = nullptr) override {
-		_solver.emplace(current_state(), _target_cell, _move_engine, status_callback);
+	virtual uint8_t start_solver(std::function<void(const std::string&)> status_callback = nullptr) override {
+		if (_solver) return 2;
 
+		_solver.emplace(current_state(), _target_cell, _move_engine, status_callback);
 		_solver_begin_index = _path.vector().size();
 
 		if (_solver.value().solutions_size() == 0) {
-			// error dialog message!!!####
-			return stop_solver();
+			if (status_callback) status_callback("Solver terminated but did not find any solution.");
+			stop_solver();
+			return 1;
 		}
-
+		_solution_index = 0;
 		if (status_callback) status_callback("Successfully executed solver.");
 	}
 
 	virtual void reset_solver_steps() override {
 		// go back to solver_begin_index
+
+		// could change this behavior into reset_steps(), resetting to initial state if not in solver mode. ###
+		if (!_solver) return;
 		_path.vector().erase(_path.vector().begin() + _solver_begin_index, _path.vector().end());
 	}
 
 	virtual void stop_solver() override {
 		_solver_begin_index = 0;
+		_solution_index = 0;
 		_solver.reset();
 	}
 
@@ -254,7 +260,7 @@ public:
 	// should be moved outside the game controller. This is my interim solution
 	virtual std::string svg(
 		const tobor::v1_1::color_vector& current_color_vector,
-		const tobor::v1_1::general_piece_shape_selection& shape = tobor::v1_1::general_piece_shape_selection::BALL
+		const tobor::v1_1::general_piece_shape_selection& shape
 	) const override {
 
 		auto permutated_color_vector = current_color_vector;
@@ -281,15 +287,15 @@ public:
 		return example_svg_string;
 	}
 
-	virtual bool select_piece_by_piece_id(const std::size_t& piece_id) override {
-		if (_solver) return false;
-		if (!(piece_id < pieces_quantity_type::COUNT_ALL_PIECES)) return false;
+	virtual uint8_t select_piece_by_piece_id(const std::size_t& piece_id) override {
+		if (_solver) return 2;
+		if (!(piece_id < pieces_quantity_type::COUNT_ALL_PIECES)) return 1;
 		_selected_piece_id.value = static_cast<decltype(_selected_piece_id.value)>(piece_id);
-		return true;
+		return 0;
 	}
 
 
-	virtual bool select_piece_by_color_id(const std::size_t& color_id) override {
+	virtual uint8_t select_piece_by_color_id(const std::size_t& color_id) override {
 		auto iter = std::find(
 			current_state().permutation().cbegin(),
 			current_state().permutation().cend(),
@@ -297,7 +303,7 @@ public:
 		);
 
 		if (iter == current_state().permutation().cend())
-			return false;
+			return 4;
 
 		return select_piece_by_piece_id(iter - current_state().permutation().cbegin());
 	}
