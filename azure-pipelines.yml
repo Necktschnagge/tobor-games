@@ -273,7 +273,7 @@ stages:
        - script: git fetch
          displayName: "git fetch"
          condition: succeeded()
-       - script: echo "Build.SourceVersionMessagen $(Build.SourceVersionMessagen)"
+       - script: echo "Build.SourceVersionMessagen $(Build.SourceVersionMessage)"
          displayName: "check commit"
          condition: succeeded()
        - script: echo "Build.SourceVersion $(Build.SourceVersion)"
