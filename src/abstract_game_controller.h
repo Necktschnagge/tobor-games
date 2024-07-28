@@ -83,7 +83,7 @@ public:
 	/**
 	*	@brief Makes a step back, unless is_initial() or in solver mode. In the latter case it is a no-op.
 	*/
-	virtual uint8_t undo() = 0;
+	virtual void undo() = 0;
 
 	/**
 	*	@brief Starts the solver and enters solver mode. In case of any error it remains in interactive mode.
@@ -92,7 +92,7 @@ public:
 	*	Returns 1 in case the solver terminated but did not find any solution.
 	*	Returns 0 if successful, switched from interactive mode to solver mode.
 	*/
-	virtual void start_solver(std::function<void(const std::string&)> status_callback) = 0;
+	virtual uint8_t start_solver(std::function<void(const std::string&)> status_callback) = 0;
 
 	/**
 	*	@brief Resets game state to the state where the solver has been started. Does nothing if not in solver mode.
