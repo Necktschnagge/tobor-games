@@ -92,6 +92,7 @@ sudo apt-get install -y graphviz
 echo "+++++++++++++++++++++++++++++++++++++++++++++++++++"
 echo
 echo "Create diagram..."
+mkdir -p ./build
 cd ./script
 ./udg-unix-create-include-dependency-graph.sh
 cd ..
