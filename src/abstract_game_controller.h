@@ -60,7 +60,7 @@ public:
 	*	@brief Returns empty list if not in solver mode.
 	*/
 	virtual QStringList optimal_solutions_list(const tobor::v1_1::color_vector& current_color_vector) const = 0;
-	// ### echange the QStringList here. Should not use Qt classes.
+	// ### exchange the QStringList here. Should not use Qt classes, note color_vector also uses Qt. Decide about some additional abstraction.
 
 
 

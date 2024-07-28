@@ -4,7 +4,6 @@
 
 #include "key_event_filter.h"
 
-#include "game_controller.h"
 #include "game_factory.h"
 
 #include <QMainWindow>

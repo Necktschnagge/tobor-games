@@ -1,14 +1,7 @@
 #pragma once
 
 #include "solver_environment.h"
-
 #include "abstract_game_controller.h"
-
-#include "engine_typeset.h"
-
-#include "color_generator.h"
-
-#include "svg_1_1.h"
 
 #include <QString>
 
