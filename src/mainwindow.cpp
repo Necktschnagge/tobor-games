@@ -214,7 +214,7 @@ void MainWindow::selectPieceByColorId(const std::size_t& color_id)
 {
 	if (!current_game) return showErrorDialog("Cannot select piece with no game opened.");
 
-	const bool ERROR_CODE{ current_game->select_piece_by_color_id(color_id) };
+	const uint8_t ERROR_CODE{ current_game->select_piece_by_color_id(color_id) };
 	if (ERROR_CODE) throw std::logic_error("Illegal color_id.");
 	refreshStatusbar();
 }
