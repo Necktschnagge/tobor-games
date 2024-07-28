@@ -41,7 +41,7 @@ fi
 
 #environment variables:
 echo "+++ Graph +++"
-git log --graph
+git log --graph --all
 echo "+++++++++++++"
 
 #there is only one commit fetched into local repository !!!!!!
