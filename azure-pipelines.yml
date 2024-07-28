@@ -276,6 +276,9 @@ stages:
        - script: echo "Build.SourceVersionMessagen $(Build.SourceVersionMessage)"
          displayName: "check commit"
          condition: succeeded()
+       - script: echo "Build.SourceVersionMessagen $(Build.SourceVersionMessage)" | grep -P '(?<=[Mm]erge )[0123456789abcdef]*(?= into)' -o
+         displayName: "check commit"
+         condition: succeeded()
        - script: echo "Build.SourceVersion $(Build.SourceVersion)"
          displayName: "check commit"
          condition: succeeded()
