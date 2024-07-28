@@ -277,8 +277,10 @@ stages:
            echo "Build.SourceVersion $(Build.SourceVersion)"
            echo "Build.SourceVersionMessage $(Build.SourceVersionMessage)"
            echo "extracted commit hash:" && echo "$(Build.SourceVersionMessage)" | grep -P '(?<=[Mm]erge )[0123456789abcdef]*(?= into)' -o || echo "EXTRACTION FALIED"
+           echo "latest branch commit hash:"
+           echo "$(Build.SourceVersionMessage)" | grep -P '(?<=[Mm]erge )[0123456789abcdef]*(?= into)' -o || echo "$(Build.SourceVersion)"
          displayName: "commit which is checked out"
          condition: succeeded()
-       - script: ./script/ci/create-deploy-include-dependency-graph.sh "$(GIT_USERNAME)" "$(GIT_ACCESS_TOKEN)" "$(System.PullRequest.PullRequestNumber)" "$(Build.SourceVersion)"
+       - script: ./script/ci/create-deploy-include-dependency-graph.sh "$(GIT_USERNAME)" "$(GIT_ACCESS_TOKEN)" "$(System.PullRequest.PullRequestNumber)" "$(echo "$(Build.SourceVersionMessage)" | grep -P '(?<=[Mm]erge )[0123456789abcdef]*(?= into)' -o || echo "$(Build.SourceVersion)")"
          displayName: "Create and deploy include dependency graph"
          condition: succeeded()
