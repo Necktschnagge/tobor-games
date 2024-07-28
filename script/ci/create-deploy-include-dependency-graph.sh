@@ -40,7 +40,12 @@ fi
 ########################### PULL REQUEST ONLY VARIABLES #####################################
 
 #environment variables:
+echo "+++ Graph +++"
 git log --graph
+echo "+++++++++++++"
+
+#there is only one commit fetched into local repository !!!!!!
+
 git_hash_last_commit=$(git rev-parse HEAD^2) # CI merges the current feature branch commit into pull request base branch. Therefore on CI there is always one commit more. -> use ^2 for merge ancestor (see https://medium.com/@gabicle/git-ancestry-references-explained-bd3a84a0b821)
 echo -e "\tgit_hash_last_commit: ${git_hash_last_commit}" #last commit on feature branch
 
