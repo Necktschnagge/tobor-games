@@ -270,6 +270,9 @@ stages:
         name: $(the_name)
 
       steps:
+       - script: git fetch
+         displayName: "git fetch"
+         condition: succeeded()
        - script: ./script/ci/create-deploy-include-dependency-graph.sh "$(GIT_USERNAME)" "$(GIT_ACCESS_TOKEN)" "$(System.PullRequest.PullRequestNumber)" "$(Build.SourceVersion)"
          displayName: "Create and deploy include dependency graph"
          condition: succeeded()
