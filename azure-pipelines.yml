@@ -248,3 +248,27 @@ stages:
        - script: .\build\test\Release\TEST-$(project_name).exe
          displayName: "Run Tests on Windows"
          condition: and(succeeded(), eq( variables['Agent.OS'], 'Windows_NT' ))
+
+
+
+ - stage: Docs
+   #${{ if eq(variables.USE_ARTIFICIAL_BUILD_DEPENDENCIES, true) }}:
+   #  dependsOn: [Compile_and_Test]
+
+   jobs:
+    - job: dependency_diagram
+      timeoutInMinutes: 30
+      strategy:
+        matrix:
+          ubuntu_22_04:
+            imageName: "ubuntu-22.04"
+            the_name: "Azure Pipelines"
+
+      pool:
+        vmImage: $(imageName)
+        name: $(the_name)
+
+      steps:
+       - script: ./script/ci/create-deploy-include-dependency-graph.sh "$(GIT_USERNAME)" "$(GIT_ACCESS_TOKEN)" "$(System.PullRequest.PullRequestNumber)"
+         displayName: "Create and deploy include dependency graph"
+         condition: succeeded()
