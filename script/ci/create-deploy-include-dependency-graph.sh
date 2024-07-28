@@ -25,6 +25,7 @@ git_username=${1}
 git_access_token=${2}
 
 ########################### CHECK FOR PULL REQUEST #####################################
+echo "+++++++++++++++++++++++++++++++++++++++++++++++++++"
 echo
 echo "Check if this is a pull request:"
 if [ "${pull_id}" -eq "${pull_id}" ] 2>/dev/null; then #always use single "[]" here so that "-eq" requires integers
@@ -38,6 +39,7 @@ else
 fi
 
 ########################### PULL REQUEST ONLY VARIABLES #####################################
+echo "+++++++++++++++++++++++++++++++++++++++++++++++++++"
 
 #environment variables:
 #echo "+++ Graph +++"
@@ -68,6 +70,7 @@ quit(){
 }
 
 ########################### CHECK PULL REQUEST LABELS #####################################
+echo "+++++++++++++++++++++++++++++++++++++++++++++++++++"
 echo
 echo "Checking labels of pull request ${git_pull_url}..."
 git_pull_labels=$(curl -H "Authorization: token ${git_access_token}" -X GET "https://api.github.com/repos/${user_repo_id}/issues/${pull_id}/labels")
@@ -80,11 +83,13 @@ else
 fi
 
 ########################### INSTALL DEPENDENCIES #####################################
+echo "+++++++++++++++++++++++++++++++++++++++++++++++++++"
 echo
 echo "Install dependencies..."
 sudo apt-get install -y graphviz
 
 ########################### CREATE DIAGRAM #####################################
+echo "+++++++++++++++++++++++++++++++++++++++++++++++++++"
 echo
 echo "Create diagram..."
 cd ./script
@@ -92,6 +97,7 @@ cd ./script
 cd ..
 
 ########################### UPLOAD ARTIFACT #####################################
+echo "+++++++++++++++++++++++++++++++++++++++++++++++++++"
 echo "Start uploading pdf build artifact..."
 LEFT_TRIES=10
 while true; do
@@ -128,6 +134,7 @@ while true; do
 done
 
 ########################### POST COMMENT #####################################
+echo "+++++++++++++++++++++++++++++++++++++++++++++++++++"
 echo -e "\tUploading PDF build artifact... DONE"
 if [[ ${git_pull_labels} =~ ^.*${links}.*$ ]]; then
 	echo "Found label ${links}. Skip posting a comment to the pull request linking to the preview PDF."
