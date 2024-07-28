@@ -15,7 +15,6 @@ stages:
 
  - stage: Compile_and_Test
    dependsOn: []
-   condition: false
    jobs:
     - job: Qt_5___Clang_17
       ${{ if eq(variables.USE_ARTIFICIAL_BUILD_DEPENDENCIES, true) }}:
@@ -254,7 +253,7 @@ stages:
  - stage: Docs
    #${{ if eq(variables.USE_ARTIFICIAL_BUILD_DEPENDENCIES, true) }}:
    #  dependsOn: [Compile_and_Test]
-   dependsOn: []
+   dependsOn: [Qt_6]
 
    jobs:
     - job: dependency_diagram
