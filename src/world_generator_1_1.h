@@ -3,6 +3,8 @@
 #include "models_1_1.h"
 #include "world_generator_1_0.h"
 
+#include "math.h"
+
 #include <vector>
 #include <array>
 #include <optional>
