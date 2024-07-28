@@ -253,7 +253,7 @@ stages:
  - stage: Docs
    #${{ if eq(variables.USE_ARTIFICIAL_BUILD_DEPENDENCIES, true) }}:
    #  dependsOn: [Compile_and_Test]
-   dependsOn: [Qt_6]
+   dependsOn: []
 
    jobs:
     - job: dependency_diagram
