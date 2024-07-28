@@ -45,7 +45,7 @@ MainWindow::MainWindow(QWidget* parent) :
 	historySignalMapper = new QSignalMapper(this);
 
 	QObject::connect(signalMapper, QSignalMapper__mappedInt__OR__mapped__PTR, this, &MainWindow::selectPieceByColor, Qt::AutoConnection);
-	
+
 	QObject::connect(historySignalMapper, QSignalMapper__mappedInt__OR__mapped__PTR, this, &MainWindow::startGameFromHistory, Qt::AutoConnection);
 
 	// in-game navigation input:
@@ -183,7 +183,7 @@ void MainWindow::startGame()
 		colorPermutation = boardGenerator.obtain_standard_4_coloring_permutation(not_yet_permutated);
 	}
 	*/
-	
+
 }
 
 void MainWindow::startGameFromHistory(int index)
@@ -214,8 +214,8 @@ void MainWindow::selectPieceByColorId(const std::size_t& color_id)
 {
 	if (!current_game) return showErrorDialog("Cannot select piece with no game opened.");
 
-	const bool OK{ current_game->select_piece_by_color_id(color_id) };
-	if (!OK) throw std::logic_error("Illegal color_id.");
+	const bool ERROR_CODE{ current_game->select_piece_by_color_id(color_id) };
+	if (ERROR_CODE) throw std::logic_error("Illegal color_id.");
 	refreshStatusbar();
 }
 
@@ -525,13 +525,13 @@ void MainWindow::refreshHistory()
 
 		const auto world_counter{ factory_history[i_reverse]->get_world_generator_counter() };
 		const auto state_counter{ factory_history[i_reverse]->get_state_generator_counter() };
-		
+
 		auto action = sub->addAction(
 			QString::number(i_reverse + 1) + " :    " + QString::number(world_counter) + " : " + QString::number(state_counter)
 		);
 
 		QObject::connect(action, &QAction::triggered, historySignalMapper, qOverload<>(&QSignalMapper::map), Qt::AutoConnection);
-		
+
 		historySignalMapper->setMapping(action, static_cast<int>(i_reverse));
 	}
 
