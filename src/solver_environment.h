@@ -5,7 +5,11 @@
 #include <functional>
 #include <optional>
 
-
+/**
+*	@brief Encapsulation of solver usage, RAII friendly, for specific initial state and target cell.
+*
+*	@details Runs the solver on construction to produce a vector of optimal solutions.
+*/
 template<class Pieces_Quantity_T>
 class SolverEnvironment {
 public:
@@ -44,6 +48,10 @@ public:
 
 
 private:
+
+	/**
+	*	@brief Graph node annotation for state graphs.
+	*/
 	struct piece_change_decoration {
 		static constexpr std::size_t MAX{ std::numeric_limits<std::size_t>::max() };
 
@@ -75,6 +83,9 @@ private:
 	using pretty_evaluation_bigraph_map_iterator_type = typename pretty_evaluation_bigraph_type::map_iterator_type;
 
 	using path_classificator_type = tobor::v1_1::path_classificator<positions_of_pieces_type_solver>;
+
+
+	/** data **/
 
 	positions_of_pieces_type_interactive _initial_state;
 
@@ -322,6 +333,9 @@ private:
 
 
 public:
+	/**
+	*	@brief Constructs a SolverEnvironment object, running the solver for a specified initial state and target cell.
+	*/
 	SolverEnvironment(
 		const positions_of_pieces_type_interactive& initial_state,
 		const cell_id_type& target_cell,
@@ -339,6 +353,9 @@ public:
 		run_solver_toolchain(status_callback, MAX_DEPTH, 0);
 	}
 
+	/**
+	*	@brief Reruns the solver in case it did not reach the target cell yet due to given depth limitation.
+	*/
 	inline void advance_max_depth(std::function<void(const std::string&)> status_callback = nullptr, const std::size_t MAX_DEPTH = distance_exploration_type::SIZE_TYPE_MAX) {
 		if (_status_code == 0) {
 			return;
