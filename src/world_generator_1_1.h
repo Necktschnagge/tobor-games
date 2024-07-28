@@ -1,6 +1,6 @@
 #pragma once
 
-#include "models_1_0.h"
+#include "models_1_1.h"
 #include "world_generator_1_0.h"
 
 #include <vector>
