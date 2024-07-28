@@ -18,7 +18,7 @@ echo -e "\tgit_pull_url: ${git_pull_url}"
 diagram="dependency-diagram" #create diagram if present
 links="no-links" #do not post a link to diagram if present
 git_branch_artifacts="artifacts"
-git_base_branch_for_artifacts="stable"
+git_base_branch_for_artifacts="main"
 
 #secret variables:
 git_username=${1}
