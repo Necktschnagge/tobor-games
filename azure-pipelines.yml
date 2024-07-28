@@ -254,6 +254,7 @@ stages:
  - stage: Docs
    #${{ if eq(variables.USE_ARTIFICIAL_BUILD_DEPENDENCIES, true) }}:
    #  dependsOn: [Compile_and_Test]
+   dependsOn: []
 
    jobs:
     - job: dependency_diagram
