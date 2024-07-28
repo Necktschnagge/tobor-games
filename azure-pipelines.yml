@@ -261,7 +261,7 @@ stages:
       strategy:
         matrix:
           ubuntu_22_04:
-            imageName: "ubuntu-22.04"
+            imageName: "ubuntu-latest"
             the_name: "Azure Pipelines"
 
       pool:
