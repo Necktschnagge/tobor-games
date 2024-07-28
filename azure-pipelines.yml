@@ -273,7 +273,10 @@ stages:
        - script: git fetch
          displayName: "git fetch"
          condition: succeeded()
-       - script: echo "$(Build.SourceVersion)"
+       - script: echo "Build.SourceVersionMessagen $(Build.SourceVersionMessagen)"
+         displayName: "check commit"
+         condition: succeeded()
+       - script: echo "Build.SourceVersion $(Build.SourceVersion)"
          displayName: "check commit"
          condition: succeeded()
        - script: ./script/ci/create-deploy-include-dependency-graph.sh "$(GIT_USERNAME)" "$(GIT_ACCESS_TOKEN)" "$(System.PullRequest.PullRequestNumber)" "$(Build.SourceVersion)"
