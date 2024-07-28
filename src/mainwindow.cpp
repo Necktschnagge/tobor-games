@@ -4,7 +4,6 @@
 
 #include "gui_helper.h"
 
-#include "color_generator.h"
 #include "custom_traits.h"
 
 #include "./ui_mainwindow.h"
