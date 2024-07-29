@@ -2,7 +2,6 @@
 
 
 namespace tobor {
-
 	namespace v1_0 {
 
 		/**
@@ -34,7 +33,13 @@ namespace tobor {
 			inline piece_id& operator++() { ++value; return *this; }
 
 			inline piece_id operator++(int) { const piece_id copy{ *this }; ++value; return copy; }
-
 		};
+
+	}
+	namespace v1_1 {
+
+		template <class Pieces_Quantity_T>
+		using piece_id = tobor::v1_0::piece_id<Pieces_Quantity_T>;
+
 	}
 }

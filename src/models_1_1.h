@@ -25,8 +25,6 @@ namespace tobor {
 		using default_augmented_positions_of_pieces = augmented_positions_of_pieces< default_pieces_quantity, default_min_size_cell_id, false, false>;
 
 
-		template <class Pieces_Quantity_T>
-		using piece_id = tobor::v1_0::piece_id<Pieces_Quantity_T>;
 
 		using default_piece_id = piece_id<default_pieces_quantity>;
 
