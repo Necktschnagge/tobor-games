@@ -1,11 +1,13 @@
 #pragma once
 
-#include "default_models_1_0.h"
+#include "models/legacy_world.h"
+#include "models/redundant_cell_id.h"
 
 #include <vector>
 #include <array>
 #include <optional>
 #include <algorithm>
+#include <string>
 
 namespace tobor {
 
