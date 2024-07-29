@@ -13,11 +13,19 @@
 class AbstractGameFactory {
 public:
 
+	/**
+	*	@brief Constructs some derivation of AbstractGameController.
+	*/
 	[[nodiscard]] virtual AbstractGameController* create() const = 0;
 
+	/**
+	*	@brief Clones this factory.
+	*/
 	[[nodiscard]] virtual AbstractGameFactory* clone() const = 0;
 
-
+	/**
+	*	@brief Returns an svg presenting a game board with target cells marked and the number of target cells.
+	*/
 	virtual std::pair<std::string, std::size_t> svg_highlighted_targets() const = 0;
 
 	virtual ~AbstractGameFactory() {}
