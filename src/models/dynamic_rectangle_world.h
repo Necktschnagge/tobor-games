@@ -1,8 +1,10 @@
 #pragma once
 
 #include "wall.h"
+#include "errors.h"
 
 #include <stdexcept>
+#include <algorithm>
 
 namespace tobor {
 	namespace v1_1 {

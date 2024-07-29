@@ -1,5 +1,7 @@
 #pragma once
 
+#include "positions_of_pieces.h"
+
 namespace tobor {
 	namespace v1_1 {
 
@@ -286,4 +288,16 @@ namespace tobor {
 		};
 
 	}
+}
+
+namespace std {
+	template <class Pieces_Quantity_T, class Cell_Id_Type, bool SORTED_TARGET_PIECES_V, bool SORTED_NON_TARGET_PIECES_V>
+	inline void swap(
+		tobor::v1_1::augmented_positions_of_pieces<Pieces_Quantity_T, Cell_Id_Type, SORTED_TARGET_PIECES_V, SORTED_NON_TARGET_PIECES_V>& a,
+		tobor::v1_1::augmented_positions_of_pieces<Pieces_Quantity_T, Cell_Id_Type, SORTED_TARGET_PIECES_V, SORTED_NON_TARGET_PIECES_V>& b
+	) {
+		std::swap(a._piece_positions, b._piece_positions);
+		std::swap(a._permutation, b._permutation);
+	}
+
 }
