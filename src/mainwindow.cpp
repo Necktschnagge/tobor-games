@@ -8,7 +8,6 @@
 
 #include "./ui_mainwindow.h"
 
-#include "solver_1_1.h"
 #include "special_case_22_game_factory.h"
 #include "original_game_factory.h"
 

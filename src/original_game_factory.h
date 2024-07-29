@@ -2,8 +2,6 @@
 
 #include "game_controller.h"
 #include "world_generator_1_1.h"
-#include "svg_1_1.h"
-#include "abstract_game_factory.h"
 #include "cyclic_group_game_factory.h"
 
 #include <string>
