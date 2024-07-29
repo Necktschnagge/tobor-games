@@ -1,6 +1,7 @@
 #pragma once
 
-#include "default_models_1_1.h"
+#include "models/augmented_positions_of_pieces.h"
+
 #include "solver_1_0.h"
 
 #include <map>
@@ -405,7 +406,8 @@ namespace tobor {
 
 		};
 
-		using default_move_engine = move_engine<default_min_size_cell_id, default_quick_move_cache, default_piece_move>;
+		//using default_move_engine = move_engine<default_min_size_cell_id, default_quick_move_cache, default_piece_move>;
+		// activate this again !!!!!!
 
 
 		template<class State_T, class State_Label_T = void>
