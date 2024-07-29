@@ -1,5 +1,6 @@
 #pragma once
 
+#include "direction.h"
 
 namespace tobor {
 	namespace v1_0 {

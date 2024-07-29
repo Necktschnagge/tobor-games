@@ -1,7 +1,7 @@
 #pragma once
 
 #include "svg_1_0.h"
-#include "models_1_1.h"
+#include "default_models_1_1.h"
 
 
 namespace tobor {

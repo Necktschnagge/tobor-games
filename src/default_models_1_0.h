@@ -1,8 +1,5 @@
 #pragma once
 
-#include "models/errors.h"
-#include "models/direction.h"
-#include "models/wall.h"
 #include "models/legacy_world.h"
 #include "models/redundant_cell_id.h"
 #include "models/pieces_quantity.h"
