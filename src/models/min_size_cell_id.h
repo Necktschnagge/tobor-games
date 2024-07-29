@@ -1,7 +1,6 @@
 #pragma once
 
 
-
 namespace tobor {
 	namespace v1_1 {
 
