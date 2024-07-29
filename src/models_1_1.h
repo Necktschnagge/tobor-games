@@ -7,12 +7,6 @@
 namespace tobor {
 	namespace v1_1 {
 
-		using division_by_2_error = tobor::v1_0::division_by_2_error;
-
-		using blocked_center_error = tobor::v1_0::blocked_center_error;
-
-		using direction = tobor::v1_0::direction;
-
 		/**
 		*	@brief A Wrapper for a bool to distinguish between (non-transposed) id - direction (EAST - WEST) and transposed id - direction (NORTH - SOUTH)
 		*/
@@ -33,9 +27,7 @@ namespace tobor {
 			inline operator bool() const noexcept { return is_transposed; };
 		};
 
-		using wall = tobor::v1_0::wall;
 
-		using wall_vector = std::vector<wall>;
 
 		/**
 		*
