@@ -7,7 +7,9 @@
 #include <string>
 #include <memory>
 
-
+/**
+*	@brief Factory to create original games with 16x16 cells.
+*/
 template<class Pieces_Quantity_Type>
 class OriginalGameFactory : public CyclicGroupGameFactory {
 public:
@@ -74,6 +76,8 @@ public:
 	virtual OriginalGameFactory* clone() const override { return new OriginalGameFactory(*this); }
 
 	inline product_generator_type& product_generator() { return _product_generator; }
+
+
 
 	virtual std::size_t world_generator_group_size() const override {
 		return board_generator_type::CYCLIC_GROUP_SIZE;
