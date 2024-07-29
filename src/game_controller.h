@@ -5,6 +5,13 @@
 
 #include <QString>
 
+
+/**
+*	@brief Class for playing a game on a dynamic_rectangle_world, interactively and with solver.
+*
+*	@details States: The game is either in interactive mode or in solver mode.
+*	This controller is restricted to one specifc world with a specific initial state and target cell, all set on construction.
+*/
 template<class Pieces_Quantity_T>
 class DRWGameController : public AbstractGameController {
 
@@ -31,6 +38,7 @@ public:
 
 	using solver_environment_type = SolverEnvironment<Pieces_Quantity_T>;
 
+	using solver_optimal_solutions_vector = typename solver_environment_type::optimal_solutions_vector;
 private:
 
 	/* data */
@@ -39,17 +47,46 @@ private:
 
 	move_engine_type _move_engine;
 
+	/**
+	*	the path to current state in the game.
+	*/
 	state_path_type_interactive _path;
 
 	cell_id_type _target_cell;
 
 	std::optional<solver_environment_type> _solver;
 
-	std::size_t _solver_begin_index; // index of the first state where the solver moves to. == _path.vector().size() in case of solver-initial state
+	/**
+	*	@brief Index of the first state where the solver moves to.
+	*	Or _solver_begin_index == _path.vector().size() in case of solver-initial state
+	*	
+	*	@details Must be zero whenever _solver.has_value() == false, for canonicity.
+	*/
+	std::size_t _solver_begin_index;
 
+	/**
+	*	@brief Index of the selected solution.
+	*
+	*	@details Must be zero whenever _solver.has_value() == false, for canonicity.
+	*/
 	std::size_t _solution_index;
 
 	piece_id_type _selected_piece_id;
+
+	/**
+	*	@brief Extracts coloring by applying a given permutation as std::integer_sequence and extracting SVGColorString
+	*/
+	template<class T, pieces_quantity_int_type ... Index_Sequence>
+	inline static graphics_coloring_type make_coloring(
+		T& permutated_color_vector,
+		std::integer_sequence<pieces_quantity_int_type, Index_Sequence...>
+	) {
+		auto coloring = graphics_coloring_type{
+			(permutated_color_vector.colors[Index_Sequence].getSVGColorString()) ...
+		};
+		return coloring;
+	}
+
 
 public:
 
@@ -70,10 +107,17 @@ public:
 
 
 
-	/* non-modifying */
+	/* non-modifying ********************************************************************************************/
 
+	/**
+	*	@brief Returns the current state of the game.
+	*/
 	const positions_of_pieces_type_interactive& current_state() const { return _path.vector().back(); }
 
+	/**
+	*	@brief Returns the state where the game was before the solver made any steps forward.
+	*	@brief Returns current_state() when not in solver mode.
+	*/
 	const positions_of_pieces_type_interactive& solver_begin_state() const {
 		if (!_solver)
 			return _path.vector().back();
@@ -84,16 +128,26 @@ public:
 
 	virtual bool is_initial() const override { return _path.vector().size() == 1; }
 
+	/**
+	*	@brief Returns a const reference to underlying world.
+	*/
 	const world_type& world() const { return _world; }
 
+	/**
+	*	@brief Returns the target cell.
+	*/
 	const cell_id_type& target_cell() const { return _target_cell; }
 
 	virtual std::size_t depth() const override { return _path.vector().size() - 1; }
 
 	virtual std::size_t count_pieces() const override { return pieces_quantity_type::COUNT_ALL_PIECES; }
 
-	/* modifying */
+	/* modifying ***********************************************************************************************+*/
 
+	/**
+	*	@brief Moves given piece in given direction.
+	*	Parameter piece_id may be changed so that it points to the same piece after the move, especially if state changes piece order.
+	*/
 	uint8_t move_feedback(piece_id_type& piece_id, const tobor::v1_0::direction& direction) {
 		if (_solver) return 4;
 
@@ -107,7 +161,11 @@ public:
 
 		return 0;
 	}
-
+	
+	/**
+	*	@brief Moves given piece in given direction.
+	*	@details Note that after this move \p piece_id might point to another piece because of piece reordering. Consider using move_feedback(...) instead.
+	*/
 	uint8_t move(const piece_id_type& piece_id, const tobor::v1_0::direction& direction) {
 		if (_solver) return 4;
 
@@ -195,12 +253,17 @@ public:
 		return _solver.has_value();
 	}
 
-
+	/**
+	*	@brief Returns the current path.
+	*/
 	state_path_type_interactive path() const noexcept {
 		return _path;
 	}
 
-	inline typename solver_environment_type::optimal_solutions_vector optimal_solutions() const {
+	/**
+	*	@brief Returns a vector of all optimal solutions.
+	*/
+	inline solver_optimal_solutions_vector optimal_solutions() const {
 		if (_solver) {
 			return _solver.value().optimal_solutions();
 		}
@@ -232,24 +295,12 @@ public:
 
 			}
 			s = s + "     ( NO COUNT " + /*QString::number(partitions[i].size()) + */ ")";
+			// add counting or remove NO COUNT #####
 			qStringList << s;
 		}
 
 		return qStringList;
 	}
-
-
-	template<class T, pieces_quantity_int_type ... Index_Sequence>
-	inline static graphics_coloring_type make_coloring(
-		T& permutated_color_vector,
-		std::integer_sequence<pieces_quantity_int_type, Index_Sequence...>
-	) {
-		auto coloring = graphics_coloring_type{
-			(permutated_color_vector.colors[Index_Sequence].getSVGColorString()) ...
-		};
-		return coloring;
-	}
-
 
 	// should be moved outside the game controller. This is my interim solution
 	virtual std::string svg(
@@ -314,6 +365,6 @@ public:
 
 	// todo: functions below:
 
-	// must implement copy / move ctor and operator=
+	// must implement copy / move ctor and operator= ####
 };
 
