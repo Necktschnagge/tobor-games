@@ -14,12 +14,12 @@ class AbstractGameFactory {
 public:
 
 	/**
-	*	@brief Constructs some derivation of AbstractGameController.
+	*	@brief Constructs some derivation of AbstractGameController. The caller takes ownership of the returned object.
 	*/
 	[[nodiscard]] virtual AbstractGameController* create() const = 0;
 
 	/**
-	*	@brief Clones this factory.
+	*	@brief Clones this factory. The caller takes ownership of the returned object.
 	*/
 	[[nodiscard]] virtual AbstractGameFactory* clone() const = 0;
 
