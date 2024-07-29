@@ -13,7 +13,7 @@ TEST(engine, example_integration) {
 	// create initial robots position
 	// run solver
 
-	auto w = tobor::v1_0::default_world(16, 16);
+	auto w = tobor::v1_0::default_legacy_world(16, 16);
 
 	w.block_center_cells(2, 2);
 

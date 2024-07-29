@@ -7,6 +7,7 @@
 #include "models/redundant_cell_id.h"
 #include "models/pieces_quantity.h"
 #include "models/positions_of_pieces.h"
+#include "models/piece_id.h"
 
 
 #include <map>
@@ -28,39 +29,20 @@ namespace tobor {
 
 	namespace v1_0 {
 
-		/**
-		*	@brief Wrapper for an integer to select one of the pieces on the board.
-		*/
-		template <class Pieces_Quantity_Type = default_pieces_quantity>
-		struct piece_id {
 
-		public:
+		using default_legacy_world = legacy_world<std::size_t>;
 
-			using pieces_quantity_type = Pieces_Quantity_Type;
+		template<uint8_t COUNT_TARGET_PIECES_V, uint8_t COUNT_NON_TARGET_PIECES_V>
+		using uint8_t_pieces_quantity = pieces_quantity<uint8_t, COUNT_TARGET_PIECES_V, COUNT_NON_TARGET_PIECES_V>;
 
-			using int_type = typename pieces_quantity_type::int_type;
+		using default_pieces_quantity = pieces_quantity<uint8_t, 1, 3>;
 
-			int_type value;
+		using default_piece_id = piece_id<default_pieces_quantity>;
 
-			piece_id(int_type v) : value(v) {}
+		using default_cell_id = redundant_cell_id<default_legacy_world>;
 
-			piece_id() : value(0) {}
+		using default_positions_of_pieces = positions_of_pieces<default_pieces_quantity, default_cell_id, false, true>;
 
-			inline static piece_id begin() { return piece_id(0); }
-
-			inline static piece_id end() { return piece_id(pieces_quantity_type::COUNT_ALL_PIECES); }
-
-			inline bool operator < (const piece_id& another) const { return value < another.value; }
-
-			inline bool operator == (const piece_id& another) const { return value == another.value; }
-
-			inline piece_id& operator++() { ++value; return *this; }
-
-			inline piece_id operator++(int) { const piece_id copy{ *this }; ++value; return copy; }
-
-		};
-
-		using default_piece_id = piece_id<>;
 
 		/*
 		*	@brief Equivalent to a pair of a piece_id and a direction where to move it.

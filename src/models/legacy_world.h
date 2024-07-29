@@ -7,12 +7,11 @@ namespace tobor {
 	namespace v1_0 {
 
 		/**
-		*
 		*	@brief Represents the game's entire board, stating which cells are separated by walls.
-		*	@details Does NOT contain any information about where pieces are located.
 		*
+		*	@details Does NOT contain any information about where pieces are located.
 		*/
-		template <class Int_Type_T = std::size_t>
+		template <class Int_Type_T>
 		class legacy_world {
 		public:
 
@@ -235,6 +234,5 @@ namespace tobor {
 
 		};
 
-		using default_world = legacy_world<>;
 	}
 }

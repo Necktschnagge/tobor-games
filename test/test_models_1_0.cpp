@@ -69,13 +69,13 @@ TEST(tobor__v1_0__wall, create_wall_type_bool_conversion) {
 
 TEST(tobor__v1_0__tobor_world, create_world) {
 	EXPECT_NO_THROW(
-		tobor::v1_0::legacy_world world;
+		tobor::v1_0::default_legacy_world world;
 	);
 }
 
 TEST(tobor__v1_0__universal_cell_id, create) {
 	EXPECT_NO_THROW(
-		auto cell_id = tobor::v1_0::redundant_cell_id();
+		auto cell_id = tobor::v1_0::default_cell_id();
 	(void)cell_id;
 	);
 }
@@ -97,7 +97,7 @@ TEST(tobor__v1_0__positions_of_pieces, create) {
 	using pop_type = tobor::v1_0::positions_of_pieces<tobor::v1_0::default_pieces_quantity, tobor::v1_0::default_cell_id, false, false>;
 
 	EXPECT_NO_THROW(
-		auto w = tobor::v1_0::default_world(10, 10);
+		auto w = tobor::v1_0::default_legacy_world(10, 10);
 
 	auto raw = std::vector<tobor::v1_0::default_cell_id>(4, tobor::v1_0::default_cell_id());
 
@@ -117,7 +117,7 @@ TEST(tobor__v1_0__positions_of_pieces, create) {
 
 TEST(tobor__v1_0__piece_id, create) {
 
-	auto x = tobor::v1_0::piece_id(7);
+	auto x = tobor::v1_0::default_piece_id(7);
 
 	EXPECT_EQ(x.value, 7);
 }

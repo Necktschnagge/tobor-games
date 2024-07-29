@@ -14,8 +14,12 @@ namespace tobor {
 
 		using default_min_size_cell_id = min_size_cell_id<default_dynamic_rectangle_world>;
 
-		using default_positions_of_pieces = positions_of_pieces<default_pieces_quantity, default_min_size_cell_id, false, true>;
+		template<uint8_t COUNT_TARGET_PIECES_V, uint8_t COUNT_NON_TARGET_PIECES_V>
+		using uint8_t_pieces_quantity = pieces_quantity<uint8_t, COUNT_TARGET_PIECES_V, COUNT_NON_TARGET_PIECES_V>;
 
+		using default_pieces_quantity = pieces_quantity<uint8_t, 1, 3>;
+
+		using default_positions_of_pieces = positions_of_pieces<default_pieces_quantity, default_min_size_cell_id, false, true>;
 
 		/**
 		*	@brief Contains the information where the pieces are located on the game board.

@@ -1,6 +1,5 @@
 #pragma once
 
-#include "legacy_world.h"
 
 namespace tobor {
 	namespace v1_0 {
@@ -12,7 +11,7 @@ namespace tobor {
 					It is the least memory efficient way but may reduce computation time (not yet tested!).
 					Reading different kind of ids does not require a game board object.
 		*/
-		template<class World_Type_T = default_world>
+		template<class World_Type_T>
 		class redundant_cell_id {
 		public:
 
@@ -107,8 +106,6 @@ namespace tobor {
 			}
 
 		};
-
-		using default_cell_id = redundant_cell_id<>;
 
 	}
 }

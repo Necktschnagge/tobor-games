@@ -16,7 +16,7 @@ namespace tobor {
 		*
 		* @details For a board, it stores for each cell the information which are the cells to move to on one step [west, east, south, north] until wall, assuming that there are no pieces on the way.
 		*/
-		template<class World_Type_T = default_world>
+		template<class World_Type_T = default_legacy_world>
 		class quick_move_cache {
 		public:
 

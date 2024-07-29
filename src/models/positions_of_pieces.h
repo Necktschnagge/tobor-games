@@ -1,22 +1,18 @@
 #pragma once
 
-#include "pieces_quantity.h"
-#include "redundant_cell_id.h"
 
 #include <array>
 #include <functional>
 #include <algorithm>
 
 
-
 namespace tobor {
-
 	namespace v1_0 {
 
 		/**
 		*	@brief Contains the information where the pieces are located on the game board.
 		*/
-		template <class Pieces_Quantity_Type = default_pieces_quantity, class Cell_Id_Type_T = default_cell_id, bool SORTED_TARGET_PIECES_V = true, bool SORTED_NON_TARGET_PIECES_V = true>
+		template <class Pieces_Quantity_Type, class Cell_Id_Type_T, bool SORTED_TARGET_PIECES_V, bool SORTED_NON_TARGET_PIECES_V>
 		class positions_of_pieces {
 		public:
 
@@ -332,8 +328,6 @@ namespace tobor {
 				return counter;
 			}
 		};
-
-		using default_positions_of_pieces = positions_of_pieces<default_pieces_quantity, default_cell_id, false, true>;
 
 	}
 	namespace v1_1 {
