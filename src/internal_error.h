@@ -22,7 +22,7 @@ namespace fsl {
 		internal_error(const std::string& message) : message(INTERNAL_ERROR + message + PLEASE_REPORT) {}
 		internal_error(const char* message) : internal_error(std::string(message)) {}
 		internal_error(const internal_error&) = default;
-
+		 
 		const char* what() const noexcept override {
 			return message.c_str();
 		}

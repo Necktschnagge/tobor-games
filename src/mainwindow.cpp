@@ -7,7 +7,11 @@
 #include "custom_traits.h"
 
 #include "./ui_mainwindow.h"
+
 #include "solver_1_1.h"
+#include "special_case_22_game_factory.h"
+#include "original_game_factory.h"
+
 
 #include "spdlog/spdlog.h"
 #include "spdlog/sinks/qt_sinks.h"
@@ -140,7 +144,7 @@ void MainWindow::startGame()
 {
 	if (current_game) return showErrorDialog("This action should not be available.");
 
-	std::unique_ptr<AbstractGameFactory>& fac{ next_factory_1[factory_select] };
+	std::unique_ptr<CyclicGroupGameFactory>& fac{ next_factory_1[factory_select] };
 
 	factory_history.emplace_back(fac->clone());
 

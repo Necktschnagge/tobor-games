@@ -4,7 +4,7 @@
 
 #include "key_event_filter.h"
 
-#include "game_factory.h"
+#include "cyclic_group_game_factory.h"
 
 #include <QMainWindow>
 #include <QSvgRenderer>
@@ -193,9 +193,9 @@ private:
 
 	std::shared_ptr<AbstractGameController> current_game; /// check all positions where used!!!! #######
 
-	std::vector<std::shared_ptr<AbstractGameFactory>> factory_history;
+	std::vector<std::shared_ptr<CyclicGroupGameFactory>> factory_history;
 
-	std::vector<std::unique_ptr<AbstractGameFactory>> next_factory_1;
+	std::vector<std::unique_ptr<CyclicGroupGameFactory>> next_factory_1;
 
 	std::size_t factory_select;
 
