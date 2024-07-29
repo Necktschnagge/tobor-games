@@ -136,7 +136,7 @@ TEST(tobor__v1_0__piece_move, create_and_compare) {
 TEST(tobor__v1_0__move_path, create) {
 
 	EXPECT_NO_THROW(
-		auto mp = tobor::v1_0::move_path();
+		auto mp = tobor::v1_0::default_move_path();
 	(void)mp;
 	);
 
