@@ -12,26 +12,9 @@
 #include "models/move_path.h"
 
 
-
-
-#include <map>
-#include <array>
-#include <vector>
-
-#include <algorithm>
-#include <utility>
-
-#include <iterator>
-#include <string>
-#include <execution>
-#include <compare>
-#include <functional>
-
-
 namespace tobor {
 
 	namespace v1_0 {
-
 
 		using default_legacy_world = legacy_world<std::size_t>;
 
@@ -50,18 +33,5 @@ namespace tobor {
 
 		using default_move_path = move_path<default_piece_move>;
 
-	}
-
-
-}
-
-namespace std {
-
-	template <class Pieces_Quantity_Type, class Cell_Id_Type_T, bool SORTED_TARGET_PIECES_V, bool SORTED_NON_TARGET_PIECES_V>
-	inline void swap(
-		tobor::v1_0::positions_of_pieces<Pieces_Quantity_Type, Cell_Id_Type_T, SORTED_TARGET_PIECES_V, SORTED_NON_TARGET_PIECES_V>& a,
-		tobor::v1_0::positions_of_pieces<Pieces_Quantity_Type, Cell_Id_Type_T, SORTED_TARGET_PIECES_V, SORTED_NON_TARGET_PIECES_V>& b
-	) {
-		std::swap(a._piece_positions, b._piece_positions);
 	}
 }
