@@ -3,6 +3,9 @@
 #include "cyclic_group_game_factory.h"
 #include "game_controller.h"
 
+/**
+*	@brief Factory to create a special game with a 22 step - optimal solution.
+*/
 class SpecialCaseGameFactory : public CyclicGroupGameFactory {
 public:
 	using world_type = tobor::v1_1::dynamic_rectangle_world<uint16_t, uint8_t>;
