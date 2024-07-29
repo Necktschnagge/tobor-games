@@ -69,7 +69,7 @@ TEST(tobor__v1_0__wall, create_wall_type_bool_conversion) {
 
 TEST(tobor__v1_0__tobor_world, create_world) {
 	EXPECT_NO_THROW(
-		tobor::v1_0::tobor_world world;
+		tobor::v1_0::legacy_world world;
 	);
 }
 

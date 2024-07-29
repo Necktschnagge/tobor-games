@@ -16,7 +16,7 @@ namespace tobor {
 			class original_4_of_16 {
 			public:
 
-				using world_type = tobor::v1_0::tobor_world<uint16_t>;
+				using world_type = tobor::v1_0::legacy_world<uint16_t>;
 
 				using cell_id_type = tobor::v1_0::redundant_cell_id<world_type>;
 
