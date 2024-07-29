@@ -2,32 +2,13 @@
 
 #include "models_1_0.h"
 
+#include "models/id_polarisation.h"
+#include "models/pieces_quantity.h"
+
 #include <compare>
 
 namespace tobor {
 	namespace v1_1 {
-
-		/**
-		*	@brief A Wrapper for a bool to distinguish between (non-transposed) id - direction (EAST - WEST) and transposed id - direction (NORTH - SOUTH)
-		*/
-		class id_polarisation {
-
-			bool is_transposed{ false };
-
-		public:
-			id_polarisation() {}
-			id_polarisation(const id_polarisation&) = default;
-			id_polarisation(id_polarisation&&) = default;
-
-			id_polarisation& operator=(const id_polarisation&) = default;
-			id_polarisation& operator=(id_polarisation&&) = default;
-
-			inline id_polarisation(const direction& d) : is_transposed(d.is_transposed_id_direction()) {}
-
-			inline operator bool() const noexcept { return is_transposed; };
-		};
-
-
 
 		/**
 		*
@@ -375,16 +356,6 @@ namespace tobor {
 
 		using default_min_size_cell_id = min_size_cell_id<default_dynamic_rectangle_world>;
 
-		/**
-		*	@brief Stores the number of target pieces and non-target pieces statically.
-		*/
-		template<class Int_Type_T, Int_Type_T COUNT_TARGET_PIECES_V, Int_Type_T COUNT_NON_TARGET_PIECES_V>
-		using pieces_quantity = tobor::v1_0::pieces_quantity<Int_Type_T, COUNT_TARGET_PIECES_V, COUNT_NON_TARGET_PIECES_V>;
-
-		template<uint8_t COUNT_TARGET_PIECES_V, uint8_t COUNT_NON_TARGET_PIECES_V>
-		using uint8_t_pieces_quantity = pieces_quantity<uint8_t, COUNT_TARGET_PIECES_V, COUNT_NON_TARGET_PIECES_V>;
-
-		using default_pieces_quantity = pieces_quantity<uint8_t, 1, 3>;
 
 
 		/**
