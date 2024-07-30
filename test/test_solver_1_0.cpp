@@ -73,9 +73,9 @@ TEST(engine, example_integration) {
 	// specify target cell
 	auto target = tobor::v1_0::default_cell_id::create_by_coordinates(9, 1, w);
 
-	auto w_analyzer = tobor::v1_0::default_move_one_piece_calculator(w);
+	auto w_analyzer = tobor::v1_0::default_legacy_move_engine(w);
 
-	auto partial_state_graph = tobor::v1_0::partial_state_graph<tobor::v1_0::default_move_one_piece_calculator>(target_robots, other_robots);
+	auto partial_state_graph = tobor::v1_0::partial_state_graph<tobor::v1_0::default_legacy_move_engine>(target_robots, other_robots);
 
 	partial_state_graph.explore_until_optimal_solution_distance(w_analyzer, target);
 

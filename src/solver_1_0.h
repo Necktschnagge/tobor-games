@@ -16,15 +16,9 @@ namespace tobor {
 
 	namespace v1_0 {
 
-		/*
-		activate defaults again:
-
-		
-		*/
-
 		using default_quick_move_cache = legacy_quick_move_cache<default_legacy_world>;
 
-		using default_move_one_piece_calculator = legacy_move_engine<default_positions_of_pieces, default_quick_move_cache, default_piece_move>;
+		using default_legacy_move_engine = legacy_move_engine<default_positions_of_pieces, default_quick_move_cache, default_piece_move>;
 
 
 		/**
