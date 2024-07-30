@@ -7,14 +7,9 @@
 #include <algorithm>
 #include <limits>
 
-class GameController; // for friend class declaration, to be removed
-
 namespace tobor {
 
 	namespace v1_0 {
-
-		// ### alternative board representation is just two sorted vectors of indices where there are walls, additionally you can uniformly encode pieces like walls, in this case double walls left and right, or top and bottom.
-
 
 		/**
 		* @brief Class for keeping the information about quick jumps
@@ -196,8 +191,8 @@ namespace tobor {
 
 				// iterate over all pieces since they may appear as obstacle
 				for (std::size_t i = 0; i < state.COUNT_ALL_PIECES; ++i) { // iterate over all pieces
-					if (next_cell <= state.piece_positions[i].get_id() && state.piece_positions[i].get_id() < start_cell.get_id()) { // target piece
-						next_cell = state.piece_positions[i].get_id() + 1;
+					if (next_cell <= state.piece_positions()[i].get_id() && state.piece_positions()[i].get_id() < start_cell.get_id()) { // target piece
+						next_cell = state.piece_positions()[i].get_id() + 1;
 					}
 				}
 				// may be improved for sorted states.
@@ -226,8 +221,8 @@ namespace tobor {
 				// iterate over all pieces since they may appear as obstacle
 
 				for (std::size_t i = 0; i < state.COUNT_ALL_PIECES; ++i) { // iterate over all pieces
-					if (start_cell.get_id() < state.piece_positions[i].get_id() && state.piece_positions[i].get_id() <= next_cell) { // target piece
-						next_cell = state.piece_positions[i].get_id() - 1;
+					if (start_cell.get_id() < state.piece_positions()[i].get_id() && state.piece_positions()[i].get_id() <= next_cell) { // target piece
+						next_cell = state.piece_positions()[i].get_id() - 1;
 					}
 				}
 
@@ -251,8 +246,8 @@ namespace tobor {
 				// iterate over all pieces since they may appear as obstacle
 
 				for (std::size_t i = 0; i < state.COUNT_ALL_PIECES; ++i) { // iterate over all pieces
-					if (next_cell <= state.piece_positions[i].get_transposed_id() && state.piece_positions[i].get_transposed_id() < start_cell.get_transposed_id()) { // target piece
-						next_cell = state.piece_positions[i].get_transposed_id() + 1;
+					if (next_cell <= state.piece_positions()[i].get_transposed_id() && state.piece_positions()[i].get_transposed_id() < start_cell.get_transposed_id()) { // target piece
+						next_cell = state.piece_positions()[i].get_transposed_id() + 1;
 					}
 				}
 
@@ -276,8 +271,8 @@ namespace tobor {
 				// iterate over all pieces since they may appear as obstacle
 
 				for (std::size_t i = 0; i < state.COUNT_ALL_PIECES; ++i) { // iterate over all pieces
-					if (start_cell.get_transposed_id() < state.piece_positions[i].get_transposed_id() && state.piece_positions[i].get_transposed_id() <= next_cell) { // target piece
-						next_cell = state.piece_positions[i].get_transposed_id() - 1;
+					if (start_cell.get_transposed_id() < state.piece_positions()[i].get_transposed_id() && state.piece_positions()[i].get_transposed_id() <= next_cell) { // target piece
+						next_cell = state.piece_positions()[i].get_transposed_id() - 1;
 					}
 				}
 
@@ -294,7 +289,7 @@ namespace tobor {
 				const direction& _direction)
 			{
 				positions_of_pieces_type next_state{ state };
-				auto& cell_to_be_moved = next_state.piece_positions[_piece_id.value];
+				auto& cell_to_be_moved = next_state.piece_positions()[_piece_id.value];
 				std::pair<cell_id_type, bool> next_cell_paired_true_move;
 				switch (_direction.operator tobor::v1_0::direction::int_type())
 				{
@@ -318,7 +313,7 @@ namespace tobor {
 					return std::make_pair(state, false);
 				}
 
-				next_state.piece_positions[_piece_id.value] = next_cell_paired_true_move.first;
+				next_state.piece_positions()[_piece_id.value] = next_cell_paired_true_move.first;
 				next_state.sort_pieces();
 
 				return std::make_pair(next_state, true);
@@ -367,14 +362,6 @@ namespace tobor {
 
 				return multi_move_exception.zero_moves[0];
 
-			}
-
-			inline bool is_target_state(const positions_of_pieces_type& state, const cell_id_type& target_cell) {
-				for (auto iter = state.target_pieces_cbegin(); iter != state.target_pieces_cend(); ++iter) {
-					if (*iter == target_cell)
-						return true;
-				}
-				return false;
 			}
 
 		};
@@ -509,7 +496,6 @@ namespace tobor {
 
 			static constexpr size_type SIZE_TYPE_MAX = state_graph_node_type::MAX;
 
-			friend class GameController; // remove this! is bad design.
 		private:
 
 		public:
@@ -733,7 +719,7 @@ namespace tobor {
 
 							}
 							else {
-								if (candidates_for_successor_states[index_candidate].successor_state.piece_positions[index_candidate / 4] == target_cell) {
+								if (candidates_for_successor_states[index_candidate].successor_state.piece_positions()[index_candidate / 4] == target_cell) {
 									// does not work for sorted final pieces! In that case we do not know where the moved piece is located.
 									optimal_path_length = current_iterator->second.smallest_seen_step_distance_from_initial_state + 1;
 								}

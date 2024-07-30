@@ -2,8 +2,6 @@
 
 #include "mainwindow.h"
 
-
-
 #include<QKeyEvent>
 
 
@@ -18,45 +16,46 @@ bool ControlKeyEventAgent::eventFilter(QObject* object, QEvent* e)
 	}
 
 	// see https://doc.qt.io/qt-6/qevent.html for event types
-	
-	if (keyEvent->type() == QEvent::KeyRelease) {
-		return false; //pass-through
-	}
 
-	if (keyEvent->type() == QEvent::ShortcutOverride) {
-		return false; //pass-through
-	}
+	// keyEvent->type()
+	// is one of
+	// QEvent::KeyRelease, QEvent::ShortcutOverride, QEvent::KeyPress
 
 	if (keyEvent->type() != QEvent::KeyPress) {
 		return false; //pass-through
 	}
 
 	// found a keyEvent
-	const int key{ keyEvent->key() };
+	const auto key{ keyEvent->key() };
 
-	if (mainWindow->guiInteractiveController.interactiveMode() == GuiInteractiveController::InteractiveMode::GAME_INTERACTIVE) {
+	auto game = mainWindow->current_game;
+
+	if (!game) {
+		return false; //pass-through
+	}
+
+
+	if (!mainWindow->current_game->solver()) {
 
 		// check for all arrow keys
 		switch (key) {
 		case Qt::Key_Up:
-			mainWindow->guiInteractiveController.movePiece(tobor::v1_0::direction::NORTH());
+			mainWindow->movePiece(tobor::v1_0::direction::NORTH());
 			return true; //absorbing eventcase
 		case Qt::Key_Down:
-			mainWindow->guiInteractiveController.movePiece(tobor::v1_0::direction::SOUTH());
+			mainWindow->movePiece(tobor::v1_0::direction::SOUTH());
 			return true; //absorbing eventcase
 		case Qt::Key_Right:
-			mainWindow->guiInteractiveController.movePiece(tobor::v1_0::direction::EAST());
+			mainWindow->movePiece(tobor::v1_0::direction::EAST());
 			return true; //absorbing eventcase
 		case Qt::Key_Left:
-			mainWindow->guiInteractiveController.movePiece(tobor::v1_0::direction::WEST());
+			mainWindow->movePiece(tobor::v1_0::direction::WEST());
 			return true; //absorbing event
 		default:
 			break;
 		}
 
-		static_assert(std::is_same<decltype(keyEvent->key()), int>::value, "implementation probably ill");
-
-		const auto& raw_color_vector{ mainWindow->guiInteractiveController.current_color_vector.colors };
+		const auto& raw_color_vector{ mainWindow->current_color_vector.colors };
 
 		if (Qt::Key_A <= key && key <= Qt::Key_Z) {
 			for (std::size_t i = 0; i < raw_color_vector.size(); ++i) {
@@ -65,7 +64,7 @@ bool ControlKeyEventAgent::eventFilter(QObject* object, QEvent* e)
 				const int input_char_distance{ key - Qt::Key_A };
 
 				if (color_char_distance == input_char_distance) {
-					mainWindow->guiInteractiveController.selectPieceByColorId(i);
+					mainWindow->selectPieceByColorId(i);
 					return true; //absorbing event
 				}
 			}
@@ -75,7 +74,7 @@ bool ControlKeyEventAgent::eventFilter(QObject* object, QEvent* e)
 			const int input_char_distance{ key - Qt::Key_1 };
 
 			if (static_cast<std::size_t>(input_char_distance) < raw_color_vector.size()) {
-				mainWindow->guiInteractiveController.selectPieceByColorId(static_cast<std::size_t>(input_char_distance));
+				mainWindow->selectPieceByColorId(static_cast<std::size_t>(input_char_distance));
 				return true; //absorbing event
 			}
 		}
@@ -85,24 +84,24 @@ bool ControlKeyEventAgent::eventFilter(QObject* object, QEvent* e)
 		return false; //pass-through
 	}
 
-	if (mainWindow->guiInteractiveController.interactiveMode() == GuiInteractiveController::InteractiveMode::SOLVER_INTERACTIVE_STEPS) {
+
+	// else: solver mode
 
 		// check for all arrow keys
-		switch (key) {
-		case Qt::Key_Right:
-			mainWindow->guiInteractiveController.moveBySolver(true);
-			mainWindow->guiInteractiveController.refreshAll();
-			return true; //absorbing eventcase
-		case Qt::Key_Left:
-			mainWindow->guiInteractiveController.moveBySolver(false);
-			mainWindow->guiInteractiveController.refreshAll();
-			return true; //absorbing event
-		default:
-			break;
-		}
-
-		return false; //pass-through
+	switch (key) {
+	case Qt::Key_Right:
+		mainWindow->current_game->move_by_solver(true);
+		mainWindow->refreshAll();
+		return true; //absorbing eventcase
+	case Qt::Key_Left:
+		mainWindow->current_game->move_by_solver(false);
+		mainWindow->refreshAll();
+		return true; //absorbing event
+	default:
+		break;
 	}
 
 	return false; //pass-through
+
+
 }
