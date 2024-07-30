@@ -50,7 +50,7 @@ namespace tobor {
 
 			using size_type = typename state_graph_node_type::size_type;
 
-			using move_path_type = move_path<piece_move_type>;
+			using move_path_type = legacy_move_path<piece_move_type>;
 
 			static constexpr size_type SIZE_TYPE_MAX = state_graph_node_type::MAX;
 

@@ -28,7 +28,7 @@ namespace tobor {
 
 		using default_piece_move = piece_move<default_piece_id>;
 
-		using default_move_path = move_path<default_piece_move>; // rename into legacy_move_path
+		using default_move_path = legacy_move_path<default_piece_move>;
 
 	}
 }

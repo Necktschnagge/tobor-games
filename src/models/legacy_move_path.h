@@ -8,7 +8,7 @@ namespace tobor {
 	namespace v1_0 {
 
 		template<class Piece_Move_Type>
-		class move_path {
+		class legacy_move_path {
 
 		public:
 			using piece_move_type = Piece_Move_Type;
@@ -22,44 +22,44 @@ namespace tobor {
 
 		public:
 
-			move_path() {}
+			legacy_move_path() {}
 
-			move_path(std::size_t n) : _move_vector(n, piece_move_type()) {}
+			legacy_move_path(std::size_t n) : _move_vector(n, piece_move_type()) {}
 
-			move_path(const move_path&) = default;
+			legacy_move_path(const legacy_move_path&) = default;
 
-			move_path& operator=(const move_path&) = default;
+			legacy_move_path& operator=(const legacy_move_path&) = default;
 
-			move_path(move_path&&) = default;
+			legacy_move_path(legacy_move_path&&) = default;
 
-			move_path& operator=(move_path&&) = default;
+			legacy_move_path& operator=(legacy_move_path&&) = default;
 
 			vector_type& vector() { return _move_vector; }
 
 			const vector_type& vector() const { return _move_vector; }
 
-			inline move_path operator +(const move_path& another) {
-				move_path copy;
+			inline legacy_move_path operator +(const legacy_move_path& another) {
+				legacy_move_path copy;
 				copy._move_vector.reserve(_move_vector.size() + another._move_vector.size());
 				std::copy(_move_vector.cbegin(), _move_vector.cend(), std::back_inserter(copy._move_vector));
 				std::copy(another._move_vector.cbegin(), another._move_vector.cend(), std::back_inserter(copy._move_vector));
 				return copy;
 			}
 
-			inline bool operator==(const move_path& another) const {
+			inline bool operator==(const legacy_move_path& another) const {
 				return _move_vector == another._move_vector;
 			}
 
-			inline bool operator<(const move_path& another) const {
+			inline bool operator<(const legacy_move_path& another) const {
 				return _move_vector < another._move_vector;
 			}
 
-			inline std::vector<move_path> syntactic_interleaving_neighbours() {
+			inline std::vector<legacy_move_path> syntactic_interleaving_neighbours() {
 				if (_move_vector.size() < 2) {
-					return std::vector<move_path>();
+					return std::vector<legacy_move_path>();
 				}
 
-				auto result = std::vector<move_path>(_move_vector.size() - 1, *this);
+				auto result = std::vector<legacy_move_path>(_move_vector.size() - 1, *this);
 				auto iter = result.begin();
 				for (std::size_t i{ 0 }; i + 1 < _move_vector.size(); ++i) {
 					if (!(_move_vector[i] == _move_vector[i + 1])) {
@@ -72,8 +72,8 @@ namespace tobor {
 				return result;
 			}
 
-			inline move_path color_sorted_footprint() const {
-				auto result = move_path(*this);
+			inline legacy_move_path color_sorted_footprint() const {
+				auto result = legacy_move_path(*this);
 
 				std::stable_sort(
 					result.vector().begin(),
@@ -84,7 +84,7 @@ namespace tobor {
 				return result;
 			}
 
-			inline bool is_interleaving_neighbour(const move_path& another) const {
+			inline bool is_interleaving_neighbour(const legacy_move_path& another) const {
 				if (vector().size() != another.vector().size()) {
 					return false;
 				}
@@ -111,10 +111,10 @@ namespace tobor {
 				return false;
 			}
 
-			inline static std::vector<std::vector<move_path>> interleaving_partitioning_improved(const std::vector<move_path>& paths) {
-				std::vector<std::vector<move_path>> equivalence_classes;
+			inline static std::vector<std::vector<legacy_move_path>> interleaving_partitioning_improved(const std::vector<legacy_move_path>& paths) {
+				std::vector<std::vector<legacy_move_path>> equivalence_classes;
 
-				using pair_type = std::pair<move_path, uint8_t>; // divide this into two vectors(?)
+				using pair_type = std::pair<legacy_move_path, uint8_t>; // divide this into two vectors(?)
 
 				using flagged_paths_type = std::vector<pair_type>;
 				using flagged_paths_iterator = typename flagged_paths_type::iterator;
@@ -125,7 +125,7 @@ namespace tobor {
 
 				flagged_paths_type flagged_paths;
 				flagged_paths.reserve(paths.size());
-				std::transform(paths.cbegin(), paths.cend(), std::back_inserter(flagged_paths), [](const move_path& mp) { return std::make_pair(mp, 0); });
+				std::transform(paths.cbegin(), paths.cend(), std::back_inserter(flagged_paths), [](const legacy_move_path& mp) { return std::make_pair(mp, 0); });
 
 				std::sort(flagged_paths.begin(), flagged_paths.end()); // lexicographical sorting of paths by piece_id, then direction.
 
@@ -150,7 +150,7 @@ namespace tobor {
 						std::size_t current_exploration_index = *indices_to_explore.cbegin();
 						indices_to_explore.erase(indices_to_explore.cbegin());
 
-						std::vector<move_path> neighbour_candidates = flagged_paths[current_exploration_index].first.syntactic_interleaving_neighbours();
+						std::vector<legacy_move_path> neighbour_candidates = flagged_paths[current_exploration_index].first.syntactic_interleaving_neighbours();
 
 						std::sort(neighbour_candidates.begin(), neighbour_candidates.end()); // lex sorting of move paths.
 
@@ -199,7 +199,7 @@ namespace tobor {
 				return equivalence_classes;
 			}
 
-			inline static std::vector<std::vector<move_path>> interleaving_partitioning(const std::vector<move_path>& paths) {
+			inline static std::vector<std::vector<legacy_move_path>> interleaving_partitioning(const std::vector<legacy_move_path>& paths) {
 
 				static constexpr bool USE_IMPROVEMENT{ true };
 
@@ -207,7 +207,7 @@ namespace tobor {
 					return interleaving_partitioning_improved(paths);
 				}
 				else {
-					std::vector<std::vector<move_path>> equivalence_classes;
+					std::vector<std::vector<legacy_move_path>> equivalence_classes;
 
 					for (const auto& p : paths) {
 
@@ -250,7 +250,7 @@ namespace tobor {
 				return counter;
 			}
 
-			inline static bool antiprettiness_relation(const move_path& l, const move_path& r) {
+			inline static bool antiprettiness_relation(const legacy_move_path& l, const legacy_move_path& r) {
 				return l.changes() < r.changes();
 			}
 
