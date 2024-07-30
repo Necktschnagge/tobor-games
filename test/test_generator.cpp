@@ -1,6 +1,6 @@
 #include "gtest/gtest.h"
 
-#include "../src/world_generator.h"
+#include "../src/world_generator_1_0.h"
 
 #include <nlohmann/json.hpp>
 

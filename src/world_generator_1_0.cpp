@@ -1,6 +1,6 @@
 #include "predefined.h"
 
-#include "world_generator.h"
+#include "world_generator_1_0.h"
 
 void tobor::v1_0::world_generator::original_4_of_16::set_wall_corners(world_type& world, const std::vector<cell_id_type>& W_wall, const std::vector<cell_id_type>& S_wall, const std::vector<cell_id_type>& NW_corners, const std::vector<cell_id_type>& NE_corners, const std::vector<cell_id_type>& SW_corners, const std::vector<cell_id_type>& SE_corners)
 {
@@ -325,7 +325,7 @@ void tobor::v1_0::world_generator::original_4_of_16::set_yellow_planet_3(world_t
 	);
 }
 
-inline void tobor::v1_0::world_generator::original_4_of_16::create_quadrants(std::array<std::vector<world_type>, 4>& all_quadrants) {
+void tobor::v1_0::world_generator::original_4_of_16::create_quadrants(std::array<std::vector<world_type>, 4>& all_quadrants) {
 
 	set_red_planet_0(all_quadrants[RED_PLANET].emplace_back(16, 16));
 	set_red_planet_1(all_quadrants[RED_PLANET].emplace_back(16, 16));
@@ -415,4 +415,3 @@ tobor::v1_0::world_generator::original_4_of_16::get_world(uint64_t select_aligne
 	return aligned_result;
 
 }
-

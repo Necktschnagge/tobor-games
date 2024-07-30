@@ -7,32 +7,49 @@
 #include <vector>
 
 #include <algorithm>
+#include <utility>
 
 #include <stdexcept>
 #include <iterator>
 #include <string>
+#include <execution>
+#include <compare>
+#include <functional>
 
 
 namespace tobor {
 
 	namespace v1_0 {
 
-		class division_by_2_error : public std::logic_error { // OK
+		/**
+		*	@brief An error to be thrown when a number is of wrong remainder class on division by 2.
+		*/
+		class division_by_2_error : public std::logic_error {
 			inline static const char MESSAGE[]{ "Wrong remainder on division by 2" };
 		public:
 			division_by_2_error() : std::logic_error(MESSAGE) {}
 		};
 
-		class blocked_center_error : public std::logic_error { // OK
+
+		/**
+		*	@brief An error to be thrown when there are too many blocked cells in the center of a game board.
+		*/
+		class blocked_center_error : public std::logic_error {
 			inline static const char MESSAGE[]{ "Blocking too many cells." };
 		public:
 			blocked_center_error() : std::logic_error(MESSAGE) {}
 		};
 
+
+		/**
+		*	@brief Represents one of the four directions NORTH, EAST, SOUTH, WEST, or none of them, called END.
+		*/
 		class direction {
 		public:
 
+			/** underlying integer type */
 			using int_type = uint8_t;
+
 			using type = direction;
 
 		private:
@@ -41,7 +58,36 @@ namespace tobor {
 
 			direction(int_type v) : value(v) {}
 
+			static constexpr uint8_t direction_invert_array[17]{
+					0x10,
+					0b0100, // 1 -> 4 // 0 -> 2
+					0b1000, // 2 -> 8 // 1 -> 3
+					0x10,
+					0b0001, // 4 -> 1 // 2 -> 0
+					0x10,
+					0x10,
+					0x10,
+					0b0010, // 8 -> 2 // 3 -> 1
+					0x10,
+					0x10,
+					0x10,
+					0x10,
+					0x10,
+					0x10,
+					0x10,
+					0x10, // END -> END
+			};
+
 		public:
+
+			direction(const direction&) = default;
+
+			direction(direction&&) = default;
+
+			direction& operator=(const direction&) = default;
+
+			direction& operator=(direction&&) = default;
+
 			struct encoding {
 
 				static constexpr int_type NORTH{ 1 << 0 };
@@ -49,89 +95,99 @@ namespace tobor {
 				static constexpr int_type SOUTH{ 1 << 2 };
 				static constexpr int_type WEST{ 1 << 3 };
 				static constexpr int_type END{ 1 << 4 };
+				static constexpr int_type NONE{ END };
 
 				static_assert(NORTH != EAST, "piece_move: NORTH == EAST");
 				static_assert(NORTH != SOUTH, "piece_move: NORTH == SOUTH");
 				static_assert(NORTH != WEST, "piece_move: NORTH == WEST");
+				static_assert(NORTH != END, "piece_move: NORTH == END");
 				static_assert(EAST != SOUTH, "piece_move: EAST == SOUTH");
 				static_assert(EAST != WEST, "piece_move: EAST == WEST");
+				static_assert(EAST != END, "piece_move: EAST == END");
 				static_assert(SOUTH != WEST, "piece_move: SOUTH == WEST");
+				static_assert(SOUTH != END, "piece_move: SOUTH == END");
+				static_assert(WEST != END, "piece_move: WEST == END");
 			};
 
 			inline static direction NORTH() { return encoding::NORTH; }
 			inline static direction EAST() { return encoding::EAST; }
 			inline static direction SOUTH() { return encoding::SOUTH; }
 			inline static direction WEST() { return encoding::WEST; }
+			inline static direction NONE() { return encoding::NONE; }
 
+			inline bool is_id_direction() const noexcept { return (value & (encoding::EAST | encoding::WEST)); }
+			inline bool is_transposed_id_direction() const noexcept { return (value & (encoding::NORTH | encoding::SOUTH)); }
 
-			/* usage like an iterator over directions: */
+			/* use it like an iterator over directions: */
 			inline static direction begin() { return encoding::NORTH; }
 			inline static direction end() { return encoding::END; }
 
 			inline direction& operator++() { value <<= 1; return *this; }
 			inline direction operator++(int) { direction c = *this; value <<= 1; return c; }
 
+			inline std::strong_ordering operator<=>(const direction& another) const { return value <=> another.value; }
 
-			/* comparison operators */
-			inline bool operator<(const direction& another) { return this->value < another.value; }
-			inline bool operator==(const direction& another) { return this->value == another.value; }
+			/** Conversion to underlying integer type */
+			inline int_type get() const noexcept { return value; }
+			inline operator int_type() const noexcept { return value; }
 
-
-			/* access via conversion to underlying type */
-			inline operator int_type() const { return value; }
-
-			inline operator std::string() const {
+			inline char to_char() const {
 				switch (value) {
 				case encoding::NORTH:
-					return "N";
+					return 'N';
 				case encoding::EAST:
-					return "E";
+					return 'E';
 				case encoding::SOUTH:
-					return "S";
+					return 'S';
 				case encoding::WEST:
-					return "W";
+					return 'W';
 				default:
-					return " ";
+					return ' ';
 				}
 			}
 
+			inline operator std::string() const {
+				char x = to_char();
+				return std::string(&x, 1);
+			}
+
+			/** Returns the opposite direction. */
+			inline direction operator!() const noexcept { return direction(direction_invert_array[value]); }
+
 		};
+
 
 		/**
 		*	@brief One single boolean wall
 		*/
-		class wall_type { // OK
+		class wall {
 
-			bool is_wall;
+			bool _is_wall;
 
 		public:
 
-			using type = wall_type;
+			using type = wall;
 
-			wall_type(bool p_is_wall) : is_wall(p_is_wall) {}
+			wall(bool is_wall) : _is_wall(is_wall) {}
 
-			operator const bool& () const {
-				return is_wall;
-			}
+			operator bool() const { return _is_wall; }
 
-			operator bool& () {
-				return is_wall;
-			}
+			operator bool& () { return _is_wall; }
 
 		};
 
 
-		using wall_vector = std::vector<wall_type>; // OK
+		using wall_vector = std::vector<wall>;
 
 
 		/**
 		*
-		*	@brief Represents the game's entire board, stating which fields are separated by walls.
+		*	@brief Represents the game's entire board, stating which cells are separated by walls.
 		*	@details Does NOT contain any information about where pieces are located.
 		*
 		*/
 		template <class Int_Type_T = std::size_t>
-		class tobor_world { // OK
+		class tobor_world {
 		public:
 
 			using int_type = Int_Type_T;
@@ -178,7 +234,7 @@ namespace tobor {
 
 					h_walls = wall_vector_type(SIZE, false);
 					v_walls = wall_vector_type(SIZE, false);
-				} // ### check for exception (? heap allocation, should anyway cause the app to terminate, ignore this?)
+				}
 
 				for (int_type i = 0; i <= x_size; ++i) { // set north and south walls
 					h_walls[y_size * i] = true;
@@ -189,7 +245,7 @@ namespace tobor {
 			}
 
 			/*
-				@brief Fills center fields to make them unreachable.
+				@brief Fills center cells to make them unreachable.
 			*/
 			inline void block_center_cells(int_type x_blocked_size, int_type y_blocked_size) {
 				// check for symmetry of blocked area:
@@ -198,7 +254,7 @@ namespace tobor {
 				if ((y_size - y_blocked_size) % 2)
 					throw division_by_2_error();
 
-				// check for non-blocked fields in every direction
+				// check for non-blocked cells in every direction
 				if (x_blocked_size >= x_size)
 					throw blocked_center_error();
 				if (y_blocked_size >= y_size)
@@ -261,35 +317,35 @@ namespace tobor {
 
 			/* wall accessors **************************************************************************************/
 
-			inline wall_type& south_wall_by_transposed_id(int_type transposed_id) noexcept {
+			inline wall& south_wall_by_transposed_id(int_type transposed_id) noexcept {
 				return h_walls[transposed_id];
 			}
 
-			inline const wall_type& south_wall_by_transposed_id(int_type transposed_id) const noexcept {
+			inline const wall& south_wall_by_transposed_id(int_type transposed_id) const noexcept {
 				return h_walls[transposed_id];
 			}
 
-			inline wall_type& north_wall_by_transposed_id(int_type transposed_id) noexcept {
+			inline wall& north_wall_by_transposed_id(int_type transposed_id) noexcept {
 				return h_walls[transposed_id + 1];
 			}
 
-			inline const wall_type& north_wall_by_transposed_id(int_type transposed_id) const noexcept {
+			inline const wall& north_wall_by_transposed_id(int_type transposed_id) const noexcept {
 				return h_walls[transposed_id + 1];
 			}
 
-			inline wall_type& west_wall_by_id(int_type id) noexcept {
+			inline wall& west_wall_by_id(int_type id) noexcept {
 				return v_walls[id];
 			}
 
-			inline const wall_type& west_wall_by_id(int_type id) const noexcept {
+			inline const wall& west_wall_by_id(int_type id) const noexcept {
 				return v_walls[id];
 			}
 
-			inline wall_type& east_wall_by_id(int_type id) noexcept {
+			inline wall& east_wall_by_id(int_type id) noexcept {
 				return v_walls[id + 1];
 			}
 
-			inline const wall_type& east_wall_by_id(int_type id) const noexcept {
+			inline const wall& east_wall_by_id(int_type id) const noexcept {
 				return v_walls[id + 1];
 			}
 
@@ -360,33 +416,34 @@ namespace tobor {
 		*
 		*	@details This version calculates all three cell id types when set and stores all of them.
 					It is the least memory efficient way but may reduce computation time (not yet tested!).
+					Reading different kind of ids does not require a game board object.
 		*/
 		template<class World_Type_T = default_world>
-		class universal_cell_id { // OK, add some memory-efficient variant!
+		class redundant_cell_id {
 		public:
 
 			using world_type = World_Type_T;
 
 			using int_type = typename world_type::int_type;
 
-			using type = universal_cell_id;
+			using type = redundant_cell_id;
 
 			/* static factory member functions */
 
-			inline static universal_cell_id create_by_coordinates(int_type p_x_coord, int_type p_y_coord, const world_type& world) noexcept {
-				universal_cell_id result;
+			inline static redundant_cell_id create_by_coordinates(int_type p_x_coord, int_type p_y_coord, const world_type& world) noexcept {
+				redundant_cell_id result;
 				result.set_coord(p_x_coord, p_y_coord, world);
 				return result;
 			}
 
-			inline static universal_cell_id create_by_id(int_type p_id, const world_type& world) noexcept {
-				universal_cell_id result;
+			inline static redundant_cell_id create_by_id(int_type p_id, const world_type& world) noexcept {
+				redundant_cell_id result;
 				result.set_id(p_id, world);
 				return result;
 			}
 
-			inline static universal_cell_id create_by_transposed_id(int_type p_transposed_id, const world_type& world) noexcept {
-				universal_cell_id result;
+			inline static redundant_cell_id create_by_transposed_id(int_type p_transposed_id, const world_type& world) noexcept {
+				redundant_cell_id result;
 				result.set_transposed_id(p_transposed_id, world);
 				return result;
 			}
@@ -402,25 +459,25 @@ namespace tobor {
 
 			/* ctors */
 
-			universal_cell_id() : id(0), transposed_id(0), x_coord(0), y_coord(0) {}
+			redundant_cell_id() : id(0), transposed_id(0), x_coord(0), y_coord(0) {}
 
-			universal_cell_id(const universal_cell_id&) = default;
+			redundant_cell_id(const redundant_cell_id&) = default;
 
-			universal_cell_id(universal_cell_id&&) = default; // needed for static factory member function
+			redundant_cell_id(redundant_cell_id&&) = default; // needed for static factory member function
 
 			/* operator = */
 
-			inline universal_cell_id& operator = (const universal_cell_id&) = default;
+			inline redundant_cell_id& operator = (const redundant_cell_id&) = default;
 
-			inline universal_cell_id& operator = (universal_cell_id&&) = default;
+			inline redundant_cell_id& operator = (redundant_cell_id&&) = default;
 
 			/* comparison operators */
 
-			inline bool operator < (const universal_cell_id& other) const noexcept {
+			inline bool operator < (const redundant_cell_id& other) const noexcept {
 				return this->id < other.id;
 			}
 
-			inline bool operator == (const universal_cell_id& other) const noexcept {
+			inline bool operator == (const redundant_cell_id& other) const noexcept {
 				return this->id == other.id;
 			}
 
@@ -457,8 +514,11 @@ namespace tobor {
 
 		};
 
-		using default_cell_id = universal_cell_id<>;
+		using default_cell_id = redundant_cell_id<>;
 
+		/**
+		*	@brief Stores the number of target pieces and non-target pieces statically.
+		*/
 		template<class Int_Type_T, Int_Type_T COUNT_TARGET_PIECES_V, Int_Type_T COUNT_NON_TARGET_PIECES_V>
 		struct pieces_quantity {
 			using int_type = Int_Type_T;
@@ -475,31 +535,23 @@ namespace tobor {
 		};
 
 		template<uint8_t COUNT_TARGET_PIECES_V, uint8_t COUNT_NON_TARGET_PIECES_V>
-		using uint8_t_pieces_quantity = pieces_quantity< uint8_t, COUNT_TARGET_PIECES_V, COUNT_NON_TARGET_PIECES_V>;
+		using uint8_t_pieces_quantity = pieces_quantity<uint8_t, COUNT_TARGET_PIECES_V, COUNT_NON_TARGET_PIECES_V>;
 
 		using default_pieces_quantity = pieces_quantity<uint8_t, 1, 3>;
 
 
 		/**
 		*	@brief Contains the information where the pieces are located on the game board.
-		*
-		*	@details It only distinguishes the target piece from non target pieces.
-		*			Non target pieces cannot be distiguished. They are kept sorted acending by their cell ids.
 		*/
 		template <class Pieces_Quantity_Type = default_pieces_quantity, class Cell_Id_Type_T = default_cell_id, bool SORTED_TARGET_PIECES_V = true, bool SORTED_NON_TARGET_PIECES_V = true>
-		class positions_of_pieces { // OK
-			// ## alternative implementation using std::vector instead of array, as non-template variant
-
-			template <class Move_One_Piece_Calculator, class State_Graph_Node>
-			friend class partial_state_graph;
-
-			template<class Position_Of_Pieces_T, class Quick_Move_Cache_T, class Piece_Move_Type>
-			friend class move_one_piece_calculator;
-
-			template<class Positions_Of_Pieces_Type_T>
-			friend class tobor_graphics;
-
+		class positions_of_pieces {
 		public:
+
+			template <class INNER_Pieces_Quantity_Type, class INNER_Cell_Id_Type, bool INNER_SORTED_TARGET_PIECES_V, bool INNER_SORTED_NON_TARGET_PIECES_V>
+			friend void ::std::swap(
+				positions_of_pieces<INNER_Pieces_Quantity_Type, INNER_Cell_Id_Type, INNER_SORTED_TARGET_PIECES_V, INNER_SORTED_NON_TARGET_PIECES_V>&,
+				positions_of_pieces<INNER_Pieces_Quantity_Type, INNER_Cell_Id_Type, INNER_SORTED_TARGET_PIECES_V, INNER_SORTED_NON_TARGET_PIECES_V>&
+			);
 
 			using pieces_quantity_type = Pieces_Quantity_Type;
 
@@ -507,17 +559,13 @@ namespace tobor {
 
 			using world_type = typename cell_id_type::world_type;
 
-			// cell_id_type::int_type for cell ids
+			using pieces_quantity_int_type = typename pieces_quantity_type::int_type;
 
+			static constexpr pieces_quantity_int_type COUNT_TARGET_PIECES{ Pieces_Quantity_Type::COUNT_TARGET_PIECES };
 
-			// here it should not use a dependent name without alias-defining it in the class itself!
-			// like piece_id_int_type, we already defined class piece_id as a wrapper.
+			static constexpr pieces_quantity_int_type COUNT_NON_TARGET_PIECES{ Pieces_Quantity_Type::COUNT_NON_TARGET_PIECES };
 
-			static constexpr typename pieces_quantity_type::int_type COUNT_TARGET_PIECES{ Pieces_Quantity_Type::COUNT_TARGET_PIECES };
-
-			static constexpr typename pieces_quantity_type::int_type COUNT_NON_TARGET_PIECES{ Pieces_Quantity_Type::COUNT_NON_TARGET_PIECES };
-
-			static constexpr typename pieces_quantity_type::int_type COUNT_ALL_PIECES{ Pieces_Quantity_Type::COUNT_ALL_PIECES };
+			static constexpr pieces_quantity_int_type COUNT_ALL_PIECES{ Pieces_Quantity_Type::COUNT_ALL_PIECES };
 
 			static constexpr bool SORTED_TARGET_PIECES{ SORTED_TARGET_PIECES_V };
 
@@ -529,8 +577,6 @@ namespace tobor {
 
 			using all_pieces_array_type = std::array<cell_id_type, COUNT_ALL_PIECES>;
 
-			//using coloring_type_uint64 = std::array<uint64_t, COUNT_ALL_PIECES>;
-
 		private:
 
 			/**
@@ -538,19 +584,145 @@ namespace tobor {
 			*	@details Both sections {TARGET_PIECES : NON_TARGET_PIECES} need to be ordered by < all the time if specified so by template arguments.
 			*
 			*/
-			all_pieces_array_type piece_positions;
+			all_pieces_array_type _piece_positions;
+
+
+			template <class T>
+			using bucket = std::array<std::vector<T>, 256>; // ### make 256 template in future version.
+
+			template<class T>
+			class bucket_iterator {
+
+				typename bucket<T>::iterator _outer_iter;
+				const typename bucket<T>::iterator _outer_iter_end;
+				typename bucket<T>::value_type::iterator _inner_iter;
+
+				inline void advance_until_valid() {
+					if (_outer_iter == _outer_iter_end)
+						return;
+
+					while (_inner_iter == _outer_iter->end()) {
+						++_outer_iter;
+						if (_outer_iter == _outer_iter_end) {
+							return; // reached end iterator
+						}
+						// jump to beginning of next bucket:
+						_inner_iter = _outer_iter->begin();
+					}
+				}
+
+				bucket_iterator(const typename bucket<T>::iterator& outer_iter, const typename bucket<T>::iterator& outer_iter_end, const typename bucket<T>::value_type::iterator& inner_iter) : _outer_iter(outer_iter), _outer_iter_end(outer_iter_end), _inner_iter(inner_iter) {
+					advance_until_valid();
+				}
+
+			public:
+
+				inline static bucket_iterator begin_of(bucket<T>& b) {
+					return bucket_iterator(b.begin(), b.end(), b[0].begin());
+				}
+
+				inline static bucket_iterator end_of(bucket<T>& b) {
+					return bucket_iterator(b.end(), b.end(), b[0].begin());
+				}
+
+				inline T& operator*() {
+					return *_inner_iter;
+				}
+
+				inline bucket_iterator operator++() {
+					// guaranteed that this is no end iterator.
+					// guaranteed that inner is no end iterator;
+					++_inner_iter;
+					advance_until_valid();
+					return *this;
+				}
+
+				inline bool is_end() const {
+					return _outer_iter == _outer_iter_end;
+				}
+
+				inline bool operator==(const bucket_iterator another) {
+					return (_outer_iter == another._outer_iter) && (
+						is_end() || another.is_end() || _inner_iter == another._inner_iter
+						);
+				}
+
+			};
+
+			template<class Iterator_T>
+			inline static void sort_in_buckets(std::array<std::vector<positions_of_pieces>, 256>& buckets, const Iterator_T& begin, const Iterator_T& end, const std::function<uint8_t(const positions_of_pieces&)>& get_bucket) {
+
+				for (auto iter = begin; iter != end; ++iter) {
+					const uint8_t value = get_bucket(*iter);
+					if (buckets[value].empty() || !(buckets[value].back() == *iter)) {
+						buckets[value].push_back(*iter);
+					}
+				}
+			}
 
 		public:
+
+
+			template<class Collection_T>
+			inline static void collection_sort_unique(Collection_T& c) {
+				using int_cell_id_type = typename cell_id_type::int_cell_id_type;
+
+				bucket<positions_of_pieces> old_buckets;
+				bucket<positions_of_pieces> new_buckets;
+
+				for (auto iter = std::cbegin(c); iter != std::cend(c); ++iter) {
+					old_buckets[0].push_back(*iter);
+				}
+				c.clear();
+
+				for (std::size_t i{ 0 }; i < COUNT_ALL_PIECES; ++i) {
+					for (std::size_t j{ 0 }; j < sizeof(int_cell_id_type); ++j) {
+
+						for (auto& element : new_buckets) {
+							element.clear();
+						}
+
+						std::function<uint8_t(const positions_of_pieces&)> f = [&](const positions_of_pieces& p) -> uint8_t {
+							const int_cell_id_type raw_id = p._piece_positions[static_cast<pieces_quantity_int_type>(COUNT_ALL_PIECES - i - 1)].get_id();
+							return (raw_id >> (j * 8)) & 0xFF;
+							};
+
+						sort_in_buckets(new_buckets, bucket_iterator<positions_of_pieces>::begin_of(old_buckets), bucket_iterator<positions_of_pieces>::end_of(old_buckets), f);
+
+						std::swap(old_buckets, new_buckets);
+
+					}
+				}
+
+				for (auto iter = bucket_iterator<positions_of_pieces>::begin_of(old_buckets); iter != bucket_iterator<positions_of_pieces>::end_of(old_buckets); ++iter) {
+					c.push_back(*iter);
+				}
+
+				// check is sorted here
+
+				return;
+
+			}
+
+			template<class Iter>
+			inline positions_of_pieces(Iter target_pieces_begin) {
+				std::copy_n(target_pieces_begin, COUNT_ALL_PIECES, _piece_positions.begin());
+				sort_pieces();
+			}
+
+			template<class Iter1, class Iter2>
+			inline positions_of_pieces(Iter1 target_pieces_begin, Iter2 non_target_pieces_begin) {
+				std::copy_n(target_pieces_begin, COUNT_TARGET_PIECES, _piece_positions.begin());
+				std::copy_n(non_target_pieces_begin, COUNT_NON_TARGET_PIECES, _piece_positions.begin() + COUNT_TARGET_PIECES);
+				sort_pieces();
+			}
 
 			/**
 			*	@brief Creates an object when cell positions of the pieces are given.
 			*	@param p_non_target_pieces Does not need to be sorted when passed to this constructor.
 			*/
-			positions_of_pieces(const target_pieces_array_type& target_pieces, const non_target_pieces_array_type& non_target_pieces) {
-				std::copy_n(target_pieces.begin(), COUNT_TARGET_PIECES, piece_positions.begin());
-				std::copy_n(non_target_pieces.begin(), COUNT_NON_TARGET_PIECES, piece_positions.begin() + COUNT_TARGET_PIECES);
-				sort_pieces();
-			}
+			positions_of_pieces(const target_pieces_array_type& target_pieces, const non_target_pieces_array_type& non_target_pieces) : positions_of_pieces(target_pieces.cbegin(), non_target_pieces.cbegin())
+			{}
 
 			positions_of_pieces(const positions_of_pieces&) = default;
 
@@ -560,28 +732,32 @@ namespace tobor {
 
 			inline positions_of_pieces& operator = (positions_of_pieces&&) = default;
 
+			inline all_pieces_array_type& piece_positions() { return _piece_positions; }
+
+			inline const all_pieces_array_type& piece_positions() const { return _piece_positions; }
+
 			bool operator< (const positions_of_pieces& another) const noexcept {
-				return piece_positions < another.piece_positions;
+				return _piece_positions < another._piece_positions;
 			}
 
 			bool operator== (const positions_of_pieces& another) const noexcept {
-				return piece_positions == another.piece_positions;
+				return _piece_positions == another._piece_positions;
 			}
 
 			inline typename std::array<cell_id_type, COUNT_ALL_PIECES>::const_iterator target_pieces_cbegin() const {
-				return piece_positions.cbegin();
+				return _piece_positions.cbegin();
 			};
 
 			inline typename std::array<cell_id_type, COUNT_ALL_PIECES>::iterator target_pieces_begin() {
-				return piece_positions.begin();
+				return _piece_positions.begin();
 			};
 
 			inline typename std::array<cell_id_type, COUNT_ALL_PIECES>::const_iterator target_pieces_cend() const {
-				return piece_positions.cbegin() + COUNT_TARGET_PIECES;
+				return _piece_positions.cbegin() + COUNT_TARGET_PIECES;
 			};
 
 			inline typename std::array<cell_id_type, COUNT_ALL_PIECES>::iterator target_pieces_end() {
-				return piece_positions.begin() + COUNT_TARGET_PIECES;
+				return _piece_positions.begin() + COUNT_TARGET_PIECES;
 			};
 
 			inline typename std::array<cell_id_type, COUNT_ALL_PIECES>::const_iterator non_target_pieces_cbegin() const {
@@ -593,11 +769,11 @@ namespace tobor {
 			};
 
 			inline typename std::array<cell_id_type, COUNT_ALL_PIECES>::const_iterator non_target_pieces_cend() const {
-				return piece_positions.cend();
+				return _piece_positions.cend();
 			};
 
 			inline typename std::array<cell_id_type, COUNT_ALL_PIECES>::iterator non_target_pieces_end() {
-				return piece_positions.end();
+				return _piece_positions.end();
 			};
 
 			inline void sort_pieces() {
@@ -617,11 +793,78 @@ namespace tobor {
 				}
 				return false;
 			}
+
+			/**
+			*	@brief Returns the number of pieces in which both states differ.
+			*/
+			inline std::size_t count_changed_pieces(const positions_of_pieces& another) const {
+				std::size_t counter{ 0 };
+				if constexpr (SORTED_TARGET_PIECES) {
+					auto iter = target_pieces_cbegin();
+					auto jter = another.target_pieces_cbegin();
+					while (iter != target_pieces_cend() && jter != another.target_pieces_cend()) {
+						if (*iter == *jter) {
+							++iter;
+							++jter;
+						}
+						else if (*iter < *jter) {
+							++iter;
+							++counter;
+						}
+						else
+							++jter;
+					}
+					counter += (target_pieces_cend() - iter);
+					// note: we only count the elements of *this which have no matching counterpart. We do not count for \p another.
+				}
+				else {
+					for (
+						auto iter = target_pieces_cbegin(), jter = another.target_pieces_cbegin();
+						iter != target_pieces_cend();
+						++iter, ++jter
+						)
+					{
+						if (*iter != *jter)
+							++counter;
+					}
+				}
+				if constexpr (SORTED_NON_TARGET_PIECES) {
+					auto iter = non_target_pieces_cbegin();
+					auto jter = another.non_target_pieces_cbegin();
+					while (iter != non_target_pieces_cend() && jter != another.non_target_pieces_cend()) {
+						if (*iter == *jter) {
+							++iter;
+							++jter;
+						}
+						else if (*iter < *jter) {
+							++iter;
+							++counter;
+						}
+						else
+							++jter;
+					}
+					counter += (non_target_pieces_cend() - iter);
+				}
+				else {
+					for (
+						auto iter = non_target_pieces_cbegin(), jter = another.non_target_pieces_cbegin();
+						iter != non_target_pieces_cend();
+						++iter, ++jter
+						)
+					{
+						if (*iter != *jter)
+							++counter;
+					}
+				}
+				return counter;
+			}
 		};
 
 		using default_positions_of_pieces = positions_of_pieces<default_pieces_quantity, default_cell_id, false, true>;
 
-
+		/**
+		*	@brief Wrapper for an integer to select one of the pieces on the board.
+		*/
 		template <class Pieces_Quantity_Type = default_pieces_quantity>
 		struct piece_id {
 
@@ -654,7 +897,7 @@ namespace tobor {
 		using default_piece_id = piece_id<>;
 
 		/*
-		*	@brief Equivalent to a pair of a piece_id and a direction where to move it
+		*	@brief Equivalent to a pair of a piece_id and a direction where to move it.
 		*
 		*	@details Does not define how piece_id is interpreted.
 		*/
@@ -694,69 +937,6 @@ namespace tobor {
 
 		using default_piece_move = piece_move<>;
 
-
-		template<class Position_Of_Pieces_T = default_positions_of_pieces>
-		class state_path {
-		public:
-
-			using positions_of_pieces_type = Position_Of_Pieces_T;
-
-			using vector_type = std::vector<positions_of_pieces_type>;
-
-		private:
-
-			vector_type state_vector;
-
-		public:
-
-			state_path() {}
-
-			vector_type& vector() { return state_vector; }
-
-			inline void make_canonical() {
-
-				typename vector_type::size_type count_duplicates{ 0 };
-				typename vector_type::size_type i = 0;
-
-				while (i + count_duplicates + 1 < state_vector.size()) {
-					if (state_vector[i] == state_vector[i + count_duplicates + 1]) {
-						++count_duplicates;
-					}
-					else {
-						if (count_duplicates)
-							state_vector[i + 1] = state_vector[i + count_duplicates + 1];
-						++i;
-					}
-				}
-
-				// now i + count_duplicates + 1 == state_vector.size()
-				state_vector.erase(state_vector.begin() + i + 1, state_vector.end());
-			}
-
-			inline state_path operator +(const state_path& another) {
-				state_path copy{ *this };
-				std::copy(another.state_vector.cbegin(), another.state_vector.cend(), std::back_inserter(copy.state_vector));
-				return copy;
-			}
-
-			inline state_path operator *(const state_path& another) {
-				if (another.state_vector.empty())
-					return *this;
-				if (this->state_vector.empty())
-					return another;
-				if (state_vector.back() == another.state_vector.front()) {
-					state_path copy = *this;
-					std::copy(
-						another.state_vector.cbegin() + 1,
-						another.state_vector.cend(),
-						std::back_inserter(copy.state_vector)
-					);
-					return copy;
-				}
-			}
-
-		};
-
 		template<class Piece_Move_Type = default_piece_move>
 		class move_path {
 
@@ -768,13 +948,13 @@ namespace tobor {
 			using pieces_quantity_type = typename piece_move_type::pieces_quantity_type;
 
 		private:
-			vector_type move_vector;
+			vector_type _move_vector;
 
 		public:
 
 			move_path() {}
 
-			move_path(std::size_t n) : move_vector(n, piece_move_type()) {}
+			move_path(std::size_t n) : _move_vector(n, piece_move_type()) {}
 
 			move_path(const move_path&) = default;
 
@@ -784,34 +964,36 @@ namespace tobor {
 
 			move_path& operator=(move_path&&) = default;
 
-			vector_type& vector() { return move_vector; }
+			vector_type& vector() { return _move_vector; }
 
-			const vector_type& vector() const { return move_vector; }
+			const vector_type& vector() const { return _move_vector; }
 
 			inline move_path operator +(const move_path& another) {
-				move_path copy{ *this };
-				std::copy(another.move_vector.cbegin(), another.move_vector.cend(), std::back_inserter(copy.move_vector));
+				move_path copy;
+				copy._move_vector.reserve(_move_vector.size() + another._move_vector.size());
+				std::copy(_move_vector.cbegin(), _move_vector.cend(), std::back_inserter(copy._move_vector));
+				std::copy(another._move_vector.cbegin(), another._move_vector.cend(), std::back_inserter(copy._move_vector));
 				return copy;
 			}
 
 			inline bool operator==(const move_path& another) const {
-				return move_vector == another.move_vector;
+				return _move_vector == another._move_vector;
 			}
 
 			inline bool operator<(const move_path& another) const {
-				return move_vector < another.move_vector;
+				return _move_vector < another._move_vector;
 			}
 
 			inline std::vector<move_path> syntactic_interleaving_neighbours() {
-				if (move_vector.size() < 2) {
+				if (_move_vector.size() < 2) {
 					return std::vector<move_path>();
 				}
 
-				auto result = std::vector<move_path>(move_vector.size() - 1, *this);
+				auto result = std::vector<move_path>(_move_vector.size() - 1, *this);
 				auto iter = result.begin();
-				for (std::size_t i{ 0 }; i + 1 < move_vector.size(); ++i) {
-					if (!(move_vector[i] == move_vector[i + 1])) {
-						std::swap(iter->move_vector[i], iter->move_vector[i + 1]);
+				for (std::size_t i{ 0 }; i + 1 < _move_vector.size(); ++i) {
+					if (!(_move_vector[i] == _move_vector[i + 1])) {
+						std::swap(iter->_move_vector[i], iter->_move_vector[i + 1]);
 						++iter;
 					}
 				}
@@ -819,32 +1001,6 @@ namespace tobor {
 
 				return result;
 			}
-
-			/*
-			inline std::vector<bool> colored_footprint() const {
-
-				std::array<vector_type::const_iterator, pieces_quantity_type::COUNT_ALL_PIECES> color_next;
-
-				for (auto& iter : color_next) {
-					iter = move_vector.cbegin();
-				}
-
-				while (true) {
-					uint8_t i = 0;
-					bool IS_NORTH_OR_SOUTH = 0;
-					bool
-					while (color_next[i] != move_vector.cend() && color_next[i]->pid.value != i) {
-						++color_next[i];
-					}
-					if (color_next[i] != move_vector.cend()) {
-
-						++color_next[i];
-					}
-				}
-
-				... to much effort in coding for a footprint. will also probably take longer computation time.
-			}
-			*/
 
 			inline move_path color_sorted_footprint() const {
 				auto result = move_path(*this);
@@ -1018,8 +1174,8 @@ namespace tobor {
 
 			std::size_t changes() const {
 				std::size_t counter{ 0 };
-				for (std::size_t i = 0; i + 1 < move_vector.size(); ++i) {
-					counter += !(move_vector[i].pid == move_vector[i + 1].pid);
+				for (std::size_t i = 0; i + 1 < _move_vector.size(); ++i) {
+					counter += !(_move_vector[i].pid == _move_vector[i + 1].pid);
 				}
 				return counter;
 			}
@@ -1029,5 +1185,16 @@ namespace tobor {
 			}
 
 		};
+	}
+}
+
+namespace std {
+
+	template <class Pieces_Quantity_Type, class Cell_Id_Type_T, bool SORTED_TARGET_PIECES_V, bool SORTED_NON_TARGET_PIECES_V>
+	inline void swap(
+		tobor::v1_0::positions_of_pieces<Pieces_Quantity_Type, Cell_Id_Type_T, SORTED_TARGET_PIECES_V, SORTED_NON_TARGET_PIECES_V>& a,
+		tobor::v1_0::positions_of_pieces<Pieces_Quantity_Type, Cell_Id_Type_T, SORTED_TARGET_PIECES_V, SORTED_NON_TARGET_PIECES_V>& b
+	) {
+		std::swap(a._piece_positions, b._piece_positions);
 	}
 }

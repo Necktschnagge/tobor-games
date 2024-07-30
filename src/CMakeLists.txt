@@ -38,6 +38,11 @@ endif()
 
 target_link_libraries(${PROJECT_NAME} PRIVATE Threads::Threads)
 
+if(NOT MSVC)
+	target_link_libraries(${PROJECT_NAME} PRIVATE TBB::tbb)
+endif()
+
+
 
 
 ############### Target Properties ###############
@@ -90,6 +95,9 @@ endif()
 
 target_link_libraries(${PROJECT_NAME_LIB} PRIVATE Threads::Threads)
 
+if(NOT MSVC)
+	target_link_libraries(${PROJECT_NAME_LIB} PRIVATE TBB::tbb)
+endif()
 
 
 ############### Target Properties ###############

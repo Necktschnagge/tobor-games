@@ -2,10 +2,9 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include "gui_interactive_controller.h"
 #include "key_event_filter.h"
 
-
+#include "cyclic_group_game_factory.h"
 
 #include <QMainWindow>
 #include <QSvgRenderer>
@@ -17,6 +16,7 @@
 #include <QActionGroup> 
 
 #include <memory>
+#include <random>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -91,47 +91,75 @@ public:
 	MainWindow(QWidget* parent = nullptr);
 	~MainWindow();
 
-private slots:
-	void on_actionshowSVG_triggered();
+private:
+	// concrete actions executed via slots or via direct calls
+
+	// game
+	void startGame(AbstractGameFactory* factory);
+	void startGame();
+private Q_SLOTS:
+	void startGameFromHistory(int index);
+private:
+	void startReferenceGame22();
+	void stopGame();
+
+	// solver
+	void startSolver();
+	void selectSolution(std::size_t index);
+	void stopSolver();
+
+	// game moves
+	void selectPieceByColorId(const std::size_t& color_id);
+	void movePiece(const tobor::v1_0::direction& direction);
+	void undo();
+
+
+
+
+private Q_SLOTS:
 
 	void on_actionHighlightGeneratedTargetCells_triggered();
-
 	void on_actionEnableAllMenuBarItems_triggered();
-	
 	void on_action22ReferenceGame_triggered();
-
 	void on_actionAbout_triggered();
-
 	void on_actionNewGame_triggered();
-
 	void on_actionStopGame_triggered();
-
 	void on_actionMoveBack_triggered();
-
 	void on_actionNORTH_triggered();
-
 	void on_actionEAST_triggered();
-
 	void on_actionSOUTH_triggered();
-
 	void on_actionWEST_triggered();
-
 	void on_actionForward_triggered();
-
 	void on_actionBack_triggered();
-
 	void on_actionStart_Solver_triggered();
-
 	void on_actionStop_Solver_triggered();
-
 	void on_actionLicense_Information_triggered();
-
 	void on_listView_doubleClicked(const QModelIndex& index);
 
 private:
+
+	// Refresh UI Elements / Button ENABLE
+	void setMenuButtonEnableForNoGame();
+	void setMenuButtonEnableForInteractiveGame();
+	void setMenuButtonEnableForSolverGame();
+
+	void createColorActions();
+
+
+	// Refresh UI Elements / Views
+	void refreshSVG();
+	void refreshNumberOfSteps();
+	void refreshMenuButtonEnable();
+	void refreshStatusbar();
+	void refreshSolutionPaths();
+	void refreshHistory();
+
+	void highlightGeneratedTargetCells();
+
+private:
+
 	Ui::MainWindow* ui;
-	GuiInteractiveController guiInteractiveController;
-	friend class GuiInteractiveController;
+
 	friend class ControlKeyEventAgent;
 
 	SvgViewToolchain svgViewToolchain;
@@ -142,7 +170,11 @@ private:
 
 	std::vector<QMetaObject::Connection> inputConnections;
 
-	QSignalMapper* signalMapper;
+	//std::vector<QMetaObject::Connection> historyConnections;
+
+	QSignalMapper* signalMapper{ nullptr };
+
+	QSignalMapper* historySignalMapper{ nullptr };
 
 	ControlKeyEventAgent controlKeyEventAgent;
 
@@ -152,8 +184,6 @@ private:
 		return viewSvgInMainView(QString::fromStdString(svg_string));
 	}
 
-	QMenu* getSelectPieceSubMenu();
-
 	void disconnectInputConnections() {
 		for (QMetaObject::Connection& c : inputConnections) {
 			QObject::disconnect(c);
@@ -161,11 +191,24 @@ private:
 		inputConnections.clear();
 	}
 
-private slots:
+	std::shared_ptr<AbstractGameController> current_game; /// check all positions where used!!!! #######
+
+	std::vector<std::shared_ptr<CyclicGroupGameFactory>> factory_history;
+
+	std::vector<std::unique_ptr<CyclicGroupGameFactory>> next_factory_1;
+
+	std::size_t factory_select;
+
+	std::mt19937 generator;
+
+	tobor::v1_0::color_vector current_color_vector;
+
+
+private Q_SLOTS:
 
 	void selectPieceByColor(int index);
 
-	void refreshAllInGuiInteractiveController();
+	void refreshAll();
 
 };
 

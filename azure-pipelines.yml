@@ -1,6 +1,8 @@
 variables:
  - name: project_name
    value: Tobor
+ - name: USE_ARTIFICIAL_BUILD_DEPENDENCIES
+   value: true
 
 trigger:
   branches:
@@ -13,46 +15,126 @@ stages:
 
  - stage: Compile_and_Test
    dependsOn: []
-   
    jobs:
-    - job: Qt_5
+    - job: Qt_5___Clang_17
+      ${{ if eq(variables.USE_ARTIFICIAL_BUILD_DEPENDENCIES, true) }}:
+        dependsOn: [Qt_6, Qt_5]
+      timeoutInMinutes: 30
+      strategy:
+        matrix:
+          ubuntu_20_04:
+            imageName: "ubuntu-20.04"
+            the_name: "Azure Pipelines"
+          ubuntu_22_04:
+            imageName: "ubuntu-22.04"
+            the_name: "Azure Pipelines"
+
+      pool:
+        vmImage: $(imageName)
+        name: $(the_name)
+
+      steps:
+       - script: |
+          wget https://apt.llvm.org/llvm.sh
+          chmod +x ./llvm.sh
+          sudo ./llvm.sh 17
+         displayName: "Install Clang 17"
+         condition: succeeded()
+       - script: sudo apt-get install qtbase5-dev libqt5svg5-dev libtbb-dev
+         displayName: "Install Qt + libtbb (Linux)"
+         condition: succeeded()
+       - script: git submodule update --init --recursive
+         displayName: "Init Git Submodules"
+         condition: succeeded()
+       - script: export CC="/usr/bin/clang-17"; export CXX="/usr/bin/clang++-17"; cmake -S . -B ./build/ -DUSE_QT6:BOOL=FALSE
+         displayName: "CMake: Create Project [clang 17] (Linux)"
+         condition: succeeded()
+       - script: cmake --build ./build --config Debug --verbose
+         displayName: "CMake: Compile and Link (Debug)"
+         condition: succeeded()
+       - script: cmake --build ./build --config Release --verbose
+         displayName: "CMake: Compile and Link (Release)"
+         condition: succeeded()
+       - script: ./build/test/TEST-$(project_name)
+         displayName: "Run Tests on Linux / Mac OS"
+         condition: succeeded()
+
+    - job: Qt_6___Clang_17
+      ${{ if eq(variables.USE_ARTIFICIAL_BUILD_DEPENDENCIES, true) }}:
+        dependsOn: [Qt_6, Qt_5]
       timeoutInMinutes: 30
       strategy:
         matrix:
           ubuntu_22_04:
             imageName: "ubuntu-22.04"
             the_name: "Azure Pipelines"
-      
-          ubuntu_20_04:
-            imageName: "ubuntu-20.04"
-            the_name: "Azure Pipelines"
-      
-          mac_12:
-            imageName: "macOS-12"
-            the_name: "Azure Pipelines"
-      
-          mac_13:
-            imageName: "macOS-13"
-            the_name: "Azure Pipelines"
-      
-          windows_2022:
-            imageName: "windows-2022"
-            the_name: "Azure Pipelines"
-      
-          windows_2019:
-            imageName: "windows-2019"
-            the_name: "Azure Pipelines"
-      
+
       pool:
         vmImage: $(imageName)
         name: $(the_name)
-      
+
       steps:
-       - script: sudo apt-get update && sudo apt-get install qtbase5-dev libqt5svg5-dev
+       - script: |
+          wget https://apt.llvm.org/llvm.sh
+          chmod +x ./llvm.sh
+          sudo ./llvm.sh 17
+         displayName: "Install Clang 17"
+         condition: succeeded()
+       - script: sudo apt-get update && sudo apt-get install build-essential libgl1-mesa-dev qt6-base-dev libqt6svg6 libqt6svg6-dev libtbb-dev
          displayName: "Install Qt (Linux)"
+         condition: succeeded()
+       - script: git submodule update --init --recursive
+         displayName: "Init Git Submodules"
+         condition: succeeded()
+       - script: export CC="/usr/bin/clang-17"; export CXX="/usr/bin/clang++-17"; cmake -S . -B ./build/
+         displayName: "CMake: Create Project [clang 17] (Darwin / Linux)"
+         condition: succeeded()
+       - script: cmake --build ./build --config Debug --verbose
+         displayName: "CMake: Compile and Link (Debug)"
+         condition: succeeded()
+       - script: cmake --build ./build --config Release --verbose
+         displayName: "CMake: Compile and Link (Release)"
+         condition: succeeded()
+       - script: ./build/test/TEST-$(project_name)
+         displayName: "Run Tests on Linux / Mac OS"
+         condition: succeeded()
+
+    - job: Qt_5
+      ${{ if eq(variables.USE_ARTIFICIAL_BUILD_DEPENDENCIES, true) }}:
+        dependsOn: [Qt_6]
+      timeoutInMinutes: 30
+      strategy:
+        matrix:
+          ubuntu_22_04:
+            imageName: "ubuntu-22.04"
+            the_name: "Azure Pipelines"
+
+          mac_12:
+            imageName: "macOS-12"
+            the_name: "Azure Pipelines"
+
+          mac_13:
+            imageName: "macOS-13"
+            the_name: "Azure Pipelines"
+
+          windows_2022:
+            imageName: "windows-2022"
+            the_name: "Azure Pipelines"
+
+          windows_2019:
+            imageName: "windows-2019"
+            the_name: "Azure Pipelines"
+
+      pool:
+        vmImage: $(imageName)
+        name: $(the_name)
+
+      steps:
+       - script: sudo apt-get update && sudo apt-get install qtbase5-dev libqt5svg5-dev libtbb-dev
+         displayName: "Install Qt + libtbb (Linux)"
          condition: and(succeeded(), eq( variables['Agent.OS'], 'Linux'))
-       - script: brew install qt@5 || brew install qt@5
-         displayName: "Install Qt (Darwin)"
+       - script: (brew install qt@5 || brew install qt@5) && brew install tbb
+         displayName: "Install Qt +tbb (Darwin)"
          condition: and(succeeded(), eq( variables['Agent.OS'], 'Darwin'))
        - script: |
           echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
@@ -93,6 +175,7 @@ stages:
        - script: .\build\test\Release\TEST-$(project_name).exe
          displayName: "Run Tests on Windows"
          condition: and(succeeded(), eq( variables['Agent.OS'], 'Windows_NT' ))
+
     - job: Qt_6
       timeoutInMinutes: 30
       strategy:
@@ -100,32 +183,32 @@ stages:
           ubuntu_22_04:
             imageName: "ubuntu-22.04"
             the_name: "Azure Pipelines"
-      
+
           mac_12:
             imageName: "macOS-12"
             the_name: "Azure Pipelines"
-      
+
           mac_13:
             imageName: "macOS-13"
             the_name: "Azure Pipelines"
-      
+
           windows_2022:
             imageName: "windows-2022"
             the_name: "Azure Pipelines"
-      
+
           windows_2019:
             imageName: "windows-2019"
             the_name: "Azure Pipelines"
-      
+
       pool:
         vmImage: $(imageName)
         name: $(the_name)
-      
+
       steps:
-       - script: sudo apt-get update && sudo apt-get install build-essential libgl1-mesa-dev qt6-base-dev libqt6svg6 libqt6svg6-dev
+       - script: sudo apt-get update && sudo apt-get install build-essential libgl1-mesa-dev qt6-base-dev libqt6svg6 libqt6svg6-dev libtbb-dev
          displayName: "Install Qt (Linux)"
          condition: and(succeeded(), eq( variables['Agent.OS'], 'Linux'))
-       - script: brew install qt@6 || brew install qt@6
+       - script: (brew install qt@6 || brew install qt@6) && brew install tbb
          displayName: "Install Qt (Darwin)"
          condition: and(succeeded(), eq( variables['Agent.OS'], 'Darwin'))
        - script: |
@@ -164,3 +247,39 @@ stages:
        - script: .\build\test\Release\TEST-$(project_name).exe
          displayName: "Run Tests on Windows"
          condition: and(succeeded(), eq( variables['Agent.OS'], 'Windows_NT' ))
+
+
+
+ - stage: Docs
+   #${{ if eq(variables.USE_ARTIFICIAL_BUILD_DEPENDENCIES, true) }}:
+   #  dependsOn: [Compile_and_Test]
+   dependsOn: []
+
+   jobs:
+    - job: dependency_diagram
+      timeoutInMinutes: 30
+      strategy:
+        matrix:
+          ubuntu_22_04:
+            imageName: "ubuntu-latest"
+            the_name: "Azure Pipelines"
+
+      pool:
+        vmImage: $(imageName)
+        name: $(the_name)
+
+      steps:
+       - script: git fetch
+         displayName: "git fetch"
+         condition: succeeded()
+       - script: |
+           echo "Build.SourceVersion $(Build.SourceVersion)"
+           echo "Build.SourceVersionMessage $(Build.SourceVersionMessage)"
+           echo "extracted commit hash:" && echo "$(Build.SourceVersionMessage)" | grep -P '(?<=[Mm]erge )[0123456789abcdef]*(?= into)' -o || echo "EXTRACTION FALIED"
+           echo "latest branch commit hash:"
+           echo "$(Build.SourceVersionMessage)" | grep -P '(?<=[Mm]erge )[0123456789abcdef]*(?= into)' -o || echo "$(Build.SourceVersion)"
+         displayName: "commit which is checked out"
+         condition: succeeded()
+       - script: ./script/ci/create-deploy-include-dependency-graph.sh "$(GIT_USERNAME)" "$(GIT_ACCESS_TOKEN)" "$(System.PullRequest.PullRequestNumber)" "$(echo "$(Build.SourceVersionMessage)" | grep -P '(?<=[Mm]erge )[0123456789abcdef]*(?= into)' -o || echo "$(Build.SourceVersion)")"
+         displayName: "Create and deploy include dependency graph"
+         condition: succeeded()
