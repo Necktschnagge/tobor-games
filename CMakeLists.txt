@@ -28,7 +28,7 @@ else()
 endif()
 message("Tobor:  Parameters:  USE_QT6 set to:  ${USE_QT6}")
 
-
+ADD_DEFINITIONS(-DQT_NO_KEYWORDS) #turn off Qt's keywords: especially emit() does not work in combination with TBB
 
 ############### Preprocessor Macros ###############
 add_compile_definitions(GIT_REPOSITORY_URL="https://github.com/Necktschnagge/tobor-games")
@@ -53,18 +53,19 @@ set(CMAKE_CXX_EXTENSIONS False)
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 
 if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+		message("Clang detected")
 		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libstdc++")
-		message("Clang Flags recognized")
 endif()
 
-if (WIN32 AND NOT (MSYS OR MINGW))
+if (MSVC)
+        message("MSVC detected")
         set(CMAKE_CXX_FLAGS_RELEASE "/MT /O2 /Ob2 /DNDEBUG") #what do all these flags mean?
         set(CMAKE_CXX_FLAGS_DEBUG "/MTd /Zi /Ob0 /Od /RTC1")
-        message("WIN32 Flags recognized")
 endif()
 
 if(MSVC)
   add_compile_options(/W4 /WX)
+  add_compile_options(/bigobj)
 else()
   add_compile_options(-Wall -Wextra -pedantic -Werror)
 endif()
@@ -81,7 +82,7 @@ include_directories(SYSTEM extern/json/include)
 find_package(Threads REQUIRED)
 
 if(USE_QT6)
-	find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets Svg SvgWidgets)
+	find_package(QT NAMES Qt6 REQUIRED COMPONENTS Widgets Svg SvgWidgets)
 	find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets Svg SvgWidgets)
 else()
 	find_package(QT NAMES Qt5 REQUIRED COMPONENTS Widgets Svg)
