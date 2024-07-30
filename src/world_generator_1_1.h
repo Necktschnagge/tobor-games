@@ -1,6 +1,9 @@
 #pragma once
 
-#include "models.h"
+#include "models_1_1.h"
+#include "world_generator_1_0.h"
+
+#include "math.h"
 
 #include <vector>
 #include <array>
@@ -9,16 +12,15 @@
 
 namespace tobor {
 
-	namespace v1_0 {
-
+	namespace v1_1 {
 		namespace world_generator {
 
 			class original_4_of_16 {
 			public:
 
-				using world_type = tobor::v1_0::tobor_world<uint16_t>;
+				using world_type = tobor::v1_1::dynamic_rectangle_world<uint16_t, uint8_t>;
 
-				using cell_id_type = tobor::v1_0::universal_cell_id<world_type>;
+				using cell_id_type = tobor::v1_1::min_size_cell_id<world_type>;
 
 				constexpr static std::size_t RED_PLANET{ 0 };
 				constexpr static std::size_t GREEN_PLANET{ 1 };
@@ -163,7 +165,7 @@ namespace tobor {
 				}
 
 				template<class Aggregation_Type>
-				Aggregation_Type obtain_standard_4_coloring_permutation(const Aggregation_Type& original_ordered_colors) {
+				Aggregation_Type obtain_standard_4_coloring_permutation(const Aggregation_Type& original_ordered_colors) const {
 					Aggregation_Type result = original_ordered_colors;
 					auto permutation = (counter * SECOND_GENERATOR % CYCLIC_GROUP_SIZE) / (CYCLIC_GROUP_SIZE / (4 * 3 * 2));
 					std::swap(result[0], result[permutation % 4]);
@@ -174,7 +176,33 @@ namespace tobor {
 					return result;
 				}
 
-				inline uint64_t get_counter() {
+
+				template<class Aggregation_Type>
+				inline static void raw_permutation(Aggregation_Type& permutation, std::size_t index, uint64_t permutation_strategy_int, uint64_t permutation_size) {
+
+					while (permutation_size > 1) {
+						const std::size_t SWAP_INFO{ permutation_strategy_int % permutation_size };
+						std::swap(permutation[index], permutation[index + SWAP_INFO]);
+
+						permutation_strategy_int /= permutation_size;
+
+						++index;
+						--permutation_size;
+					}
+				}
+
+
+				template<class Aggregation_Type, uint64_t PERMUTATION_SIZE>
+				Aggregation_Type obtain_permutation(const Aggregation_Type& original_ordered_colors) const {
+					Aggregation_Type result = original_ordered_colors;
+					uint64_t permutation_strategy_int = counter * SECOND_GENERATOR % FACULTY<PERMUTATION_SIZE>;
+					raw_permutation(result, 0, permutation_strategy_int, PERMUTATION_SIZE);
+					return result;
+				}
+
+
+
+				inline uint64_t get_counter() const {
 					return counter;
 				}
 
@@ -183,44 +211,46 @@ namespace tobor {
 					return get_world(select_aligned_world, rotation);
 				}
 
-				inline static std::vector<cell_id_type::int_type> get_target_cell_id_vector(const world_type& w) {
+				inline static std::vector<cell_id_type::int_cell_id_type> get_target_cell_id_vector(const world_type& w) {
 
-					std::vector<cell_id_type::int_type> cell_ids;
+					std::vector<cell_id_type::int_cell_id_type> cell_ids;
 					cell_ids.reserve(17);
 
-					const cell_id_type::int_type MIN = 0;
-					const cell_id_type::int_type MAX = 15;
+					const cell_id_type::int_cell_id_type MIN = 0;
+					const cell_id_type::int_cell_id_type MAX = 15;
 
-					for (cell_id_type::int_type i = 0; i < w.count_cells(); ++i) {
-						auto cid = cell_id_type::create_by_id(i, w);
-						if (cid.get_x_coord() == MIN || cid.get_x_coord() == MAX)
+					for (cell_id_type::int_size_type i = 0; i < w.count_cells(); ++i) {
+						const cell_id_type::int_cell_id_type i_narrow{ static_cast<cell_id_type::int_cell_id_type>(i) };
+
+						auto cid = cell_id_type::create_by_id(i_narrow, w);
+						if (cid.get_x_coord(w) == MIN || cid.get_x_coord(w) == MAX)
 							continue;
-						if (cid.get_y_coord() == MIN || cid.get_y_coord() == MAX)
+						if (cid.get_y_coord(w) == MIN || cid.get_y_coord(w) == MAX)
 							continue;
 
 						uint8_t count_walls =
-							w.west_wall_by_id(i) +
-							w.east_wall_by_id(i) +
-							w.south_wall_by_transposed_id(cid.get_transposed_id()) +
-							w.north_wall_by_transposed_id(cid.get_transposed_id());
+							w.west_wall_by_id(cid.get_id()) +
+							w.east_wall_by_id(cid.get_id()) +
+							w.south_wall_by_transposed_id(cid.get_transposed_id(w)) +
+							w.north_wall_by_transposed_id(cid.get_transposed_id(w));
 
-						bool WE = w.west_wall_by_id(i) || w.east_wall_by_id(i);
-						bool SN = w.south_wall_by_transposed_id(cid.get_transposed_id()) || w.north_wall_by_transposed_id(cid.get_transposed_id());
+						bool WE = w.west_wall_by_id(i_narrow) || w.east_wall_by_id(i_narrow);
+						bool SN = w.south_wall_by_transposed_id(cid.get_transposed_id(w)) || w.north_wall_by_transposed_id(cid.get_transposed_id(w));
 
 						if (count_walls > 1 && count_walls < 4 && WE && SN) {
-							cell_ids.push_back(i);
+							cell_ids.push_back(i_narrow);
 						}
 					}
 
 					// check for mis-recognized cells:
-					auto weak_neighbour = [&](cell_id_type::int_type l, cell_id_type::int_type r) -> bool {
+					auto weak_neighbour = [&](cell_id_type::int_cell_id_type l, cell_id_type::int_cell_id_type r) -> bool {
 						auto [lx, ly] = w.cell_id_to_coordinates(l);
 						auto [rx, ry] = w.cell_id_to_coordinates(r);
 
 						return (lx == rx && (ly == ry + 1 || ly + 1 == ry)) || (ly == ry && (lx == rx + 1 || lx + 1 == rx));
 						};
 
-					std::vector<cell_id_type::int_type> neighbor_counter(cell_ids.size(), 0);
+					std::vector<cell_id_type::int_size_type> neighbor_counter(cell_ids.size(), 0);
 
 					for (std::size_t i{ 0 }; i < cell_ids.size(); ++i) {
 						for (std::size_t j{ 0 }; j < cell_ids.size(); ++j) {
@@ -235,7 +265,7 @@ namespace tobor {
 						auto reverse = cell_ids.size() - 1 - i;
 						if (neighbor_counter[reverse] > 1) {
 							++count_shrink;
-							//this element has to be reased.
+							//this element has to be erased.
 							for (std::size_t j{ reverse }; j + 1 < cell_ids.size(); ++j) {
 								cell_ids[j] = cell_ids[j + 1];
 							}
@@ -249,7 +279,7 @@ namespace tobor {
 
 				cell_id_type get_target_cell() const {
 					auto w = get_tobor_world();
-					const std::vector<cell_id_type::int_type> cell_ids{ get_target_cell_id_vector(w) };
+					const std::vector<cell_id_type::int_cell_id_type> cell_ids{ get_target_cell_id_vector(w) };
 					auto [select_aligned_world, rotation, select_target] = split_element();
 
 					// cell_ids.size() // should always be 17. test this.!!!
@@ -307,17 +337,21 @@ namespace tobor {
 				inline reason_code reason() const { return r; }
 			};
 
-			template<class Positions_Of_Pieces_Type, uint64_t _BOARD_SIZE, uint64_t _COUNT_TARGET_ROBOTS, uint64_t _COUNT_NON_TARGET_ROBOTS, uint64_t _BLOCKED_CELLS>
+			template<class Positions_Of_Pieces_T, uint64_t _BOARD_SIZE, uint64_t _COUNT_TARGET_ROBOTS, uint64_t _COUNT_NON_TARGET_ROBOTS, uint64_t _BLOCKED_CELLS>
 			class initial_state_generator {
 			public:
 
 				/* types */
 
-				using positions_of_pieces_type = Positions_Of_Pieces_Type;
+				using positions_of_pieces_type = Positions_Of_Pieces_T;
 
 				using cell_id_type = typename positions_of_pieces_type::cell_id_type;
 
 				using world_type = typename positions_of_pieces_type::world_type;
+
+				using cell_id_narrow_int_type = typename cell_id_type::int_cell_id_type;
+
+				using cell_id_size_int_type = typename cell_id_type::int_size_type;
 
 				/* integer constants */
 
@@ -332,7 +366,7 @@ namespace tobor {
 
 				/**
 				*	@brief The number of combinations to select \p count cells out of \p max_factor cells
-				*	max_factor * (max_factor-1) * ... * (max_factor - count + 1)
+				*	max_factor * (max_factor-1) * ... * (max_factor - count + 1) / ...
 				*/
 				static constexpr uint64_t combinations(const uint64_t& max_factor, const uint64_t& count) {
 					if (count == 0) {
@@ -409,10 +443,16 @@ namespace tobor {
 					return generator;
 				}
 
-				std::vector<uint64_t> get_selected_indices(const uint64_t& count_pieces, const uint64_t& count_cells, uint64_t selector) {
+				/**
+				*	@brief Returns a vector of size \p count_pieces where at every index there is a number [0.. count_cells)
+				*	@param selector is used to select one of all possible combinations, which are all numbered 0..
+				*
+				*	@return vector with numbers sorted ascending, no number occurs twice
+				*/
+				static std::vector<uint64_t> get_selected_indices(const uint64_t& count_pieces, const uint64_t& count_cells, uint64_t selector) {
 					std::vector<uint64_t> selected_indices;
 					uint64_t cell_index = 0;
-					for (uint64_t piece_id = 0; piece_id < count_pieces; ++piece_id) { // rename ROBOTS!!
+					for (uint64_t piece_id = 0; piece_id < count_pieces; ++piece_id) {
 						for (; cell_index < count_cells; ++cell_index) {
 							const auto SUB_COMBINATIONS{ combinations(count_cells - cell_index - 1, count_pieces - piece_id - 1) };
 							if (selector < SUB_COMBINATIONS) {
@@ -439,12 +479,18 @@ namespace tobor {
 				}
 
 
-				inline uint64_t get_counter() {
+				inline uint64_t get_counter() const {
 					return counter;
 				}
 
 				// need to define these types, where is the dependency map?
-				positions_of_pieces_type get_positions_of_pieces(const world_type& world) {
+				/**
+				*	@brief
+				*
+				*	@details The raw cell ids are ordered ascending by <. So using a sorting positions_of_pieces_type will sort with neutral permutation.
+				*
+				*/
+				positions_of_pieces_type get_positions_of_pieces(const world_type& world) const {
 
 					if (world.count_cells() != BOARD_SIZE) {
 						throw board_size_condition_violation(board_size_condition_violation::reason_code::BOARD_SIZE); 	// write a test for board generator to always fulfill the condition !
@@ -460,7 +506,7 @@ namespace tobor {
 					std::vector<uint64_t> selected_indices_non_target = get_selected_indices(COUNT_NON_TARGET_ROBOTS, NON_BLOCKED_CELLS - COUNT_TARGET_ROBOTS, select_non_target_pieces);
 
 					//shift indices where cells are blocked!
-					for (typename world_type::int_type cell_id = 0; cell_id < BOARD_SIZE; ++cell_id) {
+					for (cell_id_size_int_type cell_id = 0; cell_id < BOARD_SIZE; ++cell_id) {
 						for (auto& selected_index : selected_indices_target) {
 							if (world.blocked(cell_id) && (selected_index >= cell_id)) {
 								++selected_index;
@@ -468,7 +514,7 @@ namespace tobor {
 						}
 					}
 
-					for (typename world_type::int_type cell_id = 0; cell_id < BOARD_SIZE; ++cell_id) {
+					for (cell_id_size_int_type cell_id = 0; cell_id < BOARD_SIZE; ++cell_id) {
 						for (auto& selected_index : selected_indices_non_target) {
 							bool is_blocked =
 								world.blocked(cell_id)
@@ -542,7 +588,15 @@ namespace tobor {
 					return main_generator;
 				}
 
+				const Main_Group_Generator_Type& main() const {
+					return main_generator;
+				}
+
 				Side_Group_Generator_Type& side() {
+					return side_generator;
+				}
+
+				const Side_Group_Generator_Type& side() const {
 					return side_generator;
 				}
 
@@ -606,6 +660,7 @@ namespace tobor {
 			};
 
 		}
+
 	}
 }
 
