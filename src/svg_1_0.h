@@ -734,25 +734,25 @@ namespace tobor {
 			const tobor::v1_0::tobor_world<T...>& tobor_world,
 			const drawing_style_sheet& dss
 		) {
-			using cell_id_type = tobor::v1_0::universal_cell_id<tobor::v1_0::tobor_world<T...>>;
+			using cell_id_type = tobor::v1_0::redundant_cell_id<tobor::v1_0::tobor_world<T...>>;
 			using cell_id_int_type = typename cell_id_type::int_type;
 
 			auto blocked_cells = std::make_unique<svg::svg_compound>();
 
 			for (cell_id_int_type cell_id{ 0 }; cell_id < tobor_world.count_cells(); ++cell_id) {
-				const auto universal_cell_id = cell_id_type::create_by_id(cell_id, tobor_world);
+				const auto redundant_cell_id = cell_id_type::create_by_id(cell_id, tobor_world);
 
 				if (
 					tobor_world.west_wall_by_id(cell_id) &&
 					tobor_world.east_wall_by_id(cell_id) &&
-					tobor_world.south_wall_by_transposed_id(universal_cell_id.get_transposed_id()) &&
-					tobor_world.north_wall_by_transposed_id(universal_cell_id.get_transposed_id())
+					tobor_world.south_wall_by_transposed_id(redundant_cell_id.get_transposed_id()) &&
+					tobor_world.north_wall_by_transposed_id(redundant_cell_id.get_transposed_id())
 					) {
 
 					auto block = fill_whole_cell(
 						tobor_world,
 						dss,
-						universal_cell_id,
+						redundant_cell_id,
 						"black"
 					);
 
@@ -769,14 +769,14 @@ namespace tobor {
 			auto svg_walls = std::make_unique<svg::svg_compound>();
 
 			using world_type = tobor::v1_0::tobor_world<T...>;
-			using cell_id_type = tobor::v1_0::universal_cell_id<world_type>;
+			using cell_id_type = tobor::v1_0::redundant_cell_id<world_type>;
 			using int_type = typename cell_id_type::int_type;
 
 			// horizontal walls:
 			for (int_type x = 0; x < tobor_world.get_horizontal_size(); ++x) {
 				for (int_type y = 0; y <= tobor_world.get_vertical_size(); ++y) {
 					if (
-						tobor_world.south_wall_by_transposed_id(tobor::v1_0::universal_cell_id< tobor::v1_0::tobor_world<T...>>::create_by_coordinates(x, y, tobor_world).get_transposed_id())
+						tobor_world.south_wall_by_transposed_id(tobor::v1_0::redundant_cell_id< tobor::v1_0::tobor_world<T...>>::create_by_coordinates(x, y, tobor_world).get_transposed_id())
 						) {
 						// ! Note that y exceeds its natural range by 1. But it is okay, since we operate on an infinite repeating 2D landscape
 						svg_walls->elements.push_back(get_horizontal_south_wall(tobor_world, dss, x, y));
@@ -788,7 +788,7 @@ namespace tobor {
 			for (int_type x = 0; x <= tobor_world.get_horizontal_size(); ++x) {
 				for (int_type y = 0; y < tobor_world.get_vertical_size(); ++y) {
 					if (
-						tobor_world.west_wall_by_id(tobor::v1_0::universal_cell_id< tobor::v1_0::tobor_world<T...>>::create_by_coordinates(x, y, tobor_world).get_id())
+						tobor_world.west_wall_by_id(tobor::v1_0::redundant_cell_id< tobor::v1_0::tobor_world<T...>>::create_by_coordinates(x, y, tobor_world).get_id())
 						) {
 						// ! Note that y exceeds its natural range by 1. But it is okay, since we operate on an infinite repeating 2D landscape
 						svg_walls->elements.push_back(get_vertical_west_wall(tobor_world, dss, x, y));
@@ -810,7 +810,7 @@ namespace tobor {
 			virtual std::unique_ptr<svg::svg_generator> operator()(
 				const world_type& tobor_world,
 				const drawing_style_sheet& dss,
-				const tobor::v1_0::universal_cell_id<world_type>& cell,
+				const tobor::v1_0::redundant_cell_id<world_type>& cell,
 				const std::string& color) = 0;
 
 			virtual ~piece_drawer() {}
@@ -833,7 +833,7 @@ namespace tobor {
 			virtual std::unique_ptr<svg::svg_generator> operator()(
 				const world_type& tobor_world,
 				const drawing_style_sheet& dss,
-				const tobor::v1_0::universal_cell_id<world_type>& cell,
+				const tobor::v1_0::redundant_cell_id<world_type>& cell,
 				const std::string& color
 				) override {
 
@@ -949,7 +949,7 @@ namespace tobor {
 			virtual std::unique_ptr<svg::svg_generator> operator()(
 				const world_type& tobor_world,
 				const drawing_style_sheet& dss,
-				const tobor::v1_0::universal_cell_id<world_type>& cell,
+				const tobor::v1_0::redundant_cell_id<world_type>& cell,
 				const std::string& color
 				) override {
 
@@ -1121,7 +1121,7 @@ namespace tobor {
 
 						//draw_duck_piece(tw, dss, pop.piece_positions[pid], true, c.colors[pid])
 
-						(*piece_drawer)(tw, dss, pop.piece_positions[pid], c.colors[pid])
+						(*piece_drawer)(tw, dss, pop.piece_positions()[pid], c.colors[pid])
 
 					);
 
@@ -1202,5 +1202,6 @@ namespace tobor {
 
 		};
 	}
+
 }
 
