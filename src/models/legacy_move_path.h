@@ -1,21 +1,12 @@
 #pragma once
 
-
-#include "state_path.h"
-#include "augmented_positions_of_pieces.h"
-
 #include <vector>
 #include <set>
 #include <iterator>
 
-
 namespace tobor {
-	namespace v1_1 {
+	namespace v1_0 {
 
-
-		/**
-		*	@brief Represents a path by its moves.
-		*/
 		template<class Piece_Move_Type>
 		class move_path {
 
@@ -25,8 +16,6 @@ namespace tobor {
 			using vector_type = std::vector<piece_move_type>;
 
 			using pieces_quantity_type = typename piece_move_type::pieces_quantity_type;
-
-			using pieces_quantity_int_type = typename pieces_quantity_type::int_type;
 
 		private:
 			vector_type _move_vector;
@@ -45,58 +34,9 @@ namespace tobor {
 
 			move_path& operator=(move_path&&) = default;
 
-			template<class Position_Of_Pieces_T, class Move_Engine_T>
-			explicit move_path(const state_path<Position_Of_Pieces_T>& s_path, const Move_Engine_T& move_engine) {
-				for (std::size_t i{ 0 }; i + 1 < s_path.vector().size(); ++i) {
-					_move_vector.emplace_back(move_engine.state_minus_state(s_path.vector()[i + 1], s_path.vector()[i]));
-				}
-			}
-
-			template <class Pieces_Quantity_T, class Cell_Id_Type_T, bool SORTED_TARGET_PIECES_V, bool SORTED_NON_TARGET_PIECES_V, class Move_Engine_T>
-			inline static move_path extract_unsorted_move_path(
-				const state_path<augmented_positions_of_pieces<Pieces_Quantity_T, Cell_Id_Type_T, SORTED_TARGET_PIECES_V, SORTED_NON_TARGET_PIECES_V>>& augmented_state_path,
-				const Move_Engine_T& move_engine
-			)
-			{
-				using augmented_positions_of_pieces_type = augmented_positions_of_pieces<Pieces_Quantity_T, Cell_Id_Type_T, SORTED_TARGET_PIECES_V, SORTED_NON_TARGET_PIECES_V>;
-				using permutation_type = typename augmented_positions_of_pieces_type::permutation_type;
-				using permutation_indexing_type = typename permutation_type::size_type;
-
-				static_assert(std::is_same<permutation_indexing_type, std::size_t>::value, "MSVC does not meet en.cppreference.com");
-
-				move_path result;
-
-				for (std::size_t i{ 0 }; i + 1 < augmented_state_path.vector().size(); ++i) {
-					result._move_vector.emplace_back(
-						move_engine.state_minus_state(augmented_state_path.vector()[i + 1], augmented_state_path.vector()[i]));
-					// roll back permutation
-					auto piece_id = result._move_vector.back().pid.value;
-					auto permutation_of_piece_id = augmented_state_path.vector()[i].permutation()[piece_id];
-
-					/*is it checked somewhere that no out of range can happen? ### */
-					result._move_vector.back().pid.value = static_cast<pieces_quantity_int_type>(permutation_of_piece_id);
-					//result._move_vector.back().pid = static_cast<decltype(result._move_vector.back().pid)>(permutation_of_piece_id);
-				}
-
-				return result;
-			}
-
 			vector_type& vector() { return _move_vector; }
 
 			const vector_type& vector() const { return _move_vector; }
-
-			template<class Position_Of_Pieces_T, class Move_Engine_T>
-			[[nodiscard]] inline state_path<Position_Of_Pieces_T> apply(const Position_Of_Pieces_T& initial_state, const Move_Engine_T& move_engine) const {
-				state_path<Position_Of_Pieces_T> result;
-				result.vector().reserve(_move_vector.size() + 1);
-				result.vector().push_back(initial_state);
-
-				for (std::size_t i{ 0 }; i < _move_vector.size(); ++i) {
-					result.vector().push_back(move_engine.successor_state(result.vector().back(), _move_vector[i]));
-				}
-
-				return result;
-			}
 
 			inline move_path operator +(const move_path& another) {
 				move_path copy;

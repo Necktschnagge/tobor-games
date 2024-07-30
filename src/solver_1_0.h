@@ -10,11 +10,6 @@
 #include "engine/partial_state_graph.h"
 
 
-#include <map>
-#include <array>
-#include <algorithm>
-#include <limits>
-
 namespace tobor {
 	namespace v1_0 {
 

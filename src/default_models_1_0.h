@@ -6,7 +6,7 @@
 #include "models/positions_of_pieces.h"
 #include "models/piece_id.h"
 #include "models/piece_move.h"
-#include "models/move_path.h"
+#include "models/legacy_move_path.h"
 
 
 namespace tobor {
@@ -28,7 +28,7 @@ namespace tobor {
 
 		using default_piece_move = piece_move<default_piece_id>;
 
-		using default_move_path = move_path<default_piece_move>;
+		using default_move_path = move_path<default_piece_move>; // rename into legacy_move_path
 
 	}
 }
