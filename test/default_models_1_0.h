@@ -1,12 +1,12 @@
 #pragma once
 
-#include "models/legacy_world.h"
-#include "models/redundant_cell_id.h"
-#include "models/pieces_quantity.h"
-#include "models/positions_of_pieces.h"
-#include "models/piece_id.h"
-#include "models/piece_move.h"
-#include "models/legacy_move_path.h"
+#include "../src/models/legacy_world.h"
+#include "../src/models/redundant_cell_id.h"
+#include "../src/models/pieces_quantity.h"
+#include "../src/models/positions_of_pieces.h"
+#include "../src/models/piece_id.h"
+#include "../src/models/piece_move.h"
+#include "../src/models/legacy_move_path.h"
 
 
 namespace tobor {

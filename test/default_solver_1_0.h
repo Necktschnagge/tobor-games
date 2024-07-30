@@ -1,14 +1,12 @@
 #pragma once
 
 
-#include "engine/legacy_quick_move_cache.h"
-#include "engine/legacy_move_engine.h"
+#include "../src/engine/legacy_quick_move_cache.h"
+#include "../src/engine/legacy_move_engine.h"
+#include "../src/engine/state_graph_node.h"
+#include "../src/engine/partial_state_graph.h"
 
 #include "default_models_1_0.h"
-
-#include "engine/state_graph_node.h"
-#include "engine/partial_state_graph.h"
-
 
 namespace tobor {
 	namespace v1_0 {

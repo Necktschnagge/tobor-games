@@ -1,11 +1,11 @@
 #pragma once
 
-#include "models/min_size_cell_id.h"
-#include "models/dynamic_rectangle_world.h"
-#include "models/pieces_quantity.h"
-#include "models/augmented_positions_of_pieces.h"
-#include "models/piece_id.h"
-#include "models/piece_move.h"
+#include "../src/models/min_size_cell_id.h"
+#include "../src/models/dynamic_rectangle_world.h"
+#include "../src/models/pieces_quantity.h"
+#include "../src/models/augmented_positions_of_pieces.h"
+#include "../src/models/piece_id.h"
+#include "../src/models/piece_move.h"
 
 
 namespace tobor {

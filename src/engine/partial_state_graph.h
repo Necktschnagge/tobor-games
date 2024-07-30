@@ -1,5 +1,7 @@
 #pragma once
 
+#include "../models/legacy_move_path.h"
+
 #include <vector>
 #include <map>
 

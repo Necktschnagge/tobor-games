@@ -3,6 +3,7 @@
 #include <vector>
 #include <set>
 #include <iterator>
+#include <algorithm>
 
 namespace tobor {
 	namespace v1_0 {
