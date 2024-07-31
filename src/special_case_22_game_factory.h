@@ -3,6 +3,7 @@
 #include "cyclic_group_game_factory.h"
 #include "game_controller.h"
 
+#include "models/pieces_quantity.h"
 /**
 *	@brief Factory to create a special game with a 22 step - optimal solution.
 */
