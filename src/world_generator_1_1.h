@@ -1,6 +1,9 @@
 #pragma once
 
-#include "models_1_1.h"
+
+#include "models/dynamic_rectangle_world.h"
+#include "models/min_size_cell_id.h"
+
 #include "world_generator_1_0.h"
 
 #include "math.h"
