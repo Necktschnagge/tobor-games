@@ -1,6 +1,13 @@
 #pragma once
 
-#include "solver_1_1.h"
+#include "models/dynamic_rectangle_world.h"
+#include "models/min_size_cell_id.h"
+#include "models/piece_id.h"
+#include "models/piece_move.h"
+#include "engine/quick_move_cache.h"
+#include "engine/move_engine.h"
+#include "models/move_path.h"
+
 
 template<class Pieces_Quantity_T>
 struct ClassicEngineTypeSet {

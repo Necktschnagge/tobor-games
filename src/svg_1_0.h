@@ -1,6 +1,7 @@
 #pragma once
 
-#include "models_1_0.h"
+#include "models/legacy_world.h"
+#include "models/redundant_cell_id.h"
 
 #include "logger.h"
 
@@ -537,14 +538,14 @@ namespace tobor {
 		};
 
 		template<class ... T>
-		inline std::unique_ptr<svg::svg_generator> draw_tobor_background(const tobor::v1_0::tobor_world<T...>& tobor_world, const drawing_style_sheet& dss) {
+		inline std::unique_ptr<svg::svg_generator> draw_tobor_background(const tobor::v1_0::legacy_world<T...>& legacy_world, const drawing_style_sheet& dss) {
 			auto svg_background = std::make_unique<svg::svg_path>();
 			svg_background->fill() = "lightyellow";
 			svg_background->stroke_width() = "0";
 			svg_background->stroke() = svg_background->fill();
 
-			const double horizontal_size = dss.LEFT_PADDING + dss.CELL_WIDTH * tobor_world.get_horizontal_size() + dss.RIGHT_PADDING;
-			const double vertical_size = dss.TOP_PADDING + dss.CELL_HEIGHT * tobor_world.get_vertical_size() + dss.BOTTOM_PADDING;
+			const double horizontal_size = dss.LEFT_PADDING + dss.CELL_WIDTH * legacy_world.get_horizontal_size() + dss.RIGHT_PADDING;
+			const double vertical_size = dss.TOP_PADDING + dss.CELL_HEIGHT * legacy_world.get_vertical_size() + dss.BOTTOM_PADDING;
 
 			auto start_at_0_0 = std::make_shared<svg::svg_path_elements::M<double>>(0, 0);
 			auto go_to_right_bottom_left = std::make_shared<svg::svg_path_elements::l<double>>(horizontal_size, 0, 0, vertical_size, 0 - horizontal_size, 0);
@@ -558,7 +559,7 @@ namespace tobor {
 		}
 
 		template<class ... T>
-		inline std::unique_ptr<svg::svg_path> get_vertical_grid_element(const tobor::v1_0::tobor_world<T...>& tobor_world, const drawing_style_sheet& dss, std::size_t cell_count_offset) {
+		inline std::unique_ptr<svg::svg_path> get_vertical_grid_element(const tobor::v1_0::legacy_world<T...>& legacy_world, const drawing_style_sheet& dss, std::size_t cell_count_offset) {
 			auto grid_element = std::make_unique<svg::svg_path>();
 
 			grid_element->fill() = "dimgrey"; // !80 #0F54DA";
@@ -571,7 +572,7 @@ namespace tobor {
 			);
 			auto go_to_right_bottom_left = std::make_shared<svg::svg_path_elements::l<double>>(
 				dss.HALF_GRID_LINE_WIDTH * 2, 0,
-				0, dss.CELL_HEIGHT * tobor_world.get_vertical_size() + dss.HALF_GRID_LINE_WIDTH * 2,
+				0, dss.CELL_HEIGHT * legacy_world.get_vertical_size() + dss.HALF_GRID_LINE_WIDTH * 2,
 				-dss.HALF_GRID_LINE_WIDTH * 2, 0
 			);
 			auto go_back = std::make_shared<svg::svg_path_elements::Z>();
@@ -582,7 +583,7 @@ namespace tobor {
 		}
 
 		template<class ... T>
-		inline std::unique_ptr<svg::svg_path> get_horizontal_grid_element(const tobor::v1_0::tobor_world<T...>& tobor_world, const drawing_style_sheet& dss, std::size_t cell_count_offset) {
+		inline std::unique_ptr<svg::svg_path> get_horizontal_grid_element(const tobor::v1_0::legacy_world<T...>& legacy_world, const drawing_style_sheet& dss, std::size_t cell_count_offset) {
 			auto grid_element = std::make_unique<svg::svg_path>();
 
 			grid_element->fill() = "dimgrey"; // !80 #0F54DA";
@@ -595,7 +596,7 @@ namespace tobor {
 			);
 			auto go_to_bottom_right_top = std::make_shared<svg::svg_path_elements::l<double>>(
 				0, dss.HALF_GRID_LINE_WIDTH * 2,
-				dss.CELL_WIDTH * tobor_world.get_vertical_size() + dss.HALF_GRID_LINE_WIDTH * 2, 0,
+				dss.CELL_WIDTH * legacy_world.get_vertical_size() + dss.HALF_GRID_LINE_WIDTH * 2, 0,
 				0, -dss.HALF_GRID_LINE_WIDTH * 2
 			);
 			auto go_back = std::make_shared<svg::svg_path_elements::Z>();
@@ -606,22 +607,22 @@ namespace tobor {
 		}
 
 		template<class ... T>
-		inline std::unique_ptr<svg::svg_generator> draw_tobor_grid(const tobor::v1_0::tobor_world<T...>& tobor_world, const drawing_style_sheet& dss) {
+		inline std::unique_ptr<svg::svg_generator> draw_tobor_grid(const tobor::v1_0::legacy_world<T...>& legacy_world, const drawing_style_sheet& dss) {
 			auto svg_grid = std::make_unique<svg::svg_compound>();
 
-			for (std::size_t i{ 0 }; i <= tobor_world.get_horizontal_size(); ++i) { // draw vertical grid lines
-				svg_grid->elements.push_back(get_vertical_grid_element(tobor_world, dss, i));
+			for (std::size_t i{ 0 }; i <= legacy_world.get_horizontal_size(); ++i) { // draw vertical grid lines
+				svg_grid->elements.push_back(get_vertical_grid_element(legacy_world, dss, i));
 			}
 
-			for (std::size_t i{ 0 }; i <= tobor_world.get_vertical_size(); ++i) { // draw horizontal grid lines
-				svg_grid->elements.push_back(get_horizontal_grid_element(tobor_world, dss, i));
+			for (std::size_t i{ 0 }; i <= legacy_world.get_vertical_size(); ++i) { // draw horizontal grid lines
+				svg_grid->elements.push_back(get_horizontal_grid_element(legacy_world, dss, i));
 			}
 
 			return svg_grid;
 		}
 
 		template<class ... T>
-		inline std::unique_ptr<svg::svg_path> get_horizontal_south_wall(const tobor::v1_0::tobor_world<T...>& tobor_world, const drawing_style_sheet& dss, std::size_t x, std::size_t y) {
+		inline std::unique_ptr<svg::svg_path> get_horizontal_south_wall(const tobor::v1_0::legacy_world<T...>& legacy_world, const drawing_style_sheet& dss, std::size_t x, std::size_t y) {
 			auto horizontal_wall_element = std::make_unique<svg::svg_path>();
 
 			horizontal_wall_element->fill() = "black"; // !80 #0F54DA";
@@ -630,7 +631,7 @@ namespace tobor {
 
 			auto start_at_upper_left = std::make_shared<svg::svg_path_elements::M<double>>(
 				dss.LEFT_PADDING + dss.CELL_WIDTH * x,
-				dss.TOP_PADDING - dss.HALF_WALL_LINE_WIDTH + dss.CELL_HEIGHT * (tobor_world.get_vertical_size() - y)
+				dss.TOP_PADDING - dss.HALF_WALL_LINE_WIDTH + dss.CELL_HEIGHT * (legacy_world.get_vertical_size() - y)
 			);
 
 			auto left_semicircle = std::make_shared<svg::svg_path_elements::c<double>>(
@@ -657,7 +658,7 @@ namespace tobor {
 		}
 
 		template<class ...T>
-		inline std::unique_ptr<svg::svg_path> get_vertical_west_wall(const tobor::v1_0::tobor_world<T...>& tobor_world, const drawing_style_sheet& dss, std::size_t x, std::size_t y) {
+		inline std::unique_ptr<svg::svg_path> get_vertical_west_wall(const tobor::v1_0::legacy_world<T...>& legacy_world, const drawing_style_sheet& dss, std::size_t x, std::size_t y) {
 			auto vertical_wall_element = std::make_unique<svg::svg_path>();
 
 			vertical_wall_element->fill() = "black"; // !80 #0F54DA";
@@ -666,7 +667,7 @@ namespace tobor {
 
 			auto start_at_lower_left = std::make_shared<svg::svg_path_elements::M<double>>(
 				dss.LEFT_PADDING - dss.HALF_WALL_LINE_WIDTH + dss.CELL_WIDTH * x,
-				dss.TOP_PADDING + dss.CELL_HEIGHT * (tobor_world.get_vertical_size() - y)
+				dss.TOP_PADDING + dss.CELL_HEIGHT * (legacy_world.get_vertical_size() - y)
 			);
 
 			auto bottom_semicircle = std::make_shared<svg::svg_path_elements::c<double>>(
@@ -694,7 +695,7 @@ namespace tobor {
 
 		template<class cell_id_type, class ...T>
 		inline std::unique_ptr<svg::svg_path> fill_whole_cell(
-			const tobor::v1_0::tobor_world<T...>& tobor_world,
+			const tobor::v1_0::legacy_world<T...>& legacy_world,
 			const drawing_style_sheet& dss,
 			const cell_id_type& cell_id,
 			const std::string& color
@@ -707,7 +708,7 @@ namespace tobor {
 
 			auto start_at_north_west = std::make_shared<svg::svg_path_elements::M<double>>(
 				dss.LEFT_PADDING + dss.CELL_WIDTH * cell_id.get_x_coord(),
-				dss.TOP_PADDING + dss.CELL_HEIGHT * (tobor_world.get_vertical_size() - cell_id.get_y_coord() - 1)
+				dss.TOP_PADDING + dss.CELL_HEIGHT * (legacy_world.get_vertical_size() - cell_id.get_y_coord() - 1)
 			);
 
 			auto go_east = std::make_shared<svg::svg_path_elements::l<double>>(
@@ -731,26 +732,26 @@ namespace tobor {
 
 		template<class ...T>
 		inline std::unique_ptr<svg::svg_generator> draw_blocked_cells(
-			const tobor::v1_0::tobor_world<T...>& tobor_world,
+			const tobor::v1_0::legacy_world<T...>& legacy_world,
 			const drawing_style_sheet& dss
 		) {
-			using cell_id_type = tobor::v1_0::redundant_cell_id<tobor::v1_0::tobor_world<T...>>;
+			using cell_id_type = tobor::v1_0::redundant_cell_id<tobor::v1_0::legacy_world<T...>>;
 			using cell_id_int_type = typename cell_id_type::int_type;
 
 			auto blocked_cells = std::make_unique<svg::svg_compound>();
 
-			for (cell_id_int_type cell_id{ 0 }; cell_id < tobor_world.count_cells(); ++cell_id) {
-				const auto redundant_cell_id = cell_id_type::create_by_id(cell_id, tobor_world);
+			for (cell_id_int_type cell_id{ 0 }; cell_id < legacy_world.count_cells(); ++cell_id) {
+				const auto redundant_cell_id = cell_id_type::create_by_id(cell_id, legacy_world);
 
 				if (
-					tobor_world.west_wall_by_id(cell_id) &&
-					tobor_world.east_wall_by_id(cell_id) &&
-					tobor_world.south_wall_by_transposed_id(redundant_cell_id.get_transposed_id()) &&
-					tobor_world.north_wall_by_transposed_id(redundant_cell_id.get_transposed_id())
+					legacy_world.west_wall_by_id(cell_id) &&
+					legacy_world.east_wall_by_id(cell_id) &&
+					legacy_world.south_wall_by_transposed_id(redundant_cell_id.get_transposed_id()) &&
+					legacy_world.north_wall_by_transposed_id(redundant_cell_id.get_transposed_id())
 					) {
 
 					auto block = fill_whole_cell(
-						tobor_world,
+						legacy_world,
 						dss,
 						redundant_cell_id,
 						"black"
@@ -765,33 +766,33 @@ namespace tobor {
 		}
 
 		template<class ...T>
-		inline std::unique_ptr<svg::svg_generator> draw_walls(const tobor::v1_0::tobor_world<T...>& tobor_world, const drawing_style_sheet& dss) {
+		inline std::unique_ptr<svg::svg_generator> draw_walls(const tobor::v1_0::legacy_world<T...>& legacy_world, const drawing_style_sheet& dss) {
 			auto svg_walls = std::make_unique<svg::svg_compound>();
 
-			using world_type = tobor::v1_0::tobor_world<T...>;
+			using world_type = tobor::v1_0::legacy_world<T...>;
 			using cell_id_type = tobor::v1_0::redundant_cell_id<world_type>;
 			using int_type = typename cell_id_type::int_type;
 
 			// horizontal walls:
-			for (int_type x = 0; x < tobor_world.get_horizontal_size(); ++x) {
-				for (int_type y = 0; y <= tobor_world.get_vertical_size(); ++y) {
+			for (int_type x = 0; x < legacy_world.get_horizontal_size(); ++x) {
+				for (int_type y = 0; y <= legacy_world.get_vertical_size(); ++y) {
 					if (
-						tobor_world.south_wall_by_transposed_id(tobor::v1_0::redundant_cell_id< tobor::v1_0::tobor_world<T...>>::create_by_coordinates(x, y, tobor_world).get_transposed_id())
+						legacy_world.south_wall_by_transposed_id(tobor::v1_0::redundant_cell_id< tobor::v1_0::legacy_world<T...>>::create_by_coordinates(x, y, legacy_world).get_transposed_id())
 						) {
 						// ! Note that y exceeds its natural range by 1. But it is okay, since we operate on an infinite repeating 2D landscape
-						svg_walls->elements.push_back(get_horizontal_south_wall(tobor_world, dss, x, y));
+						svg_walls->elements.push_back(get_horizontal_south_wall(legacy_world, dss, x, y));
 					}
 				}
 			}
 
 			// vertical walls:
-			for (int_type x = 0; x <= tobor_world.get_horizontal_size(); ++x) {
-				for (int_type y = 0; y < tobor_world.get_vertical_size(); ++y) {
+			for (int_type x = 0; x <= legacy_world.get_horizontal_size(); ++x) {
+				for (int_type y = 0; y < legacy_world.get_vertical_size(); ++y) {
 					if (
-						tobor_world.west_wall_by_id(tobor::v1_0::redundant_cell_id< tobor::v1_0::tobor_world<T...>>::create_by_coordinates(x, y, tobor_world).get_id())
+						legacy_world.west_wall_by_id(tobor::v1_0::redundant_cell_id< tobor::v1_0::legacy_world<T...>>::create_by_coordinates(x, y, legacy_world).get_id())
 						) {
 						// ! Note that y exceeds its natural range by 1. But it is okay, since we operate on an infinite repeating 2D landscape
-						svg_walls->elements.push_back(get_vertical_west_wall(tobor_world, dss, x, y));
+						svg_walls->elements.push_back(get_vertical_west_wall(legacy_world, dss, x, y));
 					}
 				}
 			}
@@ -805,10 +806,10 @@ namespace tobor {
 		public:
 
 			using world_type = WorldType;
-			// assert that it is indeed a tobor::v1_0::tobor_world<...> ?
+			// assert that it is indeed a tobor::v1_0::legacy_world<...> ?
 
 			virtual std::unique_ptr<svg::svg_generator> operator()(
-				const world_type& tobor_world,
+				const world_type& legacy_world,
 				const drawing_style_sheet& dss,
 				const tobor::v1_0::redundant_cell_id<world_type>& cell,
 				const std::string& color) = 0;
@@ -831,7 +832,7 @@ namespace tobor {
 
 		public:
 			virtual std::unique_ptr<svg::svg_generator> operator()(
-				const world_type& tobor_world,
+				const world_type& legacy_world,
 				const drawing_style_sheet& dss,
 				const tobor::v1_0::redundant_cell_id<world_type>& cell,
 				const std::string& color
@@ -846,7 +847,7 @@ namespace tobor {
 				duck->stroke_width() = std::to_string(dss.PIECE_LINE_WIDTH);
 
 				const auto CELL_CORNER_SOUTH_WEST_x = dss.LEFT_PADDING + dss.CELL_WIDTH * cell.get_x_coord();
-				const auto CELL_CORNER_SOUTH_WEST_y = dss.TOP_PADDING + dss.CELL_HEIGHT * (tobor_world.get_vertical_size() - cell.get_y_coord());
+				const auto CELL_CORNER_SOUTH_WEST_y = dss.TOP_PADDING + dss.CELL_HEIGHT * (legacy_world.get_vertical_size() - cell.get_y_coord());
 
 				const auto CANVAS_X_SIZE = dss.CELL_WIDTH - 2 * dss.HORIZONTAL_PIECE_PADDING;
 				const auto CANVAS_Y_SIZE = dss.CELL_HEIGHT - 2 * dss.VERTICAL_PIECE_PADDING;
@@ -947,7 +948,7 @@ namespace tobor {
 
 		public:
 			virtual std::unique_ptr<svg::svg_generator> operator()(
-				const world_type& tobor_world,
+				const world_type& legacy_world,
 				const drawing_style_sheet& dss,
 				const tobor::v1_0::redundant_cell_id<world_type>& cell,
 				const std::string& color
@@ -960,7 +961,7 @@ namespace tobor {
 				marker->stroke_width() = std::to_string(dss.PIECE_LINE_WIDTH);
 
 				const auto CELL_CORNER_SOUTH_WEST_x = dss.LEFT_PADDING + dss.CELL_WIDTH * cell.get_x_coord();
-				const auto CELL_CORNER_SOUTH_WEST_y = dss.TOP_PADDING + dss.CELL_HEIGHT * (tobor_world.get_vertical_size() - cell.get_y_coord());
+				const auto CELL_CORNER_SOUTH_WEST_y = dss.TOP_PADDING + dss.CELL_HEIGHT * (legacy_world.get_vertical_size() - cell.get_y_coord());
 
 				const auto CANVAS_X_SIZE = dss.CELL_WIDTH - 2 * dss.HORIZONTAL_PIECE_PADDING;
 				const auto CANVAS_Y_SIZE = dss.CELL_HEIGHT - 2 * dss.VERTICAL_PIECE_PADDING;
@@ -976,7 +977,7 @@ namespace tobor {
 				const auto CENTER_X{ CELL_CORNER_SOUTH_WEST_x + dss.CELL_WIDTH / 2 };
 				const auto CENTER_Y{ CELL_CORNER_SOUTH_WEST_y - dss.CELL_HEIGHT / 2 };
 
-				//const auto TOP_Y{ dss.TOP_PADDING + dss.CELL_HEIGHT * (tobor_world.get_vertical_size() - cell.get_y_coord() - 1) + dss.VERTICAL_PIECE_PADDING };
+				//const auto TOP_Y{ dss.TOP_PADDING + dss.CELL_HEIGHT * (legacy_world.get_vertical_size() - cell.get_y_coord() - 1) + dss.VERTICAL_PIECE_PADDING };
 				//const auto BOTTOM_Y{ CELL_CORNER_SOUTH_WEST_y - dss.VERTICAL_PIECE_PADDING };
 
 				const double SINCOS45{ 0.7071 };
@@ -1093,18 +1094,18 @@ namespace tobor {
 
 			template<class ... T>
 			inline static std::string draw_tobor_world(
-				const tobor::v1_0::tobor_world<T...>& tw,
+				const tobor::v1_0::legacy_world<T...>& tw,
 				const positions_of_pieces_type& pop,
 				const cell_id_type& target_cell,
 				const coloring& c,
 				piece_shape_selection shape
 			) {
-				std::unique_ptr<piece_drawer<tobor::v1_0::tobor_world<T...>>> piece_drawer;
+				std::unique_ptr<piece_drawer<tobor::v1_0::legacy_world<T...>>> piece_drawer;
 				if (shape == piece_shape_selection::BALL) {
-					piece_drawer = std::make_unique<ball_piece_drawer<tobor::v1_0::tobor_world<T...>>>();
+					piece_drawer = std::make_unique<ball_piece_drawer<tobor::v1_0::legacy_world<T...>>>();
 				}
 				else if (shape == piece_shape_selection::DUCK) {
-					piece_drawer = std::make_unique<duck_piece_drawer<tobor::v1_0::tobor_world<T...>>>();
+					piece_drawer = std::make_unique<duck_piece_drawer<tobor::v1_0::legacy_world<T...>>>();
 				}
 				else {
 					throw std::invalid_argument("Unknown shape in SVG draw process.");
@@ -1169,11 +1170,11 @@ namespace tobor {
 
 			template<class ... T>
 			inline static std::string draw_tobor_world_with_cell_markers(
-				const tobor::v1_0::tobor_world<T...>& tw,
+				const tobor::v1_0::legacy_world<T...>& tw,
 				const std::vector<cell_id_type>& markers
 				/*, coloring*/
 			) {
-				ball_piece_drawer< tobor::v1_0::tobor_world<T...>> piece_drawer;
+				ball_piece_drawer< tobor::v1_0::legacy_world<T...>> piece_drawer;
 
 				drawing_style_sheet dss;
 
