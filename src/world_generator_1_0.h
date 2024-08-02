@@ -1,11 +1,14 @@
 #pragma once
 
-#include "models_1_0.h"
+#include "models/legacy_world.h"
+#include "models/redundant_cell_id.h"
 
 #include <vector>
 #include <array>
 #include <optional>
 #include <algorithm>
+#include <string>
+#include <tuple>
 
 namespace tobor {
 
@@ -16,7 +19,7 @@ namespace tobor {
 			class original_4_of_16 {
 			public:
 
-				using world_type = tobor::v1_0::tobor_world<uint16_t>;
+				using world_type = tobor::v1_0::legacy_world<uint16_t>;
 
 				using cell_id_type = tobor::v1_0::redundant_cell_id<world_type>;
 

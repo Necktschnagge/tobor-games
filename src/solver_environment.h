@@ -1,5 +1,10 @@
 #pragma once
 
+
+#include "engine/bigraph_operations.h"
+#include "engine/path_classificator.h"
+#include "engine/distance_exploration.h"
+
 #include "engine_typeset.h"
 
 #include <functional>
