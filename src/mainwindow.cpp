@@ -7,6 +7,8 @@
 #include "custom_traits.h"
 
 #include "./ui_mainwindow.h"
+#include "gui/license_dialog.h"
+
 
 #include "special_case_22_game_factory.h"
 #include "original_game_factory.h"
@@ -367,7 +369,8 @@ void MainWindow::on_actionStop_Solver_triggered()
 
 void MainWindow::on_actionLicense_Information_triggered()
 {
-	showErrorDialog("Not yet implemented.");
+	LicenseDialog* dialog = new LicenseDialog(this);
+	dialog->open();
 }
 
 
