@@ -3,6 +3,8 @@
 #include "mainwindow.h"
 #include "debug_utils.h"
 
+#include "engine/byte_tree_map.h"
+
 #include <QApplication>
 
 #include <clocale>
@@ -19,10 +21,48 @@ PIECE                   :       one robot / piece
 
 */
 
+class Dummy {
+
+	uint32_t data;
+
+public:
+	Dummy(const uint32_t& data) : data(data % (((uint32_t)1) << 24)){
+
+	}
+
+	static constexpr std::size_t byte_size() { return 3; }
+
+	inline uint8_t get_byte(std::size_t index) const {
+		return (data >> (index * 8)) & 0xFF;
+	}
+};
+
+template<class T>
+struct Default_Byte_Access {
+	public:
+
+	inline uint8_t operator()(const T& value, const std::size_t& index) const { 
+		return value.get_byte(index);
+	}
+};
+
+void experimental() {
+	byte_tree_map<Dummy::byte_size(), Dummy, uint16_t, Default_Byte_Access<Dummy>> btm(1023);
+
+	Dummy d1(16), d2(974), d3(16 + (7 << 16)), d4(1024);
+
+	btm[d1] = 1;
+	btm[d2] = 2;
+	btm[d3] = 3;
+	btm[d4] = 4;
+
+}
 
 int main(int argc, char* argv[])
 {
 	init_logger();
+
+	experimental();
 
 	QApplication qt_app(argc, argv);
 	std::setlocale(LC_NUMERIC, "C");
