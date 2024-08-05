@@ -37,17 +37,8 @@ public:
 	}
 };
 
-template<class T>
-struct Default_Byte_Access {
-	public:
-
-	inline uint8_t operator()(const T& value, const std::size_t& index) const { 
-		return value.get_byte(index);
-	}
-};
-
 void experimental() {
-	byte_tree_map<Dummy::byte_size(), Dummy, uint16_t, Default_Byte_Access<Dummy>> btm(1023);
+	byte_tree_map<Dummy, uint16_t> btm(1023);
 
 	Dummy d1(16), d2(974), d3(16 + (7 << 16)), d4(1024);
 

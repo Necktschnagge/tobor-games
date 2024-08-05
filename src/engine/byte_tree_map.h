@@ -1,7 +1,22 @@
 #pragma once
 
+template<class T>
+struct Default_Byte_Access {
+public:
 
-template<std::size_t Byte_Size, class Key_Type, class Value_Type, class Byte_Access>
+	inline uint8_t operator()(const T& value, const std::size_t& index) const {
+		return value.get_byte(index);
+	}
+};
+
+template<class T>
+struct Default_Byte_Size {
+
+	static constexpr std::size_t value{ T::byte_size() };
+
+};
+
+template<class Key_Type, class Value_Type, std::size_t Byte_Size = Default_Byte_Size<Key_Type>::value, class Byte_Access = Default_Byte_Access<Key_Type>>
 class byte_tree_map {
 public:
 	static_assert(Byte_Size > 0, "Byte_Size must be positive.");
@@ -13,7 +28,11 @@ public:
 	//template<class T>
 	//using value_container_type = Value_Container_Type<T>;
 
-	using value_type_ptr = Value_Type*;
+	using value_type_ptr = value_type*;
+
+	class iterator {
+
+	};
 
 private:
 
@@ -75,19 +94,41 @@ private:
 
 		~byte_node() {
 		}
+
+		class iterator {
+			value_type_ptr _ptr;
+
+			explicit iterator(const value_type_ptr& ptr) : _ptr(ptr) {}
+			//friend class byte_node;
+		public:
+			inline iterator& operator++() { ++_ptr; return *this; }
+			inline iterator operator++(int) { iterator c = *this; ++_ptr; return c; }
+
+			inline value_type& operator*() { return *_ptr; }
+
+			inline bool operator==(const iterator& other) const { return _ptr == other._ptr; }
+			inline bool operator!=(const iterator& other) const { return _ptr != other._ptr; }
+			inline bool operator<(const iterator& other) const { return _ptr < other._ptr; }
+		};
+
+		inline iterator begin() { return iterator(&arr[0]); }
+		inline iterator end() { return iterator(&arr[0] + 256); }
+
 	};
 
-	const value_type default_value;
+	const value_type _default_value;
 
-	byte_node<byte_size> root;
+	byte_node<byte_size> _root;
+
+	//std::size_t _count_non_default_values;
 
 public:
 
-	byte_tree_map(const value_type& default_value) : default_value(default_value), root(default_value) {
+	byte_tree_map(const value_type& default_value) : _default_value(default_value), _root(default_value) {
 	}
 
 	value_type& operator[](const key_type& key) {
-		return root.reference(key, default_value);
+		return _root.reference(key, _default_value);
 	}
 
 };
