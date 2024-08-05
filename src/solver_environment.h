@@ -3,7 +3,9 @@
 
 #include "engine/bigraph_operations.h"
 #include "engine/path_classificator.h"
-#include "engine/distance_exploration.h"
+//#include "engine/distance_exploration.h"
+#include "engine/byte_tree_distance_exploration.h"
+
 
 #include "engine_typeset.h"
 
@@ -77,7 +79,7 @@ private:
 
 	using piece_change_decoration_vector = std::vector<piece_change_decoration>;
 
-	using distance_exploration_type = tobor::v1_1::vector_distance_exploration<move_engine_type, positions_of_pieces_type_solver>;
+	using distance_exploration_type = tobor::v1_1::distance_exploration<move_engine_type, positions_of_pieces_type_solver>;
 
 	using bigraph_type = tobor::v1_1::simple_state_bigraph<positions_of_pieces_type_solver, std::vector<bool>>;
 
@@ -378,6 +380,8 @@ public:
 	/**
 	*	@brief Returns an error code telling the reason why no path to target cell was found by solver.
 	*	@details 0 -> No Error, 1 -> Reached MAX_DEPTH, 2 -> Entirely explored all reachable states
+	* 
+	* ####### we need to add the out of range case where there are further explorable states but we cannot because of too small type for depth.
 	*/
 	[[nodiscard]] uint8_t status_code() const {
 		return _status_code;

@@ -90,7 +90,7 @@ namespace tobor {
 			/**
 			* maps target cells to their minimal distance from initial state
 			*/
-			target_distance_map_type _optimal_path_length_map;
+			target_distance_map_type _optimal_path_length_cache;
 
 			/**
 			*	true if and only if the whole state space reachable from initial state has been fully explored.
@@ -187,7 +187,7 @@ namespace tobor {
 
 			/**
 			*	@brief Adds all successor states of \p current_state to \p destination
-			*	@return true if and only if a taregt state was found.
+			*	@return true if and only if a target state was found.
 			*/
 			template<class Iterator_T>
 			inline bool add_all_nontrivial_successor_states(
@@ -265,6 +265,9 @@ namespace tobor {
 			*	@brief Explores according to \p policy until reaching \p target_cell (or until running into policy threshold)
 			*
 			*	@details Caller guarantees that target_cell has not yet been found if NOT_YET_FOUND_GUARANTEED == true.
+			*		If this is not guaranteed, the cache will not be updated.
+			*
+			*	@return Returns optimal depth for given target cell, or SIZE_TYPE_MAX if not found.
 			*/
 			inline size_type explore_until_target(
 				const move_engine_type& engine,
@@ -276,12 +279,10 @@ namespace tobor {
 
 				size_type optimal_depth{ SIZE_TYPE_MAX }; // guaranteed not yet found if NOT_YET_FOUND_GUARANTEED == true
 
-				size_type states_counter{ count_states() };
-
 				for (size_type expand_level_index{ INDEX_LAST_EXPLORATION };
 					expand_level_index < optimal_depth
 					&& expand_level_index < policy.max_depth() /* policy abort*/
-					&& states_counter < policy.state_count_threshold() /* policy abort*/;
+					&& count_states() < policy.state_count_threshold() /* policy abort*/;
 					++expand_level_index) {
 
 					if (_reachable_states_by_distance[expand_level_index].size() == 0) {
@@ -312,7 +313,7 @@ namespace tobor {
 				// finalizing:
 				if (NOT_YET_FOUND_GUARANTEED)
 					if (optimal_depth != SIZE_TYPE_MAX) {
-						_optimal_path_length_map.insert(std::make_pair(target_cell, optimal_depth));
+						_optimal_path_length_cache.insert(std::make_pair(target_cell, optimal_depth));
 					}
 				return optimal_depth;
 			}
@@ -322,7 +323,7 @@ namespace tobor {
 			*	@brief Constructs an object with empty exploration state space.
 			*/
 			vector_distance_exploration(const positions_of_pieces_type& initial_state) :
-				_optimal_path_length_map(),
+				_optimal_path_length_cache(),
 				_entirely_explored(false)
 			{
 				_reachable_states_by_distance.emplace_back(std::vector<positions_of_pieces_type>{ initial_state });
@@ -345,7 +346,7 @@ namespace tobor {
 			inline bool entirely_explored() const noexcept { return _entirely_explored; }
 
 			/**
-			*	@brief Returns the may depth of previously executed exploration.
+			*	@brief Returns the max depth of previously executed exploration.
 			*/
 			inline size_type exploration_depth() const noexcept { return _reachable_states_by_distance.size() - 1; }
 
@@ -358,11 +359,9 @@ namespace tobor {
 			) {
 				const size_type INDEX_LAST_EXPLORATION{ _reachable_states_by_distance.size() - 1 };
 
-				size_type states_counter{ count_states() };
-
 				for (
 					size_type expand_level_index{ INDEX_LAST_EXPLORATION };
-					expand_level_index < policy.max_depth() && states_counter < policy.state_count_threshold() /* policy abort*/;
+					expand_level_index < policy.max_depth() && count_states() < policy.state_count_threshold() /* policy abort*/;
 					++expand_level_index
 					)
 				{
@@ -407,9 +406,9 @@ namespace tobor {
 			*/
 			inline size_type optimal_path_length(const move_engine_type& engine, const cell_id_type& target_cell, const exploration_policy& policy = exploration_policy::ONLY_EXPLORED(), const size_type& min_length_hint = 0) {
 				// checking cache...
-				const auto iter = _optimal_path_length_map.find(target_cell);
+				const auto iter = _optimal_path_length_cache.find(target_cell);
 
-				if (iter != _optimal_path_length_map.cend()) {
+				if (iter != _optimal_path_length_cache.cend()) {
 					return iter->second;
 				}
 				if (policy == exploration_policy::ONLY_CASHED()) {
@@ -421,7 +420,7 @@ namespace tobor {
 					for (const auto& state : _reachable_states_by_distance[depth]) {
 						if (state.is_final(target_cell)) {
 							if (min_length_hint == 0) { // only update cache if there was no hint
-								_optimal_path_length_map.insert(std::make_pair(target_cell, depth));
+								_optimal_path_length_cache.insert(std::make_pair(target_cell, depth));
 							}
 							return depth;
 						}

@@ -19,6 +19,9 @@ namespace tobor {
 
 			using int_type = typename world_type::int_type;
 
+			using int_cell_id_type = typename world_type::int_type; // pseudo narrow_int
+			using int_size_type = typename world_type::int_type; // size_int
+
 			using type = redundant_cell_id;
 
 			/* static factory member functions */
