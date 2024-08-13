@@ -8,6 +8,9 @@
 
 #include "byte_tree_map.h"
 
+
+#include <vector>
+
 namespace tobor {
 	namespace v1_1 {
 
@@ -28,6 +31,9 @@ namespace tobor {
 
 			using cell_id_type = typename positions_of_pieces_type::cell_id_type;
 
+			using cell_id_narrow_int = typename cell_id_type::int_cell_id_type;
+
+
 			using size_type = std::size_t;
 
 			static constexpr size_type SIZE_TYPE_MAX{ std::numeric_limits<size_type>::max() };
@@ -44,17 +50,24 @@ namespace tobor {
 
 			};
 
-		private:
-
 			using distance_int = uint8_t;
 
 			static constexpr distance_int NOT_REACHED{ std::numeric_limits<distance_int>::max() };
 
-			using target_distance_map_type = std::map<cell_id_type, size_type>;
-
 			using states_vector = std::vector<positions_of_pieces_type>;
 
 			static constexpr std::size_t STATE_BYTE_SIZE{ positions_of_pieces_type::byte_size() };
+
+			using unexplored_map = std::map<distance_int, states_vector>;
+		
+			using target_cache_entry = std::pair<distance_int, states_vector>;
+
+			using target_cache = std::vector<target_cache_entry>;
+
+		private:
+
+			//using target_distance_map_type = std::map<cell_id_type, size_type>;
+
 
 			/**
 			* conditions:
@@ -64,24 +77,31 @@ namespace tobor {
 			*/
 			//std::vector<states_vector> _reachable_states_by_distance;
 
-
-			using unexplored_map = std::map<distance_int, states_vector>;
-
-			using target_cache_entry = std::pair<distance_int, states_vector>;
-
-			using target_cache = std::vector<target_cache_entry>;
-
-
-
-
-			byte_tree_map<positions_of_pieces_type, distance_int> _distance_map;
-
 			// states_vector _unexplored_leafs;
 
+
+			/**
+			*	@brief Mapping each state to its optimal distance from initial state (seen so far) or NOT_REACHED otherwise
+			*/
+			byte_tree_map<positions_of_pieces_type, distance_int> _distance_map;
+
+			/**
+			*	@brief unexplored states classified by their optimal distance from initial state
+			*/
 			unexplored_map _unexplored_by_depth; // use this to replace _unexplored_leafs and also _max_exploration_depth
 
-			std::size_t _max_exploration_depth;
+			/**
+			*	@brief 
+			*/
+			std::size_t _max_exploration_depth_updated;
 
+			//std::size_t _max_exploration_depth;
+
+
+			/**
+			*	@brief The number of states reached so far.
+			*	@details Must always be the number of non-default values in _distance_map.
+			*/
 			std::size_t _reached_states_counter;
 
 
@@ -90,13 +110,20 @@ namespace tobor {
 			*/
 			// target_distance_map_type _optimal_path_length_cache;
 
+
+			/**
+			*	@brief Caches optimal distances and optimal final states for target cells.
+			*
+			*	@details Every cell is mapped to its optimal distance from initial state or NOT_REACHED and a vector of those final states you reach by an optimal path.
+			*		Must always be of size n where {0, ... ,n-1 } are the cell ids, available on the board.
+			*/
 			target_cache _updated_target_distance_cache;
 
 
 			/**
 			*	@brief Returns cache entry for given cell_id i.e. index. Throws std::logic_error in case index is out of range.
 			*/
-			inline target_cache_entry& access_target_cache(std::size_t cell_id) {
+			inline target_cache_entry& access_target_cache(cell_id_narrow_int cell_id) {
 				if (!(cell_id < _updated_target_distance_cache.size())) {
 					throw std::logic_error("Cell ID out of range");
 				}
@@ -106,9 +133,9 @@ namespace tobor {
 			/**
 			*	@brief Updates target_distance_cache if indicated.
 			*
-			*	@details Checks if given state at given depth brings any new optimal states to any contained target cell.
+			*	@details Checks if given state at given depth brings any new optimal state to any contained target cell.
 			*
-			*	@return Returns 0 if cache was not updated, 1 if added new state to already known optimal depth, 3 if found new optimal depth for some target.
+			*	@return Returns 0 if cache was not updated, 1 if added new state to already known optimal depth, 3 if found new optimal depth for some target cell.
 			*/
 			inline uint8_t update_target_cache(const positions_of_pieces_type& state, distance_int depth) {
 				uint8_t found_update{ 0 };
@@ -121,7 +148,7 @@ namespace tobor {
 						found_update |= 0b10;
 					}
 					if (depth == entry.first) {
-						entry.second.push_back(state);
+						entry.second.push_back(state); // does not check for duplicate states!!! ####
 						found_update |= 0b01;
 					}
 				}
@@ -132,7 +159,7 @@ namespace tobor {
 			*	@brief Updates distance map for given state and depth if this combination is optimal as far as explored. Also updates cache for new target cells.
 			*
 			*	@return Returns true if map was updated, since the given state, depth combination is optimal as far as seen.
-			*		Returns false if map stays untouched, since there this state is already in map with equal or smaller depth.
+			*		Returns false if map stays untouched, since this state is already in map with equal or smaller depth.
 			*/
 			inline bool update_distance_map(const positions_of_pieces_type& state, distance_int depth) {
 				distance_int& map_val{ _distance_map[state] };
@@ -177,6 +204,7 @@ namespace tobor {
 					}
 				}
 			}
+
 
 			/**
 			*	@brief Explores for direct successor states of \p current_state which have not yet been seen with shorter or equal depth.
@@ -266,6 +294,9 @@ namespace tobor {
 				}
 				return found_final_state;
 			}
+
+
+			/// hier weiter ueberarbeiten... ########################################################################################################################################
 
 			/**
 			*	@brief Explores according to \p policy until reaching \p target_cell (or until running into policy threshold)
