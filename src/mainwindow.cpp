@@ -28,10 +28,6 @@
 
 // please add a enable all actions in menu to developer menu!
 
-inline void showErrorActionAvailable() {
-	showErrorDialog("This action should not be available.");
-}
-
 MainWindow::MainWindow(QWidget* parent) :
 	QMainWindow(parent),
 	ui(new Ui::MainWindow),
