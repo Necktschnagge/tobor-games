@@ -354,7 +354,7 @@ public:
 		_target_cell(target_cell),
 		_move_engine(move_engine),
 		_status_code(0),
-		_distance_explorer(initial_state.naked()),
+		_distance_explorer(initial_state.naked(), move_engine),
 		_optimal_solutions()
 	{
 		run_solver_toolchain(status_callback, MAX_DEPTH, 0);
@@ -380,7 +380,7 @@ public:
 	/**
 	*	@brief Returns an error code telling the reason why no path to target cell was found by solver.
 	*	@details 0 -> No Error, 1 -> Reached MAX_DEPTH, 2 -> Entirely explored all reachable states
-	* 
+	*
 	* ####### we need to add the out of range case where there are further explorable states but we cannot because of too small type for depth.
 	*/
 	[[nodiscard]] uint8_t status_code() const {

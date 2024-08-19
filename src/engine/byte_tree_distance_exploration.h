@@ -27,6 +27,8 @@ namespace tobor {
 
 			using positions_of_pieces_type = Positions_Of_Pieces_T;
 
+			using pieces_quantity_type = typename positions_of_pieces_type::pieces_quantity_type;
+
 			using piece_move_type = typename move_engine_type::piece_move_type;
 
 			using cell_id_type = typename positions_of_pieces_type::cell_id_type;
@@ -59,7 +61,7 @@ namespace tobor {
 			static constexpr std::size_t STATE_BYTE_SIZE{ positions_of_pieces_type::byte_size() };
 
 			using unexplored_map = std::map<distance_int, states_vector>;
-		
+
 			using target_cache_entry = std::pair<distance_int, states_vector>;
 
 			using target_cache = std::vector<target_cache_entry>;
@@ -87,11 +89,15 @@ namespace tobor {
 
 			/**
 			*	@brief unexplored states classified by their optimal distance from initial state
+			*
+			*	@details Must always contain at least one entry for the last depth not beeing explored deeper.
+			*	If entirely explored, and the farest found state is at depth x, then must contain an entry (x+1, {empty vector}).
+			*	It means depth x has been explored, leafs of x+1 are empty.
 			*/
 			unexplored_map _unexplored_by_depth; // use this to replace _unexplored_leafs and also _max_exploration_depth
 
 			/**
-			*	@brief 
+			*	@brief
 			*/
 			std::size_t _max_exploration_depth_updated;
 
@@ -205,178 +211,54 @@ namespace tobor {
 				}
 			}
 
-
 			/**
-			*	@brief Explores for direct successor states of \p current_state which have not yet been seen with shorter or equal depth.
+			*	@brief Explores one level deeper.
 			*
-			*	@details Adds those successor states of \p current_state to \p destination_further_exploration_leafs which are not in _distance_map or where we found a shorter depth than _distance_map says.
-			*	Also adds newly found states or states with enhanced depth to _distance_map and updates _target_cache.
-			*
-			*	@return Returns true if and only if a target state was found.
+			*	@return Returns 4 if _unexplored_by_depth empty
+						Returns 2 if leading unexplored vector is empty but there are more than one.
+						Returns 1 if leading unexplored vector is empty and is the only vector, means entirely explored
+						Returns 0 if explored a non-empty leading vector of unexplored states.
 			*/
-			template<class Iterator_T>
-			[[deprecated]] inline bool __deleted__add_successors_to_map_and_obtain_further_exploration_leafs(
-				const move_engine_type& engine,
-				const positions_of_pieces_type& current_state,
-				distance_int current_state_depth,
-				const cell_id_type& target_cell,
-				Iterator_T destination_further_exploration_leafs
-			) {
-				// we can delete this method, we are constantly updating our cache. Therefore we can just run for all successors and ask the cache afterwards if we found a final state.
-
-				bool found_final_state{ false };
-
-				constexpr size_type COUNT_SUCC_CANDIDATES{ static_cast<size_type>(4) * positions_of_pieces_type::COUNT_ALL_PIECES };
-				constexpr size_type COUNT_SUCC_CANDIDATES_WITH_TARGET_PIECE_MOVED{ static_cast<typename std::vector<move_candidate>::size_type>(4) * positions_of_pieces_type::COUNT_TARGET_PIECES };
-
-				std::vector<move_candidate> candidates_for_successor_states;
-				candidates_for_successor_states.reserve(COUNT_SUCC_CANDIDATES);
-
-				// compute all successor state candidates:
-				for (typename piece_move_type::piece_id_type::int_type pid = 0; pid < positions_of_pieces_type::COUNT_ALL_PIECES; ++pid) {
-					for (direction direction_iter = direction::begin(); direction_iter < direction::end(); ++direction_iter) {
-						candidates_for_successor_states.emplace_back(
-							piece_move_type(pid, direction_iter),
-							engine.successor_state(current_state, pid, direction_iter)
-						);
-					}
+			inline uint8_t explore_one_level(const move_engine_type& engine) {
+				if (_unexplored_by_depth.empty()) {
+					return 0b100; // should not be reached
 				}
 
-				// order of candidates:
-				// piece 0: N E S W      <- target pieces come first!
-				// piece 1: N E S W
-				// ...
-				// piece last: N E S W
+				const auto begin{ _unexplored_by_depth.begin() };
 
-
-
-				typename std::vector<move_candidate>::size_type index_candidate{ 0 };
-
-				// only check if reached target for candidates arising from moved target pieces:
-				for (; index_candidate < COUNT_SUCC_CANDIDATES_WITH_TARGET_PIECE_MOVED; ++index_candidate) {
-					if (candidates_for_successor_states[index_candidate].successor_state == current_state) {
-						continue;
+				if (begin->second.empty()) {
+					if (_unexplored_by_depth.size() <= 1) {
+						return 0b001;
 					}
-
-					if constexpr (positions_of_pieces_type::SORTED_TARGET_PIECES) {
-						// general case:
-						if (candidates_for_successor_states[index_candidate].successor_state.is_final(target_cell)) {
-							found_final_state = true;
-							break;
-						}
-
-					}
-					else {
-						// optimized case:
-						if (candidates_for_successor_states[index_candidate].successor_state.raw()[index_candidate / 4] == target_cell) {
-							// does not work for sorted final pieces! In that case we do not know where the moved piece is located.
-							found_final_state = true;
-							break;
-						}
-					}
-
-					if (update_distance_map(candidates_for_successor_states[index_candidate].successor_state, current_state_depth + 1)) {
-						*destination_further_exploration_leafs = (candidates_for_successor_states[index_candidate].successor_state);
-						++destination_further_exploration_leafs;
-					}
-				}
-				// add successor states to destination without check for final state:
-				for (; index_candidate < candidates_for_successor_states.size(); ++index_candidate) {
-					if (candidates_for_successor_states[index_candidate].successor_state == current_state) {
-						continue; // it is not clear if this check makes performance better or worse than without ###
-					}
-
-					if (update_distance_map(candidates_for_successor_states[index_candidate].successor_state, current_state_depth + 1)) {
-						*destination_further_exploration_leafs = (candidates_for_successor_states[index_candidate].successor_state);
-						++destination_further_exploration_leafs;
-					}
-
-				}
-				return found_final_state;
-			}
-
-
-			/// hier weiter ueberarbeiten... ########################################################################################################################################
-
-			/**
-			*	@brief Explores according to \p policy until reaching \p target_cell (or until running into policy threshold)
-			*
-			*	@details Caller guarantees that target_cell has not yet been found if NOT_YET_FOUND_GUARANTEED == true.
-			*		If this is not guaranteed, the cache will not be updated.
-			*
-			*	@return Returns optimal depth for given target cell, or SIZE_TYPE_MAX if not found.
-			*/
-			inline size_type explore_until_target(
-				const move_engine_type& engine,
-				const cell_id_type& target_cell,
-				const exploration_policy& policy,
-				const bool NOT_YET_FOUND_GUARANTEED = false
-			) {
-
-
-				//const size_type INDEX_LAST_EXPLORATION{ _reachable_states_by_distance.size() - 1 };
-
-				size_type optimal_depth{ SIZE_TYPE_MAX }; // guaranteed not yet found if NOT_YET_FOUND_GUARANTEED == true
-
-				//size_type states_counter{ count_states() };
-
-				for (
-					/*size_type expand_level_index{INDEX_LAST_EXPLORATION}*/
-					;
-					_max_exploration_depth < optimal_depth // NOT OK!!! here ####
-					&& _max_exploration_depth < policy.max_depth() /* policy abort*/
-					&& count_states() < policy.state_count_threshold() /* policy abort*/
-					;
-					//++expand_level_index
-					) {
-
-
-					if (entirely_explored()) {
-						return SIZE_TYPE_MAX; // no more states to find /// ########size tpye versus internal depth type conflict here!
-					}
-
-					states_vector _unexplored_leafs_next;
-
-					for (std::size_t i = 0; i < _unexplored_leafs.size(); ++i) {
-
-						if (add_successors_to_map_and_obtain_further_exploration_leafs(engine, _unexplored_leafs[i], _max_exploration_depth, target_cell, std::back_inserter(_unexplored_leafs_next))) {
-							optimal_depth = this->_max_exploration_depth + 1;
-						}
-						// delete that overload of add_successors_to_map_and_obtain_further_exploration_leafs and ask the cache afterwards if for target cell we have a finite distance, then it is optimal.
-
-					}
-
-					_unexplored_leafs = _unexplored_leafs_next;
-					++_max_exploration_depth;
-					// I dont like that this has to be updated here consistently.
-					// This is not forcing the programmer to avoid an error of not incrementing _max_exploration_depth
-					// we should pass depth of current state as param to add_successors_to_map_and_obtain_further_exploration_leafs.
-					// unexplored_leafs should be a map depth -> unexplored of that depth.
-					// then we keep track of the correct depth with less coding error porbability
+					// should not be reached:
+					_unexplored_by_depth.erase(begin);
+					return 0b010;
 				}
 
-				// finalizing:
-				if (NOT_YET_FOUND_GUARANTEED)
-					if (optimal_depth != SIZE_TYPE_MAX) {
-						_optimal_path_length_cache.insert(std::make_pair(target_cell, optimal_depth));
-					}
-				return optimal_depth;
+				states_vector& destination{ _unexplored_by_depth[begin->first + 1] };
+
+				for (std::size_t i = 0; i < begin->second.size(); ++i) {
+					add_successors_to_map_and_obtain_further_exploration_leafs(engine, begin->second[i], begin->first, std::back_inserter(destination));
+				}
+
+				_unexplored_by_depth.erase(begin);
+				return 0b000;
 			}
 
 		public:
+
 			/**
 			*	@brief Constructs an object with empty exploration state space.
 			*/
 			distance_exploration(const positions_of_pieces_type& initial_state, const move_engine_type& engine) :
-				_optimal_path_length_cache(),
 				_distance_map(NOT_REACHED),
-				_unexplored_leafs(),
-				_max_exploration_depth(0),
-				_reached_states_counter(1),
+				_unexplored_by_depth(),
+				_max_exploration_depth_updated(),
+				_reached_states_counter(0),
 				_updated_target_distance_cache(engine.board().count_cells(), std::make_pair(NOT_REACHED, states_vector()))
 			{
-				_distance_map[initial_state] = 0;
-				_unexplored_leafs.push_back(initial_state);
+				update_distance_map(initial_state, 0); // to also update the target cache
+				_unexplored_by_depth[0].push_back(initial_state);
 			}
 
 			/**
@@ -387,12 +269,24 @@ namespace tobor {
 			/**
 			*	@brief Returns true if and only if the entire state space has been explored.
 			*/
-			inline bool entirely_explored() const noexcept { return _unexplored_leafs.empty(); }
+			inline bool entirely_explored() const noexcept {
+				for (auto iter = _unexplored_by_depth.cbegin(); iter != _unexplored_by_depth.cend(); ++iter) {
+					if (!(iter->second.empty())) {
+						return false;
+					}
+				}
+				return true;
+			}
 
 			/**
 			*	@brief Returns the max depth of previously executed exploration.
 			*/
-			inline size_type exploration_depth() const noexcept { return _max_exploration_depth; }
+			inline size_type exploration_depth() const noexcept {
+				if (_unexplored_by_depth.empty()) {
+					return SIZE_TYPE_MAX; // should never be reached
+				}
+				return _unexplored_by_depth.cbegin()->first;
+			}
 
 			/**
 			*	@brief Explores according to \p policy (until entirely explored or until running into some policy threshold)
@@ -402,128 +296,78 @@ namespace tobor {
 				const exploration_policy& policy
 			) {
 				while (
-					_max_exploration_depth < policy.max_depth() /* policy abort */
+					exploration_depth() < policy.max_depth() /* policy abort */
 					&&
 					count_states() < policy.state_count_threshold() /* policy abort */
 					&&
 					!entirely_explored()
 					)
 				{
-					states_vector _unexplored_leafs_next;
-
-					for (std::size_t i = 0; i < _unexplored_leafs.size(); ++i) {
-						add_successors_to_map_and_obtain_further_exploration_leafs(engine, _unexplored_leafs[i], _max_exploration_depth, std::back_inserter(_unexplored_leafs_next));
-					}
-
-					_unexplored_leafs = _unexplored_leafs_next;
-					++_max_exploration_depth;
+					explore_one_level(engine);
 				}
+			}
+
+			/**
+			*	@brief Explores according to \p policy until reaching \p target_cell (or until running into policy threshold or untile entirely explored)
+			*/
+			inline distance_int explore_until_target(
+				const move_engine_type& engine,
+				const cell_id_type& target_cell,
+				const exploration_policy& policy
+			) {
+				while ( /* no break condition fulfilled */
+					exploration_depth() < policy.max_depth() // also filteres ONLY_CASHED and ONLY_EXPLORED here
+					&&
+					count_states() < policy.state_count_threshold()
+					&&
+					!(access_target_cache(target_cell.get_id()).first < NOT_REACHED)
+					&&
+					!entirely_explored()
+					) {
+					// explore one depth deeper.
+					explore_one_level(engine);
+				}
+
+				return access_target_cache(target_cell.get_id()).first;
+
 			}
 
 			/**
 			*	@brief Explores until reaching \p target_cell (without any restriction on exploration depth)
-			*/
-			inline size_type explore_until_target(const move_engine_type& engine, const cell_id_type& target_cell) {
-				return optimal_path_length(engine, target_cell, exploration_policy::FORCE_EXPLORATION_UNRESTRICTED());
-			}
-
-			/**
-			*	@brief Explores until reaching \p target_cell, restricted to max exploration depth \p max_depth
-			*/
-			inline size_type explore_until_target(const move_engine_type& engine, const cell_id_type& target_cell, const size_type& max_depth) {
-				return optimal_path_length(engine, target_cell, exploration_policy::FORCE_EXPLORATION_UNTIL_DEPTH(max_depth));
-			}
-
-			/**
-			*	@brief Explores until reaching \p target_cell, if allowed by \p policy. The policy determines if it performs additional exploration or if it only looks up in previously cached or explored solutions.
 			*
 			*	@return Returns the optimal path length for reaching \p target_cell. Returns SIZE_TYPE_MAX in case no optimal path was found, perhaps due to \p policy.
+			*
 			*/
-			inline size_type optimal_path_length(const move_engine_type& engine, const cell_id_type& target_cell, const exploration_policy& policy = exploration_policy::ONLY_EXPLORED()) {
-				// checking cache...
-				//const auto iter = _optimal_path_length_cache.find(target_cell);
+			inline distance_int explore_until_target(const move_engine_type& engine, const cell_id_type& target_cell) {
 
-				//if (iter != _optimal_path_length_cache.cend()) {
-				//	return iter->second;
-				//}
+				return explore_until_target(engine, target_cell, exploration_policy::FORCE_EXPLORATION_UNRESTRICTED());
+				//### does not return SIZE_MAX in not reached case!
 
-				const target_cache_entry& entry{ access_target_cache(target_cell.get_id()) };
-
-				if (entry.first != NOT_REACHED) {
-					return entry.first;
-				}
-
-				if (policy == exploration_policy::ONLY_CASHED()) {
-					return SIZE_TYPE_MAX;
-				}
-
-				// Note that our cache caches everything explored so far.
-				// we do not have to look for already explored but not yet cached 
-
-				if (policy == exploration_policy::ONLY_EXPLORED()) {
-					return SIZE_TYPE_MAX;
-				}
-
-				// checking explored states...
-
-				// here we need to iterate over
-				//_distance_map;
-				// and build back the states to check if it matches given target cell.
-
-				// hint does not make sense anymore for iterating this structure.
-
-
-				//for (auto iter = _distance_map.cbegin(); iter != _distance_map.cend(); ++iter) {
-
-					//...
-
-					// dont do this. Switch to cache-on-exploration now!!!!
-
-				//}
-
-				/*
-				for (size_type depth{ min_length_hint }; depth < _reachable_states_by_distance.size(); ++depth) {
-					for (const auto& state : _reachable_states_by_distance[depth]) {
-						if (state.is_final(target_cell)) {
-							if (min_length_hint == 0) { // only update cache if there was no hint
-								_optimal_path_length_cache.insert(std::make_pair(target_cell, depth));
-
-								// consider building the cache while exploring new states, cache should not be a std::map, instead a vector with const time access!
-								// then manual lookup here is not necessary, since target either in cache or not reached.
-							}
-							return depth;
-						}
-					}
-				}
-				*/
-
-
-
-
-				// further exploration...
-				return explore_until_target(engine, target_cell, policy, true);
 			}
 
 			/**
-			*	@brief Explores until reaching \p target_cell, if allowed by \p policy. The policy determines if it performs additional exploration or if it only looks up in previously cached or explored solutions.
+			*	@brief Explores until reaching \p target_cell, restricted to max exploration depth \p max_depth_exploration
+			*	@return Returns the optimal path length for reaching \p target_cell. Returns SIZE_TYPE_MAX in case no optimal path was found, perhaps due to \p policy.
+			*/
+			inline distance_int explore_until_target(const move_engine_type& engine, const cell_id_type& target_cell, const size_type& max_depth_exploration) {
+
+				return explore_until_target(engine, target_cell, exploration_policy::FORCE_EXPLORATION_UNTIL_DEPTH(max_depth_exploration));
+				//### does not return SIZE_MAX in not reached case!
+
+			}
+
+			/**
+			*	@brief Explores until reaching \p target_cell, if allowed by \p policy. The policy determines if it performs additional exploration or if it only looks up in previously explored solutions.
 			*
 			*	@return Returns all final states covering \p target_cell.
 			*/
-			inline std::vector<positions_of_pieces_type> optimal_final_states(move_engine_type& engine, const cell_id_type& target_cell, const exploration_policy& policy = exploration_policy::ONLY_EXPLORED(), const size_type& min_length_hint = 0) {
-				std::vector<positions_of_pieces_type> result;
-				const size_type DEPTH{ optimal_path_length(engine, target_cell, policy) };
+			inline states_vector optimal_final_states(const move_engine_type& engine, const cell_id_type& target_cell, const exploration_policy& policy = exploration_policy::ONLY_EXPLORED()) {
 
-				if (!(DEPTH < _reachable_states_by_distance.size()))
-					return result;
+				explore_until_target(engine, target_cell, policy);
+				return access_target_cache(target_cell.get_id()).second;
 
-				for (auto state_iter = _reachable_states_by_distance[DEPTH].cbegin(); state_iter != _reachable_states_by_distance[DEPTH].cend(); ++state_iter) {
-					if (*state_iter.is_final(target_cell)) {
-						result.push_back(*state_iter);
-					}
-				}
-
-				return result;
 			}
+
 
 			/**
 			*	@brief Extracts the simple_state_bigraph containing all optimal solutions for reaching \p target_cell.
@@ -535,41 +379,43 @@ namespace tobor {
 				const move_engine_type& engine,
 				const cell_id_type& target_cell,
 				simple_state_bigraph<positions_of_pieces_type, State_Label_T>& destination,
-				const exploration_policy& policy = exploration_policy::ONLY_EXPLORED(),
-				const size_type& min_length_hint = 0
+				const exploration_policy& policy = exploration_policy::ONLY_EXPLORED()
 			) {
 				using bigraph = simple_state_bigraph<positions_of_pieces_type, State_Label_T>;
 
 				destination.clear();
 
-				const size_type FINAL_DEPTH{ optimal_path_length(engine, target_cell, policy) };
+				states_vector final_states = optimal_final_states(engine, target_cell, policy);
+				std::sort(final_states.begin(), final_states.end());
 
-				if (!(FINAL_DEPTH < _reachable_states_by_distance.size()))
+				const distance_int FINAL_DEPTH{ explore_until_target(engine, target_cell, policy) }; // double explore here, policy can be depth-0
+
+				if (FINAL_DEPTH == NOT_REACHED || final_states.empty()) { // should be none or both true
 					return;
-
-				std::vector<positions_of_pieces_type> states;
-
-				// fill states with all the final states
-				for (size_type i{ 0 }; i < _reachable_states_by_distance[FINAL_DEPTH].size(); ++i) {
-					const auto& s{ _reachable_states_by_distance[FINAL_DEPTH][i] };
-					if (s.is_final(target_cell)) {
-						destination.map.insert(
-							destination.map.end(),
-							std::pair<typename bigraph::state_type, typename bigraph::node_links>(
-								_reachable_states_by_distance[FINAL_DEPTH][i],
-								typename bigraph::node_links()
-							)
-						);
-						states.push_back(s);
-					}
 				}
 
-				std::size_t backward_explore_distance = FINAL_DEPTH;
+
+				for (const auto& state : final_states) {
+					destination.map.insert(
+						destination.map.end(), // are these states sorted? no!, hint is useless ##### -> changed... sorted at the beginning
+						std::pair<typename bigraph::state_type, typename bigraph::node_links>(
+							state,
+							typename bigraph::node_links()
+						)
+					);
+				}
+
+				distance_int backward_explore_distance = FINAL_DEPTH;
+				states_vector states = final_states;
 
 				while (backward_explore_distance > 0) {
 					--backward_explore_distance;
 
+					// move on here!!!
+
 					std::vector<std::pair<positions_of_pieces_type, positions_of_pieces_type>> possible_edges;
+
+					possible_edges.reserve(states.size() * pieces_quantity_type::COUNT_ALL_PIECES * 4);
 
 					// all maybe-edges
 					for (const auto& state : states) {
@@ -582,18 +428,9 @@ namespace tobor {
 					// sort by from-state
 					std::sort(possible_edges.begin(), possible_edges.end());
 
-					//remove if from state not in distance state vector
-					std::size_t compare_index{ 0 };
-
 					possible_edges.erase(
 						std::remove_if(possible_edges.begin(), possible_edges.end(), [&](const std::pair<positions_of_pieces_type, positions_of_pieces_type>& edge) {
-							while (compare_index < _reachable_states_by_distance[backward_explore_distance].size() && _reachable_states_by_distance[backward_explore_distance][compare_index] < edge.first) {
-								++compare_index;
-							}
-							if (compare_index < _reachable_states_by_distance[backward_explore_distance].size() && _reachable_states_by_distance[backward_explore_distance][compare_index] == edge.first) {
-								return false; // do not remove edge
-							}
-							return true; // remove edge
+							return _distance_map.get(edge.first) != backward_explore_distance;
 							}),
 						possible_edges.end()
 					);
