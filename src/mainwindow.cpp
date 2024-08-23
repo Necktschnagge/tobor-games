@@ -126,17 +126,12 @@ void MainWindow::setTextAndShortcutsForMainMenu() {
 
 void MainWindow::connectSoltsForMainMenu()
 {
+
 	// QMetaObject::connectSlotsByName(this); is done during execution of auto-created code.
 
 	//### connect slots!manually here!I dont like connect by name.
 
 }
-
-
-
-
-
-
 
 
 MainWindow::MainWindow(QWidget* parent) :
