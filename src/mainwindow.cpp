@@ -2,11 +2,11 @@
 
 #include "mainwindow.h"
 
-#include "gui_helper.h"
+#include "gui/gui_helper.h"
 
 #include "custom_traits.h"
 
-#include "./ui_mainwindow.h"
+#include "ui_mainwindow.h"
 #include "gui/license_dialog.h"
 
 
@@ -114,7 +114,7 @@ void MainWindow::startSolver()
 
 void MainWindow::stopSolver()
 {
-	if (!current_game) return showErrorDialog("Cannot start solver with no game opened.");
+	if (!current_game) return showErrorDialog("Cannot stop solver with no game opened.");
 	current_game->stop_solver();
 	refreshAll();
 }
