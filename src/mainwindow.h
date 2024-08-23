@@ -60,6 +60,8 @@ private:
 
 		QLabel* boardIdKey;
 		QLabel* boardIdValue; // two modes? "702563:378 // 3:0:2:3:5:2:7 " hint: redPlanetQuadrant, .., .., .., permutation, board rotation, target cell
+		// GeneratorName<group-generator> COUNTER       e.g.   Orisimp<3542731>(514)
+		// or struchtured string: Orisimp<>{1:3:2:2::5::3::5673}  something like this, should be a feature of the factory to reproduce this string
 
 		QLabel* solverKey; // "RUNNING / OFF / AUTO-PLAY / STEP-MODE"
 		QLabel* solverValue;
