@@ -6,6 +6,8 @@
 
 #include "cyclic_group_game_factory.h"
 
+#include "gui/main_menu.h"
+
 #include <QMainWindow>
 #include <QSvgRenderer>
 #include <QGraphicsSvgItem>
@@ -59,7 +61,7 @@ private:
 		QLabel* stepsValue;
 
 		QLabel* boardIdKey;
-		QLabel* boardIdValue; // two modes? "702563:378 // 3:0:2:3:5:2:7 " hint: redPlanetQuadrant, .., .., .., permutation, board rotation, target cell
+		QLabel* boardIdValue; // two modes? "702563:378 // 3:0:2:3:5:2:7 " hint: redPlanetQuadrant, .., .., .., permutation, board rotation, target cell, initial state
 		// GeneratorName<group-generator> COUNTER       e.g.   Orisimp<3542731>(514)
 		// or struchtured string: Orisimp<>{1:3:2:2::5::3::5673}  something like this, should be a feature of the factory to reproduce this string
 
@@ -90,12 +92,15 @@ private:
 
 public:
 
+
 	MainWindow(QWidget* parent = nullptr);
 	~MainWindow();
 
 private:
-	// concrete actions executed via slots or via direct calls
+	void setTextAndShortcutsForMainMenu();
+	void connectSoltsForMainMenu();
 
+	// concrete actions executed via slots or via direct calls
 	// game
 	void startGame(AbstractGameFactory* factory);
 	void startGame();
@@ -161,6 +166,8 @@ private:
 private:
 
 	Ui::MainWindow* ui;
+
+	MenuBar_Main menubar_root;
 
 	friend class ControlKeyEventAgent;
 
