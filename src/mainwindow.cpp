@@ -228,7 +228,7 @@ void MainWindow::selectPieceByColorId(const std::size_t& color_id)
 
 /**
 *	@brief Moves selected piece into given direction in interactive mode.
-*		However In solver mode it moves forward on EAST, backward on WEST and does nothign otehrwise.
+*		However, in solver mode it moves forward on EAST, backward on WEST and does nothing otherwise.
 */
 void MainWindow::movePieceInteractiveAndSolver(const tobor::v1_0::direction& direction)
 {
