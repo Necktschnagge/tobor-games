@@ -131,7 +131,7 @@ private Q_SLOTS:
 	void on_actionAbout_triggered();
 	void on_actionNewGame_triggered();
 	void on_actionStopGame_triggered();
-	void on_actionMoveBack_triggered();
+	void on_actionUndo_triggered();
 	void on_actionNORTH_triggered();
 	void on_actionEAST_triggered();
 	void on_actionSOUTH_triggered();

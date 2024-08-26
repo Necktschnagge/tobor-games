@@ -5,32 +5,30 @@
 #include <QMainWindow>
 
 
-struct Menu_Main_File { // OK
+// Note that by auto-generated code, all actions are created with mainWindow as their parent
+
+struct Menu_Main_File {
 
 	QMenu* menuFile;
 
 	Menu_Main_File(QMenuBar* menubar) {
-
 		menuFile = new QMenu(menubar);
 		menuFile->setObjectName("menuFile");
-
 	}
 
 };
 
-struct Menu_Main_Edit { // OK
+struct Menu_Main_Edit {
 
 	QMenu* menuEdit;
 
 	Menu_Main_Edit(QMenuBar* menubar) {
-
 		menuEdit = new QMenu(menubar);
 		menuEdit->setObjectName("menuEdit");
-
 	}
 };
 
-struct Menu_Main_Game { // OK
+struct Menu_Main_Game {
 
 	QMenu* menuGame;
 
@@ -48,8 +46,7 @@ struct Menu_Main_Game { // OK
 	QAction* actionSOUTH;
 	QAction* actionWEST;
 
-	//undo: ->
-	QAction* actionMoveBack; // rename: actionUndo
+	QAction* actionUndo;
 
 	//hline
 
@@ -63,11 +60,6 @@ struct Menu_Main_Game { // OK
 	QAction* actionSolver_Configuration;
 
 
-
-
-	// solver configuration
-
-
 	Menu_Main_Game(QMenuBar* menubar) {
 
 		menuGame = new QMenu(menubar);
@@ -75,14 +67,14 @@ struct Menu_Main_Game { // OK
 
 		menubar->addAction(menuGame->menuAction());
 
-		actionNewGame = new QAction(menuGame);//was parent mainWindow
+		actionNewGame = new QAction(menuGame);
 		actionNewGame->setObjectName("actionNewGame");
 		actionNewGame->setEnabled(false);
 
 		menuHistory = new QMenu(menuGame);
 		menuHistory->setObjectName("menuHistory");
 
-		actionStopGame = new QAction(menuGame); //was parent mainWindow
+		actionStopGame = new QAction(menuGame);
 		actionStopGame->setObjectName("actionStopGame");
 		actionStopGame->setEnabled(false);
 
@@ -113,14 +105,11 @@ struct Menu_Main_Game { // OK
 			menuMove->addAction(actionEAST);
 			menuMove->addAction(actionSOUTH);
 			menuMove->addAction(actionWEST);
-
 		}
 
-
-		actionMoveBack = new QAction(menuGame); //was parent mainWindow
-		actionMoveBack->setObjectName("actionMoveBack");
-		actionMoveBack->setEnabled(false);
-
+		actionUndo = new QAction(menuGame);
+		actionUndo->setObjectName("actionUndo");
+		actionUndo->setEnabled(false);
 
 		actionStart_Solver = new QAction(menuGame);
 		actionStart_Solver->setObjectName("actionStart_Solver");
@@ -150,14 +139,13 @@ struct Menu_Main_Game { // OK
 		actionSolver_Configuration->setObjectName("actionSolver_Configuration");
 		actionSolver_Configuration->setEnabled(false);
 
-
 		menuGame->addAction(actionNewGame);
 		menuGame->addAction(menuHistory->menuAction());
 		menuGame->addAction(actionStopGame);
 		menuGame->addSeparator();
 		menuGame->addAction(menuSelect_Piece->menuAction());
 		menuGame->addAction(menuMove->menuAction());
-		menuGame->addAction(actionMoveBack);
+		menuGame->addAction(actionUndo);
 		menuGame->addSeparator();
 		menuGame->addAction(actionStart_Solver);
 		menuGame->addAction(actionStop_Solver);
@@ -167,7 +155,7 @@ struct Menu_Main_Game { // OK
 
 };
 
-struct Menu_Main_Developer { // OK
+struct Menu_Main_Developer {
 
 	QMenu* menuDeveloper;
 
@@ -181,7 +169,7 @@ struct Menu_Main_Developer { // OK
 		menuDeveloper = new QMenu(menubar);
 		menuDeveloper->setObjectName("menuDeveloper");
 
-		actionHighlightGeneratedTargetCells = new QAction(menuDeveloper);//MainWindow
+		actionHighlightGeneratedTargetCells = new QAction(menuDeveloper);
 		actionHighlightGeneratedTargetCells->setObjectName("actionHighlightGeneratedTargetCells");
 		actionHighlightGeneratedTargetCells->setEnabled(true);
 
@@ -193,23 +181,19 @@ struct Menu_Main_Developer { // OK
 		action22ReferenceGame->setObjectName("action22ReferenceGame");
 		action22ReferenceGame->setEnabled(true);
 
-		//menuDeveloper->addAction(actionAbout);
 		menuDeveloper->addAction(actionHighlightGeneratedTargetCells);
 		menuDeveloper->addAction(actionEnableAllMenuBarItems);
 		menuDeveloper->addAction(action22ReferenceGame);
-
-
 	}
 };
 
-struct Menu_Main_View { // OK
+struct Menu_Main_View {
 
 	QMenu* menuView;
 
 	QMenu* menuPieces;
 
 	Menu_Main_View(QMenuBar* menubar) {
-		
 		menuView = new QMenu(menubar);
 		menuView->setObjectName("menuView");
 
@@ -217,12 +201,11 @@ struct Menu_Main_View { // OK
 		menuPieces->setObjectName("menuPieces");
 
 		menuView->addAction(menuPieces->menuAction());
-
 	}
 
 };
 
-struct Menu_Main_Help { // OK
+struct Menu_Main_Help {
 
 	QMenu* menuHelp;
 
@@ -234,7 +217,7 @@ struct Menu_Main_Help { // OK
 		menuHelp = new QMenu(menubar);
 		menuHelp->setObjectName("menuHelp");
 
-		actionAbout = new QAction(menuHelp); //mainWindow
+		actionAbout = new QAction(menuHelp);
 		actionAbout->setObjectName("actionAbout");
 		actionAbout->setEnabled(true);
 
@@ -244,7 +227,6 @@ struct Menu_Main_Help { // OK
 
 		menuHelp->addAction(actionAbout);
 		menuHelp->addAction(actionLicense_Information);
-
 	}
 };
 
@@ -254,7 +236,7 @@ struct Menu_Main_Help { // OK
 
 
 
-struct Menu_Main_Root { // OK
+struct Menu_Main_Root {
 
 
 	Menu_Main_File file;
@@ -278,19 +260,22 @@ struct Menu_Main_Root { // OK
 };
 
 
-struct MenuBar_Main { // OK
+struct MenuBar_Main {
 
 	QMenuBar* menubar;
 
 	Menu_Main_Root* rootMenu;
 
 	MenuBar_Main(QMainWindow* MainWindow) {
-
 		menubar = new QMenuBar(MainWindow);
 		menubar->setObjectName("menubar");
 		menubar->setGeometry(QRect(0, 0, 1097, 22));
 
 		rootMenu = new Menu_Main_Root(menubar);
-		// ### need destructor for this!
+	}
+
+	~MenuBar_Main() {
+		delete rootMenu;
+		// we might think about using smart pointer to get rid of the delete, or let these classes become QObjects so that we can rely on parenting
 	}
 };

@@ -72,9 +72,9 @@ void MainWindow::setTextAndShortcutsForMainMenu() {
 #if QT_CONFIG(shortcut)
 	menubar_root.rootMenu->game.actionWEST->setShortcut(QCoreApplication::translate("MainWindow", "Ctrl+Left", nullptr));
 #endif // QT_CONFIG(shortcut)
-	menubar_root.rootMenu->game.actionMoveBack->setText(QCoreApplication::translate("MainWindow", "&Undo", nullptr));
+	menubar_root.rootMenu->game.actionUndo->setText(QCoreApplication::translate("MainWindow", "&Undo", nullptr));
 #if QT_CONFIG(shortcut)
-	menubar_root.rootMenu->game.actionMoveBack->setShortcut(QCoreApplication::translate("MainWindow", "Backspace", nullptr));
+	menubar_root.rootMenu->game.actionUndo->setShortcut(QCoreApplication::translate("MainWindow", "Backspace", nullptr));
 #endif // QT_CONFIG(shortcut)
 
 
@@ -434,7 +434,7 @@ void MainWindow::on_actionStopGame_triggered() {
 	stopGame();
 }
 
-void MainWindow::on_actionMoveBack_triggered()
+void MainWindow::on_actionUndo_triggered()
 {
 	undo();
 }
@@ -511,7 +511,7 @@ void MainWindow::setMenuButtonEnableForNoGame()
 	menubar_root.rootMenu->game.actionStopGame->setEnabled(false);
 	menubar_root.rootMenu->game.actionStart_Solver->setEnabled(false);
 	menubar_root.rootMenu->game.actionStop_Solver->setEnabled(false);
-	menubar_root.rootMenu->game.actionMoveBack->setEnabled(false);
+	menubar_root.rootMenu->game.actionUndo->setEnabled(false);
 	menubar_root.rootMenu->game.menuSelect_Piece->setEnabled(false);
 	menubar_root.rootMenu->game.menuMove->setEnabled(false);
 	menubar_root.rootMenu->game.menuPlaySolver->setEnabled(false);
@@ -524,7 +524,7 @@ void MainWindow::setMenuButtonEnableForInteractiveGame()
 	menubar_root.rootMenu->game.actionStopGame->setEnabled(true);
 	menubar_root.rootMenu->game.actionStart_Solver->setEnabled(true);
 	menubar_root.rootMenu->game.actionStop_Solver->setEnabled(false);
-	menubar_root.rootMenu->game.actionMoveBack->setEnabled(!current_game->is_initial());
+	menubar_root.rootMenu->game.actionUndo->setEnabled(!current_game->is_initial());
 	menubar_root.rootMenu->game.menuSelect_Piece->setEnabled(true);
 	menubar_root.rootMenu->game.menuMove->setEnabled(true);
 	menubar_root.rootMenu->game.menuPlaySolver->setEnabled(false);
@@ -537,7 +537,7 @@ void MainWindow::setMenuButtonEnableForSolverGame()
 	menubar_root.rootMenu->game.actionStopGame->setEnabled(true);
 	menubar_root.rootMenu->game.actionStart_Solver->setEnabled(false);
 	menubar_root.rootMenu->game.actionStop_Solver->setEnabled(true);
-	menubar_root.rootMenu->game.actionMoveBack->setEnabled(!current_game->is_initial());
+	menubar_root.rootMenu->game.actionUndo->setEnabled(!current_game->is_initial());
 	menubar_root.rootMenu->game.menuSelect_Piece->setEnabled(false);
 	menubar_root.rootMenu->game.menuMove->setEnabled(false);
 	menubar_root.rootMenu->game.menuPlaySolver->setEnabled(true);
