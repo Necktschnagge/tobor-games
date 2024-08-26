@@ -2,11 +2,11 @@
 
 #include "mainwindow.h"
 
-#include "gui_helper.h"
+#include "gui/gui_helper.h"
 
 #include "custom_traits.h"
 
-#include "./ui_mainwindow.h"
+#include "ui_mainwindow.h"
 #include "gui/license_dialog.h"
 
 
@@ -105,13 +105,16 @@ void MainWindow::startSolver()
 		repaint();
 		};
 
+	ui->statusbar->showMessage("starting solver...");
+	repaint();
+
 	current_game->start_solver(showMessage);
 	refreshAll();
 }
 
 void MainWindow::stopSolver()
 {
-	if (!current_game) return showErrorDialog("Cannot start solver with no game opened.");
+	if (!current_game) return showErrorDialog("Cannot stop solver with no game opened.");
 	current_game->stop_solver();
 	refreshAll();
 }
@@ -122,7 +125,7 @@ void MainWindow::stopGame()
 	disconnectInputConnections();
 	ui->menuSelect_Piece->clear();
 
-	if (!current_game) return showErrorDialog("This action should not be available.");
+	if (!current_game) return showErrorActionAvailable();
 	current_game.reset();
 	statusBar()->showMessage("Game stopped.");
 	refreshAll();
@@ -130,7 +133,7 @@ void MainWindow::stopGame()
 
 void MainWindow::startGame(AbstractGameFactory* factory)
 {
-	if (current_game) return showErrorDialog("This action should not be available.");
+	if (current_game) return showErrorActionAvailable();
 
 	current_game.reset(factory->create());
 	current_color_vector = tobor::v1_0::color_vector::get_standard_coloring(static_cast<uint8_t>(current_game->count_pieces())); // standard coloring without permutation
@@ -143,7 +146,7 @@ void MainWindow::startGame(AbstractGameFactory* factory)
 
 void MainWindow::startGame()
 {
-	if (current_game) return showErrorDialog("This action should not be available.");
+	if (current_game) return showErrorActionAvailable();
 
 	std::unique_ptr<CyclicGroupGameFactory>& fac{ next_factory_1[factory_select] };
 
@@ -192,14 +195,14 @@ void MainWindow::startGame()
 
 void MainWindow::startGameFromHistory(int index)
 {
-	if (current_game) return showErrorDialog("This action should not be available.");
+	if (current_game) return showErrorActionAvailable();
 
 	return startGame(factory_history[index].get());
 }
 
 void MainWindow::startReferenceGame22()
 {
-	if (current_game) return showErrorDialog("This action should not be available.");
+	if (current_game) return showErrorActionAvailable();
 
 	auto fac = SpecialCaseGameFactory();
 
@@ -223,7 +226,11 @@ void MainWindow::selectPieceByColorId(const std::size_t& color_id)
 	refreshStatusbar();
 }
 
-void MainWindow::movePiece(const tobor::v1_0::direction& direction)
+/**
+*	@brief Moves selected piece into given direction in interactive mode.
+*		However, in solver mode it moves forward on EAST, backward on WEST and does nothing otherwise.
+*/
+void MainWindow::movePieceInteractiveAndSolver(const tobor::v1_0::direction& direction)
 {
 	if (!current_game) {
 		showErrorDialog("Cannot move a piece with no game opened.");
@@ -247,7 +254,9 @@ void MainWindow::movePiece(const tobor::v1_0::direction& direction)
 void MainWindow::undo()
 {
 	if (!current_game) return showErrorDialog("Cannot undo with no game opened.");
-	if (current_game->solver()) return showErrorDialog("Cannot yet undo in solver mode.");
+	if (current_game->solver()) {
+		current_game->stop_solver();
+	}
 	current_game->undo();
 	refreshAll();
 }
@@ -317,48 +326,49 @@ void MainWindow::on_actionMoveBack_triggered()
 
 void MainWindow::on_actionNORTH_triggered()
 {
-	movePiece(tobor::v1_0::direction::NORTH());
-	statusBar()->showMessage("Went north.");
+	if (!current_game || current_game->solver()) return showErrorActionAvailable();
+	movePieceInteractiveAndSolver(tobor::v1_0::direction::NORTH());
 }
 
 
 void MainWindow::on_actionEAST_triggered()
 {
-	movePiece(tobor::v1_0::direction::EAST());
-	statusBar()->showMessage("Went east.");
-
+	if (!current_game || current_game->solver()) return showErrorActionAvailable();
+	movePieceInteractiveAndSolver(tobor::v1_0::direction::EAST());
 }
 
 
 void MainWindow::on_actionSOUTH_triggered()
 {
-	movePiece(tobor::v1_0::direction::SOUTH());
-	statusBar()->showMessage("Went south.");
-
+	if (!current_game || current_game->solver()) return showErrorActionAvailable();
+	movePieceInteractiveAndSolver(tobor::v1_0::direction::SOUTH());
 }
 
 
 void MainWindow::on_actionWEST_triggered()
 {
-	movePiece(tobor::v1_0::direction::WEST());
-	statusBar()->showMessage("Went west.");
+	if (!current_game || current_game->solver()) return showErrorActionAvailable();
+	movePieceInteractiveAndSolver(tobor::v1_0::direction::WEST());
 }
 
 void MainWindow::on_actionForward_triggered()
 {
-	on_actionEAST_triggered(); // change this
+	if (!current_game || !current_game->solver()) return showErrorActionAvailable();
+	current_game->move_by_solver(true);
+	refreshAll();
 }
 
 
 void MainWindow::on_actionBack_triggered()
 {
-	on_actionWEST_triggered(); // change this
+	if (!current_game || !current_game->solver()) return showErrorActionAvailable();
+	current_game->move_by_solver(false);
+	refreshAll();
 }
 
 void MainWindow::on_actionStart_Solver_triggered()
 {
-	ui->statusbar->showMessage("starting solver...");
-	repaint();
+	if (!current_game || current_game->solver()) showErrorActionAvailable();
 	startSolver();
 }
 

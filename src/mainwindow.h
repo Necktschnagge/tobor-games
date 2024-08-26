@@ -110,7 +110,7 @@ private:
 
 	// game moves
 	void selectPieceByColorId(const std::size_t& color_id);
-	void movePiece(const tobor::v1_0::direction& direction);
+	void movePieceInteractiveAndSolver(const tobor::v1_0::direction& direction);
 	void undo();
 
 
