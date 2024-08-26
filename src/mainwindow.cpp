@@ -146,14 +146,13 @@ MainWindow::MainWindow(QWidget* parent) :
 {
 	ui->setupUi(this);
 
-	// manually set menubar here ###
+	// menubar:
 	setMenuBar(menubar_root.menubar);
-
-	// missing: retranslate: here extract the things of menubar:
 	setTextAndShortcutsForMainMenu();
 	connectSoltsForMainMenu();
 
-		statusbarItems.init(ui->statusbar);
+	// statusbar:
+	statusbarItems.init(ui->statusbar);
 
 	shapeSelectionItems.createInsideQMenu(this, menubar_root.rootMenu->view.menuPieces);
 
