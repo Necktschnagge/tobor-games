@@ -127,7 +127,9 @@ void MainWindow::connectSoltsForMainMenu()
 
 	// QMetaObject::connectSlotsByName(this); is done during execution of auto-created code.
 
-	//### connect slots!manually here!I dont like connect by name.
+	// TODO here (issue #184)
+	// In future please connect slots manually here!
+	// I dont like auto connecting by name.
 
 }
 
