@@ -26,8 +26,6 @@
 #include <QGraphicsSvgItem>
 #include <QMessageBox>
 
-// please add a enable all actions in menu to developer menu!
-
 void MainWindow::setTextAndShortcutsForMainMenu() {
 
 	/// FILE
