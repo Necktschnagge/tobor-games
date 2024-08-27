@@ -230,12 +230,6 @@ struct Menu_Main_Help {
 	}
 };
 
-
-
-
-
-
-
 struct Menu_Main_Root {
 
 
@@ -258,7 +252,6 @@ struct Menu_Main_Root {
 	}
 
 };
-
 
 struct MenuBar_Main {
 
