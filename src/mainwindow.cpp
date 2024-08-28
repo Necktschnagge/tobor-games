@@ -2,11 +2,13 @@
 
 #include "mainwindow.h"
 
-#include "gui_helper.h"
+#include "gui/gui_helper.h"
 
 #include "custom_traits.h"
 
-#include "./ui_mainwindow.h"
+#include "ui_mainwindow.h"
+#include "gui/license_dialog.h"
+
 
 #include "special_case_22_game_factory.h"
 #include "original_game_factory.h"
@@ -24,11 +26,118 @@
 #include <QGraphicsSvgItem>
 #include <QMessageBox>
 
-// please add a enable all actions in menu to developer menu!
+void MainWindow::setTextAndShortcutsForMainMenu() {
+
+	/// FILE
+
+	menubar_root.rootMenu->file.menuFile->setTitle(QCoreApplication::translate("MainWindow", "&File", nullptr));
+	//### export SVG feature missing here!
+
+	/// EDIT
+
+	menubar_root.rootMenu->edit.menuEdit->setTitle(QCoreApplication::translate("MainWindow", "&Edit", nullptr));
+
+	/// GAME
+
+	//MainWindow->setWindowTitle(QCoreApplication::translate("MainWindow", "Tobor 1.0", nullptr));
+	menubar_root.rootMenu->game.menuGame->setTitle(QCoreApplication::translate("MainWindow", "&Game", nullptr));
+	menubar_root.rootMenu->game.actionNewGame->setText(QCoreApplication::translate("MainWindow", "&New Game", nullptr));
+#if QT_CONFIG(shortcut)
+	menubar_root.rootMenu->game.actionNewGame->setShortcut(QCoreApplication::translate("MainWindow", "Ctrl+N", nullptr));
+#endif // QT_CONFIG(shortcut)
+	menubar_root.rootMenu->game.menuHistory->setTitle(QCoreApplication::translate("MainWindow", "&History...", nullptr));
+	menubar_root.rootMenu->game.actionStopGame->setText(QCoreApplication::translate("MainWindow", "&Stop Game", nullptr));
+#if QT_CONFIG(shortcut)
+	menubar_root.rootMenu->game.actionStopGame->setShortcut(QCoreApplication::translate("MainWindow", "Esc", nullptr));
+#endif // QT_CONFIG(shortcut)
+
+
+	menubar_root.rootMenu->game.menuSelect_Piece->setTitle(QCoreApplication::translate("MainWindow", "Select &Piece...", nullptr));
+	menubar_root.rootMenu->game.menuMove->setTitle(QCoreApplication::translate("MainWindow", "&Move...", nullptr));
+	menubar_root.rootMenu->game.actionNORTH->setText(QCoreApplication::translate("MainWindow", "&NORTH", nullptr));
+#if QT_CONFIG(shortcut)
+	menubar_root.rootMenu->game.actionNORTH->setShortcut(QCoreApplication::translate("MainWindow", "Ctrl+Up", nullptr));
+#endif // QT_CONFIG(shortcut)
+	menubar_root.rootMenu->game.actionEAST->setText(QCoreApplication::translate("MainWindow", "&EAST", nullptr));
+#if QT_CONFIG(shortcut)
+	menubar_root.rootMenu->game.actionEAST->setShortcut(QCoreApplication::translate("MainWindow", "Ctrl+Right", nullptr));
+#endif // QT_CONFIG(shortcut)
+	menubar_root.rootMenu->game.actionSOUTH->setText(QCoreApplication::translate("MainWindow", "&SOUTH", nullptr));
+#if QT_CONFIG(shortcut)
+	menubar_root.rootMenu->game.actionSOUTH->setShortcut(QCoreApplication::translate("MainWindow", "Ctrl+Down", nullptr));
+#endif // QT_CONFIG(shortcut)
+	menubar_root.rootMenu->game.actionWEST->setText(QCoreApplication::translate("MainWindow", "&WEST", nullptr));
+#if QT_CONFIG(shortcut)
+	menubar_root.rootMenu->game.actionWEST->setShortcut(QCoreApplication::translate("MainWindow", "Ctrl+Left", nullptr));
+#endif // QT_CONFIG(shortcut)
+	menubar_root.rootMenu->game.actionUndo->setText(QCoreApplication::translate("MainWindow", "&Undo", nullptr));
+#if QT_CONFIG(shortcut)
+	menubar_root.rootMenu->game.actionUndo->setShortcut(QCoreApplication::translate("MainWindow", "Backspace", nullptr));
+#endif // QT_CONFIG(shortcut)
+
+
+
+	menubar_root.rootMenu->game.actionStart_Solver->setText(QCoreApplication::translate("MainWindow", "Start S&olver", nullptr));
+#if QT_CONFIG(shortcut)
+	menubar_root.rootMenu->game.actionStart_Solver->setShortcut(QCoreApplication::translate("MainWindow", "F9", nullptr));
+#endif // QT_CONFIG(shortcut)
+	menubar_root.rootMenu->game.actionStop_Solver->setText(QCoreApplication::translate("MainWindow", "Stop Solve&r", nullptr));
+#if QT_CONFIG(shortcut)
+	menubar_root.rootMenu->game.actionStop_Solver->setShortcut(QCoreApplication::translate("MainWindow", "F10", nullptr));
+#endif // QT_CONFIG(shortcut)
+	menubar_root.rootMenu->game.menuPlaySolver->setTitle(QCoreApplication::translate("MainWindow", "&Play...", nullptr));
+	menubar_root.rootMenu->game.actionForward->setText(QCoreApplication::translate("MainWindow", "&Forward", nullptr));
+#if QT_CONFIG(shortcut)
+	menubar_root.rootMenu->game.actionForward->setShortcut(QCoreApplication::translate("MainWindow", "Ctrl+Right", nullptr));
+#endif // QT_CONFIG(shortcut)
+	menubar_root.rootMenu->game.actionBack->setText(QCoreApplication::translate("MainWindow", "&Back", nullptr));
+#if QT_CONFIG(shortcut)
+	menubar_root.rootMenu->game.actionBack->setShortcut(QCoreApplication::translate("MainWindow", "Ctrl+Left", nullptr));
+#endif // QT_CONFIG(shortcut)
+	menubar_root.rootMenu->game.actionSolver_Configuration->setText(QCoreApplication::translate("MainWindow", "Solver &Configuration...", nullptr));
+#if QT_CONFIG(shortcut)
+	menubar_root.rootMenu->game.actionSolver_Configuration->setShortcut(QCoreApplication::translate("MainWindow", "F3", nullptr));
+#endif // QT_CONFIG(shortcut)
+
+
+
+	/// DEVELOPER
+
+	menubar_root.rootMenu->developer.menuDeveloper->setTitle(QCoreApplication::translate("MainWindow", "&Developer", nullptr));
+	menubar_root.rootMenu->developer.actionHighlightGeneratedTargetCells->setText(QCoreApplication::translate("MainWindow", "&Highlight generated target cells", nullptr));
+	menubar_root.rootMenu->developer.actionEnableAllMenuBarItems->setText(QCoreApplication::translate("MainWindow", "&Enable all MenuBar items", nullptr));
+	menubar_root.rootMenu->developer.action22ReferenceGame->setText(QCoreApplication::translate("MainWindow", "&Start 22 Reference Game", nullptr));
+
+
+	/// VIEW
+
+	menubar_root.rootMenu->view.menuView->setTitle(QCoreApplication::translate("MainWindow", "&View", nullptr));
+	menubar_root.rootMenu->view.menuPieces->setTitle(QCoreApplication::translate("MainWindow", "&Pieces...", nullptr));
+
+	/// HELP
+
+	menubar_root.rootMenu->help.menuHelp->setTitle(QCoreApplication::translate("MainWindow", "&Help", nullptr));
+	menubar_root.rootMenu->help.actionAbout->setText(QCoreApplication::translate("MainWindow", "About", nullptr));
+	menubar_root.rootMenu->help.actionLicense_Information->setText(QCoreApplication::translate("MainWindow", "License Information", nullptr));
+
+}
+
+void MainWindow::connectSoltsForMainMenu()
+{
+
+	// QMetaObject::connectSlotsByName(this); is done during execution of auto-created code.
+
+	// TODO here (issue #184)
+	// In future please connect slots manually here!
+	// I dont like auto connecting by name.
+
+}
+
 
 MainWindow::MainWindow(QWidget* parent) :
 	QMainWindow(parent),
 	ui(new Ui::MainWindow),
+	menubar_root(this),
 	controlKeyEventAgent(this),
 	current_game(),
 	factory_history(),
@@ -36,9 +145,16 @@ MainWindow::MainWindow(QWidget* parent) :
 	factory_select(2)
 {
 	ui->setupUi(this);
+
+	// menubar:
+	setMenuBar(menubar_root.menubar);
+	setTextAndShortcutsForMainMenu();
+	connectSoltsForMainMenu();
+
+	// statusbar:
 	statusbarItems.init(ui->statusbar);
 
-	shapeSelectionItems.createInsideQMenu(this, ui->menuPieces);
+	shapeSelectionItems.createInsideQMenu(this, menubar_root.rootMenu->view.menuPieces);
 
 	refreshAll();
 
@@ -103,13 +219,16 @@ void MainWindow::startSolver()
 		repaint();
 		};
 
+	ui->statusbar->showMessage("starting solver...");
+	repaint();
+
 	current_game->start_solver(showMessage);
 	refreshAll();
 }
 
 void MainWindow::stopSolver()
 {
-	if (!current_game) return showErrorDialog("Cannot start solver with no game opened.");
+	if (!current_game) return showErrorDialog("Cannot stop solver with no game opened.");
 	current_game->stop_solver();
 	refreshAll();
 }
@@ -118,9 +237,9 @@ void MainWindow::stopGame()
 {
 	statusbarItems.setSelectedPiece(Qt::darkGray);
 	disconnectInputConnections();
-	ui->menuSelect_Piece->clear();
+	menubar_root.rootMenu->game.menuSelect_Piece->clear();
 
-	if (!current_game) return showErrorDialog("This action should not be available.");
+	if (!current_game) return showErrorActionAvailable();
 	current_game.reset();
 	statusBar()->showMessage("Game stopped.");
 	refreshAll();
@@ -128,7 +247,7 @@ void MainWindow::stopGame()
 
 void MainWindow::startGame(AbstractGameFactory* factory)
 {
-	if (current_game) return showErrorDialog("This action should not be available.");
+	if (current_game) return showErrorActionAvailable();
 
 	current_game.reset(factory->create());
 	current_color_vector = tobor::v1_0::color_vector::get_standard_coloring(static_cast<uint8_t>(current_game->count_pieces())); // standard coloring without permutation
@@ -141,7 +260,7 @@ void MainWindow::startGame(AbstractGameFactory* factory)
 
 void MainWindow::startGame()
 {
-	if (current_game) return showErrorDialog("This action should not be available.");
+	if (current_game) return showErrorActionAvailable();
 
 	std::unique_ptr<CyclicGroupGameFactory>& fac{ next_factory_1[factory_select] };
 
@@ -190,14 +309,14 @@ void MainWindow::startGame()
 
 void MainWindow::startGameFromHistory(int index)
 {
-	if (current_game) return showErrorDialog("This action should not be available.");
+	if (current_game) return showErrorActionAvailable();
 
 	return startGame(factory_history[index].get());
 }
 
 void MainWindow::startReferenceGame22()
 {
-	if (current_game) return showErrorDialog("This action should not be available.");
+	if (current_game) return showErrorActionAvailable();
 
 	auto fac = SpecialCaseGameFactory();
 
@@ -221,7 +340,11 @@ void MainWindow::selectPieceByColorId(const std::size_t& color_id)
 	refreshStatusbar();
 }
 
-void MainWindow::movePiece(const tobor::v1_0::direction& direction)
+/**
+*	@brief Moves selected piece into given direction in interactive mode.
+*		However, in solver mode it moves forward on EAST, backward on WEST and does nothing otherwise.
+*/
+void MainWindow::movePieceInteractiveAndSolver(const tobor::v1_0::direction& direction)
 {
 	if (!current_game) {
 		showErrorDialog("Cannot move a piece with no game opened.");
@@ -245,7 +368,9 @@ void MainWindow::movePiece(const tobor::v1_0::direction& direction)
 void MainWindow::undo()
 {
 	if (!current_game) return showErrorDialog("Cannot undo with no game opened.");
-	if (current_game->solver()) return showErrorDialog("Cannot yet undo in solver mode.");
+	if (current_game->solver()) {
+		current_game->stop_solver();
+	}
 	current_game->undo();
 	refreshAll();
 }
@@ -308,55 +433,56 @@ void MainWindow::on_actionStopGame_triggered() {
 	stopGame();
 }
 
-void MainWindow::on_actionMoveBack_triggered()
+void MainWindow::on_actionUndo_triggered()
 {
 	undo();
 }
 
 void MainWindow::on_actionNORTH_triggered()
 {
-	movePiece(tobor::v1_0::direction::NORTH());
-	statusBar()->showMessage("Went north.");
+	if (!current_game || current_game->solver()) return showErrorActionAvailable();
+	movePieceInteractiveAndSolver(tobor::v1_0::direction::NORTH());
 }
 
 
 void MainWindow::on_actionEAST_triggered()
 {
-	movePiece(tobor::v1_0::direction::EAST());
-	statusBar()->showMessage("Went east.");
-
+	if (!current_game || current_game->solver()) return showErrorActionAvailable();
+	movePieceInteractiveAndSolver(tobor::v1_0::direction::EAST());
 }
 
 
 void MainWindow::on_actionSOUTH_triggered()
 {
-	movePiece(tobor::v1_0::direction::SOUTH());
-	statusBar()->showMessage("Went south.");
-
+	if (!current_game || current_game->solver()) return showErrorActionAvailable();
+	movePieceInteractiveAndSolver(tobor::v1_0::direction::SOUTH());
 }
 
 
 void MainWindow::on_actionWEST_triggered()
 {
-	movePiece(tobor::v1_0::direction::WEST());
-	statusBar()->showMessage("Went west.");
+	if (!current_game || current_game->solver()) return showErrorActionAvailable();
+	movePieceInteractiveAndSolver(tobor::v1_0::direction::WEST());
 }
 
 void MainWindow::on_actionForward_triggered()
 {
-	on_actionEAST_triggered(); // change this
+	if (!current_game || !current_game->solver()) return showErrorActionAvailable();
+	current_game->move_by_solver(true);
+	refreshAll();
 }
 
 
 void MainWindow::on_actionBack_triggered()
 {
-	on_actionWEST_triggered(); // change this
+	if (!current_game || !current_game->solver()) return showErrorActionAvailable();
+	current_game->move_by_solver(false);
+	refreshAll();
 }
 
 void MainWindow::on_actionStart_Solver_triggered()
 {
-	ui->statusbar->showMessage("starting solver...");
-	repaint();
+	if (!current_game || current_game->solver()) showErrorActionAvailable();
 	startSolver();
 }
 
@@ -367,7 +493,8 @@ void MainWindow::on_actionStop_Solver_triggered()
 
 void MainWindow::on_actionLicense_Information_triggered()
 {
-	showErrorDialog("Not yet implemented.");
+	LicenseDialog* dialog = new LicenseDialog(this);
+	dialog->open();
 }
 
 
@@ -379,46 +506,46 @@ void MainWindow::on_listView_doubleClicked(const QModelIndex& index)
 
 void MainWindow::setMenuButtonEnableForNoGame()
 {
-	ui->actionNewGame->setEnabled(true);
-	ui->actionStopGame->setEnabled(false);
-	ui->actionStart_Solver->setEnabled(false);
-	ui->actionStop_Solver->setEnabled(false);
-	ui->actionMoveBack->setEnabled(false);
-	ui->menuSelect_Piece->setEnabled(false);
-	ui->menuMove->setEnabled(false);
-	ui->menuPlaySolver->setEnabled(false);
-	ui->menuHistory->setEnabled(true);
+	menubar_root.rootMenu->game.actionNewGame->setEnabled(true);
+	menubar_root.rootMenu->game.actionStopGame->setEnabled(false);
+	menubar_root.rootMenu->game.actionStart_Solver->setEnabled(false);
+	menubar_root.rootMenu->game.actionStop_Solver->setEnabled(false);
+	menubar_root.rootMenu->game.actionUndo->setEnabled(false);
+	menubar_root.rootMenu->game.menuSelect_Piece->setEnabled(false);
+	menubar_root.rootMenu->game.menuMove->setEnabled(false);
+	menubar_root.rootMenu->game.menuPlaySolver->setEnabled(false);
+	menubar_root.rootMenu->game.menuHistory->setEnabled(true);
 }
 
 void MainWindow::setMenuButtonEnableForInteractiveGame()
 {
-	ui->actionNewGame->setEnabled(false);
-	ui->actionStopGame->setEnabled(true);
-	ui->actionStart_Solver->setEnabled(true);
-	ui->actionStop_Solver->setEnabled(false);
-	ui->actionMoveBack->setEnabled(!current_game->is_initial());
-	ui->menuSelect_Piece->setEnabled(true);
-	ui->menuMove->setEnabled(true);
-	ui->menuPlaySolver->setEnabled(false);
-	ui->menuHistory->setEnabled(false);
+	menubar_root.rootMenu->game.actionNewGame->setEnabled(false);
+	menubar_root.rootMenu->game.actionStopGame->setEnabled(true);
+	menubar_root.rootMenu->game.actionStart_Solver->setEnabled(true);
+	menubar_root.rootMenu->game.actionStop_Solver->setEnabled(false);
+	menubar_root.rootMenu->game.actionUndo->setEnabled(!current_game->is_initial());
+	menubar_root.rootMenu->game.menuSelect_Piece->setEnabled(true);
+	menubar_root.rootMenu->game.menuMove->setEnabled(true);
+	menubar_root.rootMenu->game.menuPlaySolver->setEnabled(false);
+	menubar_root.rootMenu->game.menuHistory->setEnabled(false);
 }
 
 void MainWindow::setMenuButtonEnableForSolverGame()
 {
-	ui->actionNewGame->setEnabled(false);
-	ui->actionStopGame->setEnabled(true);
-	ui->actionStart_Solver->setEnabled(false);
-	ui->actionStop_Solver->setEnabled(true);
-	ui->actionMoveBack->setEnabled(!current_game->is_initial());
-	ui->menuSelect_Piece->setEnabled(false);
-	ui->menuMove->setEnabled(false);
-	ui->menuPlaySolver->setEnabled(true);
-	ui->menuHistory->setEnabled(false);
+	menubar_root.rootMenu->game.actionNewGame->setEnabled(false);
+	menubar_root.rootMenu->game.actionStopGame->setEnabled(true);
+	menubar_root.rootMenu->game.actionStart_Solver->setEnabled(false);
+	menubar_root.rootMenu->game.actionStop_Solver->setEnabled(true);
+	menubar_root.rootMenu->game.actionUndo->setEnabled(!current_game->is_initial());
+	menubar_root.rootMenu->game.menuSelect_Piece->setEnabled(false);
+	menubar_root.rootMenu->game.menuMove->setEnabled(false);
+	menubar_root.rootMenu->game.menuPlaySolver->setEnabled(true);
+	menubar_root.rootMenu->game.menuHistory->setEnabled(false);
 }
 
 void MainWindow::createColorActions()
 {
-	QMenu* sub = ui->menuSelect_Piece;
+	QMenu* sub = menubar_root.rootMenu->game.menuSelect_Piece;
 
 	sub->clear();
 	// actions are deleted,
@@ -514,7 +641,7 @@ void MainWindow::refreshSolutionPaths()
 
 void MainWindow::refreshHistory()
 {
-	QMenu* sub = ui->menuHistory;
+	QMenu* sub = menubar_root.rootMenu->game.menuHistory;
 
 	sub->clear();
 	// actions are deleted,
@@ -652,7 +779,7 @@ inline void menu_recursion(QMenu_OR_QMenuBar* m) {
 
 void MainWindow::on_actionEnableAllMenuBarItems_triggered()
 {
-	menu_recursion(ui->menubar);
+	menu_recursion(menubar_root.menubar);
 }
 
 void MainWindow::on_action22ReferenceGame_triggered()
