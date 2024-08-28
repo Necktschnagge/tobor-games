@@ -40,16 +40,16 @@ bool ControlKeyEventAgent::eventFilter(QObject* object, QEvent* e)
 		// check for all arrow keys
 		switch (key) {
 		case Qt::Key_Up:
-			mainWindow->movePiece(tobor::v1_0::direction::NORTH());
+			mainWindow->movePieceInteractiveAndSolver(tobor::v1_0::direction::NORTH());
 			return true; //absorbing eventcase
 		case Qt::Key_Down:
-			mainWindow->movePiece(tobor::v1_0::direction::SOUTH());
+			mainWindow->movePieceInteractiveAndSolver(tobor::v1_0::direction::SOUTH());
 			return true; //absorbing eventcase
 		case Qt::Key_Right:
-			mainWindow->movePiece(tobor::v1_0::direction::EAST());
+			mainWindow->movePieceInteractiveAndSolver(tobor::v1_0::direction::EAST());
 			return true; //absorbing eventcase
 		case Qt::Key_Left:
-			mainWindow->movePiece(tobor::v1_0::direction::WEST());
+			mainWindow->movePieceInteractiveAndSolver(tobor::v1_0::direction::WEST());
 			return true; //absorbing event
 		default:
 			break;
