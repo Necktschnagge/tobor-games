@@ -577,6 +577,9 @@ void MainWindow::refreshSVG()
 		if (shapeSelectionItems.getSelectedShape() == shapeSelectionItems.duck) {
 			shape = tobor::v1_1::general_piece_shape_selection::DUCK;
 		}
+		if (shapeSelectionItems.getSelectedShape() == shapeSelectionItems.swan) {
+			shape = tobor::v1_1::general_piece_shape_selection::SWAN;
+		}
 
 		auto svg_as_string = current_game->svg(current_color_vector, shape);
 
@@ -799,7 +802,7 @@ void MainWindow::ShapeSelectionItems::createInsideQMenu(MainWindow* mainWindow, 
 	ball->setObjectName("actionBall");
 	duck->setObjectName("actionDuck");
 	swan->setObjectName("actionSwan");
-	swan->setEnabled(false);
+	//swan->setEnabled(false);
 
 
 	ball->setText(QString("&Ball"));
@@ -817,6 +820,7 @@ void MainWindow::ShapeSelectionItems::createInsideQMenu(MainWindow* mainWindow, 
 	group->addAction(ball);
 	group->addAction(duck);
 	group->addAction(swan);
+
 	//group->setExclusionPolicy(QActionGroup::ExclusionPolicy::Exclusive); not available on older Qt5 versions. :(
 	group->setExclusive(true);
 	ball->setChecked(true);
