@@ -51,6 +51,8 @@ This is the only optimal solution here and it needs three steps in total.
    * MacOS:
       * *See instructions for Linux. You may use clang instead of g++.*
       * See our [Azure Pipeline configuration](https://github.com/Necktschnagge/tobor-games/blob/main/azure-pipelines.yml) for details.
+   * All OS:
+      * Install **Doxygen and graphviz** to enable documentation creation locally
 ### Setup Local Repository
    * Clone this repository.
    * `cd` into directory `script/
