@@ -13,7 +13,7 @@ namespace tobor {
 		*			It can explore the entire reachable state space or only until a target is reached.
 		*/
 		template <class Move_Engine_T, class Positions_Of_Pieces_T>
-		class vector_distance_exploration {
+		class sorted_level_distance_exploration {
 
 		public:
 			using move_engine_type = Move_Engine_T;
@@ -322,7 +322,7 @@ namespace tobor {
 			/**
 			*	@brief Constructs an object with empty exploration state space.
 			*/
-			vector_distance_exploration(const positions_of_pieces_type& initial_state) :
+			sorted_level_distance_exploration(const positions_of_pieces_type& initial_state) :
 				_optimal_path_length_cache(),
 				_entirely_explored(false)
 			{

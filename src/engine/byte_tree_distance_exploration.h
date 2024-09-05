@@ -20,7 +20,7 @@ namespace tobor {
 		*			It can explore the entire reachable state space or only until a target is reached.
 		*/
 		template <class Move_Engine_T, class Positions_Of_Pieces_T>
-		class distance_exploration {
+		class byte_tree_distance_exploration {
 
 		public:
 			using move_engine_type = Move_Engine_T;
@@ -250,7 +250,7 @@ namespace tobor {
 			/**
 			*	@brief Constructs an object with empty exploration state space.
 			*/
-			distance_exploration(const positions_of_pieces_type& initial_state, const move_engine_type& engine) :
+			byte_tree_distance_exploration(const positions_of_pieces_type& initial_state, const move_engine_type& engine) :
 				_distance_map(NOT_REACHED),
 				_unexplored_by_depth(),
 				_max_exploration_depth_updated(),

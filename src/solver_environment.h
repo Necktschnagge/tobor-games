@@ -3,7 +3,7 @@
 
 #include "engine/bigraph_operations.h"
 #include "engine/path_classificator.h"
-//#include "engine/distance_exploration.h"
+//#include "engine/byte_tree_distance_exploration.h"
 #include "engine/byte_tree_distance_exploration.h"
 
 
@@ -79,7 +79,7 @@ private:
 
 	using piece_change_decoration_vector = std::vector<piece_change_decoration>;
 
-	using distance_exploration_type = tobor::v1_1::distance_exploration<move_engine_type, positions_of_pieces_type_solver>;
+	using distance_exploration_type = tobor::v1_1::byte_tree_distance_exploration<move_engine_type, positions_of_pieces_type_solver>;
 
 	using bigraph_type = tobor::v1_1::simple_state_bigraph<positions_of_pieces_type_solver, std::vector<bool>>;
 
