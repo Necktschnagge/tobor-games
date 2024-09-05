@@ -18,11 +18,11 @@ byte_tree_distance_exploration
 byte_tree_distance_exploration
 */
 
-#include "../models/simple_state_bigraph.h"
 #include "exploration_policy.h"
 
-#include "../fsl/container/byte_tree_map.h"
+#include "../models/simple_state_bigraph.h"
 
+#include "../fsl/container/byte_tree_map.h"
 
 #include <vector>
 

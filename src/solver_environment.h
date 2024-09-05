@@ -107,12 +107,15 @@ private:
 	optimal_solutions_vector _optimal_solutions;
 
 
+	##### need to move the prettiness evaluation into prettiness_evaluator.h, into separate class
+
+
 	/**
 	*	@brief Explores from map_iter_root recursively via successor states until final states and build decorations from final states to given initial state \p map_iter_root
 	*	@details Purpose is counting min piece changes until final state.
 	*	Invariant that must be provided: If a state has labels then this state and all its direct and indirect successors must have been evaluated and their labels are set correclty.
 	*/
-	void build_prettiness_decoration(pretty_evaluation_bigraph_type& pretty_evaluation_bigraph, pretty_evaluation_bigraph_map_iterator_type map_iter_root, const move_engine_type& engine) {
+	static void build_prettiness_decoration(pretty_evaluation_bigraph_type& pretty_evaluation_bigraph, pretty_evaluation_bigraph_map_iterator_type map_iter_root, const move_engine_type& engine) {
 		if (!map_iter_root->second.labels.empty()) {
 			return; // this map entry and all reachable direct and indirect successor states must have been decorated correctly
 		}
