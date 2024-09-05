@@ -6,7 +6,7 @@
 #include "../models/simple_state_bigraph.h"
 #include "exploration_policy.h"
 
-#include "byte_tree_map.h"
+#include "../fsl/container/byte_tree_map.h"
 
 
 #include <vector>

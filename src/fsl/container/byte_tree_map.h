@@ -1,8 +1,8 @@
 #pragma once
 
 #include <array>
-#include "../fsl/rudi/macros/list.h"
-#include "../fsl/container/bytewise.h"
+#include "../rudi/macros/list.h"
+#include "bytewise.h"
 
 
 namespace fsl {
