@@ -38,7 +38,7 @@ public:
 };
 
 void experimental() {
-	byte_tree_map<Dummy, uint16_t> btm(1023);
+	fsl::byte_tree_map<Dummy, uint16_t> btm(1023);
 
 	Dummy d1(16), d2(974), d3(16 + (7 << 16)), d4(1024);
 

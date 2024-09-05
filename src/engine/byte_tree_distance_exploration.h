@@ -85,7 +85,7 @@ namespace tobor {
 			/**
 			*	@brief Mapping each state to its optimal distance from initial state (seen so far) or NOT_REACHED otherwise
 			*/
-			byte_tree_map<positions_of_pieces_type, distance_int> _distance_map;
+			fsl::byte_tree_map<positions_of_pieces_type, distance_int> _distance_map;
 
 			/**
 			*	@brief unexplored states classified by their optimal distance from initial state
