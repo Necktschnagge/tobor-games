@@ -838,3 +838,6 @@ QAction* MainWindow::ShapeSelectionItems::getSelectedShape() const {
 	ball->setChecked(true);
 	return ball;
 }
+
+
+
