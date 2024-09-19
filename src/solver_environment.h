@@ -1,10 +1,12 @@
 #pragma once
 
 
-#include "engine/bigraph_operations.h"
+//#include "engine/bigraph_operations.h"
 #include "engine/path_classificator.h"
 //#include "engine/byte_tree_distance_exploration.h"
 #include "engine/byte_tree_distance_exploration.h"
+
+#include "engine/prettiness_evaluator.h"
 
 
 #include "engine_typeset.h"
@@ -17,6 +19,9 @@
 *
 *	@details Runs the solver on construction to produce a vector of optimal solutions.
 */
+
+// #### consider adding distance explorer as a template argument. to choose which distance explorer to use.
+
 template<class Pieces_Quantity_T>
 class SolverEnvironment {
 public:
@@ -40,6 +45,7 @@ public:
 	using cell_id_type = typename engine_typeset::cell_id_type;
 
 	using pieces_quantity_type = typename engine_typeset::pieces_quantity_type;
+	static_assert(std::is_same<Pieces_Quantity_T, pieces_quantity_type>::value, "SolverEnvironment: type error: pieces_quantity_type");
 
 	using piece_move_type = typename engine_typeset::piece_move_type;
 
@@ -53,31 +59,14 @@ public:
 
 	using optimal_solutions_vector = std::vector<std::pair<state_path_type_interactive, move_path_type>>;
 
+	using prettiness_evaluator_type = tobor::v1_1::prettiness_evaluator<pieces_quantity_type>;
+
+	using pretty_evaluation_bigraph_type = typename prettiness_evaluator_type::pretty_evaluation_bigraph_type;
+	
+	using piece_change_decoration_vector = typename prettiness_evaluator_type::piece_change_decoration_vector;
+
 
 private:
-
-	/**
-	*	@brief Graph node annotation for state graphs.
-	*/
-	struct piece_change_decoration {
-		static constexpr std::size_t MAX{ std::numeric_limits<std::size_t>::max() };
-
-		std::size_t min_piece_change_distance;
-		std::vector<positions_of_pieces_type_interactive> optimal_successors;
-		//std::size_t count_total_paths_from_here;
-
-		piece_change_decoration(
-			std::size_t min_piece_change_distance,
-			std::vector<positions_of_pieces_type_interactive> optimal_successors
-			//, std::size_t count_total_paths_from_here
-		) :
-			min_piece_change_distance(min_piece_change_distance),
-			optimal_successors(optimal_successors)
-			//, count_total_paths_from_here(count_total_paths_from_here)
-		{}
-	};
-
-	using piece_change_decoration_vector = std::vector<piece_change_decoration>;
 
 	using distance_exploration_type = tobor::v1_1::byte_tree_distance_exploration<move_engine_type, positions_of_pieces_type_solver>;
 
@@ -85,9 +74,6 @@ private:
 
 	using naked_bigraph_type = tobor::v1_1::simple_state_bigraph<positions_of_pieces_type_solver, void>;
 
-	using pretty_evaluation_bigraph_type = tobor::v1_1::simple_state_bigraph<positions_of_pieces_type_interactive, piece_change_decoration_vector>;
-
-	using pretty_evaluation_bigraph_map_iterator_type = typename pretty_evaluation_bigraph_type::map_iterator_type;
 
 	using path_classificator_type = tobor::v1_1::path_classificator<positions_of_pieces_type_solver>;
 
@@ -107,109 +93,13 @@ private:
 	optimal_solutions_vector _optimal_solutions;
 
 
-	##### need to move the prettiness evaluation into prettiness_evaluator.h, into separate class
 
 
-	/**
-	*	@brief Explores from map_iter_root recursively via successor states until final states and build decorations from final states to given initial state \p map_iter_root
-	*	@details Purpose is counting min piece changes until final state.
-	*	Invariant that must be provided: If a state has labels then this state and all its direct and indirect successors must have been evaluated and their labels are set correclty.
+	// naked_bigraph_type can be template, no just don't do it!
+
+	/** 
+	*	@brief Fills _optimal_solutions by applying a dynamic programming approach using labeled bigraph
 	*/
-	static void build_prettiness_decoration(pretty_evaluation_bigraph_type& pretty_evaluation_bigraph, pretty_evaluation_bigraph_map_iterator_type map_iter_root, const move_engine_type& engine) {
-		if (!map_iter_root->second.labels.empty()) {
-			return; // this map entry and all reachable direct and indirect successor states must have been decorated correctly
-		}
-		if (map_iter_root->second.successors.empty()) {
-			// This is a final state, not yet decorated.
-			for (std::size_t n{ 0 }; n < pieces_quantity_type::COUNT_ALL_PIECES; ++n) {
-				map_iter_root->second.labels.emplace_back(
-					0, // 0 piece changes left when in final state
-					std::vector<positions_of_pieces_type_interactive>() // no successors
-				);
-			}
-			return;
-		}
-		// we now have an undecorated state that is not final.
-		//first make sure all successors have been decorated:
-		for (const auto& succ : map_iter_root->second.successors) {
-			auto map_jter = pretty_evaluation_bigraph.map.find(succ);
-			if (map_jter == pretty_evaluation_bigraph.map.end()) {
-				throw 0; //#### error in bigraph. invalid bigraph.
-			}
-			build_prettiness_decoration(pretty_evaluation_bigraph, map_jter, engine);
-		}
-
-		//now calculate current state's decoration using the successor decorations.
-
-		// initialize with MAX distance
-		for (std::size_t i{ 0 }; i < pieces_quantity_type::COUNT_ALL_PIECES; ++i) {
-			map_iter_root->second.labels.emplace_back(
-				piece_change_decoration::MAX,
-				std::vector<positions_of_pieces_type_interactive>() // no successors
-			);
-		}
-
-		for (const auto& succ_state : map_iter_root->second.successors) {
-
-			// find successor
-			auto succ_jter = pretty_evaluation_bigraph.map.find(succ_state);
-
-			// obtain SELECTED_PIECE id
-			piece_move_type move = engine.state_minus_state(succ_state, map_iter_root->first); // exceptions here!!
-			const piece_quantity_int_type SELECTED_PIECE = move.pid.value;
-
-			// obtain SELECTED_PIECE id after move
-			positions_of_pieces_type_interactive from_state(map_iter_root->first);
-			from_state.reset_permutation();
-			positions_of_pieces_type_interactive to_state = engine.successor_state(from_state, move);
-
-			const piece_quantity_int_type SELECTED_PIECE_AFTER{
-				[&]() {
-					for (piece_quantity_int_type i{ 0 }; i < pieces_quantity_type::COUNT_ALL_PIECES; ++i) {
-						if (to_state.permutation()[i] == SELECTED_PIECE) {
-							return i;
-						}
-					}
-					throw 0;
-				}()
-			};
-
-			const std::size_t SUB_DISTANCE{ succ_jter->second.labels[SELECTED_PIECE_AFTER].min_piece_change_distance };
-
-			for (piece_quantity_int_type i{ 0 }; i < pieces_quantity_type::COUNT_ALL_PIECES; ++i) {
-				const std::size_t UPDATE_DISTANCE{ SUB_DISTANCE + (SELECTED_PIECE != i) };
-				if (UPDATE_DISTANCE < map_iter_root->second.labels[i].min_piece_change_distance) {
-
-					map_iter_root->second.labels[i].optimal_successors.clear();
-					map_iter_root->second.labels[i].min_piece_change_distance = UPDATE_DISTANCE;
-					map_iter_root->second.labels[i].optimal_successors.push_back(succ_state);
-
-				}
-			}
-		}
-	}
-
-	state_path_type_interactive get_representant(pretty_evaluation_bigraph_type& pretty_evaluation_bigraph, pretty_evaluation_bigraph_map_iterator_type map_iter_root
-		//, const move_engine_type& engine
-	) {
-		state_path_type_interactive result;
-
-		while (true) {
-			result.vector().push_back(map_iter_root->first);
-			auto piece_select_iter = std::min_element(
-				map_iter_root->second.labels.cbegin(),
-				map_iter_root->second.labels.cend(),
-				[](const piece_change_decoration& l, const piece_change_decoration& r) { return l.min_piece_change_distance < r.min_piece_change_distance; }
-			);
-			if (piece_select_iter->optimal_successors.empty()) {
-				return result;
-			}
-			const auto successor_state{ piece_select_iter->optimal_successors.front() };
-			map_iter_root = pretty_evaluation_bigraph.map.find(successor_state);
-		}
-	}
-
-
 	inline uint8_t dynamic_programming_prettiness_evaluation(
 		const std::vector<naked_bigraph_type>& partition_bigraphs,
 		std::function<void(const std::string&)> status_callback = nullptr
@@ -225,10 +115,10 @@ private:
 				copy(partition_bigraphs[i], partition_bigraphs_decorated[i], _initial_state, _move_engine);
 
 			if (status_callback) status_callback("Decorating partition subgraph for prettiness evaluation...");
-			build_prettiness_decoration(partition_bigraphs_decorated[i], iter_to_single_initial_state, _move_engine);
+			prettiness_evaluator_type::build_prettiness_decoration(partition_bigraphs_decorated[i], iter_to_single_initial_state, _move_engine);
 
 			if (status_callback) status_callback("Selecting partition representant according to prettiness ranking...");
-			const state_path_type_interactive representant{ get_representant(partition_bigraphs_decorated[i], iter_to_single_initial_state) };
+			const state_path_type_interactive representant{ prettiness_evaluator_type::get_representant(partition_bigraphs_decorated[i], iter_to_single_initial_state) };
 
 			const move_path_type color_aware_move_path{ move_path_type::extract_unsorted_move_path(representant, _move_engine) };
 
@@ -237,6 +127,11 @@ private:
 		return 0; // status code: OK
 	}
 
+
+
+	/**
+	*	@brief
+	*/
 	inline uint8_t explicit_move_path_prettiness_evaluation(
 		const std::vector<naked_bigraph_type>& partition_bigraphs,
 		std::function<void(const std::string&)> status_callback = nullptr
@@ -281,6 +176,8 @@ private:
 
 		return 0; // status code: OK
 	}
+
+
 
 	inline uint8_t extract_solution_from_state_space(
 		std::function<void(const std::string&)> status_callback = nullptr,
@@ -396,6 +293,14 @@ public:
 	*/
 	[[nodiscard]] state_path_type_interactive get_solution_state_path(std::size_t index) const {
 		return _optimal_solutions[index].first;
+	}
+
+	/**
+	*	@brief Returns an optimal solution move path.
+	*	@param index has to be less than \p solution_size()
+	*/
+	[[nodiscard]] move_path_type get_solution_move_path(std::size_t index) const {
+		return _optimal_solutions[index].second;
 	}
 
 	/**
