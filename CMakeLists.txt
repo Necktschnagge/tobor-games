@@ -106,3 +106,10 @@ enable_testing()
 
 ############### Visual Studio ###############
 set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT ${PROJECT_NAME})#Set Visualo Studio start-up project, so that one can directly run the debugger.
+
+#set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
+
+message("CMAKE BINARY DIR:   ${CMAKE_BINARY_DIR}")
+message("CMAKE_RUNTIME_OUTPUT_DIRECTORY :   ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
+message("CMAKE_SOURCE_DIR :   ${CMAKE_SOURCE_DIR}")
+
