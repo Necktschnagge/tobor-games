@@ -47,10 +47,13 @@ This is the only optimal solution here and it needs three steps in total.
           * for Qt6 (e.g. *Ubuntu 22.04*) run
           
             `apt-get install build-essential cmake libgl1-mesa-dev qt6-base-dev libqt6svg6-dev`
+      * Install Lib for Multithreading: `apt-get install libtbb-dev`
       * See our [Azure Pipeline configuration](https://github.com/Necktschnagge/tobor-games/blob/main/azure-pipelines.yml) for details.
    * MacOS:
       * *See instructions for Linux. You may use clang instead of g++.*
       * See our [Azure Pipeline configuration](https://github.com/Necktschnagge/tobor-games/blob/main/azure-pipelines.yml) for details.
+   * All OS:
+      * Install **Doxygen and graphviz** to enable documentation creation locally
 ### Setup Local Repository
    * Clone this repository.
    * `cd` into directory `script/
