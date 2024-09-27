@@ -1,11 +1,8 @@
 #pragma once
 
 
-//#include "engine/bigraph_operations.h"
 #include "engine/path_classificator.h"
-//#include "engine/byte_tree_distance_exploration.h"
 #include "engine/byte_tree_distance_exploration.h"
-
 #include "engine/prettiness_evaluator.h"
 
 
@@ -19,9 +16,6 @@
 *
 *	@details Runs the solver on construction to produce a vector of optimal solutions.
 */
-
-// #### consider adding distance explorer as a template argument. to choose which distance explorer to use.
-
 template<class Pieces_Quantity_T>
 class SolverEnvironment {
 public:
@@ -74,7 +68,6 @@ private:
 
 	using naked_bigraph_type = tobor::v1_1::simple_state_bigraph<positions_of_pieces_type_solver, void>;
 
-
 	using path_classificator_type = tobor::v1_1::path_classificator<positions_of_pieces_type_solver>;
 
 
@@ -92,10 +85,6 @@ private:
 
 	optimal_solutions_vector _optimal_solutions;
 
-
-
-
-	// naked_bigraph_type can be template, no just don't do it!
 
 	/** 
 	*	@brief Fills _optimal_solutions by applying a dynamic programming approach using labeled bigraph
@@ -130,7 +119,8 @@ private:
 
 
 	/**
-	*	@brief
+	*	@brief Fills _optimal_solutions by applying an explicit approach for prettiness evaluation
+	*	@brief Creates all optimal solutions, sorts them by prettiness relation, Brute force
 	*/
 	inline uint8_t explicit_move_path_prettiness_evaluation(
 		const std::vector<naked_bigraph_type>& partition_bigraphs,
