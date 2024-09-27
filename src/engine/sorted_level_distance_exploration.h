@@ -18,6 +18,8 @@ sorted_level_distance_exploration
 sorted_level_distance_exploration
 */
 
+#include "exploration_policy.h"
+
 #include "../models/simple_state_bigraph.h"
 
 #include <vector>
