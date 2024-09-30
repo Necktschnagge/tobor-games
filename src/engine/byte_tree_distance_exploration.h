@@ -208,8 +208,8 @@ namespace tobor {
 			/**
 			*	@brief Explores one level deeper.
 			*
-			*	@return Returns 4 if _unexplored_by_depth empty
-						Returns 2 if leading unexplored vector is empty but there are more than one.
+			*	@return Returns 4 if _unexplored_by_depth empty (!!! This case should not be reached)
+						Returns 2 if leading unexplored vector is empty but there are more than one. (!!! This case should not be reached)
 						Returns 1 if leading unexplored vector is empty and is the only vector, means entirely explored
 						Returns 0 if explored a non-empty leading vector of unexplored states.
 			*/
@@ -250,7 +250,7 @@ namespace tobor {
 				_reached_states_counter(0),
 				_target_distance_cache(engine.board().count_cells(), std::make_pair(NOT_REACHED, states_vector()))
 			{
-				update_distance_map(initial_state, 0); // to also update the target cache
+				update_distance_map(initial_state, 0); // also updates the target cache
 				_unexplored_by_depth[0].push_back(initial_state);
 			}
 
@@ -273,6 +273,8 @@ namespace tobor {
 
 			/**
 			*	@brief Returns the max depth of previously executed exploration.
+			*
+			*	@details Returning n means that we reached all states at depth n, but we did not yet check for their successors.
 			*/
 			inline size_type exploration_depth() const noexcept {
 				if (_unexplored_by_depth.empty()) {
@@ -302,6 +304,8 @@ namespace tobor {
 
 			/**
 			*	@brief Explores according to \p policy until reaching \p target_cell (or until running into policy threshold or untile entirely explored)
+			*
+			*	@return Returns depth of target cell or NOT_REACHED in case state not found, e.g. prevented by policy threshold.
 			*/
 			inline distance_int explore_until_target(
 				const move_engine_type& engine,
@@ -322,50 +326,42 @@ namespace tobor {
 				}
 
 				return access_target_cache(target_cell.get_id()).first;
-
 			}
 
 			/**
 			*	@brief Explores until reaching \p target_cell (without any restriction on exploration depth)
 			*
-			*	@return Returns the optimal path length for reaching \p target_cell. Returns SIZE_TYPE_MAX in case no optimal path was found, perhaps due to \p policy.
-			*
+			*	@return Returns the optimal path length for reaching \p target_cell. Returns NOT_REACHED in case no optimal path was found.
 			*/
 			inline distance_int explore_until_target(const move_engine_type& engine, const cell_id_type& target_cell) {
-
 				return explore_until_target(engine, target_cell, exploration_policy::FORCE_EXPLORATION_UNRESTRICTED());
-				//### does not return SIZE_MAX in not reached case!
-
 			}
 
 			/**
 			*	@brief Explores until reaching \p target_cell, restricted to max exploration depth \p max_depth_exploration
-			*	@return Returns the optimal path length for reaching \p target_cell. Returns SIZE_TYPE_MAX in case no optimal path was found, perhaps due to \p policy.
+			*
+			*	@return Returns the optimal path length for reaching \p target_cell. Returns NOT_REACHED in case no optimal path was found, perhaps due to \p policy.
 			*/
 			inline distance_int explore_until_target(const move_engine_type& engine, const cell_id_type& target_cell, const size_type& max_depth_exploration) {
-
 				return explore_until_target(engine, target_cell, exploration_policy::FORCE_EXPLORATION_UNTIL_DEPTH(max_depth_exploration));
-				//### does not return SIZE_MAX in not reached case!
-
 			}
 
 			/**
 			*	@brief Explores until reaching \p target_cell, if allowed by \p policy. The policy determines if it performs additional exploration or if it only looks up in previously explored solutions.
 			*
-			*	@return Returns all final states covering \p target_cell.
+			*	@return Returns all shortest-path final states covering \p target_cell.
 			*/
 			inline states_vector optimal_final_states(const move_engine_type& engine, const cell_id_type& target_cell, const exploration_policy& policy = exploration_policy::ONLY_EXPLORED()) {
-
 				explore_until_target(engine, target_cell, policy);
 				return access_target_cache(target_cell.get_id()).second;
-
 			}
-
 
 			/**
 			*	@brief Extracts the simple_state_bigraph containing all optimal solutions for reaching \p target_cell.
 			*
-			*	@details Explores the state space according to \p policy
+			*	@details Clears \p destination first anyway.
+							Explores the state space according to \p policy.
+							Leaves \p destination empty and returns immediately if exploration did not find \p target_cell.
 			*/
 			template<class State_Label_T>
 			void get_simple_bigraph(
@@ -378,10 +374,12 @@ namespace tobor {
 
 				destination.clear();
 
+				// first exploration here as sub-routine:
 				states_vector final_states = optimal_final_states(engine, target_cell, policy);
 				std::sort(final_states.begin(), final_states.end());
 
-				const distance_int FINAL_DEPTH{ explore_until_target(engine, target_cell, policy) }; // double explore here, policy can be depth-0
+				// second exploration here, policy could be depth-0, but does not have negative impact on runtime complexity:
+				const distance_int FINAL_DEPTH{ explore_until_target(engine, target_cell, policy) };
 
 				if (FINAL_DEPTH == NOT_REACHED || final_states.empty()) { // should be none or both true
 					return;
