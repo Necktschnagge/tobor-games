@@ -114,17 +114,17 @@ namespace tobor {
 			*	@details Every cell is mapped to its optimal distance from initial state or NOT_REACHED and a vector of those final states you reach by an optimal path.
 			*		Must always be of size n where {0, ... ,n-1 } are the cell ids, available on the board.
 			*/
-			target_cache _updated_target_distance_cache;
+			target_cache _target_distance_cache;
 
 
 			/**
 			*	@brief Returns cache entry for given cell_id i.e. index. Throws std::logic_error in case index is out of range.
 			*/
 			inline target_cache_entry& access_target_cache(cell_id_narrow_int cell_id) {
-				if (!(cell_id < _updated_target_distance_cache.size())) {
+				if (!(cell_id < _target_distance_cache.size())) {
 					throw std::logic_error("Cell ID out of range");
 				}
-				return _updated_target_distance_cache[cell_id];
+				return _target_distance_cache[cell_id];
 			}
 
 			/**
@@ -245,7 +245,7 @@ namespace tobor {
 				_distance_map(NOT_REACHED),
 				_unexplored_by_depth(),
 				_reached_states_counter(0),
-				_updated_target_distance_cache(engine.board().count_cells(), std::make_pair(NOT_REACHED, states_vector()))
+				_target_distance_cache(engine.board().count_cells(), std::make_pair(NOT_REACHED, states_vector()))
 			{
 				update_distance_map(initial_state, 0); // to also update the target cache
 				_unexplored_by_depth[0].push_back(initial_state);
