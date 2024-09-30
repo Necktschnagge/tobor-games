@@ -86,16 +86,6 @@ namespace tobor {
 			//using target_distance_map_type = std::map<cell_id_type, size_type>;
 
 
-			/**
-			* conditions:
-			*	- guaranteed to have .size() > 0
-			*	- the first entry _reachable_states_by_distance[0] has always length 1 and contains the initial state
-			*	- the vector at index i contains exactly the states which are reachable by an optimal path of length i
-			*/
-			//std::vector<states_vector> _reachable_states_by_distance;
-
-			// states_vector _unexplored_leafs;
-
 
 			/**
 			*	@brief Mapping each state to its optimal distance from initial state (seen so far) or NOT_REACHED otherwise
@@ -109,13 +99,8 @@ namespace tobor {
 			*	If entirely explored, and the farest found state is at depth x, then must contain an entry (x+1, {empty vector}).
 			*	It means depth x has been explored, leafs of x+1 are empty.
 			*/
-			unexplored_map _unexplored_by_depth; // use this to replace _unexplored_leafs and also _max_exploration_depth
-
-			/**
-			*	@brief
-			*/
-			std::size_t _max_exploration_depth_updated;
-
+			unexplored_map _unexplored_by_depth; // use this to replace _unexplored_leafs and also _max_exploration_depth #### note that the other variant might be better as long as we do not use true A* algorithm here.
+			// states_vector _unexplored_leafs;
 			//std::size_t _max_exploration_depth;
 
 
@@ -268,7 +253,6 @@ namespace tobor {
 			byte_tree_distance_exploration(const positions_of_pieces_type& initial_state, const move_engine_type& engine) :
 				_distance_map(NOT_REACHED),
 				_unexplored_by_depth(),
-				_max_exploration_depth_updated(),
 				_reached_states_counter(0),
 				_updated_target_distance_cache(engine.board().count_cells(), std::make_pair(NOT_REACHED, states_vector()))
 			{
