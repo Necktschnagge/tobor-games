@@ -131,6 +131,9 @@ namespace tobor {
 			*	@brief Updates target_distance_cache if indicated.
 			*
 			*	@details Checks if given state at given depth brings any new optimal state to any contained target cell.
+			*			If found new optimal depth, previous optimal witnesses are deleted.
+			*			Note, if given state has optimal depth for associated target, it is added to optimal states vector for the associated target cell anyway.
+						One must not call this on the same state, depth more than once, or optimal state vectors will start to carry duplicated. No duplicate checking done here.
 			*
 			*	@return Returns 0 if cache was not updated, 1 if added new state to already known optimal depth, 3 if found new optimal depth for some target cell.
 			*/
@@ -145,7 +148,7 @@ namespace tobor {
 						found_update |= 0b10;
 					}
 					if (depth == entry.first) {
-						entry.second.push_back(state); // does not check for duplicate states!!! ####
+						entry.second.push_back(state);
 						found_update |= 0b01;
 					}
 				}
