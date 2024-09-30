@@ -83,9 +83,6 @@ namespace tobor {
 
 		private:
 
-			//using target_distance_map_type = std::map<cell_id_type, size_type>;
-
-
 
 			/**
 			*	@brief Mapping each state to its optimal distance from initial state (seen so far) or NOT_REACHED otherwise
@@ -109,12 +106,6 @@ namespace tobor {
 			*	@details Must always be the number of non-default values in _distance_map.
 			*/
 			std::size_t _reached_states_counter;
-
-
-			/**
-			* maps target cells to their minimal distance from initial state
-			*/
-			// target_distance_map_type _optimal_path_length_cache;
 
 
 			/**
