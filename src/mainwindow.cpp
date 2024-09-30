@@ -107,6 +107,8 @@ void MainWindow::setTextAndShortcutsForMainMenu() {
 	menubar_root.rootMenu->developer.actionHighlightGeneratedTargetCells->setText(QCoreApplication::translate("MainWindow", "&Highlight generated target cells", nullptr));
 	menubar_root.rootMenu->developer.actionEnableAllMenuBarItems->setText(QCoreApplication::translate("MainWindow", "&Enable all MenuBar items", nullptr));
 	menubar_root.rootMenu->developer.action22ReferenceGame->setText(QCoreApplication::translate("MainWindow", "&Start 22 Reference Game", nullptr));
+	menubar_root.rootMenu->developer.actionViewSVGInput->setText(QCoreApplication::translate("MainWindow", "&View SVG from text input", nullptr));
+	menubar_root.rootMenu->developer.actionViewSVGInput->setShortcut(QCoreApplication::translate("MainWindow", "F7", nullptr));
 
 
 	/// VIEW
@@ -312,6 +314,20 @@ void MainWindow::startGameFromHistory(int index)
 	if (current_game) return showErrorActionAvailable();
 
 	return startGame(factory_history[index].get());
+}
+
+void MainWindow::showSVGFromInputDialog()
+{
+	svg_input_dialog_string = svg_input_dialog->getText();
+
+	try {
+		viewSvgInMainView(svg_input_dialog_string);
+	}
+	catch (...) {
+		refreshSVG();
+		showErrorDialog("This did not work. Is your input valid SVG?");
+	}
+
 }
 
 void MainWindow::startReferenceGame22()
@@ -577,6 +593,9 @@ void MainWindow::refreshSVG()
 		if (shapeSelectionItems.getSelectedShape() == shapeSelectionItems.duck) {
 			shape = tobor::v1_1::general_piece_shape_selection::DUCK;
 		}
+		if (shapeSelectionItems.getSelectedShape() == shapeSelectionItems.swan) {
+			shape = tobor::v1_1::general_piece_shape_selection::SWAN;
+		}
 
 		auto svg_as_string = current_game->svg(current_color_vector, shape);
 
@@ -787,6 +806,19 @@ void MainWindow::on_action22ReferenceGame_triggered()
 	startReferenceGame22();
 }
 
+void MainWindow::on_actionViewSVGInput_triggered()
+{
+	if (svg_input_dialog != nullptr) {
+		delete svg_input_dialog;
+	}
+
+	svg_input_dialog = new TextInputDialog(this, svg_input_dialog_string);
+
+	QObject::connect(svg_input_dialog, &QDialog::accepted, this, &MainWindow::showSVGFromInputDialog,Qt::AutoConnection);
+
+	svg_input_dialog->open();
+}
+
 void MainWindow::ShapeSelectionItems::createInsideQMenu(MainWindow* mainWindow, QMenu* qMenu) {
 	(void)mainWindow;
 
@@ -799,7 +831,7 @@ void MainWindow::ShapeSelectionItems::createInsideQMenu(MainWindow* mainWindow, 
 	ball->setObjectName("actionBall");
 	duck->setObjectName("actionDuck");
 	swan->setObjectName("actionSwan");
-	swan->setEnabled(false);
+	//swan->setEnabled(false);
 
 
 	ball->setText(QString("&Ball"));
@@ -817,6 +849,7 @@ void MainWindow::ShapeSelectionItems::createInsideQMenu(MainWindow* mainWindow, 
 	group->addAction(ball);
 	group->addAction(duck);
 	group->addAction(swan);
+
 	//group->setExclusionPolicy(QActionGroup::ExclusionPolicy::Exclusive); not available on older Qt5 versions. :(
 	group->setExclusive(true);
 	ball->setChecked(true);
