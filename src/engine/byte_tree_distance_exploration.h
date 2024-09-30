@@ -30,9 +30,9 @@ namespace tobor {
 	namespace v1_1 {
 
 		/**
-		*	@brief A state space explorer for game boards.
+		*	@brief A state space explorer for game boards. This one is based on byte_tree_map, a multi-level finite branching tree inplace map structure.
 		*	@details It always has a fixed initial state which is the root of all state space exploration.
-		*			It can explore the entire reachable state space or only until a target is reached.
+		*			It can explore the entire reachable state space or until a target is reached or until some threshold.
 		*/
 		template <class Move_Engine_T, class Positions_Of_Pieces_T>
 		class byte_tree_distance_exploration {

@@ -28,9 +28,9 @@ namespace tobor {
 	namespace v1_1 {
 
 		/**
-		*	@brief A state space explorer for game boards.
+		*	@brief A state space explorer for game boards. This one is based on a sequence of sorted vectors v_i of all states that can be reached in minimum depth i.
 		*	@details It always has a fixed initial state which is the root of all state space exploration.
-		*			It can explore the entire reachable state space or only until a target is reached.
+		*			It can explore the entire reachable state space or until a target is reached or until some threshold.
 		*/
 		template <class Move_Engine_T, class Positions_Of_Pieces_T>
 		class sorted_level_distance_exploration {
