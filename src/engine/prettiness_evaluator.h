@@ -1,9 +1,12 @@
 #pragma once
 
-
-#include "../engine_typeset.h" // should not include outer path!
-
 #include "bigraph_operations.h"
+#include "quick_move_cache.h"
+#include "../models/augmented_positions_of_pieces.h"
+#include "../models/piece_id.h"
+#include "../models/piece_move.h"
+#include "../models/state_path.h"
+
 
 #include <exception>
 
@@ -14,29 +17,31 @@ namespace tobor {
 
 		template<class Pieces_Quantity_T>
 		class prettiness_evaluator {
-
 		public:
 
-			prettiness_evaluator() = delete;
+			/*** TYPES ***/
 
-			/*types*/
+			using pieces_quantity_type = Pieces_Quantity_T;
 
-			using engine_typeset = ClassicEngineTypeSet<Pieces_Quantity_T>;
+			using world_type = tobor::v1_1::dynamic_rectangle_world<uint16_t, uint8_t>;
 
-			using pieces_quantity_type = typename engine_typeset::pieces_quantity_type;
+			using cell_id_type = tobor::v1_1::min_size_cell_id<world_type>;
 
-			using state_path_type_interactive = typename engine_typeset::state_path_type_interactive;
+			using positions_of_pieces_type_interactive = tobor::v1_1::augmented_positions_of_pieces<pieces_quantity_type, cell_id_type, true, true>;
 
+			using state_path_type_interactive = tobor::v1_1::state_path<positions_of_pieces_type_interactive>;
 
-			using positions_of_pieces_type_interactive = typename engine_typeset::positions_of_pieces_type_interactive;
-			using positions_of_pieces_type_solver = typename engine_typeset::positions_of_pieces_type_solver;
+			using positions_of_pieces_type_solver = tobor::v1_1::positions_of_pieces<pieces_quantity_type, cell_id_type, true, true>;
 
-			using cell_id_type = typename engine_typeset::cell_id_type;
-			using quick_move_cache_type = typename engine_typeset::quick_move_cache_type;
+			using quick_move_cache_type = tobor::v1_1::quick_move_cache<world_type>;
 
-			using move_engine_type = typename engine_typeset::move_engine_type;
+			using piece_id_type = tobor::v1_1::piece_id<pieces_quantity_type>;
 
-			using piece_move_type = typename engine_typeset::piece_move_type;
+			using piece_move_type = tobor::v1_1::piece_move<piece_id_type>;
+
+			using move_engine_type = tobor::v1_1::move_engine<cell_id_type, quick_move_cache_type, piece_move_type>;
+
+			//using piece_move_type = tobor::v1_1::piece_move<piece_id_type>;
 
 			using  piece_quantity_int_type = typename pieces_quantity_type::int_type;
 
@@ -63,10 +68,7 @@ namespace tobor {
 			};
 
 
-
-
 			using piece_change_decoration_vector = std::vector<piece_change_decoration>;
-
 
 			using naked_bigraph_type = tobor::v1_1::simple_state_bigraph<positions_of_pieces_type_solver, void>;
 
@@ -75,7 +77,9 @@ namespace tobor {
 			using pretty_evaluation_bigraph_map_iterator_type = typename pretty_evaluation_bigraph_type::map_iterator_type;
 
 
-		public:
+			prettiness_evaluator() = delete;
+
+
 			/**
 			*	@brief Explores from map_iter_root recursively via successor states until final states and build decorations from final states to given initial state \p map_iter_root
 			*	@details Purpose is counting min piece changes until final state for each currently selected piece from each state.
