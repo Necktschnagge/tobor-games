@@ -14,8 +14,8 @@ namespace tobor {
 
 			using world_type = World_T;
 
-			using int_size_type = typename world_type::int_size_type; // narrow_int
-			using int_cell_id_type = typename world_type::int_cell_id_type; // size_int
+			using int_size_type = typename world_type::int_size_type; // size_int
+			using int_cell_id_type = typename world_type::int_cell_id_type; // narrow_int
 
 			using type = min_size_cell_id<world_type>;
 

@@ -26,6 +26,8 @@ namespace tobor {
 
 			using cell_id_type = Cell_Id_Type_T;
 
+			using cell_id_narrow_int_type = typename cell_id_type::int_cell_id_type;
+
 			using world_type = typename cell_id_type::world_type;
 
 			using pieces_quantity_int_type = typename pieces_quantity_type::int_type;
@@ -45,6 +47,10 @@ namespace tobor {
 			using non_target_pieces_array_type = std::array<cell_id_type, COUNT_NON_TARGET_PIECES>;
 
 			using all_pieces_array_type = std::array<cell_id_type, COUNT_ALL_PIECES>;
+
+			static constexpr std::size_t byte_size() { return static_cast<std::size_t>(COUNT_ALL_PIECES) * sizeof(cell_id_narrow_int_type); }
+
+			//static_assert(byte_size() == sizeof(all_pieces_array_type), "Size check"); // not necessary?
 
 		private:
 
@@ -130,6 +136,16 @@ namespace tobor {
 			}
 
 		public:
+
+			inline uint8_t get_byte(std::size_t index) const {
+				static constexpr std::size_t SINGLE_SIZE { sizeof(cell_id_narrow_int_type) };
+				
+				const std::size_t array_index = index / SINGLE_SIZE;
+
+				const std::size_t int_offset = index % SINGLE_SIZE;
+
+				return ((_piece_positions[array_index].get_id()) >> (8 * int_offset)) & 0xFF;
+			}
 
 
 			template<class Collection_T>
