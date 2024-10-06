@@ -42,7 +42,7 @@ namespace tobor {
 
 			using move_engine_type = tobor::v1_1::move_engine<cell_id_type, quick_move_cache_type, piece_move_type>;
 
-			using  piece_quantity_int_type = typename pieces_quantity_type::int_type;
+			using piece_quantity_int_type = typename pieces_quantity_type::int_type;
 
 
 			/**
