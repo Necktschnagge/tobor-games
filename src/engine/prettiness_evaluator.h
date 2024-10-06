@@ -7,8 +7,8 @@
 #include "../models/piece_move.h"
 #include "../models/state_path.h"
 
-
 #include <exception>
+
 
 namespace tobor {
 	namespace v1_1 {
