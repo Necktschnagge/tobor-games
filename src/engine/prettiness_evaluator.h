@@ -13,8 +13,9 @@
 namespace tobor {
 	namespace v1_1 {
 
-
-
+		/**
+		*	@brief A Collection of static member functions to obtain prettiest paths in (sub)graphs to reach a final state from the initial state.
+		*/
 		template<class Pieces_Quantity_T>
 		class prettiness_evaluator {
 		public:
@@ -41,13 +42,11 @@ namespace tobor {
 
 			using move_engine_type = tobor::v1_1::move_engine<cell_id_type, quick_move_cache_type, piece_move_type>;
 
-			//using piece_move_type = tobor::v1_1::piece_move<piece_id_type>;
-
 			using  piece_quantity_int_type = typename pieces_quantity_type::int_type;
 
 
 			/**
-			*	@brief Graph node annotation for state graphs.
+			*	@brief Node annotation for state graphs.
 			*/
 			struct piece_change_decoration {
 				static constexpr std::size_t MAX{ std::numeric_limits<std::size_t>::max() };
@@ -72,6 +71,9 @@ namespace tobor {
 
 			using naked_bigraph_type = tobor::v1_1::simple_state_bigraph<positions_of_pieces_type_solver, void>;
 
+			/**
+			*	@details Each state annotation is a vector which maps each piece [piece_id == vector's index] to the number of piece changes we need at minimum to move to final state
+			*/
 			using pretty_evaluation_bigraph_type = tobor::v1_1::simple_state_bigraph<positions_of_pieces_type_interactive, piece_change_decoration_vector>;
 
 			using pretty_evaluation_bigraph_map_iterator_type = typename pretty_evaluation_bigraph_type::map_iterator_type;
@@ -85,7 +87,7 @@ namespace tobor {
 			*	@details Purpose is counting min piece changes until final state for each currently selected piece from each state.
 			*	Invariant that must be provided: If a state has labels then this state and all its direct and indirect successors must have been evaluated and their labels are set correclty.
 			*	A state of \p pretty_evaluation_bigraph has labels by defintion if and only if the label vector is not empty.
-			*	To build the entire decoration one should pass \p pretty_evaluation_bigraph with every label being an empty vector and \p map_iter_root pointing to the uniquer initial state.
+			*	To build the entire decoration one should pass \p pretty_evaluation_bigraph with every label being an empty vector and \p map_iter_root pointing to the unique initial state.
 			*
 			*	@throw std::logic_error in case the given \p pretty_evaluation_bigraph is invalid.
 			*	@throw move_engine::arithmetic_error::no_move in case given \p pretty_evaluation_bigraph refers to invalid moves in underlaying game.
@@ -199,14 +201,8 @@ namespace tobor {
 				}
 			}
 
-
-
-
-		public:
-
-			// review from here.....
-
-
+			// TODO add another function to get all prettiest representants
+			// TODO add another function returning all representants partitioned by their prettiness.
 
 		};
 	}
