@@ -22,26 +22,27 @@ namespace tobor {
 
 			/*** TYPES ***/
 
-			using pieces_quantity_type = Pieces_Quantity_T;
+			using pieces_quantity_type = Pieces_Quantity_T; ///
 
-			using world_type = tobor::v1_1::dynamic_rectangle_world<uint16_t, uint8_t>;
+			using world_type = tobor::v1_1::dynamic_rectangle_world<uint16_t, uint8_t>; ///
 
-			using cell_id_type = tobor::v1_1::min_size_cell_id<world_type>;
+			using cell_id_type = tobor::v1_1::min_size_cell_id<world_type>; ///
+
+			using quick_move_cache_type = tobor::v1_1::quick_move_cache<world_type>; ///
+
+			using piece_id_type = tobor::v1_1::piece_id<pieces_quantity_type>; ///
+
+			using piece_move_type = tobor::v1_1::piece_move<piece_id_type>; ///
+
+			using move_engine_type = tobor::v1_1::move_engine<cell_id_type, quick_move_cache_type, piece_move_type>; // should be template! TODO
+
+
+
+			//using positions_of_pieces_type_solver = tobor::v1_1::positions_of_pieces<pieces_quantity_type, cell_id_type, true, true>; // -> not needed enymore
+
 
 			using positions_of_pieces_type_interactive = tobor::v1_1::augmented_positions_of_pieces<pieces_quantity_type, cell_id_type, true, true>;
-
 			using state_path_type_interactive = tobor::v1_1::state_path<positions_of_pieces_type_interactive>;
-
-			using positions_of_pieces_type_solver = tobor::v1_1::positions_of_pieces<pieces_quantity_type, cell_id_type, true, true>;
-
-			using quick_move_cache_type = tobor::v1_1::quick_move_cache<world_type>;
-
-			using piece_id_type = tobor::v1_1::piece_id<pieces_quantity_type>;
-
-			using piece_move_type = tobor::v1_1::piece_move<piece_id_type>;
-
-			using move_engine_type = tobor::v1_1::move_engine<cell_id_type, quick_move_cache_type, piece_move_type>;
-
 			using piece_quantity_int_type = typename pieces_quantity_type::int_type;
 
 
@@ -69,7 +70,7 @@ namespace tobor {
 
 			using piece_change_decoration_vector = std::vector<piece_change_decoration>;
 
-			using naked_bigraph_type = tobor::v1_1::simple_state_bigraph<positions_of_pieces_type_solver, void>;
+			// using naked_bigraph_type = tobor::v1_1::simple_state_bigraph<positions_of_pieces_type_solver, void>; -> not needed here
 
 			/**
 			*	@details Each state annotation is a vector which maps each piece [piece_id == vector's index] to the number of piece changes we need at minimum to move to final state

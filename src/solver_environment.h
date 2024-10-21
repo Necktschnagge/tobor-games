@@ -8,8 +8,242 @@
 
 #include "engine_typeset.h"
 
+#include <concepts>
 #include <functional>
 #include <optional>
+
+#if false
+namespace tobor {
+	namespace identifier {
+
+		static const char* naked_bigraph_type{ "naked_bigraph_type" };
+
+	}
+
+	namespace traits {
+
+		template<class T, const char* U>
+		class has_type;
+
+		template<class T>
+		class has_type<T, ::tobor::identifier::naked_bigraph_type> {
+		public:
+			static constexpr bool value = std::is_class_v<typename T::naked_bigraph_type>;
+		};
+	}
+
+	namespace concepts {
+
+		//template<class T, class U>
+		//concept has_type = true;
+
+			//<naked_bigraph_type> && std::is_class_v<typename EngineTypeSet::naked_bigraph_type>
+
+	}
+}
+
+
+template<class T>
+concept has_member_type__naked_bigraph_type = requires(T t) {
+	true;
+};
+
+template<class T>
+concept WrapperType = std::integral<T> && std::signed_integral<T>;
+
+template<WrapperType T>
+class MyWrapper {
+public:
+	T t;
+};
+#endif
+
+
+template<class EngineTypeSet>
+concept PrettinessEvaluationStrategyTypeSet =
+(
+	true
+	&& std::is_class_v<typename EngineTypeSet::naked_bigraph_type>
+	//&& std::is_class_v<typename EngineTypeSet::pretty_evaluation_bigraph_type>
+	&& requires (EngineTypeSet::callback_type t) { t("text"); t(std::string("text")); }
+	);
+
+template<PrettinessEvaluationStrategyTypeSet EngineTypeSet>
+class PrettinessEvaluationStrategy {
+
+public:
+	using naked_bigraph_type = typename EngineTypeSet::naked_bigraph_type;
+	using callback_type = typename EngineTypeSet::callback_type;
+	//using pretty_evaluation_bigraph_type = typename EngineTypeSet::pretty_evaluation_bigraph_type;
+	using positions_of_pieces_type_interactive = typename EngineTypeSet::positions_of_pieces_type_interactive;
+	using move_engine_type = typename EngineTypeSet::move_engine_type;
+	using state_path_type_interactive = typename EngineTypeSet::state_path_type_interactive;
+	using move_path_type = typename EngineTypeSet::move_path_type;
+	using optimal_solutions_vector = std::vector<std::pair<state_path_type_interactive, move_path_type>>;
+
+	using status_code_type = uint8_t;
+
+
+
+	static constexpr status_code_type STATUS_OK{ 0 };
+
+	PrettinessEvaluationStrategy() {}
+
+	virtual status_code_type operator()(
+		const std::vector<naked_bigraph_type>& partition_bigraphs,
+		const positions_of_pieces_type_interactive& initial_state,
+		const move_engine_type& move_engine,
+		optimal_solutions_vector& optimal_solutions,
+		const callback_type& status_callback = nullptr
+		)
+		const = 0;
+
+	virtual ~PrettinessEvaluationStrategy() {}
+};
+
+template<class EngineTypeSet>
+class GraphAnnotationStrategy : public PrettinessEvaluationStrategy<EngineTypeSet> {
+public:
+	using parent = PrettinessEvaluationStrategy<EngineTypeSet>;
+
+	using naked_bigraph_type = typename EngineTypeSet::naked_bigraph_type;
+	using callback_type = typename EngineTypeSet::callback_type;
+	using pretty_evaluation_bigraph_type = typename EngineTypeSet::pretty_evaluation_bigraph_type;
+	using positions_of_pieces_type_solver = typename EngineTypeSet::positions_of_pieces_type_solver;
+	using positions_of_pieces_type_interactive = typename EngineTypeSet::positions_of_pieces_type_interactive;
+	using piece_change_decoration_vector = typename EngineTypeSet::piece_change_decoration_vector;
+	using cell_id_type = typename EngineTypeSet::cell_id_type;
+	using quick_move_cache_type = typename EngineTypeSet::quick_move_cache_type;
+	using piece_move_type = typename EngineTypeSet::piece_move_type;
+	using move_engine_type = typename EngineTypeSet::move_engine_type;
+	using pieces_quantity_type = typename EngineTypeSet::pieces_quantity_type;
+	using state_path_type_interactive = typename EngineTypeSet::state_path_type_interactive;
+	using move_path_type = typename EngineTypeSet::move_path_type;
+
+	using prettiness_evaluator_type = tobor::v1_1::prettiness_evaluator<pieces_quantity_type>;
+	using status_code_type = typename parent::status_code_type;
+	using optimal_solutions_vector = std::vector<std::pair<state_path_type_interactive, move_path_type>>;
+
+
+	/**
+	*	@brief Fills _optimal_solutions by applying a dynamic programming approach using labeled bigraph
+	*/
+	virtual status_code_type operator()(
+		const std::vector<naked_bigraph_type>& partition_bigraphs,
+		const positions_of_pieces_type_interactive& initial_state,
+		const move_engine_type& move_engine,
+		optimal_solutions_vector& optimal_solutions,
+		const callback_type& status_callback = nullptr
+		)
+		const override
+	{
+		/// code structure: never move this function into engine. This is to much related to a specific use case.
+		std::vector<pretty_evaluation_bigraph_type> partition_bigraphs_decorated;
+
+		for (std::size_t i{ 0 }; i < partition_bigraphs.size(); ++i) {
+
+			if (status_callback) status_callback("Simulation-copying from solver state type to interactive state type of partition graphs...");
+			// simulation copy here
+			partition_bigraphs_decorated.emplace_back();
+			auto iter_to_single_initial_state = tobor::v1_1::bigraph_operations::bigraph_simulation_copy<positions_of_pieces_type_solver, void, positions_of_pieces_type_interactive, piece_change_decoration_vector, cell_id_type, quick_move_cache_type, piece_move_type>::
+				copy(partition_bigraphs[i], partition_bigraphs_decorated[i], initial_state, move_engine);
+
+			if (status_callback) status_callback("Decorating partition subgraph for prettiness evaluation...");
+			prettiness_evaluator_type::build_prettiness_decoration(partition_bigraphs_decorated[i], iter_to_single_initial_state, move_engine);
+
+			if (status_callback) status_callback("Selecting partition representant according to prettiness ranking...");
+			const state_path_type_interactive representant{ prettiness_evaluator_type::get_representant(partition_bigraphs_decorated[i], iter_to_single_initial_state) };
+
+			const move_path_type color_aware_move_path{ move_path_type::extract_unsorted_move_path(representant, move_engine) };
+
+			optimal_solutions.emplace_back(representant, color_aware_move_path);
+		}
+		return parent::STATUS_OK;
+	}
+
+	virtual ~GraphAnnotationStrategy() override {}
+};
+#if false
+#endif
+
+
+template<class EngineTypeSet>
+class ExplicitBruteForceStrategy : public PrettinessEvaluationStrategy<EngineTypeSet> {
+public:
+	using parent = PrettinessEvaluationStrategy<EngineTypeSet>;
+
+	using naked_bigraph_type = typename EngineTypeSet::naked_bigraph_type;
+	using callback_type = typename EngineTypeSet::callback_type;
+	using pretty_evaluation_bigraph_type = typename EngineTypeSet::pretty_evaluation_bigraph_type;
+	using positions_of_pieces_type_solver = typename EngineTypeSet::positions_of_pieces_type_solver;
+	using positions_of_pieces_type_interactive = typename EngineTypeSet::positions_of_pieces_type_interactive;
+	using piece_change_decoration_vector = typename EngineTypeSet::piece_change_decoration_vector;
+	using cell_id_type = typename EngineTypeSet::cell_id_type;
+	using quick_move_cache_type = typename EngineTypeSet::quick_move_cache_type;
+	using piece_move_type = typename EngineTypeSet::piece_move_type;
+	using move_engine_type = typename EngineTypeSet::move_engine_type;
+	using pieces_quantity_type = typename EngineTypeSet::pieces_quantity_type;
+	using state_path_type_interactive = typename EngineTypeSet::state_path_type_interactive;
+	using state_path_type_solver = typename EngineTypeSet::state_path_type_solver;
+	using move_path_type = typename EngineTypeSet::move_path_type;
+
+	using prettiness_evaluator_type = tobor::v1_1::prettiness_evaluator<pieces_quantity_type>;
+	using status_code_type = typename parent::status_code_type;
+	using optimal_solutions_vector = std::vector<std::pair<state_path_type_interactive, move_path_type>>;
+
+	/**
+	*	@brief Fills _optimal_solutions by applying an explicit approach for prettiness evaluation
+	*	@details Creates all optimal solutions, sorts them by prettiness relation, Brute force
+	*/
+	virtual status_code_type operator()(
+		const std::vector<naked_bigraph_type>& partition_bigraphs,
+		const positions_of_pieces_type_interactive& initial_state,
+		const move_engine_type& move_engine,
+		optimal_solutions_vector& optimal_solutions,
+		const callback_type& status_callback = nullptr
+		) const override {
+
+		// code structure: never move this function into engine. This is to much related to a specific use case.
+
+		std::vector<std::vector<state_path_type_solver>> partitioned_state_paths;
+
+		if (status_callback) status_callback("Generating state_paths ...");
+		for (std::size_t i{ 0 }; i < partition_bigraphs.size(); ++i) {
+			partitioned_state_paths.emplace_back(path_classificator_type::extract_all_state_paths(partition_bigraphs[i]));
+		}
+
+		std::vector<std::vector<std::pair<state_path_type_interactive, move_path_type>>> partitioned_path_pairs; // should replace the two above
+
+		if (status_callback) status_callback("Generating augmented state_paths and color-aware move_paths...");
+
+		for (std::size_t i{ 0 }; i < partitioned_state_paths.size(); ++i) {
+
+			partitioned_path_pairs.emplace_back();
+
+			for (const auto& state_path : partitioned_state_paths[i]) {
+
+				const move_path_type color_agnostic_move_path{ move_path_type(state_path, _move_engine) };
+
+				const state_path_type_interactive augmented_state_path{ color_agnostic_move_path.apply(_initial_state, _move_engine) };
+
+				const move_path_type color_aware_move_path{ move_path_type::extract_unsorted_move_path(augmented_state_path, _move_engine) };
+
+				partitioned_path_pairs.back().emplace_back(augmented_state_path, color_aware_move_path);
+			}
+		}
+
+		if (status_callback) status_callback("Finding prettiest element inside each equivalence class...");
+		for (auto& equivalence_class : partitioned_path_pairs) {
+			auto min_iter = std::min_element(equivalence_class.begin(), equivalence_class.end(), [](const auto& pair_l, const auto& pair_r) { return move_path_type::antiprettiness_relation(pair_l.second, pair_r.second); });
+			if (min_iter != equivalence_class.end()) {
+				_optimal_solutions.push_back(*min_iter);
+			}
+		}
+	}
+};
+#if false
+#endif
+
 
 /**
 *	@brief Encapsulation of solver usage, RAII friendly, for specific initial state and target cell.
@@ -56,9 +290,13 @@ public:
 	using prettiness_evaluator_type = tobor::v1_1::prettiness_evaluator<pieces_quantity_type>;
 
 	using pretty_evaluation_bigraph_type = typename prettiness_evaluator_type::pretty_evaluation_bigraph_type;
-	
+
 	using piece_change_decoration_vector = typename prettiness_evaluator_type::piece_change_decoration_vector;
 
+	using status_code_type = uint8_t;
+
+	static constexpr status_code_type STATUS_OK{ 0 };
+	//static constexpr status_code_type STATUS_OK{ 0 };
 
 private:
 
@@ -86,13 +324,14 @@ private:
 	optimal_solutions_vector _optimal_solutions;
 
 
-	/** 
+	/**
 	*	@brief Fills _optimal_solutions by applying a dynamic programming approach using labeled bigraph
 	*/
 	inline uint8_t dynamic_programming_prettiness_evaluation(
 		const std::vector<naked_bigraph_type>& partition_bigraphs,
 		std::function<void(const std::string&)> status_callback = nullptr
 	) {
+		/// code structure: never move this function into engine. This is to much related to a specific use case.
 		std::vector<pretty_evaluation_bigraph_type> partition_bigraphs_decorated;
 
 		for (std::size_t i{ 0 }; i < partition_bigraphs.size(); ++i) {
@@ -120,12 +359,13 @@ private:
 
 	/**
 	*	@brief Fills _optimal_solutions by applying an explicit approach for prettiness evaluation
-	*	@brief Creates all optimal solutions, sorts them by prettiness relation, Brute force
+	*	@details Creates all optimal solutions, sorts them by prettiness relation, Brute force
 	*/
 	inline uint8_t explicit_move_path_prettiness_evaluation(
 		const std::vector<naked_bigraph_type>& partition_bigraphs,
 		std::function<void(const std::string&)> status_callback = nullptr
 	) {
+		/// code structure: never move this function into engine. This is to much related to a specific use case.
 
 		std::vector<std::vector<state_path_type_solver>> partitioned_state_paths;
 
@@ -232,12 +472,14 @@ private:
 public:
 	/**
 	*	@brief Constructs a SolverEnvironment object, running the solver for a specified initial state and target cell.
+	*	@
 	*/
 	SolverEnvironment(
 		const positions_of_pieces_type_interactive& initial_state,
 		const cell_id_type& target_cell,
 		const move_engine_type& move_engine,
 		std::function<void(const std::string&)> status_callback = nullptr,
+
 		std::size_t MAX_DEPTH = distance_exploration_type::SIZE_TYPE_MAX
 	) :
 		_initial_state(initial_state),
