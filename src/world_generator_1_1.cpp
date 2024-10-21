@@ -415,3 +415,14 @@ tobor::v1_1::world_generator::original_4_of_16::get_world(uint64_t select_aligne
 
 	return aligned_result;
 }
+
+tobor::v1_1::world_generator::original_4_of_16::cell_id_type tobor::v1_1::world_generator::original_4_of_16::get_target_cell() const {
+	auto w = get_tobor_world();
+	const std::vector<cell_id_type::int_cell_id_type> cell_ids{ get_target_cell_id_vector(w) };
+	auto [select_aligned_world, rotation, select_target] = split_element();
+
+	// cell_ids.size() // should always be 17. test this.!!!
+
+	auto index = select_target % cell_ids.size();
+	return cell_id_type::create_by_id(cell_ids[index], w);
+}

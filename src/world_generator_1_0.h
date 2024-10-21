@@ -28,8 +28,6 @@ namespace tobor {
 				constexpr static std::size_t BLUE_PLANET{ 2 };
 				constexpr static std::size_t YELLOW_PLANET{ 3 };
 
-			private:
-
 				static void set_wall_corners(
 					world_type& world,
 					const std::vector<cell_id_type>& W_wall,
@@ -37,7 +35,10 @@ namespace tobor {
 					const std::vector<cell_id_type>& NW_corners,
 					const std::vector<cell_id_type>& NE_corners,
 					const std::vector<cell_id_type>& SW_corners,
-					const std::vector<cell_id_type>& SE_corners);
+					const std::vector<cell_id_type>& SE_corners
+				);
+
+			private:
 
 				static void set_red_planet_0(world_type& world);
 				static void set_red_planet_1(world_type& world);

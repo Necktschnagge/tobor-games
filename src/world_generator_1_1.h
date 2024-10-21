@@ -30,8 +30,6 @@ namespace tobor {
 				constexpr static std::size_t BLUE_PLANET{ 2 };
 				constexpr static std::size_t YELLOW_PLANET{ 3 };
 
-			private:
-
 				static void set_wall_corners(
 					world_type& world,
 					const std::vector<cell_id_type>& W_wall,
@@ -40,6 +38,9 @@ namespace tobor {
 					const std::vector<cell_id_type>& NE_corners,
 					const std::vector<cell_id_type>& SW_corners,
 					const std::vector<cell_id_type>& SE_corners);
+
+			private:
+
 
 				static void set_red_planet_0(world_type& world);
 				static void set_red_planet_1(world_type& world);
@@ -280,16 +281,7 @@ namespace tobor {
 				}
 
 
-				cell_id_type get_target_cell() const {
-					auto w = get_tobor_world();
-					const std::vector<cell_id_type::int_cell_id_type> cell_ids{ get_target_cell_id_vector(w) };
-					auto [select_aligned_world, rotation, select_target] = split_element();
-
-					// cell_ids.size() // should always be 17. test this.!!!
-
-					auto index = select_target % cell_ids.size();
-					return cell_id_type::create_by_id(cell_ids[index], w);
-				}
+				cell_id_type get_target_cell() const;
 
 				inline original_4_of_16& operator++() {
 					++counter;
