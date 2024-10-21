@@ -77,7 +77,7 @@ TEST(generator, original_4_of_16_set_walls) {
 
 	auto target = world_generator.get_target_cell(); // in static lib <---------------------------------
 
-	std::cout << target.get_x_coord(w2) << "  " << target.get_y_coord(w2);
+	std::cout << int(target.get_x_coord(w2)) << "  " << int(target.get_y_coord(w2)) << std::endl;
 
 }
 
