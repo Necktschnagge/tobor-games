@@ -77,7 +77,7 @@ private:
 
 	using piece_change_decoration_vector = std::vector<piece_change_decoration>;
 
-	using distance_exploration_type = tobor::v1_1::distance_exploration<move_engine_type, positions_of_pieces_type_solver>;
+	using distance_exploration_type = tobor::v1_1::vector_distance_exploration<move_engine_type, positions_of_pieces_type_solver>;
 
 	using bigraph_type = tobor::v1_1::simple_state_bigraph<positions_of_pieces_type_solver, std::vector<bool>>;
 
