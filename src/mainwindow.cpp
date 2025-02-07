@@ -34,8 +34,8 @@ MainWindow::MainWindow(QWidget* parent) :
 	controlKeyEventAgent(this),
 	current_game(),
 	factory_history(),
-	next_factory_1(),
-	factory_select(2)
+	board_state_factories(),
+	factory_select(3)
 {
 	ui->setupUi(this);
 	statusbarItems.init(ui->statusbar);
@@ -48,9 +48,14 @@ MainWindow::MainWindow(QWidget* parent) :
 
 	historySignalMapper = new QSignalMapper(this);
 
+	factorySelectSignalMapper = new QSignalMapper(this);
+
 	QObject::connect(signalMapper, QSignalMapper__mappedInt__OR__mapped__PTR, this, &MainWindow::selectPieceByColor, Qt::AutoConnection);
 
 	QObject::connect(historySignalMapper, QSignalMapper__mappedInt__OR__mapped__PTR, this, &MainWindow::startGameFromHistory, Qt::AutoConnection);
+	
+	QObject::connect(factorySelectSignalMapper, QSignalMapper__mappedInt__OR__mapped__PTR, this, &MainWindow::selectFactoryByIndex, Qt::AutoConnection);
+
 
 	// in-game navigation input:
 	ui->graphicsView->installEventFilter(&controlKeyEventAgent);
@@ -70,16 +75,16 @@ MainWindow::MainWindow(QWidget* parent) :
 
 	generator.seed(rd());
 
-	next_factory_1.emplace_back(new OriginalGameFactory<tobor::v1_1::pieces_quantity<uint8_t, 1, 1>>());
-	next_factory_1.emplace_back(new OriginalGameFactory<tobor::v1_1::pieces_quantity<uint8_t, 1, 2>>());
-	next_factory_1.emplace_back(new OriginalGameFactory<tobor::v1_1::pieces_quantity<uint8_t, 1, 3>>());
-	next_factory_1.emplace_back(new OriginalGameFactory<tobor::v1_1::pieces_quantity<uint8_t, 1, 4>>());
-	next_factory_1.emplace_back(new OriginalGameFactory<tobor::v1_1::pieces_quantity<uint8_t, 1, 5>>());
-	next_factory_1.emplace_back(new OriginalGameFactory<tobor::v1_1::pieces_quantity<uint8_t, 1, 6>>());
-	next_factory_1.emplace_back(new OriginalGameFactory<tobor::v1_1::pieces_quantity<uint8_t, 1, 7>>());
+	board_state_factories.emplace_back(new OriginalGameFactory<tobor::v1_1::pieces_quantity<uint8_t, 1, 1>>());
+	board_state_factories.emplace_back(new OriginalGameFactory<tobor::v1_1::pieces_quantity<uint8_t, 1, 2>>());
+	board_state_factories.emplace_back(new OriginalGameFactory<tobor::v1_1::pieces_quantity<uint8_t, 1, 3>>());
+	board_state_factories.emplace_back(new OriginalGameFactory<tobor::v1_1::pieces_quantity<uint8_t, 1, 4>>());
+	board_state_factories.emplace_back(new OriginalGameFactory<tobor::v1_1::pieces_quantity<uint8_t, 1, 5>>());
+	board_state_factories.emplace_back(new OriginalGameFactory<tobor::v1_1::pieces_quantity<uint8_t, 1, 6>>());
+	board_state_factories.emplace_back(new OriginalGameFactory<tobor::v1_1::pieces_quantity<uint8_t, 1, 7>>());
 
 
-	for (auto& factory : next_factory_1) {
+	for (auto& factory : board_state_factories) {
 
 		std::uniform_int_distribution<uint64_t> distribution_on_uint64_board(0, factory->world_generator_group_size());
 		std::uniform_int_distribution<uint64_t> distribution_on_uint64_pieces(0, factory->state_generator_group_size());
@@ -145,7 +150,7 @@ void MainWindow::startGame()
 {
 	if (current_game) return showErrorDialog("This action should not be available.");
 
-	std::unique_ptr<CyclicGroupGameFactory>& fac{ next_factory_1[factory_select] };
+	std::unique_ptr<CyclicGroupGameFactory>& fac{ board_state_factories[factory_select] };
 
 	factory_history.emplace_back(fac->clone());
 
@@ -191,6 +196,11 @@ void MainWindow::startGame()
 }
 
 void MainWindow::startGameFromHistory(int index)
+{
+	selectFactory(index);
+}
+
+void MainWindow::selectFactoryByIndex(int index)
 {
 	if (current_game) return showErrorDialog("This action should not be available.");
 
@@ -542,6 +552,26 @@ void MainWindow::refreshHistory()
 
 }
 
+void MainWindow::refreshMenuFactorySelect()
+{
+	QMenu* sub = ui->menuSelectFactory;
+	sub->clear();
+
+	auto COUNT{ board_state_factories.size() };
+	for (decltype(COUNT) i{ 0 }; i < COUNT; ++i) {
+
+		const auto state_generator_size{ board_state_factories[i]->state_generator_group_size() };
+
+		auto action = sub->addAction(
+			QString::number(state_generator_size)
+		);
+
+		QObject::connect(action, &QAction::triggered, factorySelectSignalMapper, qOverload<>(&QSignalMapper::map), Qt::AutoConnection);
+		factorySelectSignalMapper->setMapping(action, static_cast<int>(i));
+
+	}
+}
+
 void MainWindow::highlightGeneratedTargetCells()
 {
 	if (!current_game) {
@@ -556,6 +586,14 @@ void MainWindow::highlightGeneratedTargetCells()
 	ui->statusbar->showMessage(m);
 }
 
+void MainWindow::selectFactory(std::size_t index)
+{
+	if (!(index < board_state_factories.size())) {
+		return;
+	}
+	factory_select = index;
+}
+
 void MainWindow::refreshAll()
 {
 	refreshSVG();
@@ -563,6 +601,7 @@ void MainWindow::refreshAll()
 	refreshMenuButtonEnable();
 	refreshSolutionPaths();
 	refreshHistory();
+	refreshMenuFactorySelect();
 }
 
 void MainWindow::StatusbarItems::init(QStatusBar* statusbar) {

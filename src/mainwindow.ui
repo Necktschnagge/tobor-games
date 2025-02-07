@@ -135,6 +135,11 @@
           <addaction name="actionEAST"/>
           <addaction name="actionSOUTH"/>
           <addaction name="actionWEST"/>
+        </widget> 
+        <widget class="QMenu" name="menuSelectFactory">
+          <property name="title">
+            <string>&amp;Select Factory...</string>
+          </property>
         </widget>
         <widget class="QMenu" name="menuPlaySolver">
           <property name="title">
@@ -145,6 +150,7 @@
         </widget>
         <addaction name="actionNewGame"/>
         <addaction name="menuHistory"/>
+        <addaction name="menuSelectFactory"/>
         <addaction name="actionStopGame"/>
         <addaction name="separator"/>
         <addaction name="menuSelect_Piece"/>

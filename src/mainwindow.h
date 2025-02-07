@@ -99,6 +99,7 @@ private:
 	void startGame();
 private Q_SLOTS:
 	void startGameFromHistory(int index);
+	void selectFactoryByIndex(int index);
 private:
 	void startReferenceGame22();
 	void stopGame();
@@ -153,8 +154,11 @@ private:
 	void refreshStatusbar();
 	void refreshSolutionPaths();
 	void refreshHistory();
+	void refreshMenuFactorySelect();
 
 	void highlightGeneratedTargetCells();
+
+	void selectFactory(std::size_t index);
 
 private:
 
@@ -176,6 +180,8 @@ private:
 
 	QSignalMapper* historySignalMapper{ nullptr };
 
+	QSignalMapper* factorySelectSignalMapper{ nullptr };
+
 	ControlKeyEventAgent controlKeyEventAgent;
 
 	void viewSvgInMainView(const QString& svg_string);
@@ -195,7 +201,7 @@ private:
 
 	std::vector<std::shared_ptr<CyclicGroupGameFactory>> factory_history;
 
-	std::vector<std::unique_ptr<CyclicGroupGameFactory>> next_factory_1;
+	std::vector<std::unique_ptr<CyclicGroupGameFactory>> board_state_factories;
 
 	std::size_t factory_select;
 
