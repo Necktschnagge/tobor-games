@@ -9,7 +9,7 @@
 
 #include <clocale>
 
-// TERMINOLOGY
+// TERMINOLOGY1
 
 /*
 [GAME] BOARD            :       the entire world

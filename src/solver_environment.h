@@ -145,7 +145,8 @@ public:
 			if (status_callback) status_callback("Simulation-copying from solver state type to interactive state type of partition graphs...");
 			// simulation copy here
 			partition_bigraphs_decorated.emplace_back();
-			auto iter_to_single_initial_state = tobor::v1_1::bigraph_operations::bigraph_simulation_copy<positions_of_pieces_type_solver, void, positions_of_pieces_type_interactive, piece_change_decoration_vector, cell_id_type, quick_move_cache_type, piece_move_type>::
+			auto iter_to_single_initial_state = tobor::v1_1::bigraph_operations::
+				bigraph_simulation_copy<positions_of_pieces_type_solver, void, positions_of_pieces_type_interactive, piece_change_decoration_vector, cell_id_type, quick_move_cache_type, piece_move_type>::
 				copy(partition_bigraphs[i], partition_bigraphs_decorated[i], initial_state, move_engine);
 
 			if (status_callback) status_callback("Decorating partition subgraph for prettiness evaluation...");
@@ -164,7 +165,6 @@ public:
 	virtual ~GraphAnnotationStrategy() override {}
 };
 #if false
-#endif
 
 
 template<class EngineTypeSet>
@@ -241,6 +241,7 @@ public:
 		}
 	}
 };
+#endif
 #if false
 #endif
 
