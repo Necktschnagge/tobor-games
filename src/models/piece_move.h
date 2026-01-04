@@ -35,7 +35,7 @@ namespace tobor {
 
 			inline bool operator<(const piece_move& another) const {
 				return pid == another.pid ?
-					dir < another.dir :
+																												dir < another.dir :
 					pid < another.pid;
 			}
 
