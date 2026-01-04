@@ -1,0 +1,36 @@
+#pragma once
+
+#include "xml_declaration.h"
+#include <memory>
+#include <string>
+
+namespace tobor {
+	namespace latest {
+		namespace svggen {
+
+			class xml_root_element final : public fsl::i_to_std_string {
+
+				static std::string wrap_svg(const std::string& height, const std::string& width, const std::string& nested_content) {
+					return std::string(R"---(<svg height=")---") + height + R"---(" width=")---" + width + R"---(" version="1.1" xmlns="http://www.w3.org/2000/svg">
+)---" + nested_content +
+					       "</svg>";
+				}
+
+				std::unique_ptr<xml_declaration>      header;
+				std::unique_ptr<fsl::i_to_std_string> body;
+				std::string                           height;
+				std::string                           width;
+
+				public:
+				xml_root_element(const std::string& height, const std::string& width, std::unique_ptr<xml_declaration> header, std::unique_ptr<fsl::i_to_std_string> body) :
+				   header(std::move(header)),
+				   body(std::move(body)),
+				   height(height),
+				   width(width) {}
+
+				virtual std::string to_std_string() const override { return header->to_std_string() + wrap_svg(height, width, body->to_std_string()); }
+			};
+
+		} // namespace svggen
+	}    // namespace latest
+} // namespace tobor

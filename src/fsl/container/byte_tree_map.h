@@ -1,7 +1,7 @@
 #pragma once
 
 #include <array>
-#include "../rudi/macros/list.h"
+#include "../rudi/macro/list.h"
 #include "bytewise.h"
 
 
