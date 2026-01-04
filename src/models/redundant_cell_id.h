@@ -40,7 +40,7 @@ namespace tobor {
 
 			inline static redundant_cell_id create_by_transposed_id(int_type p_transposed_id, const world_type& world) noexcept {
 				redundant_cell_id result;
-				result.set_transposed_id(p_transposed_id, world);
+																					result.set_transposed_id(p_transposed_id, world);
 				return result;
 			}
 
