@@ -1,5 +1,7 @@
 #pragma once
 
+#include <string>
+
 namespace fsl {
 
 	class i_to_std_string {

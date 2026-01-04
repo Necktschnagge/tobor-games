@@ -25,13 +25,7 @@ namespace tobor {
 
 			using svg_generator = fsl::i_to_std_string;
 
-			class xml_version final : public svg_generator {
-				public:
-				virtual std::string to_std_string() const override {
-					return R"xxx(<?xml version="1.0" standalone="no"?>
-)xxx";
-				}
-			};
+			using xml_version = latest::svggen::xml_declaration;
 
 			/**
 			 *
