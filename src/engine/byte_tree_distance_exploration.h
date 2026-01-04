@@ -20,7 +20,7 @@ byte_tree_distance_exploration
 
 #include "exploration_policy.h"
 
-#include "../models/simple_state_bigraph.h"
+#include "../models/simple_state_digraph.h"
 
 #include "../fsl/container/byte_tree_map.h"
 
@@ -357,20 +357,20 @@ namespace tobor {
 			}
 
 			/**
-			*	@brief Extracts the simple_state_bigraph containing all optimal solutions for reaching \p target_cell.
+			*	@brief Extracts the simple_state_digraph containing all optimal solutions for reaching \p target_cell.
 			*
 			*	@details Clears \p destination first anyway.
 							Explores the state space according to \p policy.
 							Leaves \p destination empty and returns immediately if exploration did not find \p target_cell.
 			*/
 			template<class State_Label_T>
-			void get_simple_bigraph(
+			void get_simple_digraph(
 				const move_engine_type& engine,
 				const cell_id_type& target_cell,
-				simple_state_bigraph<positions_of_pieces_type, State_Label_T>& destination,
+				simple_state_digraph<positions_of_pieces_type, State_Label_T>& destination,
 				const exploration_policy& policy = exploration_policy::ONLY_EXPLORED()
 			) {
-				using bigraph = simple_state_bigraph<positions_of_pieces_type, State_Label_T>;
+				using digraph = simple_state_digraph<positions_of_pieces_type, State_Label_T>;
 
 				destination.clear();
 
@@ -389,9 +389,9 @@ namespace tobor {
 				for (const auto& state : final_states) {
 					destination.map.insert(
 						destination.map.end(), // are these states sorted? no!, hint is useless ##### -> changed... sorted at the beginning
-						std::pair<typename bigraph::state_type, typename bigraph::node_links>(
+						std::pair<typename digraph::state_type, typename digraph::node_links>(
 							state,
-							typename bigraph::node_links()
+							typename digraph::node_links()
 						)
 					);
 				}
@@ -426,7 +426,7 @@ namespace tobor {
 						possible_edges.end()
 					);
 
-					// add edges to the bigraph:
+					// add edges to the digraph:
 					states.clear();
 
 					for (const std::pair<positions_of_pieces_type, positions_of_pieces_type>& edge : possible_edges) {

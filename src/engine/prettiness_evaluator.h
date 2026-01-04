@@ -1,6 +1,6 @@
 #pragma once
 
-#include "bigraph_operations.h"
+#include "digraph_operations.h"
 #include "quick_move_cache.h"
 #include "../models/augmented_positions_of_pieces.h"
 #include "../models/piece_id.h"
@@ -70,14 +70,14 @@ namespace tobor {
 
 			using piece_change_decoration_vector = std::vector<piece_change_decoration>;
 
-			// using naked_bigraph_type = tobor::v1_1::simple_state_bigraph<positions_of_pieces_type_solver, void>; -> not needed here
+			// using naked_digraph_type = tobor::v1_1::simple_state_digraph<positions_of_pieces_type_solver, void>; -> not needed here
 
 			/**
 			*	@details Each state annotation is a vector which maps each piece [piece_id == vector's index] to the number of piece changes we need at minimum to move to final state
 			*/
-			using pretty_evaluation_bigraph_type = tobor::v1_1::simple_state_bigraph<positions_of_pieces_type_interactive, piece_change_decoration_vector>;
+			using pretty_evaluation_digraph_type = tobor::v1_1::simple_state_digraph<positions_of_pieces_type_interactive, piece_change_decoration_vector>;
 
-			using pretty_evaluation_bigraph_map_iterator_type = typename pretty_evaluation_bigraph_type::map_iterator_type;
+			using pretty_evaluation_digraph_map_iterator_type = typename pretty_evaluation_digraph_type::map_iterator_type;
 
 
 			prettiness_evaluator() = delete;
@@ -87,14 +87,14 @@ namespace tobor {
 			*	@brief Explores from map_iter_root recursively via successor states until final states and build decorations from final states to given initial state \p map_iter_root
 			*	@details Purpose is counting min piece changes until final state for each currently selected piece from each state.
 			*	Invariant that must be provided: If a state has labels then this state and all its direct and indirect successors must have been evaluated and their labels are set correclty.
-			*	A state of \p pretty_evaluation_bigraph has labels by defintion if and only if the label vector is not empty.
-			*	To build the entire decoration one should pass \p pretty_evaluation_bigraph with every label being an empty vector and \p map_iter_root pointing to the unique initial state.
+			*	A state of \p pretty_evaluation_digraph has labels by defintion if and only if the label vector is not empty.
+			*	To build the entire decoration one should pass \p pretty_evaluation_digraph with every label being an empty vector and \p map_iter_root pointing to the unique initial state.
 			*
-			*	@throw std::logic_error in case the given \p pretty_evaluation_bigraph is invalid.
-			*	@throw move_engine::arithmetic_error::no_move in case given \p pretty_evaluation_bigraph refers to invalid moves in underlaying game.
-			*	@throw move_engine::arithmetic_error::multi_move in case the given \p pretty_evaluation_bigraph refers to invalid moves in underlaying game.
+			*	@throw std::logic_error in case the given \p pretty_evaluation_digraph is invalid.
+			*	@throw move_engine::arithmetic_error::no_move in case given \p pretty_evaluation_digraph refers to invalid moves in underlaying game.
+			*	@throw move_engine::arithmetic_error::multi_move in case the given \p pretty_evaluation_digraph refers to invalid moves in underlaying game.
 			*/
-			inline static void build_prettiness_decoration(pretty_evaluation_bigraph_type& pretty_evaluation_bigraph, pretty_evaluation_bigraph_map_iterator_type map_iter_root, const move_engine_type& engine) {
+			inline static void build_prettiness_decoration(pretty_evaluation_digraph_type& pretty_evaluation_digraph, pretty_evaluation_digraph_map_iterator_type map_iter_root, const move_engine_type& engine) {
 				if (!map_iter_root->second.labels.empty()) {
 					return; // this map entry and all reachable direct and indirect successor states must have been decorated correctly
 				}
@@ -111,11 +111,11 @@ namespace tobor {
 				// we now have an undecorated state that is not final.
 				//first make sure all successors have been decorated:
 				for (const auto& succ : map_iter_root->second.successors) {
-					auto map_jter = pretty_evaluation_bigraph.map.find(succ); ///// note this is slow since the bigraph does not use pointers, only values.
-					if (map_jter == pretty_evaluation_bigraph.map.end()) {
-						throw std::logic_error("Invalid bigraph! Successor announced which cannot be found in the graph.");
+					auto map_jter = pretty_evaluation_digraph.map.find(succ); ///// note this is slow since the digraph does not use pointers, only values.
+					if (map_jter == pretty_evaluation_digraph.map.end()) {
+						throw std::logic_error("Invalid digraph! Successor announced which cannot be found in the graph.");
 					}
-					build_prettiness_decoration(pretty_evaluation_bigraph, map_jter, engine);
+					build_prettiness_decoration(pretty_evaluation_digraph, map_jter, engine);
 				}
 
 				//now calculate current state's decoration using the successor decorations.
@@ -131,7 +131,7 @@ namespace tobor {
 				for (const auto& succ_state : map_iter_root->second.successors) {
 
 					// find successor
-					auto succ_jter = pretty_evaluation_bigraph.map.find(succ_state); ///// note this is slow since the bigraph does not use pointers, only values.
+					auto succ_jter = pretty_evaluation_digraph.map.find(succ_state); ///// note this is slow since the digraph does not use pointers, only values.
 
 					// obtain SELECTED_PIECE id
 					piece_move_type move = engine.state_minus_state(succ_state, map_iter_root->first); // throws move_engine::arithmetic_error::no_move, move_engine::arithmetic_error::multi_move
@@ -170,16 +170,16 @@ namespace tobor {
 
 			/**
 			*	@brief Returns one state path with max prettiness rating
-			*	@param pretty_evaluation_bigraph needs to be decorated correctly by build_prettiness_decoration(...)
+			*	@param pretty_evaluation_digraph needs to be decorated correctly by build_prettiness_decoration(...)
 			*
-			*	@thow std::logic_error in case given \p pretty_evaluation_bigraph has missing labels
-			*	@thow std::logic_error in case given \p pretty_evaluation_bigraph has errors regarding successors
+			*	@thow std::logic_error in case given \p pretty_evaluation_digraph has missing labels
+			*	@thow std::logic_error in case given \p pretty_evaluation_digraph has errors regarding successors
 			*/
-			inline static state_path_type_interactive get_representant(pretty_evaluation_bigraph_type& pretty_evaluation_bigraph, pretty_evaluation_bigraph_map_iterator_type map_iter_root) {
+			inline static state_path_type_interactive get_representant(pretty_evaluation_digraph_type& pretty_evaluation_digraph, pretty_evaluation_digraph_map_iterator_type map_iter_root) {
 				state_path_type_interactive result;
 
 				while (true) {
-					if (map_iter_root == pretty_evaluation_bigraph.map.cend()) {
+					if (map_iter_root == pretty_evaluation_digraph.map.cend()) {
 						throw std::logic_error("Successor not found.");
 					}
 
@@ -198,7 +198,7 @@ namespace tobor {
 						return result;
 					}
 					const auto successor_state{ piece_select_iter->optimal_successors.front() };
-					map_iter_root = pretty_evaluation_bigraph.map.find(successor_state);
+					map_iter_root = pretty_evaluation_digraph.map.find(successor_state);
 				}
 			}
 

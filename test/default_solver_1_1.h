@@ -4,7 +4,7 @@
 #include "engine/quick_move_cache.h"
 
 #include "engine/move_engine.h"
-#include "models/simple_state_bigraph.h"
+#include "models/simple_state_digraph.h"
 
 #include "engine/distance_exploration.h"
 

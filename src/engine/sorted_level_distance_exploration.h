@@ -20,7 +20,7 @@ sorted_level_distance_exploration
 
 #include "exploration_policy.h"
 
-#include "../models/simple_state_bigraph.h"
+#include "../models/simple_state_digraph.h"
 
 #include <vector>
 
@@ -443,19 +443,19 @@ namespace tobor {
 			}
 
 			/**
-			*	@brief Extracts the simple_state_bigraph containing all optimal solutions for reaching \p target_cell.
+			*	@brief Extracts the simple_state_digraph containing all optimal solutions for reaching \p target_cell.
 			*
 			*	@details Explores the state space according to \p policy
 			*/
 			template<class State_Label_T>
-			void get_simple_bigraph(
+			void get_simple_digraph(
 				const move_engine_type& engine,
 				const cell_id_type& target_cell,
-				simple_state_bigraph<positions_of_pieces_type, State_Label_T>& destination,
+				simple_state_digraph<positions_of_pieces_type, State_Label_T>& destination,
 				const exploration_policy& policy = exploration_policy::ONLY_EXPLORED(),
 				const size_type& min_length_hint = 0
 			) {
-				using bigraph = simple_state_bigraph<positions_of_pieces_type, State_Label_T>;
+				using digraph = simple_state_digraph<positions_of_pieces_type, State_Label_T>;
 
 				destination.clear();
 
@@ -472,9 +472,9 @@ namespace tobor {
 					if (s.is_final(target_cell)) {
 						destination.map.insert(
 							destination.map.end(),
-							std::pair<typename bigraph::state_type, typename bigraph::node_links>(
+							std::pair<typename digraph::state_type, typename digraph::node_links>(
 								_reachable_states_by_distance[FINAL_DEPTH][i],
-								typename bigraph::node_links()
+								typename digraph::node_links()
 							)
 						);
 						states.push_back(s);
@@ -515,7 +515,7 @@ namespace tobor {
 						possible_edges.end()
 					);
 
-					// add edges to the bigraph:
+					// add edges to the digraph:
 					states.clear();
 
 					for (const std::pair<positions_of_pieces_type, positions_of_pieces_type>& edge : possible_edges) {
