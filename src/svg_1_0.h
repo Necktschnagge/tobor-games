@@ -1,25 +1,26 @@
 #pragma once
 
+#include "fsl/i_to_std_string.h"
 #include "models/legacy_world.h"
 #include "models/redundant_cell_id.h"
 
 #include "logger.h"
 
-#include <string>
 #include <numeric>
+#include <string>
 
 #include <fstream>
 
-// tobor colors: 
-// red		#f4191c
-// yellow	#ffbd02
-// green	#00a340
-// blue		#4285f4
+#include "svggen/xml_root_element.h"
+
+// tobor colors:
+// red      #f4191c
+// yellow   #ffbd02
+// green    #00a340
+// blue     #4285f4
 
 namespace tobor {
-
 	namespace v1_0 {
-
 		namespace svg {
 
 			class svg_generator {
