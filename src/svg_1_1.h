@@ -13,11 +13,7 @@ namespace tobor {
 
 			using svg_generator = tobor::v1_0::svg::svg_generator;
 
-			//using xml_version = tobor::v1_0::svg::xml_version;
-
-			//using svg_environment = tobor::latest::svggen::xml_root_element;
-
-			using svg_compound = tobor::v1_0::svg::svg_compound;
+			//using svg_compound = tobor::v1_0::latest::svggen::compound;
 
 			using svg_primitive = tobor::v1_0::svg::svg_primitive;
 
@@ -128,7 +124,7 @@ namespace tobor {
 				   svg::svg_path_elements::a<double>::step(0.04 * MINIMUM_CANVAS_SIZE, 0.03 * MINIMUM_CANVAS_SIZE, -10.0, true, false, 0.2, 0.2)));
 				outer_eye->path_elements.push_back(go_back);
 
-				auto comp = std::make_unique<svg::svg_compound>(std::move(duck), std::move(outer_eye));
+				auto comp = std::make_unique<latest::svggen::compound>(std::move(duck), std::move(outer_eye));
 
 				return comp;
 			}
@@ -343,7 +339,7 @@ namespace tobor {
 			}
 
 			inline static std::unique_ptr<svg::svg_generator> draw_tobor_grid(const world_type& tobor_world, const drawing_style_sheet& dss) {
-				auto svg_grid = std::make_unique<svg::svg_compound>();
+				auto svg_grid = std::make_unique<latest::svggen::compound>();
 
 				for (std::size_t i{ 0 }; i <= tobor_world.get_horizontal_size(); ++i) { // draw vertical grid lines
 					svg_grid->elements.push_back(get_vertical_grid_element(tobor_world, dss, i));
@@ -450,7 +446,7 @@ namespace tobor {
 
 			inline static std::unique_ptr<svg::svg_generator> draw_blocked_cells(const world_type& tobor_world, const drawing_style_sheet& dss) {
 
-				auto blocked_cells = std::make_unique<svg::svg_compound>();
+				auto blocked_cells = std::make_unique<latest::svggen::compound>();
 
 				for (cell_size_int raw_id{ 0 }; raw_id < tobor_world.count_cells(); ++raw_id) {
 
@@ -470,7 +466,7 @@ namespace tobor {
 			}
 
 			inline static std::unique_ptr<svg::svg_generator> draw_walls(const world_type& tobor_world, const drawing_style_sheet& dss) {
-				auto svg_walls = std::make_unique<svg::svg_compound>();
+				auto svg_walls = std::make_unique<latest::svggen::compound>();
 
 				// horizontal walls:
 				for (cell_size_int x = 0; x < tobor_world.get_horizontal_size(); ++x) {
@@ -512,7 +508,7 @@ namespace tobor {
 
 				auto svg_target = fill_whole_cell(tw, dss, target_cell, c.colors[0]);
 
-				auto svg_pieces = std::make_unique<svg::svg_compound>();
+				auto svg_pieces = std::make_unique<latest::svggen::compound>();
 
 				for (pq_size_type pid = 0; pid < pieces_quantity_type::COUNT_ALL_PIECES; ++pid) {
 					svg_pieces->elements.push_back(
@@ -525,7 +521,7 @@ namespace tobor {
 				}
 
 				// The following order is final:
-				auto svg_body = std::make_unique<svg::svg_compound>(draw_tobor_background(tw, dss),
+				auto svg_body = std::make_unique<latest::svggen::compound>(draw_tobor_background(tw, dss),
 				                                                    draw_blocked_cells(tw, dss),
 				                                                    std::move(svg_target),
 				                                                    draw_tobor_grid(tw, dss),
@@ -555,10 +551,7 @@ namespace tobor {
 
 				const std::string svg_root_height = std::to_string(dss.CELL_HEIGHT * tw.get_vertical_size() + dss.TOP_PADDING + dss.BOTTOM_PADDING);
 				const std::string svg_root_width  = std::to_string(dss.CELL_WIDTH * tw.get_vertical_size() + dss.LEFT_PADDING + dss.RIGHT_PADDING);
-				auto              svg_root        = std::make_unique<::tobor::latest::svggen::xml_root_element>(svg_root_height,
-                                                                                        svg_root_width,
-                                                                                        std::make_unique<::tobor::latest::svggen::xml_declaration>(),
-                                                                                        std::move(svg_body));
+				auto              svg_root        = std::make_unique<::tobor::latest::svggen::xml_root_element>(svg_root_height, svg_root_width, std::move(svg_body));
 
 				return svg_root->to_std_string();
 			}
@@ -571,13 +564,13 @@ namespace tobor {
 
 				drawing_style_sheet dss;
 
-				auto svg_cell_markers = std::make_unique<svg::svg_compound>();
+				auto svg_cell_markers = std::make_unique<latest::svggen::compound>();
 
 				for (const cell_id_type& marker_position : markers) {
 					svg_cell_markers->elements.push_back(piece_drawer(tw, dss, marker_position, "red"));
 				}
 
-				auto svg_body = std::make_unique<svg::svg_compound>(draw_tobor_background(tw, dss),
+				auto svg_body = std::make_unique<latest::svggen::compound>(draw_tobor_background(tw, dss),
 				                                                    draw_blocked_cells(tw, dss),
 				                                                    draw_tobor_grid(tw, dss),
 				                                                    draw_walls(tw, dss),
@@ -585,10 +578,7 @@ namespace tobor {
 
 				const std::string svg_root_height = std::to_string(dss.CELL_HEIGHT * tw.get_vertical_size() + dss.TOP_PADDING + dss.BOTTOM_PADDING);
 				const std::string svg_root_width  = std::to_string(dss.CELL_WIDTH * tw.get_vertical_size() + dss.LEFT_PADDING + dss.RIGHT_PADDING);
-				auto              svg_root = std::make_unique<::tobor::latest::svggen::xml_root_element>(svg_root_height,
-                                                                                        svg_root_width,
-                                                                                        std::make_unique<::tobor::latest::svggen::xml_declaration>(),
-                                                                                        std::move(svg_body));
+				auto              svg_root        = std::make_unique<::tobor::latest::svggen::xml_root_element>(svg_root_height, svg_root_width, std::move(svg_body));
 
 				return svg_root->to_std_string();
 			}

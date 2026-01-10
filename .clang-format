@@ -1,6 +1,6 @@
 ﻿---
 BasedOnStyle: LLVM
-AccessModifierOffset: '0'
+AccessModifierOffset: '-3'
 AlignAfterOpenBracket: Align
 AlignConsecutiveMacros: 'true'
 AlignConsecutiveAssignments: 'true'
