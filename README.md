@@ -71,3 +71,10 @@ This is the only optimal solution here and it needs three steps in total.
 cmake -S . -B ./build/ -DUSE_QT6:BOOL=FALSE
 ```
    * When opening a cmake project with Qt Creator, you may select your toolchain while clicking through the project generation assistant.
+
+### Code Formatter - clang-format
+#### Windows
+- Download and install LLVM
+   - Go to https://releases.llvm.org/download.html
+   - Follow the link to GitHub release page
+   - Download and run LLVM-XX.XX.XXX-win64.exe for win64
