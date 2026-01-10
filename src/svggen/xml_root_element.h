@@ -1,6 +1,9 @@
 #pragma once
 
 #include "xml_declaration.h"
+
+#include <fmt/format.h>
+
 #include <memory>
 #include <string>
 
@@ -11,9 +14,7 @@ namespace tobor {
 			class xml_root_element final : public fsl::i_to_std_string {
 
 				static std::string wrap_svg(const std::string& height, const std::string& width, const std::string& nested_content) {
-					return std::string(R"---(<svg height=")---") + height + R"---(" width=")---" + width + R"---(" version="1.1" xmlns="http://www.w3.org/2000/svg">
-)---" + nested_content +
-					       "</svg>";
+					return fmt::format("<svg height=\"{}\" width=\"{}\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\">\n{}</svg>", height, width, nested_content);
 				}
 
 				std::unique_ptr<xml_declaration>      header;
