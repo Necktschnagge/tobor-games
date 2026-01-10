@@ -41,7 +41,7 @@ namespace tobor {
 					}
 					else {
 						if (count_duplicates)
-							_state_vector[i + 1] = _state_vector[i + count_duplicates + 1];
+																																			_state_vector[i + 1] = _state_vector[i + count_duplicates + 1];
 						++i;
 					}
 				}

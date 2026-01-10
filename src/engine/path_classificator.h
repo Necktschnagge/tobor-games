@@ -1,7 +1,7 @@
 #pragma once
 
 #include "../models/state_path.h"
-#include "../models/simple_state_bigraph.h"
+#include "../models/simple_state_digraph.h"
 
 #include <vector>
 
@@ -40,11 +40,11 @@ namespace tobor {
 		private:
 
 			/**
-			*	@brief Extracts all state paths of given simple_state_bigraph \p source with prefix \p depth_first_path and writes them into \p all_state_paths using emplace_back()
+			*	@brief Extracts all state paths of given simple_state_digraph \p source with prefix \p depth_first_path and writes them into \p all_state_paths using emplace_back()
 			*/
 			template<class State_Label_T>
 			static void extract_all_state_paths_helper(
-				const simple_state_bigraph<positions_of_pieces_type, State_Label_T>& source,
+				const simple_state_digraph<positions_of_pieces_type, State_Label_T>& source,
 				std::vector<state_path<positions_of_pieces_type>>& all_state_paths,
 				state_path_vector_type& depth_first_path
 			) {
@@ -71,11 +71,11 @@ namespace tobor {
 		public:
 
 			/**
-			*	@brief Augments the states of \p bigraph by flags indicating all the equivalence classes a state belongs to.
+			*	@brief Augments the states of \p digraph by flags indicating all the equivalence classes a state belongs to.
 			*
 			*	@return Number of partitions found.
 			*/
-			static std::size_t make_state_graph_path_partitioning(simple_state_bigraph<positions_of_pieces_type, std::vector<bool>>& bigraph) {
+			static std::size_t make_state_graph_path_partitioning(simple_state_digraph<positions_of_pieces_type, std::vector<bool>>& digraph) {
 
 				// ## This function needs to be fixed in order to include crossed components of equivalence classes (which are left in this version.)
 
@@ -83,7 +83,7 @@ namespace tobor {
 				std::vector<position_of_pieces_type> initials;
 				std::vector<position_of_pieces_type> finals;
 
-				for (auto& entry : bigraph.map) {
+				for (auto& entry : digraph.map) {
 					entry.second.labels.clear();
 					if (entry.second.predecessors.empty()) {
 						initials.push_back(entry.first);
@@ -95,13 +95,13 @@ namespace tobor {
 				*/
 
 				std::size_t flag_index{ 0 };
-				for (auto iter = bigraph.map.begin(); iter != bigraph.map.end(); ++iter) {
+				for (auto iter = digraph.map.begin(); iter != digraph.map.end(); ++iter) {
 					/* while there is a state not being part of any path partition */
 					if (iter->second.labels.empty()) {
 						// found iter pointing to a state not belonging to any partition/ i.e. has no label
 
-						std::vector<decltype(bigraph.map.begin())> exploration_iterator_stack; // collect iterators for elements in partition
-						exploration_iterator_stack.reserve(bigraph.map.size());
+						std::vector<decltype(digraph.map.begin())> exploration_iterator_stack; // collect iterators for elements in partition
+						exploration_iterator_stack.reserve(digraph.map.size());
 						exploration_iterator_stack.push_back(iter);
 
 						// add new label to *iter state and to all state on some initial path.
@@ -110,9 +110,9 @@ namespace tobor {
 						{
 							auto i_back = iter;
 							while (!i_back->second.predecessors.empty()) { // can be optimized
-								i_back = bigraph.map.find(*i_back->second.predecessors.begin());
+								i_back = digraph.map.find(*i_back->second.predecessors.begin());
 								// i_back != end() /* assured by logic, also check it here (?)*/
-								if (i_back == bigraph.map.end()) break;
+								if (i_back == digraph.map.end()) break;
 								set_flag(i_back->second.labels, flag_index, true);
 								exploration_iterator_stack.push_back(i_back);
 							}
@@ -120,8 +120,8 @@ namespace tobor {
 						{
 							auto i_forward = iter;
 							while (!i_forward->second.successors.empty()) { // can be optimized
-								i_forward = bigraph.map.find(*i_forward->second.successors.begin());
-								if (i_forward == bigraph.map.end()) break;
+								i_forward = digraph.map.find(*i_forward->second.successors.begin());
+								if (i_forward == digraph.map.end()) break;
 								// i_forward != end() /* assured by logic, also check it here (?)*/
 								set_flag(i_forward->second.labels, flag_index, true);
 								exploration_iterator_stack.push_back(i_forward);
@@ -168,13 +168,13 @@ namespace tobor {
 							exploration_iterator_stack.pop_back();
 
 							for (const auto& candidate : exploree->second.successors) {
-								const auto i_candidate = bigraph.map.find(candidate);
-								if (i_candidate == bigraph.map.end()) continue; // never happens by logic if bigraph is sound.
+								const auto i_candidate = digraph.map.find(candidate);
+								if (i_candidate == digraph.map.end()) continue; // never happens by logic if digraph is sound.
 								if (contains(i_candidate->second.labels, flag_index)) continue; // state already labeled as part of current equivalence class
 
 								for (const auto& successor : i_candidate->second.successors) {
-									auto i_successor = bigraph.map.find(successor);
-									if (i_successor == bigraph.map.end()) continue; // never happens by logic if bigraph is sound.
+									auto i_successor = digraph.map.find(successor);
+									if (i_successor == digraph.map.end()) continue; // never happens by logic if digraph is sound.
 
 									if (contains(i_successor->second.labels, flag_index)) {
 										if (exploree->first.count_changed_pieces(i_successor->first) == 2) { // true interleaving
@@ -189,13 +189,13 @@ namespace tobor {
 								(void)0;
 							}
 							for (const auto& candidate : exploree->second.predecessors) {
-								const auto i_candidate = bigraph.map.find(candidate);
-								if (i_candidate == bigraph.map.end()) continue; // never happens by logic if bigraph is sound.
+								const auto i_candidate = digraph.map.find(candidate);
+								if (i_candidate == digraph.map.end()) continue; // never happens by logic if digraph is sound.
 								if (contains(i_candidate->second.labels, flag_index)) continue; // state already labeled as part of current equivalence class
 
 								for (const auto& predecessor : i_candidate->second.predecessors) {
-									auto i_predecessor = bigraph.map.find(predecessor);
-									if (i_predecessor == bigraph.map.end()) continue; // never happens by logic if bigraph is sound.
+									auto i_predecessor = digraph.map.find(predecessor);
+									if (i_predecessor == digraph.map.end()) continue; // never happens by logic if digraph is sound.
 
 									if (contains(i_predecessor->second.labels, flag_index)) {
 										if (exploree->first.count_changed_pieces(i_predecessor->first) == 2) { // true interleaving
@@ -225,9 +225,9 @@ namespace tobor {
 			*/
 			template<class State_Label_T>
 			static void extract_subgraph_by_label(
-				const simple_state_bigraph<positions_of_pieces_type, std::vector<bool>>& source,
+				const simple_state_digraph<positions_of_pieces_type, std::vector<bool>>& source,
 				std::size_t label_index,
-				simple_state_bigraph<positions_of_pieces_type, State_Label_T>& destination
+				simple_state_digraph<positions_of_pieces_type, State_Label_T>& destination
 			) {
 				destination.map.clear();
 
@@ -243,7 +243,7 @@ namespace tobor {
 					if (contains(pair.second.labels, label_index)) {
 						auto iter = destination.map.insert(
 							destination.map.end(),
-							std::make_pair(pair.first, typename simple_state_bigraph<positions_of_pieces_type, State_Label_T>::node_links())
+							std::make_pair(pair.first, typename simple_state_digraph<positions_of_pieces_type, State_Label_T>::node_links())
 						);
 						std::copy_if(pair.second.predecessors.cbegin(), pair.second.predecessors.cend(), std::inserter(iter->second.predecessors, iter->second.predecessors.end()), has_label);
 						std::copy_if(pair.second.successors.cbegin(), pair.second.successors.cend(), std::inserter(iter->second.successors, iter->second.successors.end()), has_label);
@@ -252,10 +252,10 @@ namespace tobor {
 			}
 
 			/**
-			*	@brief Returns all state paths of given simple_state_bigraph \p source.
+			*	@brief Returns all state paths of given simple_state_digraph \p source.
 			*/
 			template<class State_Label_T>
-			static std::vector<state_path<positions_of_pieces_type>> extract_all_state_paths(const simple_state_bigraph<positions_of_pieces_type, State_Label_T>& source) {
+			static std::vector<state_path<positions_of_pieces_type>> extract_all_state_paths(const simple_state_digraph<positions_of_pieces_type, State_Label_T>& source) {
 				std::vector<state_path<positions_of_pieces_type>> all_state_paths;
 
 				for (auto iter = source.map.cbegin(); iter != source.map.cend(); ++iter) {

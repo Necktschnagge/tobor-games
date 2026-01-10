@@ -326,7 +326,6 @@ void tobor::v1_1::world_generator::original_4_of_16::set_yellow_planet_3(world_t
 }
 
 void tobor::v1_1::world_generator::original_4_of_16::create_quadrants(std::array<std::vector<world_type>, 4>& all_quadrants) {
-
 	set_red_planet_0(all_quadrants[RED_PLANET].emplace_back(16, 16));
 	set_red_planet_1(all_quadrants[RED_PLANET].emplace_back(16, 16));
 	set_red_planet_2(all_quadrants[RED_PLANET].emplace_back(16, 16));
@@ -346,7 +345,6 @@ void tobor::v1_1::world_generator::original_4_of_16::create_quadrants(std::array
 	set_yellow_planet_1(all_quadrants[YELLOW_PLANET].emplace_back(16, 16));
 	set_yellow_planet_2(all_quadrants[YELLOW_PLANET].emplace_back(16, 16));
 	set_yellow_planet_3(all_quadrants[YELLOW_PLANET].emplace_back(16, 16));
-
 }
 
 tobor::v1_1::world_generator::original_4_of_16::world_type

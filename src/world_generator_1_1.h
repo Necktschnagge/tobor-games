@@ -4,7 +4,7 @@
 #include "models/dynamic_rectangle_world.h"
 #include "models/min_size_cell_id.h"
 
-#include "world_generator_1_0.h"
+//#include "world_generator_1_0.h" <- TODO remove!!
 
 #include "math.h"
 
@@ -12,26 +12,60 @@
 #include <array>
 #include <optional>
 #include <algorithm>
+#include <numeric>
 
 namespace tobor {
-
 	namespace v1_1 {
 		namespace world_generator {
 
+			/**
+			*	@brief This is the world generator using the official 4 * 4 quadrants.
+			*	It has 4 quadrants for red planet, 4 for green planet, and so on.
+			*	We call them the red planet category, green planet category, ...
+			*	It selects one quadrant of each category so that we will have one red, one green, one blue, one yellow planet later on the board. (4*4*4*4 combinations)
+			*	It puts together these four quadrants in arbitraty order. (3*2*1 combinations, since we assume it is aligned, turning the whole board does not create any new board essentially)
+			*	It produces a #tobor::v1_1::dynamic_rectangle_world<uint16_t, uint8_t>.
+			*
+			*	Note that selecting one from each category is only to stick to the original game boards.
+			*	Tobor itself does not care about colors of target cells at all.
+			*	Tobor will just see one of the target cells on a board and define the target piece's color to match the target.
+			*/
 			class original_4_of_16 {
 			public:
 
+				/** The world type produced by this generator */
 				using world_type = tobor::v1_1::dynamic_rectangle_world<uint16_t, uint8_t>;
 
+				/** The world type produced by this generator */
 				using cell_id_type = tobor::v1_1::min_size_cell_id<world_type>;
 
+				/**
+				* Index of the red planet category.
+				* These are just to give the quadrant categories distinct indices.
+				*/
 				constexpr static std::size_t RED_PLANET{ 0 };
+
+				/**
+				* Index of the green planet category.
+				* These are just to give the quadrant categories distinct indices.
+				*/
 				constexpr static std::size_t GREEN_PLANET{ 1 };
+
+				/**
+				* Index of the blue planet category.
+				* These are just to give the quadrant categories distinct indices.
+				*/
 				constexpr static std::size_t BLUE_PLANET{ 2 };
+
+				/**
+				* Index of the yellow planet category.
+				* These are just to give the quadrant categories distinct indices.
+				*/
 				constexpr static std::size_t YELLOW_PLANET{ 3 };
 
 			private:
 
+				/** Sets the walls on the board for the cell ids given */
 				static void set_wall_corners(
 					world_type& world,
 					const std::vector<cell_id_type>& W_wall,
@@ -40,6 +74,8 @@ namespace tobor {
 					const std::vector<cell_id_type>& NE_corners,
 					const std::vector<cell_id_type>& SW_corners,
 					const std::vector<cell_id_type>& SE_corners);
+
+				/* the following functions plot an original quadrant each into the area of the board where x,y are less than half dimension ***/
 
 				static void set_red_planet_0(world_type& world);
 				static void set_red_planet_1(world_type& world);
@@ -61,15 +97,24 @@ namespace tobor {
 				static void set_yellow_planet_2(world_type& world);
 				static void set_yellow_planet_3(world_type& world);
 
+				/**
+				*	@brief This function just creates all isolated quadrants and appends them to the vectors inside the array.
+				*	Each index of the array contains exactly those quadrant which are of the planet category the array index indicates.
+				*
+				*	{ {red} {green} {blue} {yellow} }
+				*
+				*	Make sure \p all_quadrants contains all empty vectors before calling.
+				*/
 				static void create_quadrants(std::array<std::vector<world_type>, 4>& all_quadrants);
 
-			public:
+			public: /* the following section is about counting combinations / permutations ***************************/
 
 				constexpr static uint64_t COUNT_PLANET_R{ 4 };
 				constexpr static uint64_t COUNT_PLANET_G{ 4 };
 				constexpr static uint64_t COUNT_PLANET_B{ 4 };
 				constexpr static uint64_t COUNT_PLANET_Y{ 4 };
 
+				/** The number of different boards (divided by board rotation) */
 				constexpr static uint64_t COUNT_ALIGNED_WORLDS{
 					COUNT_PLANET_R * COUNT_PLANET_G * COUNT_PLANET_B * COUNT_PLANET_Y *
 					3 * // choose the second quadrant's position
@@ -78,20 +123,30 @@ namespace tobor {
 
 				constexpr static uint64_t COUNT_ROTATIONS{ 4 };
 
+				/** The number of different boards assuming whole board rotation matters */
 				constexpr static uint64_t COUNT_ALL_WORLDS{ COUNT_ALIGNED_WORLDS * COUNT_ROTATIONS };
 
+				/**
+					We know by brute-force testing all combinations that each board has exactly 17 target cells,
+					one is the all-color target cell from the original boards
+				*/
 				constexpr static uint64_t COUNT_TARGET_CELLS{ 17 };
 
 				constexpr static uint64_t COUNT_ALL_WORLDS_WITH_SELECTED_TARGET{ COUNT_ALL_WORLDS * COUNT_TARGET_CELLS };
 
-
+				/**
+				*	Returns a world prepared with only one quadrant at small xs, small ys board corner.
+				*	@param planet_color     color of the planet 0..3
+				*	@param quadrant_index   which of the quadrants inside the category should be used 0..3
+				*/
 				static world_type get_quadrant(std::size_t planet_color, std::size_t quadrant_index);
+
 
 				static void copy_walls_turned(const world_type& source, uint8_t rotation, world_type& destination);
 
 				static world_type get_world(uint64_t select_aligned_world, uint64_t rotation);
 
-				static constexpr uint64_t CYCLIC_GROUP_SIZE{
+				inline static constexpr uint64_t CYCLIC_GROUP_SIZE{
 					COUNT_ALL_WORLDS_WITH_SELECTED_TARGET
 				};
 
@@ -105,7 +160,7 @@ namespace tobor {
 				// 4   x   4   x   4   x   4   x   6   x   4   x   17
 				//  1       2       3       0       5                1
 
-				static constexpr uint64_t STANDARD_GENERATOR{
+				inline static constexpr uint64_t STANDARD_GENERATOR{
 					1 +
 					2 * 4 +
 					3 * 4 * 4 +
@@ -125,20 +180,15 @@ namespace tobor {
 					7 * 4 * 4 * 4 * 4 * 6 * 4
 				};
 
+			private:
 				uint64_t generator;
 				uint64_t counter;
 
-				static constexpr uint64_t gcd(uint64_t x, uint64_t y) {
-					if (x == 0)
-						return y;
-					return gcd(y % x, x);
-				}
-
-				//static_assert(gcd(STANDARD_GENERATOR, CYCLIC_GROUP_SIZE) == 1, "check generator");
-				//static_assert(gcd(SECOND_GENERATOR, CYCLIC_GROUP_SIZE) == 1, "check generator");
+				static_assert(std::gcd(STANDARD_GENERATOR, CYCLIC_GROUP_SIZE) == 1, "check generator");                                                                   
+				static_assert(std::gcd(SECOND_GENERATOR, CYCLIC_GROUP_SIZE) == 1, "check generator");
 
 				inline uint64_t& increment_generator_until_gcd_1() {
-					while (gcd(generator, CYCLIC_GROUP_SIZE) != 1) {
+					while (std::gcd(generator, CYCLIC_GROUP_SIZE) != 1) {
 						++generator;
 						generator %= CYCLIC_GROUP_SIZE;
 					}
@@ -313,6 +363,11 @@ namespace tobor {
 				}
 
 			};
+
+
+
+
+
 
 			class board_size_condition_violation : public std::logic_error {
 			public:

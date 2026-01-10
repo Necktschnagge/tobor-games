@@ -8,10 +8,10 @@ namespace tobor {
 	namespace v1_1 {
 
 		template<class State_T, class State_Label_T = void>
-		class simple_state_bigraph;
+		class simple_state_digraph;
 
 		template<class State_T>
-		class simple_state_bigraph<State_T, void> {
+		class simple_state_digraph<State_T, void> {
 		public:
 
 			using state_type = State_T;
@@ -35,7 +35,7 @@ namespace tobor {
 		};
 
 		template<class State_T, class State_Label_T>
-		class simple_state_bigraph {
+		class simple_state_digraph {
 		public:
 			using state_type = State_T;
 			using state_set_type = std::set<state_type>;

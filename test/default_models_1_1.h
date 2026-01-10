@@ -11,7 +11,7 @@
 namespace tobor {
 	namespace v1_1 {
 
-		using default_min_size_cell_id = min_size_cell_id<default_dynamic_rectangle_world>;
+		using default_min_size_cell_id = min_size_cell_id<dynamic_rectangle_world<std::size_t, std::size_t>>;
 
 		template<uint8_t COUNT_TARGET_PIECES_V, uint8_t COUNT_NON_TARGET_PIECES_V>
 		using uint8_t_pieces_quantity = pieces_quantity<uint8_t, COUNT_TARGET_PIECES_V, COUNT_NON_TARGET_PIECES_V>;

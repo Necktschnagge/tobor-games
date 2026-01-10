@@ -37,6 +37,7 @@ else()
 endif()
 
 target_link_libraries(${PROJECT_NAME} PRIVATE Threads::Threads)
+target_link_libraries(${PROJECT_NAME} PRIVATE fmt::fmt)
 
 if(NOT MSVC)
 	target_link_libraries(${PROJECT_NAME} PRIVATE TBB::tbb)
@@ -94,6 +95,7 @@ else()
 endif()
 
 target_link_libraries(${PROJECT_NAME_LIB} PRIVATE Threads::Threads)
+target_link_libraries(${PROJECT_NAME_LIB} PRIVATE fmt::fmt)
 
 if(NOT MSVC)
 	target_link_libraries(${PROJECT_NAME_LIB} PRIVATE TBB::tbb)
