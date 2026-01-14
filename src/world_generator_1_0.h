@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <string>
 #include <tuple>
+#include <cstdint>
 
 namespace tobor {
 
