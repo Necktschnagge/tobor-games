@@ -3,6 +3,9 @@ cmake_minimum_required(VERSION 3.16)
 
 
 ############### Subdirectories for dependencies ###############
+set(FMT_TEST OFF CACHE BOOL "" FORCE)
+add_subdirectory(extern/fmt)
+
 set(gtest_force_shared_crt ON CACHE BOOL "Always use msvcrt.dll" FORCE)
 add_subdirectory(extern/googletest)
 
@@ -36,10 +39,12 @@ add_compile_definitions(GIT_REPOSITORY_URL="https://github.com/Necktschnagge/tob
 
 
 ############### Project Declaration ###############
-project(${PROJECT_NAME} VERSION 0.1 LANGUAGES CXX)
+project(${PROJECT_NAME} VERSION 1.1 LANGUAGES CXX)
 
 
 #set(CMAKE_SUPPRESS_REGENERATION true) # CMAKE then does not create the target ZERO_CHECK, hence Visual Studio is able to generate class diagrams.
+
+
 
 ############### Programming Language and Compiler Flags ###############
 set(CMAKE_AUTOUIC ON)
@@ -59,12 +64,13 @@ endif()
 
 if (MSVC)
         message("MSVC detected")
-        set(CMAKE_CXX_FLAGS_RELEASE "/MT /O2 /Ob2 /DNDEBUG") #what do all these flags mean?
+        set(CMAKE_CXX_FLAGS_RELEASE "/MT /O2 /Ob2 /DNDEBUG") #please add more docu about what these flags do
         set(CMAKE_CXX_FLAGS_DEBUG "/MTd /Zi /Ob0 /Od /RTC1")
 endif()
 
 if(MSVC)
-  add_compile_options(/W4 /WX)
+  #add_compile_options(/W4 /WX)
+  add_compile_options(/W4 /WX /MP)
   add_compile_options(/bigobj)
 else()
   add_compile_options(-Wall -Wextra -pedantic -Werror)

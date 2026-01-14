@@ -33,7 +33,7 @@ public:
 	using pieces_quantity_int_type = typename pieces_quantity_type::int_type;
 
 
-	using graphics_type = tobor::v1_1::tobor_graphics<world_type, positions_of_pieces_type_solver>;
+	using graphics_type = tobor::latest::svggen::board_composer<world_type, positions_of_pieces_type_solver>;
 	using graphics_coloring_type = typename graphics_type::coloring;
 
 	using solver_environment_type = SolverEnvironment<Pieces_Quantity_T>;
@@ -305,7 +305,7 @@ public:
 	// should be moved outside the game controller. This is my interim solution
 	virtual std::string svg(
 		const tobor::v1_1::color_vector& current_color_vector,
-		const tobor::v1_1::general_piece_shape_selection& shape
+		const tobor::latest::svggen::general_piece_shape_selection& shape
 	) const override {
 
 		auto permutated_color_vector = current_color_vector;
@@ -321,7 +321,7 @@ public:
 			);
 
 		std::string example_svg_string =
-			graphics_type::draw_tobor_world(
+			graphics_type::draw_source_board(
 				this->world(),
 				this->current_state().naked(),
 				this->target_cell(),

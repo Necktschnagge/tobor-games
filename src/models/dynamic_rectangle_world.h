@@ -12,60 +12,95 @@ namespace tobor {
 		/**
 		*
 		*	@brief Represents the game's entire board, stating which cells are separated by walls.
-		*	@details Does NOT contain any information about where pieces are located.
-		*
+		*	@details Does NOT contain any information about where pieces are located. The board is always a rectangle.
+		*	
+		*	@tparam Int_Size_Type_T      the size type integer type to be used.
+		*	@tparam Int_Cell_Id_Type_T   the cell id integer type to be used.
 		*/
 		template <class Int_Size_Type_T, class Int_Cell_Id_Type_T>
 		class dynamic_rectangle_world {
 		public:
 
+			/** The wider integer type, needed for sizes */
 			using int_size_type = Int_Size_Type_T;
+
+			/**
+			* The narrower integer type,
+			* to be able to shrink memory usage compared to #int_size_type
+			* This one is used for cell IDs
+			* e.g. for a 16*16 board it may be std::uint8_t for cells 0 .. 255
+			*/
 			using int_cell_id_type = Int_Cell_Id_Type_T;
 
+			/**
+			* @brief the type for a vector of walls
+			*/
 			using wall_vector_type = wall_vector;
+
+			/**
+			* @brief the type dynamic_rectangle_world itself
+			*/
 			using type = dynamic_rectangle_world;
 
 		private:
 
+			/** the rectagle size in x direction */
 			int_size_type x_size;
+
+			/** the rectagle size in y direction */
 			int_size_type y_size;
 
-			/*
-			* Contains all horizontal walls existing on the board.
-			* order: start at (0,0) -> (0, y_size - 1), go line by line x=0 .. x_size - 1
-			* At index i of this vector h_walls[i] you find the horizontal wall below the cell with transposed_id i.
+			/**
+			*	Contains all horizontal walls existing on the board.
+			*	order: start at (0,0) -> (0, y_size - 1), go line by line x=0 .. x_size - 1
+			*	At index i of this vector h_walls[i] you find the horizontal wall below the cell with transposed_id i.
 			*/
 			wall_vector_type h_walls;
 
-			/*
-			* Contains all vertical walls existing on the board.
-			* order: start at (0,0) -> (x_size - 1, 0), go line by line y=0 .. y_size - 1
-			* At index i of this vector v_walls[i] you find the vertical wall on the left of the cell with id i.
+			/**
+			*	Contains all vertical walls existing on the board.
+			*	order: start at (0,0) -> (x_size - 1, 0), go line by line y=0 .. y_size - 1
+			*	At index i of this vector v_walls[i] you find the vertical wall on the left of the cell with id i.
 			*/
 			wall_vector_type v_walls;
 
 		public:
 
-			static constexpr int_cell_id_type narrow(const int_size_type& x) {
+			/**
+			*	@brief Narrowing conversion for integers.
+			*/
+			static constexpr int_cell_id_type narrow(const int_size_type& x) noexcept {
 				return static_cast<int_cell_id_type>(x);
 			}
 
-			static constexpr int_size_type wide(const int_cell_id_type& x) {
+			/**
+			*	@brief Widening conversion for integers.
+			*/
+			static constexpr int_size_type wide(const int_cell_id_type& x) noexcept {
 				return static_cast<int_size_type>(x);
 			}
 
+		public:
 			/* ctors et. al. **************************************************************************************/
 
-			dynamic_rectangle_world() : x_size(0), y_size(0) {}
+			/**
+			*	@brief Creates a #dynamic_rectangle_world with size 0x0
+			*/
+			inline dynamic_rectangle_world() : x_size(0), y_size(0) {}
 
-			dynamic_rectangle_world(const int_size_type& x_size, const int_size_type& y_size) : dynamic_rectangle_world() {
+			/**
+			*	@brief Creates a #dynamic_rectangle_world with given size.
+			*	@details Note that max value of int_cell_id_type must be greater or equal \p x_size * \p y_size - 1.
+			*			The board will have walls exactly on the outer borders of the board.
+			*/
+			inline dynamic_rectangle_world(const int_size_type& x_size, const int_size_type& y_size) : dynamic_rectangle_world() {
 				resize(x_size, y_size);
 			}
 
 			/**
 			*	@brief Sets the size of the world, also creates an empty rectangle with walls only on the outer borders
 			*/
-			void resize(int_size_type _x_size, int_size_type _y_size) noexcept {
+			inline void resize(int_size_type _x_size, int_size_type _y_size) {
 				this->x_size = _x_size;
 				this->y_size = _y_size;
 				{
@@ -85,6 +120,8 @@ namespace tobor {
 
 			/*
 				@brief Fills center cells to make them unreachable.
+				@throw division_by_2_error if combination of board dimension and blocked area dimension make it impossible for the blocked area to be perfectly centered.
+				@throw blocked_center_error if blocked area whould cover the whole board in at least one direction.
 			*/
 			inline void block_center_cells(int_size_type x_blocked_size, int_size_type y_blocked_size) {
 				// check for symmetry of blocked area:
@@ -116,7 +153,7 @@ namespace tobor {
 						east_wall_by_id(id) = true;
 						south_wall_by_transposed_id(transposed_id) = true;
 						west_wall_by_id(id) = true;
-						// remark: this is by the way inefficient, but readable
+						// remark: this is inefficient, but better readable
 					}
 				}
 			}
@@ -234,7 +271,12 @@ namespace tobor {
 				return y_size;
 			}
 
-			type turn_left_90() const { // only for quadratic
+			/**
+			*	@brief Turns the board by 90 degrees to the left.
+			*	@detail only works for quadratic boards
+			*		TODO https://github.com/Necktschnagge/tobor-games/issues/56
+			*/
+			type turn_left_90() const {
 				if (x_size != y_size) {
 					throw std::logic_error("Cannot turn for non-quadratic board.");
 				}
@@ -248,9 +290,7 @@ namespace tobor {
 				}
 				return copy;
 			}
-
 		};
 
-		using default_dynamic_rectangle_world = dynamic_rectangle_world<std::size_t, std::size_t>;
 	}
 }

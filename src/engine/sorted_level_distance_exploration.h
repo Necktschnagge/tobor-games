@@ -18,7 +18,9 @@ sorted_level_distance_exploration
 sorted_level_distance_exploration
 */
 
-#include "../models/simple_state_bigraph.h"
+#include "exploration_policy.h"
+
+#include "../models/simple_state_digraph.h"
 
 #include <vector>
 
@@ -26,12 +28,12 @@ namespace tobor {
 	namespace v1_1 {
 
 		/**
-		*	@brief A state space explorer for game boards.
+		*	@brief A state space explorer for game boards. This one is based on a sequence of sorted vectors v_i of all states that can be reached in minimum depth i.
 		*	@details It always has a fixed initial state which is the root of all state space exploration.
-		*			It can explore the entire reachable state space or only until a target is reached.
+		*			It can explore the entire reachable state space or until a target is reached or until some threshold.
 		*/
 		template <class Move_Engine_T, class Positions_Of_Pieces_T>
-		class vector_distance_exploration {
+		class sorted_level_distance_exploration {
 
 		public:
 			using move_engine_type = Move_Engine_T;
@@ -58,39 +60,6 @@ namespace tobor {
 
 			};
 
-			/**
-			*	@brief Describes restrictions for exploration.
-			*/
-			class exploration_policy {
-
-				size_type _state_count_threshold{ 0 };
-				size_type _max_depth{ 0 };
-
-				constexpr  exploration_policy(size_type state_count_threshold, size_type max_depth) : _state_count_threshold(state_count_threshold), _max_depth(max_depth) {}
-
-			public:
-				exploration_policy() = delete;
-
-				static constexpr exploration_policy ONLY_CASHED() { return exploration_policy(0, 0); }
-
-				static constexpr exploration_policy ONLY_EXPLORED() { return exploration_policy(0, SIZE_TYPE_MAX); }
-
-				static constexpr exploration_policy FORCE_EXPLORATION_UNRESTRICTED() { return exploration_policy(SIZE_TYPE_MAX, SIZE_TYPE_MAX); }
-
-				static constexpr exploration_policy FORCE_EXPLORATION_UNTIL_DEPTH(size_type max_depth) { return exploration_policy(SIZE_TYPE_MAX, max_depth); }
-
-				static constexpr exploration_policy FORCE_EXPLORATION_STATE_THRESHOLD(size_type state_count_threshold) { return exploration_policy(std::max(state_count_threshold, size_type(1)), SIZE_TYPE_MAX); }
-
-				static constexpr exploration_policy FORCE_EXPLORATION_STATE_THRESHOLD_UNTIL_DEPTH(size_type state_count_threshold, size_type max_depth) { return exploration_policy(std::max(state_count_threshold, size_type(1)), max_depth); }
-
-				inline bool operator ==(const exploration_policy& another) const noexcept { return _state_count_threshold == another._state_count_threshold && _max_depth == another._max_depth; }
-
-				inline size_type state_count_threshold() const { return _state_count_threshold; }
-
-				inline size_type max_depth() const { return _max_depth; }
-
-			};
-
 		private:
 
 			using target_distance_map_type = std::map<cell_id_type, size_type>;
@@ -108,7 +77,7 @@ namespace tobor {
 			/**
 			* maps target cells to their minimal distance from initial state
 			*/
-			target_distance_map_type _optimal_path_length_map;
+			target_distance_map_type _optimal_path_length_cache;
 
 			/**
 			*	true if and only if the whole state space reachable from initial state has been fully explored.
@@ -205,7 +174,7 @@ namespace tobor {
 
 			/**
 			*	@brief Adds all successor states of \p current_state to \p destination
-			*	@return true if and only if a taregt state was found.
+			*	@return true if and only if a target state was found.
 			*/
 			template<class Iterator_T>
 			inline bool add_all_nontrivial_successor_states(
@@ -283,6 +252,9 @@ namespace tobor {
 			*	@brief Explores according to \p policy until reaching \p target_cell (or until running into policy threshold)
 			*
 			*	@details Caller guarantees that target_cell has not yet been found if NOT_YET_FOUND_GUARANTEED == true.
+			*		If this is not guaranteed, the cache will not be updated.
+			*
+			*	@return Returns optimal depth for given target cell, or SIZE_TYPE_MAX if not found.
 			*/
 			inline size_type explore_until_target(
 				const move_engine_type& engine,
@@ -294,12 +266,10 @@ namespace tobor {
 
 				size_type optimal_depth{ SIZE_TYPE_MAX }; // guaranteed not yet found if NOT_YET_FOUND_GUARANTEED == true
 
-				size_type states_counter{ count_states() };
-
 				for (size_type expand_level_index{ INDEX_LAST_EXPLORATION };
 					expand_level_index < optimal_depth
 					&& expand_level_index < policy.max_depth() /* policy abort*/
-					&& states_counter < policy.state_count_threshold() /* policy abort*/;
+					&& count_states() < policy.state_count_threshold() /* policy abort*/;
 					++expand_level_index) {
 
 					if (_reachable_states_by_distance[expand_level_index].size() == 0) {
@@ -330,7 +300,7 @@ namespace tobor {
 				// finalizing:
 				if (NOT_YET_FOUND_GUARANTEED)
 					if (optimal_depth != SIZE_TYPE_MAX) {
-						_optimal_path_length_map.insert(std::make_pair(target_cell, optimal_depth));
+						_optimal_path_length_cache.insert(std::make_pair(target_cell, optimal_depth));
 					}
 				return optimal_depth;
 			}
@@ -339,8 +309,8 @@ namespace tobor {
 			/**
 			*	@brief Constructs an object with empty exploration state space.
 			*/
-			vector_distance_exploration(const positions_of_pieces_type& initial_state) :
-				_optimal_path_length_map(),
+			sorted_level_distance_exploration(const positions_of_pieces_type& initial_state) :
+				_optimal_path_length_cache(),
 				_entirely_explored(false)
 			{
 				_reachable_states_by_distance.emplace_back(std::vector<positions_of_pieces_type>{ initial_state });
@@ -363,7 +333,7 @@ namespace tobor {
 			inline bool entirely_explored() const noexcept { return _entirely_explored; }
 
 			/**
-			*	@brief Returns the may depth of previously executed exploration.
+			*	@brief Returns the max depth of previously executed exploration.
 			*/
 			inline size_type exploration_depth() const noexcept { return _reachable_states_by_distance.size() - 1; }
 
@@ -376,11 +346,9 @@ namespace tobor {
 			) {
 				const size_type INDEX_LAST_EXPLORATION{ _reachable_states_by_distance.size() - 1 };
 
-				size_type states_counter{ count_states() };
-
 				for (
 					size_type expand_level_index{ INDEX_LAST_EXPLORATION };
-					expand_level_index < policy.max_depth() && states_counter < policy.state_count_threshold() /* policy abort*/;
+					expand_level_index < policy.max_depth() && count_states() < policy.state_count_threshold() /* policy abort*/;
 					++expand_level_index
 					)
 				{
@@ -425,9 +393,9 @@ namespace tobor {
 			*/
 			inline size_type optimal_path_length(const move_engine_type& engine, const cell_id_type& target_cell, const exploration_policy& policy = exploration_policy::ONLY_EXPLORED(), const size_type& min_length_hint = 0) {
 				// checking cache...
-				const auto iter = _optimal_path_length_map.find(target_cell);
+				const auto iter = _optimal_path_length_cache.find(target_cell);
 
-				if (iter != _optimal_path_length_map.cend()) {
+				if (iter != _optimal_path_length_cache.cend()) {
 					return iter->second;
 				}
 				if (policy == exploration_policy::ONLY_CASHED()) {
@@ -439,7 +407,7 @@ namespace tobor {
 					for (const auto& state : _reachable_states_by_distance[depth]) {
 						if (state.is_final(target_cell)) {
 							if (min_length_hint == 0) { // only update cache if there was no hint
-								_optimal_path_length_map.insert(std::make_pair(target_cell, depth));
+								_optimal_path_length_cache.insert(std::make_pair(target_cell, depth));
 							}
 							return depth;
 						}
@@ -475,19 +443,19 @@ namespace tobor {
 			}
 
 			/**
-			*	@brief Extracts the simple_state_bigraph containing all optimal solutions for reaching \p target_cell.
+			*	@brief Extracts the simple_state_digraph containing all optimal solutions for reaching \p target_cell.
 			*
 			*	@details Explores the state space according to \p policy
 			*/
 			template<class State_Label_T>
-			void get_simple_bigraph(
+			void get_simple_digraph(
 				const move_engine_type& engine,
 				const cell_id_type& target_cell,
-				simple_state_bigraph<positions_of_pieces_type, State_Label_T>& destination,
+				simple_state_digraph<positions_of_pieces_type, State_Label_T>& destination,
 				const exploration_policy& policy = exploration_policy::ONLY_EXPLORED(),
 				const size_type& min_length_hint = 0
 			) {
-				using bigraph = simple_state_bigraph<positions_of_pieces_type, State_Label_T>;
+				using digraph = simple_state_digraph<positions_of_pieces_type, State_Label_T>;
 
 				destination.clear();
 
@@ -504,9 +472,9 @@ namespace tobor {
 					if (s.is_final(target_cell)) {
 						destination.map.insert(
 							destination.map.end(),
-							std::pair<typename bigraph::state_type, typename bigraph::node_links>(
+							std::pair<typename digraph::state_type, typename digraph::node_links>(
 								_reachable_states_by_distance[FINAL_DEPTH][i],
-								typename bigraph::node_links()
+								typename digraph::node_links()
 							)
 						);
 						states.push_back(s);
@@ -547,7 +515,7 @@ namespace tobor {
 						possible_edges.end()
 					);
 
-					// add edges to the bigraph:
+					// add edges to the digraph:
 					states.clear();
 
 					for (const std::pair<positions_of_pieces_type, positions_of_pieces_type>& edge : possible_edges) {

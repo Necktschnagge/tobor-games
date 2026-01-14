@@ -6,23 +6,25 @@ namespace tobor {
 	namespace v1_1 {
 
 		/**
-		*	@brief A Wrapper for a bool to distinguish between (non-transposed) id - direction (EAST - WEST) and transposed id - direction (NORTH - SOUTH)
+		*	@brief A Wrapper for a bool to distinguish between (non-transposed) id used for directions EAST, WEST and transposed id used for directions NORTH, SOUTH
+		*	
+		*	@details The underlying bool is true if indicating transposed ids (NORTH, SOUTH)
 		*/
 		class id_polarisation {
 
 			bool is_transposed{ false };
 
 		public:
-			id_polarisation() {}
-			id_polarisation(const id_polarisation&) = default;
-			id_polarisation(id_polarisation&&) = default;
+			constexpr id_polarisation() noexcept : is_transposed{ false } {}
+			constexpr id_polarisation(const id_polarisation&) noexcept = default;
+			id_polarisation(id_polarisation&&) noexcept = default;
 
-			id_polarisation& operator=(const id_polarisation&) = default;
-			id_polarisation& operator=(id_polarisation&&) = default;
+			id_polarisation& operator=(const id_polarisation&) noexcept = default;
+			id_polarisation& operator=(id_polarisation&&) noexcept = default;
 
-			inline id_polarisation(const direction& d) : is_transposed(d.is_transposed_id_direction()) {}
+			inline constexpr id_polarisation(const direction& d) noexcept : is_transposed(d.is_transposed_id_direction()) {}
 
-			inline operator bool() const noexcept { return is_transposed; };
+			inline constexpr operator bool() const noexcept { return is_transposed; };
 		};
 	}
 }
