@@ -113,8 +113,8 @@ public:
 	virtual void set_state_generator_counter(std::size_t) override {}
 
 	virtual std::pair<std::string, std::size_t> svg_highlighted_targets() const override {
-		using graphics = tobor::v1_1::tobor_graphics<world_type, positions_of_pieces_type_interactive>;
-		return std::make_pair(graphics::draw_tobor_world_with_cell_markers(get22Game(), {}), 0);
+		using graphics = tobor::latest::svggen::board_composer<world_type, positions_of_pieces_type_interactive>;
+		return std::make_pair(graphics::draw_source_board_with_cell_markers(get22Game(), {}), 0);
 	}
 
 	virtual ~SpecialCaseGameFactory() override {}

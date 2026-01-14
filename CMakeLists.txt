@@ -69,6 +69,7 @@ if (MSVC)
 endif()
 
 if(MSVC)
+  #add_compile_options(/W4 /WX)
   add_compile_options(/W4 /WX /MP)
   add_compile_options(/bigobj)
 else()

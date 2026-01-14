@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../fsl/i_to_std_string.h"
+#include "../fsl/interface/stringable.h"
 
 #include <memory>
 #include <vector>
@@ -9,9 +9,9 @@ namespace tobor {
 	namespace latest {
 		namespace svggen {
 
-			class compound : public fsl::i_to_std_string {
+			class compound : public fsl::i::stringable {
 			public:
-				using unique_ptr = std::unique_ptr<fsl::i_to_std_string>;
+				using unique_ptr = std::unique_ptr<fsl::i::stringable>;
 
 				std::vector<unique_ptr> elements;
 
@@ -23,9 +23,9 @@ namespace tobor {
 					((void) elements.push_back(std::forward<T>(init)), ...);
 				}
 
-				virtual std::string to_std_string() const override {
+				virtual std::string to_string() const override {
 					return std::accumulate(elements.cbegin(), elements.cend(), std::string(), [](const std::string& acc, const unique_ptr& el) {
-						return acc + el->to_std_string();
+						return acc + el->to_string();
 					});
 				}
 			};

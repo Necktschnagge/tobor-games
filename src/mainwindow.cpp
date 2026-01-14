@@ -6,32 +6,28 @@
 
 #include "custom_traits.h"
 
-#include "ui_mainwindow.h"
 #include "gui/license_dialog.h"
+#include "ui_mainwindow.h"
 
-
-#include "special_case_22_game_factory.h"
 #include "original_game_factory.h"
+#include "special_case_22_game_factory.h"
 
-
-#include "spdlog/spdlog.h"
 #include "spdlog/sinks/qt_sinks.h"
+#include "spdlog/spdlog.h"
 
-
-#include <QStringListModel>
-#include <QMessageBox>
 #include <QDebug>
-#include <QStyle>
-#include <QXmlStreamReader>
 #include <QGraphicsSvgItem>
 #include <QMessageBox>
+#include <QStringListModel>
+#include <QStyle>
+#include <QXmlStreamReader>
 
 void MainWindow::setTextAndShortcutsForMainMenu() {
 
 	/// FILE
 
 	menubar_root.rootMenu->file.menuFile->setTitle(QCoreApplication::translate("MainWindow", "&File", nullptr));
-	//### export SVG feature missing here!
+	// ### export SVG feature missing here!
 
 	/// EDIT
 
@@ -39,7 +35,7 @@ void MainWindow::setTextAndShortcutsForMainMenu() {
 
 	/// GAME
 
-	//MainWindow->setWindowTitle(QCoreApplication::translate("MainWindow", "Tobor 1.0", nullptr));
+	// MainWindow->setWindowTitle(QCoreApplication::translate("MainWindow", "Tobor 1.0", nullptr));
 	menubar_root.rootMenu->game.menuGame->setTitle(QCoreApplication::translate("MainWindow", "&Game", nullptr));
 	menubar_root.rootMenu->game.actionNewGame->setText(QCoreApplication::translate("MainWindow", "&New Game", nullptr));
 #if QT_CONFIG(shortcut)
@@ -50,7 +46,6 @@ void MainWindow::setTextAndShortcutsForMainMenu() {
 #if QT_CONFIG(shortcut)
 	menubar_root.rootMenu->game.actionStopGame->setShortcut(QCoreApplication::translate("MainWindow", "Esc", nullptr));
 #endif // QT_CONFIG(shortcut)
-
 
 	menubar_root.rootMenu->game.menuSelect_Piece->setTitle(QCoreApplication::translate("MainWindow", "Select &Piece...", nullptr));
 	menubar_root.rootMenu->game.menuMove->setTitle(QCoreApplication::translate("MainWindow", "&Move...", nullptr));
@@ -75,8 +70,6 @@ void MainWindow::setTextAndShortcutsForMainMenu() {
 	menubar_root.rootMenu->game.actionUndo->setShortcut(QCoreApplication::translate("MainWindow", "Backspace", nullptr));
 #endif // QT_CONFIG(shortcut)
 
-
-
 	menubar_root.rootMenu->game.actionStart_Solver->setText(QCoreApplication::translate("MainWindow", "Start S&olver", nullptr));
 #if QT_CONFIG(shortcut)
 	menubar_root.rootMenu->game.actionStart_Solver->setShortcut(QCoreApplication::translate("MainWindow", "F9", nullptr));
@@ -99,15 +92,12 @@ void MainWindow::setTextAndShortcutsForMainMenu() {
 	menubar_root.rootMenu->game.actionSolver_Configuration->setShortcut(QCoreApplication::translate("MainWindow", "F3", nullptr));
 #endif // QT_CONFIG(shortcut)
 
-
-
 	/// DEVELOPER
 
 	menubar_root.rootMenu->developer.menuDeveloper->setTitle(QCoreApplication::translate("MainWindow", "&Developer", nullptr));
 	menubar_root.rootMenu->developer.actionHighlightGeneratedTargetCells->setText(QCoreApplication::translate("MainWindow", "&Highlight generated target cells", nullptr));
 	menubar_root.rootMenu->developer.actionEnableAllMenuBarItems->setText(QCoreApplication::translate("MainWindow", "&Enable all MenuBar items", nullptr));
 	menubar_root.rootMenu->developer.action22ReferenceGame->setText(QCoreApplication::translate("MainWindow", "&Start 22 Reference Game", nullptr));
-
 
 	/// VIEW
 
@@ -119,31 +109,26 @@ void MainWindow::setTextAndShortcutsForMainMenu() {
 	menubar_root.rootMenu->help.menuHelp->setTitle(QCoreApplication::translate("MainWindow", "&Help", nullptr));
 	menubar_root.rootMenu->help.actionAbout->setText(QCoreApplication::translate("MainWindow", "About", nullptr));
 	menubar_root.rootMenu->help.actionLicense_Information->setText(QCoreApplication::translate("MainWindow", "License Information", nullptr));
-
 }
 
-void MainWindow::connectSoltsForMainMenu()
-{
+void MainWindow::connectSoltsForMainMenu() {
 
 	// QMetaObject::connectSlotsByName(this); is done during execution of auto-created code.
 
 	// TODO here (issue #184)
 	// In future please connect slots manually here!
 	// I dont like auto connecting by name.
-
 }
 
-
 MainWindow::MainWindow(QWidget* parent) :
-	QMainWindow(parent),
-	ui(new Ui::MainWindow),
-	menubar_root(this),
-	controlKeyEventAgent(this),
-	current_game(),
-	factory_history(),
-	next_factory_1(),
-	factory_select(2)
-{
+   QMainWindow(parent),
+   ui(new Ui::MainWindow),
+   menubar_root(this),
+   controlKeyEventAgent(this),
+   current_game(),
+   factory_history(),
+   next_factory_1(),
+   factory_select(2) {
 	ui->setupUi(this);
 
 	// menubar:
@@ -172,12 +157,12 @@ MainWindow::MainWindow(QWidget* parent) :
 	ui->treeView->installEventFilter(&controlKeyEventAgent);
 
 	/*    auto log_widget = new QTextEdit();
-		auto logger = spdlog::qt_logger_mt("qt_logger", log_widget);
-		log_widget->setMinimumSize(640, 480);
-		log_widget->setWindowTitle("Debug console");
-		log_widget->show();
-		logger->info("QLocale: " + QLocale().name().toStdString());
-		logger->info("Qt Version: " + std::string(qVersion()));
+	   auto logger = spdlog::qt_logger_mt("qt_logger", log_widget);
+	   log_widget->setMinimumSize(640, 480);
+	   log_widget->setWindowTitle("Debug console");
+	   log_widget->show();
+	   logger->info("QLocale: " + QLocale().name().toStdString());
+	   logger->info("Qt Version: " + std::string(qVersion()));
 	*/
 
 	std::random_device rd;
@@ -192,7 +177,6 @@ MainWindow::MainWindow(QWidget* parent) :
 	next_factory_1.emplace_back(new OriginalGameFactory<tobor::v1_1::pieces_quantity<uint8_t, 1, 6>>());
 	next_factory_1.emplace_back(new OriginalGameFactory<tobor::v1_1::pieces_quantity<uint8_t, 1, 7>>());
 
-
 	for (auto& factory : next_factory_1) {
 
 		std::uniform_int_distribution<uint64_t> distribution_on_uint64_board(0, factory->world_generator_group_size());
@@ -200,24 +184,20 @@ MainWindow::MainWindow(QWidget* parent) :
 
 		factory->set_world_generator_counter(distribution_on_uint64_board(generator));
 		factory->set_state_generator_counter(distribution_on_uint64_pieces(generator));
-
 	}
-
 }
 
-MainWindow::~MainWindow()
-{
+MainWindow::~MainWindow() {
 	delete ui;
 }
 
-void MainWindow::startSolver()
-{
+void MainWindow::startSolver() {
 	if (!current_game) return showErrorDialog("Cannot start solver with no game opened.");
 
 	auto showMessage = [&](const std::string& m) {
 		statusBar()->showMessage(m.c_str());
 		repaint();
-		};
+	};
 
 	ui->statusbar->showMessage("starting solver...");
 	repaint();
@@ -226,15 +206,13 @@ void MainWindow::startSolver()
 	refreshAll();
 }
 
-void MainWindow::stopSolver()
-{
+void MainWindow::stopSolver() {
 	if (!current_game) return showErrorDialog("Cannot stop solver with no game opened.");
 	current_game->stop_solver();
 	refreshAll();
 }
 
-void MainWindow::stopGame()
-{
+void MainWindow::stopGame() {
 	statusbarItems.setSelectedPiece(Qt::darkGray);
 	disconnectInputConnections();
 	menubar_root.rootMenu->game.menuSelect_Piece->clear();
@@ -245,8 +223,7 @@ void MainWindow::stopGame()
 	refreshAll();
 }
 
-void MainWindow::startGame(AbstractGameFactory* factory)
-{
+void MainWindow::startGame(AbstractGameFactory* factory) {
 	if (current_game) return showErrorActionAvailable();
 
 	current_game.reset(factory->create());
@@ -258,8 +235,7 @@ void MainWindow::startGame(AbstractGameFactory* factory)
 	refreshAll();
 }
 
-void MainWindow::startGame()
-{
+void MainWindow::startGame() {
 	if (current_game) return showErrorActionAvailable();
 
 	std::unique_ptr<CyclicGroupGameFactory>& fac{ next_factory_1[factory_select] };
@@ -295,27 +271,24 @@ void MainWindow::startGame()
 	std::vector<DRWGameController::pieces_quantity_type::int_type> not_yet_permutated;
 
 	for (DRWGameController::pieces_quantity_type::int_type i = 0; i < DRWGameController::pieces_quantity_type::COUNT_ALL_PIECES; ++i) {
-		not_yet_permutated.push_back(i);
+	   not_yet_permutated.push_back(i);
 	}
 
 	std::vector<DRWGameController::pieces_quantity_type::int_type> colorPermutation = not_yet_permutated;
 
 	if constexpr (DRWGameController::pieces_quantity_type::COUNT_ALL_PIECES == 4) {
-		colorPermutation = boardGenerator.obtain_standard_4_coloring_permutation(not_yet_permutated);
+	   colorPermutation = boardGenerator.obtain_standard_4_coloring_permutation(not_yet_permutated);
 	}
 	*/
-
 }
 
-void MainWindow::startGameFromHistory(int index)
-{
+void MainWindow::startGameFromHistory(int index) {
 	if (current_game) return showErrorActionAvailable();
 
 	return startGame(factory_history[index].get());
 }
 
-void MainWindow::startReferenceGame22()
-{
+void MainWindow::startReferenceGame22() {
 	if (current_game) return showErrorActionAvailable();
 
 	auto fac = SpecialCaseGameFactory();
@@ -331,8 +304,7 @@ void MainWindow::startReferenceGame22()
 	refreshAll();
 }
 
-void MainWindow::selectPieceByColorId(const std::size_t& color_id)
-{
+void MainWindow::selectPieceByColorId(const std::size_t& color_id) {
 	if (!current_game) return showErrorDialog("Cannot select piece with no game opened.");
 
 	const uint8_t ERROR_CODE{ current_game->select_piece_by_color_id(color_id) };
@@ -341,11 +313,10 @@ void MainWindow::selectPieceByColorId(const std::size_t& color_id)
 }
 
 /**
-*	@brief Moves selected piece into given direction in interactive mode.
-*		However, in solver mode it moves forward on EAST, backward on WEST and does nothing otherwise.
-*/
-void MainWindow::movePieceInteractiveAndSolver(const tobor::v1_0::direction& direction)
-{
+ *	@brief Moves selected piece into given direction in interactive mode.
+ *		However, in solver mode it moves forward on EAST, backward on WEST and does nothing otherwise.
+ */
+void MainWindow::movePieceInteractiveAndSolver(const tobor::v1_0::direction& direction) {
 	if (!current_game) {
 		showErrorDialog("Cannot move a piece with no game opened.");
 		return;
@@ -365,46 +336,33 @@ void MainWindow::movePieceInteractiveAndSolver(const tobor::v1_0::direction& dir
 	refreshAll();
 }
 
-void MainWindow::undo()
-{
+void MainWindow::undo() {
 	if (!current_game) return showErrorDialog("Cannot undo with no game opened.");
-	if (current_game->solver()) {
-		current_game->stop_solver();
-	}
+	if (current_game->solver()) { current_game->stop_solver(); }
 	current_game->undo();
 	refreshAll();
 }
 
-void MainWindow::selectSolution(std::size_t index)
-{
-	if (!current_game) {
-		return showErrorDialog("Cannot select solution with no game opened.");
-	}
-	if (!current_game->solver()) {
-		return showErrorDialog("Cannot select solution without running solver.");
-	}
+void MainWindow::selectSolution(std::size_t index) {
+	if (!current_game) { return showErrorDialog("Cannot select solution with no game opened."); }
+	if (!current_game->solver()) { return showErrorDialog("Cannot select solution without running solver."); }
 
 	current_game->select_solution(index);
 }
-
 
 void MainWindow::on_actionHighlightGeneratedTargetCells_triggered() {
 	highlightGeneratedTargetCells();
 }
 
-void MainWindow::on_actionAbout_triggered()
-{
+void MainWindow::on_actionAbout_triggered() {
 	qDebug() << "QLocale:" << QLocale().name();
-
 
 	QMessageBox msgBox;
 	msgBox.setText(QString("Qt Version used: ") + qVersion());
 	msgBox.exec();
 }
 
-
-void MainWindow::viewSvgInMainView(const QString& svg_string)
-{
+void MainWindow::viewSvgInMainView(const QString& svg_string) {
 	QXmlStreamReader xml;
 	xml.addData(svg_string);
 
@@ -433,79 +391,62 @@ void MainWindow::on_actionStopGame_triggered() {
 	stopGame();
 }
 
-void MainWindow::on_actionUndo_triggered()
-{
+void MainWindow::on_actionUndo_triggered() {
 	undo();
 }
 
-void MainWindow::on_actionNORTH_triggered()
-{
+void MainWindow::on_actionNORTH_triggered() {
 	if (!current_game || current_game->solver()) return showErrorActionAvailable();
 	movePieceInteractiveAndSolver(tobor::v1_0::direction::NORTH());
 }
 
-
-void MainWindow::on_actionEAST_triggered()
-{
+void MainWindow::on_actionEAST_triggered() {
 	if (!current_game || current_game->solver()) return showErrorActionAvailable();
 	movePieceInteractiveAndSolver(tobor::v1_0::direction::EAST());
 }
 
-
-void MainWindow::on_actionSOUTH_triggered()
-{
+void MainWindow::on_actionSOUTH_triggered() {
 	if (!current_game || current_game->solver()) return showErrorActionAvailable();
 	movePieceInteractiveAndSolver(tobor::v1_0::direction::SOUTH());
 }
 
-
-void MainWindow::on_actionWEST_triggered()
-{
+void MainWindow::on_actionWEST_triggered() {
 	if (!current_game || current_game->solver()) return showErrorActionAvailable();
 	movePieceInteractiveAndSolver(tobor::v1_0::direction::WEST());
 }
 
-void MainWindow::on_actionForward_triggered()
-{
+void MainWindow::on_actionForward_triggered() {
 	if (!current_game || !current_game->solver()) return showErrorActionAvailable();
 	current_game->move_by_solver(true);
 	refreshAll();
 }
 
-
-void MainWindow::on_actionBack_triggered()
-{
+void MainWindow::on_actionBack_triggered() {
 	if (!current_game || !current_game->solver()) return showErrorActionAvailable();
 	current_game->move_by_solver(false);
 	refreshAll();
 }
 
-void MainWindow::on_actionStart_Solver_triggered()
-{
+void MainWindow::on_actionStart_Solver_triggered() {
 	if (!current_game || current_game->solver()) showErrorActionAvailable();
 	startSolver();
 }
 
-void MainWindow::on_actionStop_Solver_triggered()
-{
+void MainWindow::on_actionStop_Solver_triggered() {
 	stopSolver();
 }
 
-void MainWindow::on_actionLicense_Information_triggered()
-{
+void MainWindow::on_actionLicense_Information_triggered() {
 	LicenseDialog* dialog = new LicenseDialog(this);
 	dialog->open();
 }
 
-
-void MainWindow::on_listView_doubleClicked(const QModelIndex& index)
-{
+void MainWindow::on_listView_doubleClicked(const QModelIndex& index) {
 	selectSolution(index.row());
 	refreshAll();
 }
 
-void MainWindow::setMenuButtonEnableForNoGame()
-{
+void MainWindow::setMenuButtonEnableForNoGame() {
 	menubar_root.rootMenu->game.actionNewGame->setEnabled(true);
 	menubar_root.rootMenu->game.actionStopGame->setEnabled(false);
 	menubar_root.rootMenu->game.actionStart_Solver->setEnabled(false);
@@ -517,8 +458,7 @@ void MainWindow::setMenuButtonEnableForNoGame()
 	menubar_root.rootMenu->game.menuHistory->setEnabled(true);
 }
 
-void MainWindow::setMenuButtonEnableForInteractiveGame()
-{
+void MainWindow::setMenuButtonEnableForInteractiveGame() {
 	menubar_root.rootMenu->game.actionNewGame->setEnabled(false);
 	menubar_root.rootMenu->game.actionStopGame->setEnabled(true);
 	menubar_root.rootMenu->game.actionStart_Solver->setEnabled(true);
@@ -530,8 +470,7 @@ void MainWindow::setMenuButtonEnableForInteractiveGame()
 	menubar_root.rootMenu->game.menuHistory->setEnabled(false);
 }
 
-void MainWindow::setMenuButtonEnableForSolverGame()
-{
+void MainWindow::setMenuButtonEnableForSolverGame() {
 	menubar_root.rootMenu->game.actionNewGame->setEnabled(false);
 	menubar_root.rootMenu->game.actionStopGame->setEnabled(true);
 	menubar_root.rootMenu->game.actionStart_Solver->setEnabled(false);
@@ -543,62 +482,48 @@ void MainWindow::setMenuButtonEnableForSolverGame()
 	menubar_root.rootMenu->game.menuHistory->setEnabled(false);
 }
 
-void MainWindow::createColorActions()
-{
+void MainWindow::createColorActions() {
 	QMenu* sub = menubar_root.rootMenu->game.menuSelect_Piece;
 
 	sub->clear();
 	// actions are deleted,
 	// according to QSignalMapper's docs, the map entries for these objects will be deleted on their destruction.
 
-
 	for (std::size_t i = 0; i < current_color_vector.colors.size(); ++i) {
 
-		auto action = sub->addAction(
-			current_color_vector.colors[i].UPPERCASE_display_string_with_underscore()
-		);
+		auto action = sub->addAction(current_color_vector.colors[i].UPPERCASE_display_string_with_underscore());
 		// TODO need to add shortcuts (?) STRG+R ...
 
-		inputConnections.push_back(
-			QObject::connect(action, &QAction::triggered, signalMapper, qOverload<>(&QSignalMapper::map), Qt::AutoConnection)
-		);
-		//QObject::connect(action, &QAction::triggered, mainWindow->signalMapper, static_cast<void (QSignalMapper::*)()>(&QSignalMapper::map), Qt::AutoConnection);
+		inputConnections.push_back(QObject::connect(action, &QAction::triggered, signalMapper, qOverload<>(&QSignalMapper::map), Qt::AutoConnection));
+		// QObject::connect(action, &QAction::triggered, mainWindow->signalMapper, static_cast<void (QSignalMapper::*)()>(&QSignalMapper::map), Qt::AutoConnection);
 
 		signalMapper->setMapping(action, static_cast<int>(i));
 	}
 }
 
-void MainWindow::refreshSVG()
-{
+void MainWindow::refreshSVG() {
 	if (current_game) {
 
-		tobor::v1_1::general_piece_shape_selection shape{ tobor::v1_1::general_piece_shape_selection::BALL };
+		tobor::latest::svggen::general_piece_shape_selection shape{ tobor::latest::svggen::general_piece_shape_selection::BALL };
 
-		if (shapeSelectionItems.getSelectedShape() == shapeSelectionItems.duck) {
-			shape = tobor::v1_1::general_piece_shape_selection::DUCK;
-		}
+		if (shapeSelectionItems.getSelectedShape() == shapeSelectionItems.duck) { shape = tobor::latest::svggen::general_piece_shape_selection::DUCK; }
 
 		auto svg_as_string = current_game->svg(current_color_vector, shape);
 
 		viewSvgInMainView(svg_as_string);
-	}
-	else {
+	} else {
 		QGraphicsScene* scene = new QGraphicsScene();
 		ui->graphicsView->setScene(scene);
 	}
 }
 
-void MainWindow::refreshNumberOfSteps()
-{
+void MainWindow::refreshNumberOfSteps() {
 	QString number_of_steps;
-	if (current_game) {
-		number_of_steps = QString::number(current_game->depth());
-	}
+	if (current_game) { number_of_steps = QString::number(current_game->depth()); }
 	statusbarItems.stepsValue->setText(number_of_steps);
 }
 
-void MainWindow::refreshMenuButtonEnable()
-{
+void MainWindow::refreshMenuButtonEnable() {
 	if (!current_game) return setMenuButtonEnableForNoGame();
 
 	if (current_game->solver()) return setMenuButtonEnableForSolverGame();
@@ -606,47 +531,38 @@ void MainWindow::refreshMenuButtonEnable()
 	return setMenuButtonEnableForInteractiveGame();
 }
 
-void MainWindow::refreshStatusbar()
-{
+void MainWindow::refreshStatusbar() {
 	if (current_game) {
 		auto current_color = current_color_vector.colors[current_game->selected_piece_color_id()].getQColor();
 		statusbarItems.setSelectedPiece(current_color);
-	}
-	else {
+	} else {
 		statusbarItems.setSelectedPiece(Qt::darkGray);
 	}
 	refreshNumberOfSteps();
 }
 
-void MainWindow::refreshSolutionPaths()
-{
+void MainWindow::refreshSolutionPaths() {
 	static QStringListModel* model{ nullptr };
 
-	if (model == nullptr) {
-		model = new QStringListModel();
-	}
+	if (model == nullptr) { model = new QStringListModel(); }
 
 	auto permutated_color_vector = current_color_vector;
 
 	QStringList qStringList;
 
-	if (current_game) {
-		qStringList = current_game->optimal_solutions_list(permutated_color_vector);
-	}
+	if (current_game) { qStringList = current_game->optimal_solutions_list(permutated_color_vector); }
 
 	model->setStringList(qStringList);
 
 	ui->listView->setModel(model); // not needed multiple times ###
 }
 
-void MainWindow::refreshHistory()
-{
+void MainWindow::refreshHistory() {
 	QMenu* sub = menubar_root.rootMenu->game.menuHistory;
 
 	sub->clear();
 	// actions are deleted,
 	// according to QSignalMapper's docs, the map entries for these objects will be deleted on their destruction.
-
 
 	for (std::size_t i = 0; i < factory_history.size(); ++i) {
 
@@ -655,22 +571,16 @@ void MainWindow::refreshHistory()
 		const auto world_counter{ factory_history[i_reverse]->get_world_generator_counter() };
 		const auto state_counter{ factory_history[i_reverse]->get_state_generator_counter() };
 
-		auto action = sub->addAction(
-			QString::number(i_reverse + 1) + " :    " + QString::number(world_counter) + " : " + QString::number(state_counter)
-		);
+		auto action = sub->addAction(QString::number(i_reverse + 1) + " :    " + QString::number(world_counter) + " : " + QString::number(state_counter));
 
 		QObject::connect(action, &QAction::triggered, historySignalMapper, qOverload<>(&QSignalMapper::map), Qt::AutoConnection);
 
 		historySignalMapper->setMapping(action, static_cast<int>(i_reverse));
 	}
-
 }
 
-void MainWindow::highlightGeneratedTargetCells()
-{
-	if (!current_game) {
-		return showErrorDialog("Target cell markers not supported without running a game");
-	}
+void MainWindow::highlightGeneratedTargetCells() {
+	if (!current_game) { return showErrorDialog("Target cell markers not supported without running a game"); }
 	std::pair<std::string, std::size_t> svg_and_count = factory_history.back()->svg_highlighted_targets();
 
 	viewSvgInMainView(svg_and_count.first);
@@ -680,8 +590,7 @@ void MainWindow::highlightGeneratedTargetCells()
 	ui->statusbar->showMessage(m);
 }
 
-void MainWindow::refreshAll()
-{
+void MainWindow::refreshAll() {
 	refreshSVG();
 	refreshStatusbar();
 	refreshMenuButtonEnable();
@@ -690,16 +599,16 @@ void MainWindow::refreshAll()
 }
 
 void MainWindow::StatusbarItems::init(QStatusBar* statusbar) {
-	stepsKey = new QLabel(statusbar); // parent takes ownership
+	stepsKey   = new QLabel(statusbar); // parent takes ownership
 	stepsValue = new QLabel(statusbar); // parent takes ownership
 
-	boardIdKey = new QLabel(statusbar);
+	boardIdKey   = new QLabel(statusbar);
 	boardIdValue = new QLabel(statusbar);
 
-	solverKey = new QLabel(statusbar);
+	solverKey   = new QLabel(statusbar);
 	solverValue = new QLabel(statusbar);
 
-	pieceSelectedKey = new QLabel(statusbar);
+	pieceSelectedKey   = new QLabel(statusbar);
 	pieceSelectedValue = new QLabel(statusbar);
 	pieceSelectedValue->setMinimumSize(15, 15);
 	pieceSelectedValue->setMaximumSize(15, 15);
@@ -715,18 +624,18 @@ void MainWindow::StatusbarItems::init(QStatusBar* statusbar) {
 	statusbar->addPermanentWidget(pieceSelectedKey);
 	statusbar->addPermanentWidget(pieceSelectedValue);
 
-	statusbar->addPermanentWidget(stepsKey); // parent is replaced?
+	statusbar->addPermanentWidget(stepsKey);   // parent is replaced?
 	statusbar->addPermanentWidget(stepsValue); // parent is replaced?
 
 	setSelectedPiece(Qt::darkGray);
 
 	stepsKey->setText("Steps:");
 
-	//QString number_of_steps = QString::number(0);
-	//stepsValue->setText(number_of_steps);
+	// QString number_of_steps = QString::number(0);
+	// stepsValue->setText(number_of_steps);
 
-	//stepsKey->hide();
-	//stepsValue->hide();
+	// stepsKey->hide();
+	// stepsValue->hide();
 
 	boardIdKey->setText("Board:");
 
@@ -735,8 +644,7 @@ void MainWindow::StatusbarItems::init(QStatusBar* statusbar) {
 	pieceSelectedKey->setText("Piece:");
 }
 
-void MainWindow::StatusbarItems::setSelectedPiece(const QColor& c)
-{
+void MainWindow::StatusbarItems::setSelectedPiece(const QColor& c) {
 	QPixmap pm(QUADRATIC_COLOR_LABEL_SIZE, QUADRATIC_COLOR_LABEL_SIZE);
 
 	pm.fill(c);
@@ -755,10 +663,11 @@ void MainWindow::StatusbarItems::setSelectedPiece(const QColor& c)
 }
 
 void MainWindow::selectPieceByColor(int index) {
-	selectPieceByColorId(index); // where to check range correctness? SignalMapper should not fire an int greater than color vector, make some additional check here (or somewhere else?)
+	selectPieceByColorId(index); // where to check range correctness? SignalMapper should not fire an int greater than color vector, make some additional check here (or
+	                             // somewhere else?)
 }
 
-template<class QMenu_OR_QMenuBar>
+template <class QMenu_OR_QMenuBar>
 inline void menu_recursion(QMenu_OR_QMenuBar* m) {
 	m->setEnabled(true);
 	for (QAction* item : m->actions()) {
@@ -766,29 +675,24 @@ inline void menu_recursion(QMenu_OR_QMenuBar* m) {
 		item->setEnabled(true);
 
 		if (item->isSeparator()) {
-		}
-		else if (item->menu()) {
+		} else if (item->menu()) {
 			QMenu* sub = item->menu();
 			menu_recursion(sub);
-		}
-		else /* normal action */ {
+		} else /* normal action */ {
 		}
 	}
 }
 
-
-void MainWindow::on_actionEnableAllMenuBarItems_triggered()
-{
+void MainWindow::on_actionEnableAllMenuBarItems_triggered() {
 	menu_recursion(menubar_root.menubar);
 }
 
-void MainWindow::on_action22ReferenceGame_triggered()
-{
+void MainWindow::on_action22ReferenceGame_triggered() {
 	startReferenceGame22();
 }
 
 void MainWindow::ShapeSelectionItems::createInsideQMenu(MainWindow* mainWindow, QMenu* qMenu) {
-	(void)mainWindow;
+	(void) mainWindow;
 
 	group = new QActionGroup(qMenu);
 
@@ -800,7 +704,6 @@ void MainWindow::ShapeSelectionItems::createInsideQMenu(MainWindow* mainWindow, 
 	duck->setObjectName("actionDuck");
 	swan->setObjectName("actionSwan");
 	swan->setEnabled(false);
-
 
 	ball->setText(QString("&Ball"));
 	duck->setText(QString("&Duck"));
@@ -817,27 +720,17 @@ void MainWindow::ShapeSelectionItems::createInsideQMenu(MainWindow* mainWindow, 
 	group->addAction(ball);
 	group->addAction(duck);
 	group->addAction(swan);
-	//group->setExclusionPolicy(QActionGroup::ExclusionPolicy::Exclusive); not available on older Qt5 versions. :(
+	// group->setExclusionPolicy(QActionGroup::ExclusionPolicy::Exclusive); not available on older Qt5 versions. :(
 	group->setExclusive(true);
 	ball->setChecked(true);
 
 	QObject::connect(group, &QActionGroup::triggered, mainWindow, &MainWindow::refreshAll, Qt::AutoConnection);
-
 }
 
 QAction* MainWindow::ShapeSelectionItems::getSelectedShape() const {
-	if (ball->isChecked()) {
-		return ball;
-	}
-	if (duck->isChecked()) {
-		return duck;
-	}
-	if (swan->isChecked()) {
-		return swan;
-	}
+	if (ball->isChecked()) { return ball; }
+	if (duck->isChecked()) { return duck; }
+	if (swan->isChecked()) { return swan; }
 	ball->setChecked(true);
 	return ball;
 }
-
-
-
