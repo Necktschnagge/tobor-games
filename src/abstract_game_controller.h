@@ -121,8 +121,7 @@ public:
 	/**
 	 *	@brief Returns an svg of the game's current state.
 	 */
-	virtual std::string svg(const tobor::v1_1::color_vector&                            current_color_vector,
-	                        const tobor::latest::svggen::general_piece_shape_selection& shape = tobor::latest::svggen::general_piece_shape_selection::BALL) const = 0;
+	virtual std::string svg(const tobor::v1_1::color_vector& current_color_vector, const tobor::v1_1::general_piece_shape_selection& shape = tobor::v1_1::general_piece_shape_selection::BALL) const = 0;
 
 	/**
 	 *	@brief Selects a piece by its id.
