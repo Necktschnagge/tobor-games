@@ -457,7 +457,7 @@ namespace tobor {
 			}
 
 			/**
-			*	@brief Extracts the simple_state_bigraph containing all optimal solutions for reaching \p target_cell.
+			*	@brief Extracts the simple_state_digraph containing all optimal solutions for reaching \p target_cell.
 			*
 			*	@details Explores the state space according to \p policy
 			*/
@@ -465,11 +465,11 @@ namespace tobor {
 			void get_simple_bigraph(
 				const move_engine_type& engine,
 				const cell_id_type& target_cell,
-				simple_state_bigraph<positions_of_pieces_type, State_Label_T>& destination,
+				simple_state_digraph<positions_of_pieces_type, State_Label_T>& destination,
 				const exploration_policy& policy = exploration_policy::ONLY_EXPLORED(),
 				const size_type& min_length_hint = 0
 			) {
-				using bigraph = simple_state_bigraph<positions_of_pieces_type, State_Label_T>;
+				using bigraph = simple_state_digraph<positions_of_pieces_type, State_Label_T>;
 
 				destination.clear();
 

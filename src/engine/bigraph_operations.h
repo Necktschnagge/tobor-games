@@ -27,8 +27,8 @@ namespace tobor {
 
 				struct bigraph_simulation_copy {
 
-				using source_bigraph_type = tobor::v1_1::simple_state_bigraph<Source_State_T, Source_Decoration_T>;
-				using destination_bigraph_type = tobor::v1_1::simple_state_bigraph<Destination_State_T, Destination_Decoration_T>;
+				using source_bigraph_type = tobor::v1_1::simple_state_digraph<Source_State_T, Source_Decoration_T>;
+				using destination_bigraph_type = tobor::v1_1::simple_state_digraph<Destination_State_T, Destination_Decoration_T>;
 
 				using source_map_const_iterator = typename source_bigraph_type::map_const_iterator_type;
 				using destination_map_iterator = typename destination_bigraph_type::map_iterator_type;
