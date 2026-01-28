@@ -1,7 +1,7 @@
 #pragma once
 
 #include "move_engine.h"
-#include "../models/simple_state_bigraph.h"
+#include "../models/simple_state_digraph.h"
 
 namespace tobor {
 	namespace v1_1 {

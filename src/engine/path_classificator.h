@@ -1,7 +1,7 @@
 #pragma once
 
 #include "../models/state_path.h"
-#include "../models/simple_state_bigraph.h"
+#include "../models/simple_state_digraph.h"
 
 #include <vector>
 

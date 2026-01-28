@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../models/simple_state_bigraph.h"
+#include "../models/simple_state_digraph.h"
 
 #include <vector>
 
