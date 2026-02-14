@@ -162,7 +162,7 @@ struct Menu_Main_Developer {
 	QAction* actionHighlightGeneratedTargetCells;
 	QAction* actionEnableAllMenuBarItems;
 	QAction* action22ReferenceGame;
-
+	QAction* actionViewSVGInput;
 
 	Menu_Main_Developer(QMenuBar* menubar) {
 
@@ -181,9 +181,14 @@ struct Menu_Main_Developer {
 		action22ReferenceGame->setObjectName("action22ReferenceGame");
 		action22ReferenceGame->setEnabled(true);
 
+		actionViewSVGInput = new QAction(menuDeveloper);
+		actionViewSVGInput->setObjectName("actionViewSVGInput");
+		actionViewSVGInput->setEnabled(true);
+
 		menuDeveloper->addAction(actionHighlightGeneratedTargetCells);
 		menuDeveloper->addAction(actionEnableAllMenuBarItems);
 		menuDeveloper->addAction(action22ReferenceGame);
+		menuDeveloper->addAction(actionViewSVGInput);
 	}
 };
 

@@ -7,6 +7,7 @@
 #include "cyclic_group_game_factory.h"
 
 #include "gui/main_menu.h"
+#include "gui/text_input_dialog.h"
 
 #include <QMainWindow>
 #include <QSvgRenderer>
@@ -106,6 +107,8 @@ private:
 	void startGame();
 private Q_SLOTS:
 	void startGameFromHistory(int index);
+
+	void showSVGFromInputDialog();
 private:
 	void startReferenceGame22();
 	void stopGame();
@@ -128,6 +131,7 @@ private Q_SLOTS:
 	void on_actionHighlightGeneratedTargetCells_triggered();
 	void on_actionEnableAllMenuBarItems_triggered();
 	void on_action22ReferenceGame_triggered();
+	void on_actionViewSVGInput_triggered();
 	void on_actionAbout_triggered();
 	void on_actionNewGame_triggered();
 	void on_actionStopGame_triggered();
@@ -212,6 +216,9 @@ private:
 
 	tobor::v1_0::color_vector current_color_vector;
 
+	QString svg_input_dialog_string;
+
+	TextInputDialog* svg_input_dialog{ nullptr };
 
 private Q_SLOTS:
 

@@ -5,6 +5,9 @@
 #include "models/dynamic_rectangle_world.h"
 
 #include "svg_1_0.h"
+#include "svg/res/swan.h"
+
+#include <regex>
 
 namespace tobor {
 
@@ -303,9 +306,122 @@ namespace tobor {
 			virtual ~ball_piece_drawer() {}
 		};
 
+		template<class WorldType>
+		class nested_svg_piece_drawer : public piece_drawer<WorldType> {
+		public:
+
+			using world_type = WorldType;
+
+			using base_type = piece_drawer<world_type>;
+
+			using cell_id_type = typename base_type::cell_id_type;
+
+
+		private:
+
+			double param{ 0.2 };
+
+			inline double weighted_sum(double from, double to) {
+				return (1.0 - param) * from + param * to;
+			}
+
+			std::string _nested_svg;
+
+			inline void remove_spaces_front_back(std::string& s) {
+
+				while (!s.empty()) {
+					const char f = s.front();
+					const char b = s.back();
+					if (
+						f == ' ' ||
+						f == '\t' || f == '\v' ||
+						f == '\n' || f == '\r' ||
+						f == '\f'
+						) {
+						s.erase(s.begin());
+						continue;
+					}
+					if (
+						b == ' ' ||
+						b == '\t' || b == '\v' ||
+						b == '\n' || b == '\r' ||
+						b == '\f'
+						) {
+						s.erase(std::prev(s.end()));
+						continue;
+					}
+
+					return;
+				}
+
+			}
+
+		public:
+			nested_svg_piece_drawer(const std::string& nested_svg) : _nested_svg(nested_svg) {
+				remove_spaces_front_back(_nested_svg);
+			}
+
+			virtual std::unique_ptr<svg::svg_generator> operator()(
+				const world_type& tobor_world,
+				const drawing_style_sheet& dss,
+				const cell_id_type& cell,
+				const std::string& color
+				) override {
+
+
+				const auto CELL_CORNER_WEST_x = dss.LEFT_PADDING + dss.CELL_WIDTH * cell.get_x_coord(tobor_world);
+				const auto CELL_CORNER_NORTH_y = dss.TOP_PADDING + dss.CELL_HEIGHT * (tobor_world.get_vertical_size() - cell.get_y_coord(tobor_world) - 1);
+
+				dss.HORIZONTAL_PIECE_PADDING;
+				dss.VERTICAL_PIECE_PADDING;
+
+				const auto PIECE_FRAME_x = CELL_CORNER_WEST_x + dss.HORIZONTAL_PIECE_PADDING;
+				const auto PIECE_FRAME_y = CELL_CORNER_NORTH_y + dss.VERTICAL_PIECE_PADDING;
+
+				const auto PIECE_FRAME_WIDTH = dss.CELL_WIDTH - dss.HORIZONTAL_PIECE_PADDING * 2;
+				const auto PIECE_FRAME_HEIGHT = dss.CELL_HEIGHT - dss.VERTICAL_PIECE_PADDING * 2;
+
+
+				std::string header = R"xxx(<svg x = "XXXX" y = "YYYY" height = "HHHH" width = "WWWW">)xxx";
+
+				header = std::regex_replace(header, std::regex("XXXX"), std::to_string(PIECE_FRAME_x));
+				header = std::regex_replace(header, std::regex("YYYY"), std::to_string(PIECE_FRAME_y));
+				header = std::regex_replace(header, std::regex("HHHH"), std::to_string(PIECE_FRAME_HEIGHT));
+				header = std::regex_replace(header, std::regex("WWWW"), std::to_string(PIECE_FRAME_WIDTH));
+
+
+				const std::string footer = R"xxx(</svg>)xxx";
+
+				std::string result;
+
+				result += header;
+				result += _nested_svg;
+				result += footer;
+
+				// replace fedcba by the color.
+				result = std::regex_replace(result, std::regex("#fedcba"), color);
+				result = std::regex_replace(result, std::regex("id=\".*?\""), "");
+				result = std::regex_replace(result, std::regex("\n"), " ");
+				auto length = result.length();
+				do {
+					
+					length = result.length();
+					result = std::regex_replace(result, std::regex("  "), " ");
+
+				} while (length != result.length());
+
+
+				return std::make_unique<svg::svg_primitive>(result);
+			}
+
+
+			virtual ~nested_svg_piece_drawer() override {}
+		};
+
 		enum class general_piece_shape_selection {
 			BALL,
-			DUCK
+			DUCK,
+			SWAN
 		};
 
 		template<class World_Type, class Positions_Of_Pieces_Type_T>
@@ -342,7 +458,7 @@ namespace tobor {
 
 			using piece_shape_selection = general_piece_shape_selection;
 
-			
+
 
 		private:
 
@@ -598,6 +714,11 @@ namespace tobor {
 				}
 				else if (shape == piece_shape_selection::DUCK) {
 					piece_drawer = std::make_unique<duck_piece_drawer<world_type>>();
+				}
+				else if (shape == piece_shape_selection::SWAN) {
+					piece_drawer = std::make_unique<nested_svg_piece_drawer<world_type>>(
+						tobor::v1_1::svg_ressources::swan()
+					);
 				}
 				else {
 					throw std::invalid_argument("Unknown shape in SVG draw process.");
