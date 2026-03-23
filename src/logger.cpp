@@ -1,36 +1,50 @@
 #include "predefined.h"
+
 #include "logger.h"
 
-#include "internal_error.h"
+#include <spdlog/sinks/basic_file_sink.h>
+#include <spdlog/sinks/stdout_color_sinks.h>
+#include <spdlog/spdlog.h>
 
-#include "spdlog/spdlog.h"
-#include "spdlog/sinks/ostream_sink.h"
-
+#include <chrono>
+#include <iomanip>
 #include <iostream>
-
+#include <sstream>
 
 namespace {
+	inline constexpr std::string_view STANDARD_LOGGER_NAME = "main";
 
-	const std::string STANDARD_LOGGER_NAME{ "main" };
+	std::string make_timestamp_based_file_name_for_log() {
+		auto        now = std::chrono::system_clock::now();
+		std::time_t t   = std::chrono::system_clock::to_time_t(now);
+		std::tm     tm{};
+		localtime_s(&tm, &t);
+		std::ostringstream oss;
+		oss << std::put_time(&tm, "%Y-%m-%d_%H-%M-%S") << ".log";
+		return oss.str();
+	}
 
+	void setup_default_logger(const std::vector<spdlog::sink_ptr>& sinks) {
+		auto logger = std::make_shared<spdlog::logger>(STANDARD_LOGGER_NAME.data(), sinks.cbegin(), sinks.cend());
+
+		spdlog::set_default_logger(logger);
+		spdlog::set_pattern("[%Y-%m-%d %H:%M:%S.%e] [%n] [%l] %v");
+		spdlog::set_level(spdlog::level::debug);
+		spdlog::flush_on(spdlog::level::info);
+	}
+
+	std::vector<spdlog::sink_ptr> create_sinks(bool use_console_sink, bool use_file_sink) {
+		std::vector<spdlog::sink_ptr> sinks;
+
+		if (use_console_sink) { sinks.emplace_back(std::make_shared<spdlog::sinks::stdout_color_sink_mt>()); }
+		if (use_file_sink) { sinks.emplace_back(std::make_shared<spdlog::sinks::basic_file_sink_mt>(make_timestamp_based_file_name_for_log(), true)); }
+
+		return sinks;
+	}
+
+} // namespace
+
+void init_logger(bool use_console_sink, bool use_file_sink) {
+	auto sinks = create_sinks(use_console_sink, use_file_sink);
+	setup_default_logger(sinks);
 }
-
-
-std::shared_ptr<spdlog::logger> standard_logger() {
-	auto s_ptr = spdlog::get(STANDARD_LOGGER_NAME);
-	fsl::internal_error::assert_true(s_ptr.operator bool(), "The standard logger has not been registered.");
-	return s_ptr;
-	// when returning raw pointer a warning is logged since the shared_ptr will be destroyed, but the underlying pointer will be retained
-}
-
-void init_logger() {
-	auto sink_std_cout = std::make_shared<spdlog::sinks::ostream_sink_mt>(std::cout);
-
-	auto standard_logger = std::make_shared<spdlog::logger>(STANDARD_LOGGER_NAME, sink_std_cout);
-
-	standard_logger->set_level(spdlog::level::trace);
-
-	spdlog::register_logger(standard_logger);
-}
-
-
