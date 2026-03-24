@@ -15,13 +15,9 @@ namespace {
 	inline constexpr std::string_view STANDARD_LOGGER_NAME = "main";
 
 	std::string make_timestamp_based_file_name_for_log() {
-		auto        now = std::chrono::system_clock::now();
-		std::time_t t   = std::chrono::system_clock::to_time_t(now);
-		std::tm     tm{};
-		localtime_s(&tm, &t);
-		std::ostringstream oss;
-		oss << std::put_time(&tm, "%Y-%m-%d_%H-%M-%S") << ".log";
-		return oss.str();
+		auto now = std::chrono::system_clock::now();
+		auto now_seconds = std::chrono::floor<std::chrono::seconds>(now);
+		return std::format("{:%Y-%m-%d_%H-%M-%S}.log", now_seconds);
 	}
 
 	void setup_default_logger(const std::vector<spdlog::sink_ptr>& sinks) {
