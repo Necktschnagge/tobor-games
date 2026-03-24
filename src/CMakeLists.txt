@@ -94,6 +94,7 @@ else()
 endif()
 
 target_link_libraries(${PROJECT_NAME_LIB} PRIVATE Threads::Threads)
+target_link_libraries(${PROJECT_NAME_LIB} PRIVATE CLI11::CLI11)
 
 if(NOT MSVC)
 	target_link_libraries(${PROJECT_NAME_LIB} PRIVATE TBB::tbb)

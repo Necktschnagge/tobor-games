@@ -1,7 +1,9 @@
 #include "predefined.h"
 
-#include "mainwindow.h"
+#include "cli.h"
 #include "debug_utils.h"
+#include "logger.h"
+#include "mainwindow.h"
 
 #include <QApplication>
 

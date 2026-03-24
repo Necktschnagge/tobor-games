@@ -2,7 +2,7 @@
 /*
 
 TODO: check / implement correct handling of each cli_config member
-TODO: change the log file default bqack to false
+TODO: change the log file default back to false
 */
 
 #include <CLI/CLI.hpp>
