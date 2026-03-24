@@ -4,20 +4,23 @@ file(GLOB_RECURSE ALL_SOURCE_FILES LIST_DIRECTORIES true *.h *.cpp *.ui)
 
 
 ############### Target via add_executable ###############
-if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
-	qt_add_executable(${PROJECT_NAME} MANUAL_FINALIZATION ${ALL_SOURCE_FILES})
-# Define target properties for Android with Qt 6 as:
-#    set_property(TARGET ${PROJECT_NAME} APPEND PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR
-#                 ${CMAKE_CURRENT_SOURCE_DIR}/android)
-# For more information, see https://doc.qt.io/qt-6/qt-add-executable.html#target-creation
+if (WIN32)
+	qt_add_executable(
+		${PROJECT_NAME}
+		MANUAL_FINALIZATION
+		WIN32
+		${ALL_SOURCE_FILES}
+	)
+	# Define target properties for Android with Qt 6 as:
+	#    set_property(TARGET ${PROJECT_NAME} APPEND PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR
+	#                 ${CMAKE_CURRENT_SOURCE_DIR}/android)
+	# For more information, see https://doc.qt.io/qt-6/qt-add-executable.html#target-creation
 else()
-	if(ANDROID)
-		add_library(${PROJECT_NAME} SHARED ${ALL_SOURCE_FILES})
-# Define properties for Android with Qt 5 after find_package() calls as:
-#    set(ANDROID_PACKAGE_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/android")
-	else()
-		add_executable(${PROJECT_NAME} ${ALL_SOURCE_FILES})
-	endif()
+	qt_add_executable(
+		${PROJECT_NAME}
+		MANUAL_FINALIZATION
+		${ALL_SOURCE_FILES}
+	)
 endif()
 
 
@@ -37,6 +40,7 @@ else()
 endif()
 
 target_link_libraries(${PROJECT_NAME} PRIVATE Threads::Threads)
+target_link_libraries(${PROJECT_NAME} PRIVATE CLI11::CLI11)
 
 if(NOT MSVC)
 	target_link_libraries(${PROJECT_NAME} PRIVATE TBB::tbb)
