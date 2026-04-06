@@ -5,14 +5,21 @@ set(CMAKE_WIN32_EXECUTABLE OFF)
 
 ############### Subdirectories for dependencies ###############
 set(gtest_force_shared_crt ON CACHE BOOL "Always use msvcrt.dll" FORCE)
-set(SPDLOG_FMT_EXTERNAL ON CACHE BOOL "" FORCE)
-set(SPDLOG_FMT_EXTERNAL_HO ON CACHE BOOL "" FORCE)
 
+
+# Since we use fmt directly and spdlog -> fmt, we need to tell spdlog to use our fmt version.
+
+#set(SPDLOG_FMT_EXTERNAL ON CACHE BOOL "" FORCE) # use external binary
+set(SPDLOG_FMT_EXTERNAL_HO ON CACHE BOOL "" FORCE) # use external header only
+
+add_subdirectory(extern/fmt)
+add_subdirectory(extern/spdlog)
+
+add_subdirectory(extern/json)
+
+add_subdirectory(extern/CLI11)
 
 add_subdirectory(extern/googletest)
-add_subdirectory(extern/spdlog)
-add_subdirectory(extern/json)
-add_subdirectory(extern/CLI11)
 
 
 
