@@ -22,20 +22,15 @@ endif()
 
 
 ############### Libraries via target_link_libraries ###############
-if(USE_QT6)
-    target_link_libraries(${PROJECT_NAME} PRIVATE
+target_link_libraries(${PROJECT_NAME} PRIVATE
 	Qt${QT_VERSION_MAJOR}::Widgets
 	Qt${QT_VERSION_MAJOR}::Svg
 	Qt${QT_VERSION_MAJOR}::SvgWidgets
-	)
-else()
-    target_link_libraries(${PROJECT_NAME} PRIVATE
-	Qt${QT_VERSION_MAJOR}::Widgets
-	Qt${QT_VERSION_MAJOR}::Svg
-	)
-endif()
+)
 
 target_link_libraries(${PROJECT_NAME} PRIVATE Threads::Threads)
+target_link_libraries(${PROJECT_NAME} PRIVATE fmt::fmt-header-only)
+target_link_libraries(${PROJECT_NAME} PRIVATE spdlog::spdlog_header_only)
 target_link_libraries(${PROJECT_NAME} PRIVATE CLI11::CLI11)
 
 if(NOT MSVC)
@@ -94,6 +89,8 @@ else()
 endif()
 
 target_link_libraries(${PROJECT_NAME_LIB} PRIVATE Threads::Threads)
+target_link_libraries(${PROJECT_NAME_LIB} PRIVATE fmt::fmt-header-only)
+target_link_libraries(${PROJECT_NAME_LIB} PRIVATE spdlog::spdlog_header_only)
 target_link_libraries(${PROJECT_NAME_LIB} PRIVATE CLI11::CLI11)
 
 if(NOT MSVC)
