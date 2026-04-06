@@ -90,6 +90,7 @@ int main(int argc, char* argv[]) {
 
 	// DEBUG ->
 	config.log_console = true;
+	config.log_file    = true;
 	// <- DEBUG
 
 	interpret_cli_config(config);
