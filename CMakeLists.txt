@@ -15,6 +15,7 @@ set(SPDLOG_FMT_EXTERNAL_HO ON CACHE BOOL "" FORCE) # use external header only
 set(FMT_TEST OFF CACHE BOOL "" FORCE)
 set(FMT_DOC OFF CACHE BOOL "" FORCE)
 
+set(JSON_BuildTests OFF CACHE INTERNAL "")
 
 add_subdirectory(extern/fmt)
 add_subdirectory(extern/spdlog)
