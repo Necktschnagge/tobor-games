@@ -7,7 +7,7 @@
 #include <spdlog/spdlog.h>
 
 #include <chrono>
-#include <fmt/format>
+#include <fmt/format.h>
 #include <iomanip>
 #include <iostream>
 #include <sstream>
