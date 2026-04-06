@@ -1,17 +1,12 @@
 file(GLOB_RECURSE TEST_SOURCES LIST_DIRECTORIES false *.h *.cpp)
 
-
-
-############### Target via add_executable ###############
 add_executable(${TEST_PROJECT_NAME} ${TEST_SOURCES})
 
+# Link the static library FIRST so all dependencies propagate
+target_link_libraries(${TEST_PROJECT_NAME} PRIVATE
+    ${PROJECT_NAME_LIB}
+    gtest
+    gtest_main
+)
 
-
-############### Test via add_test ###############
-add_test(NAME ${TEST_PROJECT_NAME} COMMAND ${TEST_PROJECT_NAME}) # what does command mean in detail?
-
-
-
-############### Libraries via target_link_libraries ###############
-target_link_libraries(${TEST_PROJECT_NAME} PRIVATE Threads::Threads)
-target_link_libraries(${TEST_PROJECT_NAME} PUBLIC ${PROJECT_NAME_LIB} gtest)
+add_test(NAME ${TEST_PROJECT_NAME} COMMAND ${TEST_PROJECT_NAME})
