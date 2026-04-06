@@ -26,6 +26,14 @@ endif()
 
 
 
+############### Make sure depending targets inherit include directories ###############
+target_include_directories(${PROJECT_NAME_LIB}
+    PUBLIC
+        ${CMAKE_CURRENT_SOURCE_DIR}
+)
+
+
+
 ############### Target Finalize ###############
 qt_finalize_target(${PROJECT_NAME_LIB})
 
