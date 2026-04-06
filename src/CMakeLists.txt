@@ -31,6 +31,7 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
 target_link_libraries(${PROJECT_NAME} PRIVATE Threads::Threads)
 target_link_libraries(${PROJECT_NAME} PRIVATE fmt::fmt-header-only)
 target_link_libraries(${PROJECT_NAME} PRIVATE spdlog::spdlog_header_only)
+target_link_libraries(${PROJECT_NAME} PRIVATE nlohmann_json::nlohmann_json)
 target_link_libraries(${PROJECT_NAME} PRIVATE CLI11::CLI11)
 
 if(NOT MSVC)
@@ -91,6 +92,7 @@ endif()
 target_link_libraries(${PROJECT_NAME_LIB} PRIVATE Threads::Threads)
 target_link_libraries(${PROJECT_NAME_LIB} PRIVATE fmt::fmt-header-only)
 target_link_libraries(${PROJECT_NAME_LIB} PRIVATE spdlog::spdlog_header_only)
+target_link_libraries(${PROJECT_NAME_LIB} PRIVATE nlohmann_json::nlohmann_json)
 target_link_libraries(${PROJECT_NAME_LIB} PRIVATE CLI11::CLI11)
 
 if(NOT MSVC)
