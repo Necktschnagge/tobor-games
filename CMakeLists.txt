@@ -12,6 +12,10 @@ set(gtest_force_shared_crt ON CACHE BOOL "Always use msvcrt.dll" FORCE)
 #set(SPDLOG_FMT_EXTERNAL ON CACHE BOOL "" FORCE) # use external binary
 set(SPDLOG_FMT_EXTERNAL_HO ON CACHE BOOL "" FORCE) # use external header only
 
+set(FMT_TEST OFF CACHE BOOL "" FORCE)
+set(FMT_DOC OFF CACHE BOOL "" FORCE)
+
+
 add_subdirectory(extern/fmt)
 add_subdirectory(extern/spdlog)
 
