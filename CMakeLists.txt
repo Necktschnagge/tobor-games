@@ -5,8 +5,13 @@ set(CMAKE_WIN32_EXECUTABLE OFF)
 
 ############### Subdirectories for dependencies ###############
 set(gtest_force_shared_crt ON CACHE BOOL "Always use msvcrt.dll" FORCE)
-add_subdirectory(extern/googletest)
+set(SPDLOG_FMT_EXTERNAL ON CACHE BOOL "" FORCE)
+set(SPDLOG_FMT_EXTERNAL_HO ON CACHE BOOL "" FORCE)
 
+
+add_subdirectory(extern/googletest)
+add_subdirectory(extern/spdlog)
+add_subdirectory(extern/json)
 add_subdirectory(extern/CLI11)
 
 
@@ -78,8 +83,8 @@ endif()
 
 
 ############### Libraries via include_directories ###############
-include_directories(SYSTEM extern/spdlog/include)
-include_directories(SYSTEM extern/json/include)
+#include_directories(SYSTEM extern/spdlog/include)
+#include_directories(SYSTEM extern/json/include)
 
 
 
