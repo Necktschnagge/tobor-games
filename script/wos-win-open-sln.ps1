@@ -1,1 +1,1 @@
-../build/Tobor.sln
+../build/Tobor.sln*
