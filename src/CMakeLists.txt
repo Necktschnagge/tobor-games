@@ -6,8 +6,6 @@ file(GLOB_RECURSE ALL_SOURCE_FILES LIST_DIRECTORIES true *.h *.cpp *.ui)
 ############### Target via add_library ###############
 qt_add_library(${PROJECT_NAME_LIB} STATIC MANUAL_FINALIZATION ${ALL_SOURCE_FILES})
 
-
-
 ############### Libraries via target_link_libraries ###############
 target_link_libraries(${PROJECT_NAME_LIB} PUBLIC
 	Qt${QT_VERSION_MAJOR}::Widgets
@@ -71,6 +69,12 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
 	WIN32_EXECUTABLE TRUE
 )
 
+set_property(TARGET ${PROJECT_NAME_LIB} PROPERTY MSVC_MP_FLAG "")
+set_target_properties(${PROJECT_NAME_LIB} PROPERTIES UNITY_BUILD OFF)
+set_target_properties(${PROJECT_NAME_LIB} PROPERTIES
+    DISABLE_PRECOMPILE_HEADERS ON
+)
+#target_compile_options(${PROJECT_NAME_LIB} PRIVATE /MP0)
 
 
 ############### Install executable ###############
