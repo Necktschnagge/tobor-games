@@ -9,19 +9,19 @@ qt_add_library(${PROJECT_NAME_LIB} STATIC MANUAL_FINALIZATION ${ALL_SOURCE_FILES
 
 
 ############### Libraries via target_link_libraries ###############
-target_link_libraries(${PROJECT_NAME_LIB} PRIVATE
+target_link_libraries(${PROJECT_NAME_LIB} PUBLIC
 	Qt${QT_VERSION_MAJOR}::Widgets
 	Qt${QT_VERSION_MAJOR}::Svg
 	Qt${QT_VERSION_MAJOR}::SvgWidgets
 )
-target_link_libraries(${PROJECT_NAME_LIB} PRIVATE Threads::Threads)
-target_link_libraries(${PROJECT_NAME_LIB} PRIVATE fmt::fmt-header-only)
-target_link_libraries(${PROJECT_NAME_LIB} PRIVATE spdlog::spdlog_header_only)
-target_link_libraries(${PROJECT_NAME_LIB} PRIVATE nlohmann_json::nlohmann_json)
-target_link_libraries(${PROJECT_NAME_LIB} PRIVATE CLI11::CLI11)
+target_link_libraries(${PROJECT_NAME_LIB} PUBLIC Threads::Threads)
+target_link_libraries(${PROJECT_NAME_LIB} PUBLIC fmt::fmt-header-only)
+target_link_libraries(${PROJECT_NAME_LIB} PUBLIC spdlog::spdlog_header_only)
+target_link_libraries(${PROJECT_NAME_LIB} PUBLIC nlohmann_json::nlohmann_json)
+target_link_libraries(${PROJECT_NAME_LIB} PUBLIC CLI11::CLI11)
 
 if(NOT MSVC)
-	target_link_libraries(${PROJECT_NAME_LIB} PRIVATE TBB::tbb)
+	target_link_libraries(${PROJECT_NAME_LIB} PUBLIC TBB::tbb)
 endif()
 
 

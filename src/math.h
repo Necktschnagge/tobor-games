@@ -1,11 +1,13 @@
 #pragma once
 
+#include <cstdint>
+
 namespace tobor {
 
-	template<uint64_t X>
-	inline constexpr uint64_t FACULTY{ X * FACULTY<X - 1> };
+	template<std::uint64_t X>
+	inline constexpr std::uint64_t FACULTY{ X * FACULTY<X - 1> };
 
 	template<>
-	inline constexpr uint64_t FACULTY<0>{ 1 };
+	inline constexpr std::uint64_t FACULTY<0>{ 1 };
 }
 #pragma once
