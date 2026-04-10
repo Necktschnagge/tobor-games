@@ -10,4 +10,3 @@ namespace tobor {
 	template<>
 	inline constexpr std::uint64_t FACULTY<0>{ 1 };
 }
-#pragma once
