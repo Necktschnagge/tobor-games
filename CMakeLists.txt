@@ -81,8 +81,12 @@ endif()
 
 if (MSVC)
         message("MSVC detected")
-        set(CMAKE_CXX_FLAGS_RELEASE "/MT /O2 /Ob2 /DNDEBUG") #please add more docu about what these flags do
-        set(CMAKE_CXX_FLAGS_DEBUG "/MTd /Zi /Ob0 /Od /RTC1")
+        #set(CMAKE_CXX_FLAGS_RELEASE "/MT /O2 /Ob2 /DNDEBUG") #please add more docu about what these flags do
+        #set(CMAKE_CXX_FLAGS_DEBUG "/MTd /Zi /Ob0 /Od /RTC1")
+
+		# Optional: keep your optimization flags, but DO NOT override runtime library
+		set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /O2 /Ob2")
+		set(CMAKE_CXX_FLAGS_DEBUG   "${CMAKE_CXX_FLAGS_DEBUG} /Zi /Ob0 /Od /RTC1")
 endif()
 
 if(MSVC)
