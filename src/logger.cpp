@@ -7,7 +7,8 @@
 #include <spdlog/spdlog.h>
 
 #include <chrono>
-#include <format>
+#include <fmt/chrono.h>
+#include <fmt/format.h>
 #include <iomanip>
 #include <iostream>
 #include <sstream>
@@ -18,7 +19,7 @@ namespace {
 	std::string make_timestamp_based_file_name_for_log() {
 		auto now         = std::chrono::system_clock::now();
 		auto now_seconds = std::chrono::floor<std::chrono::seconds>(now);
-		return std::format("{:%Y-%m-%d_%H-%M-%S}.log", now_seconds);
+		return fmt::format("{:%Y-%m-%d_%H-%M-%S}.log", now_seconds);
 	}
 
 	void setup_default_logger(const std::vector<spdlog::sink_ptr>& sinks) {
