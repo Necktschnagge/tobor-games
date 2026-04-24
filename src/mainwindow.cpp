@@ -6,32 +6,28 @@
 
 #include "custom_traits.h"
 
-#include "ui_mainwindow.h"
 #include "gui/license_dialog.h"
+#include "ui_mainwindow.h"
 
-
-#include "special_case_22_game_factory.h"
 #include "original_game_factory.h"
+#include "special_case_22_game_factory.h"
 
-
-#include "spdlog/spdlog.h"
 #include "spdlog/sinks/qt_sinks.h"
+#include "spdlog/spdlog.h"
 
-
-#include <QStringListModel>
-#include <QMessageBox>
 #include <QDebug>
-#include <QStyle>
-#include <QXmlStreamReader>
 #include <QGraphicsSvgItem>
 #include <QMessageBox>
+#include <QStringListModel>
+#include <QStyle>
+#include <QXmlStreamReader>
 
 void MainWindow::setTextAndShortcutsForMainMenu() {
 
 	/// FILE
 
 	menubar_root.rootMenu->file.menuFile->setTitle(QCoreApplication::translate("MainWindow", "&File", nullptr));
-	//### export SVG feature missing here!
+	// ### export SVG feature missing here!
 
 	/// EDIT
 
@@ -39,7 +35,7 @@ void MainWindow::setTextAndShortcutsForMainMenu() {
 
 	/// GAME
 
-	//MainWindow->setWindowTitle(QCoreApplication::translate("MainWindow", "Tobor 1.0", nullptr));
+	// MainWindow->setWindowTitle(QCoreApplication::translate("MainWindow", "Tobor 1.0", nullptr));
 	menubar_root.rootMenu->game.menuGame->setTitle(QCoreApplication::translate("MainWindow", "&Game", nullptr));
 	menubar_root.rootMenu->game.actionNewGame->setText(QCoreApplication::translate("MainWindow", "&New Game", nullptr));
 #if QT_CONFIG(shortcut)
@@ -50,7 +46,6 @@ void MainWindow::setTextAndShortcutsForMainMenu() {
 #if QT_CONFIG(shortcut)
 	menubar_root.rootMenu->game.actionStopGame->setShortcut(QCoreApplication::translate("MainWindow", "Esc", nullptr));
 #endif // QT_CONFIG(shortcut)
-
 
 	menubar_root.rootMenu->game.menuSelect_Piece->setTitle(QCoreApplication::translate("MainWindow", "Select &Piece...", nullptr));
 	menubar_root.rootMenu->game.menuMove->setTitle(QCoreApplication::translate("MainWindow", "&Move...", nullptr));
@@ -75,8 +70,6 @@ void MainWindow::setTextAndShortcutsForMainMenu() {
 	menubar_root.rootMenu->game.actionUndo->setShortcut(QCoreApplication::translate("MainWindow", "Backspace", nullptr));
 #endif // QT_CONFIG(shortcut)
 
-
-
 	menubar_root.rootMenu->game.actionStart_Solver->setText(QCoreApplication::translate("MainWindow", "Start S&olver", nullptr));
 #if QT_CONFIG(shortcut)
 	menubar_root.rootMenu->game.actionStart_Solver->setShortcut(QCoreApplication::translate("MainWindow", "F9", nullptr));
@@ -99,15 +92,12 @@ void MainWindow::setTextAndShortcutsForMainMenu() {
 	menubar_root.rootMenu->game.actionSolver_Configuration->setShortcut(QCoreApplication::translate("MainWindow", "F3", nullptr));
 #endif // QT_CONFIG(shortcut)
 
-
-
 	/// DEVELOPER
 
 	menubar_root.rootMenu->developer.menuDeveloper->setTitle(QCoreApplication::translate("MainWindow", "&Developer", nullptr));
 	menubar_root.rootMenu->developer.actionHighlightGeneratedTargetCells->setText(QCoreApplication::translate("MainWindow", "&Highlight generated target cells", nullptr));
 	menubar_root.rootMenu->developer.actionEnableAllMenuBarItems->setText(QCoreApplication::translate("MainWindow", "&Enable all MenuBar items", nullptr));
 	menubar_root.rootMenu->developer.action22ReferenceGame->setText(QCoreApplication::translate("MainWindow", "&Start 22 Reference Game", nullptr));
-
 
 	/// VIEW
 
@@ -119,31 +109,27 @@ void MainWindow::setTextAndShortcutsForMainMenu() {
 	menubar_root.rootMenu->help.menuHelp->setTitle(QCoreApplication::translate("MainWindow", "&Help", nullptr));
 	menubar_root.rootMenu->help.actionAbout->setText(QCoreApplication::translate("MainWindow", "About", nullptr));
 	menubar_root.rootMenu->help.actionLicense_Information->setText(QCoreApplication::translate("MainWindow", "License Information", nullptr));
-
 }
 
-void MainWindow::connectSoltsForMainMenu()
-{
+void MainWindow::connectSoltsForMainMenu() {
 
 	// QMetaObject::connectSlotsByName(this); is done during execution of auto-created code.
 
 	// TODO here (issue #184)
 	// In future please connect slots manually here!
 	// I dont like auto connecting by name.
-
 }
 
-
 MainWindow::MainWindow(QWidget* parent) :
-	QMainWindow(parent),
-	ui(new Ui::MainWindow),
-	menubar_root(this),
-	controlKeyEventAgent(this),
-	current_game(),
-	factory_history(),
-	next_factory_1(),
-	factory_select(2)
-{
+   QMainWindow(parent),
+   ui(new Ui::MainWindow),
+   menubar_root(this),
+   controlKeyEventAgent(this),
+   current_game(),
+   factory_history(),
+   next_factory_1(),
+   factory_select(2),
+   logger(spdlog::get("ui")) {
 	ui->setupUi(this);
 
 	// menubar:
@@ -265,6 +251,7 @@ void MainWindow::startGame()
 	std::unique_ptr<CyclicGroupGameFactory>& fac{ next_factory_1[factory_select] };
 
 	factory_history.emplace_back(fac->clone());
+	logger->info("Starting a new game.");
 
 	startGame(fac.get());
 

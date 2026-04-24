@@ -8,38 +8,38 @@
 
 #include "gui/main_menu.h"
 
-#include <QMainWindow>
-#include <QSvgRenderer>
+#include <QActionGroup>
+#include <QGraphicsScene>
 #include <QGraphicsSvgItem>
 #include <QKeyEvent>
-#include <QGraphicsScene>
 #include <QLabel>
+#include <QMainWindow>
 #include <QSignalMapper>
-#include <QActionGroup> 
+#include <QSvgRenderer>
+
+#include <spdlog/spdlog.h>
 
 #include <memory>
 #include <random>
 
 QT_BEGIN_NAMESPACE
-namespace Ui { class MainWindow; }
+namespace Ui {
+	class MainWindow;
+}
 QT_END_NAMESPACE
 
-
-
-class MainWindow : public QMainWindow
-{
+class MainWindow : public QMainWindow {
 	Q_OBJECT
 
 public:
-
 	struct SvgViewToolchain {
-		std::unique_ptr<QSvgRenderer> q_svg_renderer;
+		std::unique_ptr<QSvgRenderer>   q_svg_renderer;
 		std::unique_ptr<QGraphicsScene> q_graphics_scene;
 		/*
-		*/
-		inline SvgViewToolchain& operator =(SvgViewToolchain&& another) noexcept {
+		 */
+		inline SvgViewToolchain& operator=(SvgViewToolchain&& another) noexcept {
 			q_graphics_scene = std::move(another.q_graphics_scene);
-			q_svg_renderer = std::move(another.q_svg_renderer);
+			q_svg_renderer   = std::move(another.q_svg_renderer);
 
 			return *this;
 		}
@@ -50,11 +50,9 @@ public:
 		}
 	};
 
-
 private:
 	class StatusbarItems {
 	public:
-
 		static constexpr int QUADRATIC_COLOR_LABEL_SIZE{ 15 };
 
 		QLabel* stepsKey;
@@ -78,7 +76,6 @@ private:
 
 	class ShapeSelectionItems {
 	public:
-
 		QAction* ball;
 		QAction* duck;
 		QAction* swan;
@@ -91,8 +88,6 @@ private:
 	};
 
 public:
-
-
 	MainWindow(QWidget* parent = nullptr);
 	~MainWindow();
 
@@ -106,6 +101,7 @@ private:
 	void startGame();
 private Q_SLOTS:
 	void startGameFromHistory(int index);
+
 private:
 	void startReferenceGame22();
 	void stopGame();
@@ -119,9 +115,6 @@ private:
 	void selectPieceByColorId(const std::size_t& color_id);
 	void movePieceInteractiveAndSolver(const tobor::v1_0::direction& direction);
 	void undo();
-
-
-
 
 private Q_SLOTS:
 
@@ -144,14 +137,12 @@ private Q_SLOTS:
 	void on_listView_doubleClicked(const QModelIndex& index);
 
 private:
-
 	// Refresh UI Elements / Button ENABLE
 	void setMenuButtonEnableForNoGame();
 	void setMenuButtonEnableForInteractiveGame();
 	void setMenuButtonEnableForSolverGame();
 
 	void createColorActions();
-
 
 	// Refresh UI Elements / Views
 	void refreshSVG();
@@ -164,7 +155,6 @@ private:
 	void highlightGeneratedTargetCells();
 
 private:
-
 	Ui::MainWindow* ui;
 
 	MenuBar_Main menubar_root;
@@ -179,7 +169,7 @@ private:
 
 	std::vector<QMetaObject::Connection> inputConnections;
 
-	//std::vector<QMetaObject::Connection> historyConnections;
+	// std::vector<QMetaObject::Connection> historyConnections;
 
 	QSignalMapper* signalMapper{ nullptr };
 
@@ -189,9 +179,7 @@ private:
 
 	void viewSvgInMainView(const QString& svg_string);
 
-	inline void viewSvgInMainView(const std::string& svg_string) {
-		return viewSvgInMainView(QString::fromStdString(svg_string));
-	}
+	inline void viewSvgInMainView(const std::string& svg_string) { return viewSvgInMainView(QString::fromStdString(svg_string)); }
 
 	void disconnectInputConnections() {
 		for (QMetaObject::Connection& c : inputConnections) {
@@ -212,13 +200,13 @@ private:
 
 	tobor::v1_0::color_vector current_color_vector;
 
+	std::shared_ptr<spdlog::logger> logger;
 
 private Q_SLOTS:
 
 	void selectPieceByColor(int index);
 
 	void refreshAll();
-
 };
 
 #endif // MAINWINDOW_H
