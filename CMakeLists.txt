@@ -5,9 +5,26 @@ set(CMAKE_WIN32_EXECUTABLE OFF)
 
 ############### Subdirectories for dependencies ###############
 set(gtest_force_shared_crt ON CACHE BOOL "Always use msvcrt.dll" FORCE)
-add_subdirectory(extern/googletest)
+
+
+# Since we use fmt directly and spdlog -> fmt, we need to tell spdlog to use our fmt version.
+
+#set(SPDLOG_FMT_EXTERNAL ON CACHE BOOL "" FORCE) # use external binary
+set(SPDLOG_FMT_EXTERNAL_HO ON CACHE BOOL "" FORCE) # use external header only
+
+set(FMT_TEST OFF CACHE BOOL "" FORCE)
+set(FMT_DOC OFF CACHE BOOL "" FORCE)
+
+set(JSON_BuildTests OFF CACHE INTERNAL "")
+
+add_subdirectory(extern/fmt)
+add_subdirectory(extern/spdlog)
+
+add_subdirectory(extern/json)
 
 add_subdirectory(extern/CLI11)
+
+add_subdirectory(extern/googletest)
 
 
 
@@ -57,15 +74,16 @@ set(CMAKE_CXX_EXTENSIONS False)
 
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 
-if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang"  AND NOT APPLE)
 		message("Clang detected")
 		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libstdc++")
 endif()
 
 if (MSVC)
         message("MSVC detected")
-        set(CMAKE_CXX_FLAGS_RELEASE "/MT /O2 /Ob2 /DNDEBUG") #please add more docu about what these flags do
-        set(CMAKE_CXX_FLAGS_DEBUG "/MTd /Zi /Ob0 /Od /RTC1")
+		# Optional: keep your optimization flags, but DO NOT override runtime library
+		set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /O2 /Ob2")
+		set(CMAKE_CXX_FLAGS_DEBUG   "${CMAKE_CXX_FLAGS_DEBUG} /Zi /Ob0 /Od /RTC1")
 endif()
 
 if(MSVC)
@@ -74,12 +92,6 @@ if(MSVC)
 else()
   add_compile_options(-Wall -Wextra -pedantic -Werror)
 endif()
-
-
-
-############### Libraries via include_directories ###############
-include_directories(SYSTEM extern/spdlog/include)
-include_directories(SYSTEM extern/json/include)
 
 
 
