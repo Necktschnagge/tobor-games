@@ -6,7 +6,7 @@
 
 #include "world_generator_1_0.h"
 
-#include "math.h"
+#include "tobor_math.h"
 
 #include <vector>
 #include <array>

@@ -79,11 +79,11 @@ private:
 
 	using distance_exploration_type = tobor::v1_1::distance_exploration<move_engine_type, positions_of_pieces_type_solver>;
 
-	using bigraph_type = tobor::v1_1::simple_state_bigraph<positions_of_pieces_type_solver, std::vector<bool>>;
+	using bigraph_type = tobor::v1_1::simple_state_digraph<positions_of_pieces_type_solver, std::vector<bool>>;
 
-	using naked_bigraph_type = tobor::v1_1::simple_state_bigraph<positions_of_pieces_type_solver, void>;
+	using naked_bigraph_type = tobor::v1_1::simple_state_digraph<positions_of_pieces_type_solver, void>;
 
-	using pretty_evaluation_bigraph_type = tobor::v1_1::simple_state_bigraph<positions_of_pieces_type_interactive, piece_change_decoration_vector>;
+	using pretty_evaluation_bigraph_type = tobor::v1_1::simple_state_digraph<positions_of_pieces_type_interactive, piece_change_decoration_vector>;
 
 	using pretty_evaluation_bigraph_map_iterator_type = typename pretty_evaluation_bigraph_type::map_iterator_type;
 

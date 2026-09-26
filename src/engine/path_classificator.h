@@ -1,7 +1,7 @@
 #pragma once
 
 #include "../models/state_path.h"
-#include "../models/simple_state_bigraph.h"
+#include "../models/simple_state_digraph.h"
 
 #include <vector>
 
@@ -40,11 +40,11 @@ namespace tobor {
 		private:
 
 			/**
-			*	@brief Extracts all state paths of given simple_state_bigraph \p source with prefix \p depth_first_path and writes them into \p all_state_paths using emplace_back()
+			*	@brief Extracts all state paths of given simple_state_digraph \p source with prefix \p depth_first_path and writes them into \p all_state_paths using emplace_back()
 			*/
 			template<class State_Label_T>
 			static void extract_all_state_paths_helper(
-				const simple_state_bigraph<positions_of_pieces_type, State_Label_T>& source,
+				const simple_state_digraph<positions_of_pieces_type, State_Label_T>& source,
 				std::vector<state_path<positions_of_pieces_type>>& all_state_paths,
 				state_path_vector_type& depth_first_path
 			) {
@@ -75,7 +75,7 @@ namespace tobor {
 			*
 			*	@return Number of partitions found.
 			*/
-			static std::size_t make_state_graph_path_partitioning(simple_state_bigraph<positions_of_pieces_type, std::vector<bool>>& bigraph) {
+			static std::size_t make_state_graph_path_partitioning(simple_state_digraph<positions_of_pieces_type, std::vector<bool>>& bigraph) {
 
 				// ## This function needs to be fixed in order to include crossed components of equivalence classes (which are left in this version.)
 
@@ -225,9 +225,9 @@ namespace tobor {
 			*/
 			template<class State_Label_T>
 			static void extract_subgraph_by_label(
-				const simple_state_bigraph<positions_of_pieces_type, std::vector<bool>>& source,
+				const simple_state_digraph<positions_of_pieces_type, std::vector<bool>>& source,
 				std::size_t label_index,
-				simple_state_bigraph<positions_of_pieces_type, State_Label_T>& destination
+				simple_state_digraph<positions_of_pieces_type, State_Label_T>& destination
 			) {
 				destination.map.clear();
 
@@ -243,7 +243,7 @@ namespace tobor {
 					if (contains(pair.second.labels, label_index)) {
 						auto iter = destination.map.insert(
 							destination.map.end(),
-							std::make_pair(pair.first, typename simple_state_bigraph<positions_of_pieces_type, State_Label_T>::node_links())
+							std::make_pair(pair.first, typename simple_state_digraph<positions_of_pieces_type, State_Label_T>::node_links())
 						);
 						std::copy_if(pair.second.predecessors.cbegin(), pair.second.predecessors.cend(), std::inserter(iter->second.predecessors, iter->second.predecessors.end()), has_label);
 						std::copy_if(pair.second.successors.cbegin(), pair.second.successors.cend(), std::inserter(iter->second.successors, iter->second.successors.end()), has_label);
@@ -252,10 +252,10 @@ namespace tobor {
 			}
 
 			/**
-			*	@brief Returns all state paths of given simple_state_bigraph \p source.
+			*	@brief Returns all state paths of given simple_state_digraph \p source.
 			*/
 			template<class State_Label_T>
-			static std::vector<state_path<positions_of_pieces_type>> extract_all_state_paths(const simple_state_bigraph<positions_of_pieces_type, State_Label_T>& source) {
+			static std::vector<state_path<positions_of_pieces_type>> extract_all_state_paths(const simple_state_digraph<positions_of_pieces_type, State_Label_T>& source) {
 				std::vector<state_path<positions_of_pieces_type>> all_state_paths;
 
 				for (auto iter = source.map.cbegin(); iter != source.map.cend(); ++iter) {
