@@ -8,14 +8,18 @@
 #     - File has changed since reference commit (given as argument or default)
 #
 
+
+
 # ----------------------------------------
 # Configuration
 # ----------------------------------------
-
 Write-Output "Configuration:"
 
 #$sourcesRootDir = "."
 $sourcesRootDir = ".."
+
+Push-Location .
+Set-Location $sourcesRootDir
 
 #$gitComparisonTarget = "origin/master"
 #$gitComparisonTarget = "origin/main"
@@ -37,6 +41,7 @@ $ignoredPatterns = @(
 Write-Output " Default properties:"
 Write-Output " ------------------ "
 Write-Output "            sourcesRootDir = ${sourcesRootDir}"
+Write-Output "            sourcesRootDir = $((Get-Item .).FullName)"
 Write-Output "       gitComparisonTarget = ${gitComparisonTarget}"
 Write-Output "           clangFormatPath = ${clangFormatPath}"
 Write-Output "                extensions = ${extensions}"
@@ -49,8 +54,7 @@ Write-Output " ------------------ "
 # Track failures
 $failed = 0
 
-Push-Location .
-Set-Location $sourcesRootDir
+
 
 # ----------------------------------------
 # Determine gitComparisonTarget
@@ -61,23 +65,24 @@ Write-Output "       gitComparisonTarget = ${gitComparisonTarget}"
 }
 
 
-# ----------------------------------------
-# Get changed files vs diff target
-# ----------------------------------------
+
+# --------------------------------------------
+# Get files changed since gitComparisonTarget
+# --------------------------------------------
 $files = git diff --name-only $diffTarget
 
 # Filter out non-existent files (deleted, renamed, etc.)
 $files = $files | Where-Object { Test-Path $_ }
 
-# ----------------------------------------
 # Filter out ignored files
-# ----------------------------------------
 foreach ($pattern in $ignoredPatterns) {
     $files = $files | Where-Object { $_ -notmatch $pattern }
 }
 
+
+
 # ----------------------------------------
-# Run clang-format on matching files
+# Run formatter on matching files
 # ----------------------------------------
 foreach ($ext in $extensions) {
     # Match files ending with the extension
@@ -95,9 +100,10 @@ foreach ($ext in $extensions) {
     }
 }
 
-Pop-Location
+
 
 # ----------------------------------------
 # Exit with accumulated failure status
 # ----------------------------------------
+Pop-Location
 exit $failed
