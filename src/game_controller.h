@@ -291,7 +291,7 @@ public:
 
 				std::string color = std::string(1, letter);
 
-				s = s + "  " + QString::fromStdString(color) + QString::fromStdString(static_cast<std::string>(m.direction));
+				s = s + "  " + QString::fromStdString(color) + QString::fromStdString(m.direction.to_string());
 
 			}
 			s = s + "     ( NO COUNT " + /*QString::number(partitions[i].size()) + */ ")";

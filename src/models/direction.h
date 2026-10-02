@@ -126,7 +126,7 @@ namespace tobor {
 				// clang-format on
 			}
 
-			inline operator std::string() const {
+			inline std::string to_string() const {
 				char x = to_char();
 				return std::string(&x, 1);
 			}
