@@ -206,7 +206,7 @@ namespace tobor {
 			*	@brief Calculates the successor state arising when \p move is applied.
 			*/
 			template<class Position_Of_Pieces_T>
-			inline Position_Of_Pieces_T successor_state(const Position_Of_Pieces_T& state, const piece_move_type& move) const { return successor_state(state, move.pid, move.dir); }
+			inline Position_Of_Pieces_T successor_state(const Position_Of_Pieces_T& state, const piece_move_type& move) const { return successor_state(state, move.piece_id, move.direction); }
 
 			/**
 			*	@brief Calculated the piece_move which has to be applied in order to move from \p from_state to \p to_state
