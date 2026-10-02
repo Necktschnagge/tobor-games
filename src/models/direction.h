@@ -18,9 +18,9 @@ namespace tobor {
 			using type = direction;
 
 		private:
-			int_type value;
+			int_type _value;
 
-			direction(int_type v) : value(v) {}
+			direction(int_type v) : _value(v) {}
 
 			static constexpr uint8_t direction_invert_array[17]{
 				0x10,   //
@@ -70,6 +70,7 @@ namespace tobor {
 				static_assert(SOUTH != WEST,  "direction: SOUTH == WEST" );
 				static_assert(SOUTH != END,   "direction: SOUTH == END"  );
 				static_assert( WEST != END,   "direction:  WEST == END"  );
+				static_assert( NONE == END,   "direction:  NONE != END"  );
 				// clang-format on
 			};
 
@@ -81,38 +82,41 @@ namespace tobor {
 			inline static direction NONE()  { return direction(encoding::NONE);  }
 			// clang-format on
 
-			inline bool is_id_direction() const noexcept { return (value & (encoding::EAST | encoding::WEST)); }
-			inline bool is_transposed_id_direction() const noexcept { return (value & (encoding::NORTH | encoding::SOUTH)); }
+			inline bool is_id_direction() const noexcept { return (_value & (encoding::EAST | encoding::WEST)); }
+			inline bool is_transposed_id_direction() const noexcept { return (_value & (encoding::NORTH | encoding::SOUTH)); }
 
-			/* use it like an iterator over directions: */
+			/** Returns the first direction w.r.t. their ordering. */
 			inline static direction begin() { return encoding::NORTH; }
+
+			/** Returns the past-the-end direction w.r.t. their ordering.
+			 * The returned value is the invalid direction. */
 			inline static direction end() { return encoding::END; }
 
 			/** Increments the direction. Do not call on end() direction! */
 			inline direction& operator++() {
-				value <<= 1;
+				_value <<= 1;
 				return *this;
 			}
 
 			/** Increments the direction. Do not call on end() direction! */
 			inline direction operator++(int) {
 				direction c = *this;
-				value <<= 1;
+				_value <<= 1;
 				return c;
 			}
 
-			inline std::strong_ordering operator<=>(const direction& another) const { return value <=> another.value; }
+			inline std::strong_ordering operator<=>(const direction& another) const { return _value <=> another._value; }
 
 			/** Conversion to underlying integer type */
-			inline int_type get() const noexcept { return value; }
+			inline int_type get() const noexcept { return _value; }
 
 			/** Conversion to underlying integer type */
-			inline operator int_type() const noexcept { return value; }
+			inline operator int_type() const noexcept { return _value; }
 
-			/** Converstion to char */
+			/** Conversion to char */
 			inline char to_char() const {
 				// clang-format off
-				switch (value) {
+				switch (_value) {
 					case encoding::NORTH: return 'N';
 					case encoding::EAST:  return 'E';
 					case encoding::SOUTH: return 'S';
@@ -128,7 +132,7 @@ namespace tobor {
 			}
 
 			/** Returns the opposite direction. */
-			inline direction operator!() const noexcept { return direction(direction_invert_array[value]); }
+			inline direction operator!() const noexcept { return direction(direction_invert_array[_value]); }
 		};
 	} // namespace v1_0
 
