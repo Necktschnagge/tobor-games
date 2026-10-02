@@ -61,15 +61,21 @@ $failed = 0
 # ----------------------------------------
 if ($args.Count -ge 1) {
     $gitComparisonTarget = $args[0]
-Write-Output "       gitComparisonTarget = ${gitComparisonTarget}"
+    Write-Output "       gitComparisonTarget = ${gitComparisonTarget}"
 }
 
+Write-Output ""
+Write-Output "Processing..."
 
+Write-Output "Running git to find all changed files..."
 
 # --------------------------------------------
 # Get files changed since gitComparisonTarget
 # --------------------------------------------
-$files = git diff --name-only $diffTarget
+$files = git diff --name-only $gitComparisonTarget
+
+Write-Output ${files}
+Write-Output "Running git to find all changed files   ...DONE"
 
 # Filter out non-existent files (deleted, renamed, etc.)
 $files = $files | Where-Object { Test-Path $_ }
