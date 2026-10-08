@@ -287,11 +287,11 @@ public:
 			for (const piece_move_type& m : partitions[i].second.vector()) {
 				//is not checked for emptiness!!
 
-				const char letter{ current_color_vector.colors[m.pid.value].UPPERCASE_shortcut_letter() };
+				const char letter{ current_color_vector.colors[m.piece_id.value].UPPERCASE_shortcut_letter() };
 
 				std::string color = std::string(1, letter);
 
-				s = s + "  " + QString::fromStdString(color) + QString::fromStdString(static_cast<std::string>(m.dir));
+				s = s + "  " + QString::fromStdString(color) + QString::fromStdString(m.direction.to_string());
 
 			}
 			s = s + "     ( NO COUNT " + /*QString::number(partitions[i].size()) + */ ")";

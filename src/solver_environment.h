@@ -151,7 +151,7 @@ private:
 
 			// obtain SELECTED_PIECE id
 			piece_move_type move = engine.state_minus_state(succ_state, map_iter_root->first); // exceptions here!!
-			const piece_quantity_int_type SELECTED_PIECE = move.pid.value;
+			const piece_quantity_int_type SELECTED_PIECE = move.piece_id.value;
 
 			// obtain SELECTED_PIECE id after move
 			positions_of_pieces_type_interactive from_state(map_iter_root->first);
