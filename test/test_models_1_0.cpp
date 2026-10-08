@@ -127,8 +127,8 @@ TEST(tobor__v1_0__piece_move, create_and_compare) {
 	auto x = tobor::v1_0::piece_move(tobor::v1_0::default_piece_id(7), tobor::v1_0::direction::SOUTH());
 	auto y = tobor::v1_0::piece_move(tobor::v1_0::default_piece_id(8), tobor::v1_0::direction::NORTH());
 
-	EXPECT_EQ(x.pid, tobor::v1_0::default_piece_id::int_type(7));
-	EXPECT_EQ(y.dir, tobor::v1_0::direction::NORTH());
+	EXPECT_EQ(x.piece_id, tobor::v1_0::default_piece_id::int_type(7));
+	EXPECT_EQ(y.direction, tobor::v1_0::direction::NORTH());
 
 	EXPECT_TRUE(x < y);
 }
